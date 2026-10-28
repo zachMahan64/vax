@@ -1,0 +1,10 @@
+.DS_Store
+
+# Downloaded 4.3BSD distribution and generated tape (scripts/fetch-dist.sh)
+dist/*
+!dist/boot42.uue
+
+# Installed disk image and install scratch (scripts/install.sh)
+machine/*.dsk
+machine/miniroot.work
+machine/*.log
