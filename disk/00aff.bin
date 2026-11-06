@@ -1,0 +1,3926 @@
+meter
+effusion
+effusive
+effusively
+effusiveness
+Efik
+eflagelliferous
+efoliolate
+efoliose
+efoveolate
+eft
+eftest
+eftsoons
+egad
+egalitarian
+egalitarianism
+egality
+Egba
+Egbert
+Egbo
+egence
+egeran
+Egeria
+egest
+egesta
+egestion
+egestive
+egg
+eggberry
+eggcup
+eggcupful
+eggeater
+egger
+eggfish
+eggfruit
+egghead
+egghot
+egging
+eggler
+eggless
+egglike
+eggnog
+eggplant
+eggshell
+eggy
+egilops
+egipto
+Eglamore
+eglandular
+eglandulose
+eglantine
+eglatere
+eglestonite
+egma
+ego
+egocentric
+egocentricity
+egocentrism
+Egocerus
+egohood
+egoism
+egoist
+egoistic
+egoistical
+egoistically
+egoity
+egoize
+egoizer
+egol
+egolatrous
+egomania
+egomaniac
+egomaniacal
+egomism
+egophonic
+egophony
+egosyntonic
+egotheism
+egotism
+egotist
+egotistic
+egotistical
+egotistically
+egotize
+egregious
+egregiously
+egregiousness
+egress
+egression
+egressive
+egressor
+egret
+Egretta
+egrimony
+egueiite
+egurgitate
+eguttulate
+Egypt
+Egyptian
+Egyptianism
+Egyptianization
+Egyptianize
+Egyptize
+Egyptologer
+Egyptologic
+Egyptological
+Egyptologist
+Egyptology
+eh
+Ehatisaht
+eheu
+ehlite
+Ehretia
+Ehretia.\" Copyright (c) 1986 Regents of the University of California.
+.\" All rights reserved.  The Berkeley software License Agreement
+.\" specifies the terms and conditions for redistribution.
+.\"
+.\"	@(#)3.t	1.4 (Berkeley) 5/2/86
+.\"
+.\".ds RH "Network Library Routines
+.bp
+.nr H1 3
+.nr H2 0
+.bp
+.LG
+.B
+.ce
+3. NETWORK LIBRARY ROUTINES
+.sp 2
+.R
+.NL
+.PP
+The discussion in section 2 indicated the possible need to
+locate and construct network addresses when using the
+interprocess communication facilities in a distributed
+environment.  To aid in this task a number of routines
+have been added to the standard C run-time library.
+In this section we will consider the new routines provided
+to manipulate network addresses.  While the 4.3BSD networking
+facilities support both the DARPA standard Internet protocols
+and the Xerox NS protocols, most of the routines presented
+in this section do not apply to the NS domain.  Unless otherwise
+stated, it should be assumed that the routines presented in this
+section do not apply to the NS domain.
+.PP
+Locating a service on a remote host requires many levels of
+mapping before client and server may
+communicate.  A service is assigned a name which is intended
+for human consumption; e.g. \*(lqthe \fIlogin server\fP on host
+monet\*(rq.
+This name, and the name of the peer host, must then be translated
+into network \fIaddresses\fP which are not necessarily suitable
+for human consumption.  Finally, the address must then used in locating
+a physical \fIlocation\fP and \fIroute\fP to the service.  The
+specifics of these three mappings are likely to vary between
+network architectures.  For instance, it is desirable for a network
+to not require hosts to
+be named in such a way that their physical location is known by
+the client host.  Instead, underlying services in the network
+may discover the actual location of the host at the time a client
+host wishes to communicate.  This ability to have hosts named in
+a location independent manner may induce overhead in connection
+establishment, as a discovery process must take place,
+but allows a host to be physically mobile without requiring it to
+notify its clientele of its current location.
+.PP
+Standard routines are provided for: mapping host names 
+to network addresses, network names to network numbers, 
+protocol names to protocol numbers, and service names
+to port numbers and the appropriate protocol to
+use in communicating with the server process.  The
+file <\fInetdb.h\fP> must be included when using any of these
+routines.
+.NH 2
+Host names
+.PP
+An Internet host name to address mapping is represented by
+the \fIhostent\fP structure:
+.DS
+.if t .ta 0.6i 1.1i 2.6i
+struct	hostent {
+	char	*h_name;	/* official name of host */
+	char	**h_aliases;	/* alias list */
+	int	h_addrtype;	/* host address type (e.g., AF_INET) */
+	int	h_length;	/* length of address */
+	char	**h_addr_list;	/* list of addresses, null terminated */
+};
+
+#define	h_addr	h_addr_list[0] 	/* first address, network byte order */
+.DE
+The routine \fIgethostbyname\fP(3N) takes an Internet host name
+and returns a \fIhostent\fP structure,
+while the routine \fIgethostbyaddr\fP(3N)
+maps Internet host addresses into a \fIhostent\fP structure.
+.PP
+The official name of the host and its public aliases are
+returned by these routines,
+along with the address type (family) and a null terminated list of
+variable length address.  This list of addresses is
+required because it is possible
+for a host to have many addresses, all having the same name.
+The \fIh_addr\fP definition is provided for backward compatibility,
+and is defined to be the first address in the list of addresses
+in the \fIhostent\fP structure.
+.PP
+The database for these calls is provided either by the
+file \fI/etc/hosts\fP (\fIhosts\fP\|(5)),
+or by use of a nameserver, \fInamed\fP\|(8).
+Because of the differences in these databases and their access protocols,
+the information returned may differ.
+When using the host table version of \fIgethostbyname\fP,
+only one address will be returned, but all listed aliases will be included.
+The nameserver version may return alternate addresses,
+but will not provide any aliases other than one given as argument.
+.PP
+Unlike Internet names, NS names are always mapped into host
+addresses by the use of a standard NS \fIClearinghouse service\fP,
+a distributed name and authentication server.  The algorithms
+for mapping NS names to addresses via a Clearinghouse are
+rather complicated, and the routines are not part of the
+standard libraries.  The user-contributed Courier (Xerox
+remote procedure call protocol) compiler contains routines
+to accomplish this mapping; see the documentation and
+examples provided therein for more information.  It is
+expected that almost all software that has to communicate
+using NS will need to use the facilities of
+the Courier compiler.
+.PP
+An NS host address is represented by the following:
+.DS
+union ns_host {
+	u_char	c_host[6];
+	u_short	s_host[3];
+};
+
+union ns_net {
+	u_char	c_net[4];
+	u_short	s_net[2];
+};
+
+struct ns_addr {
+	union ns_net	x_net;
+	union ns_host	x_host;
+	u_short	x_port;
+};
+.DE
+The following code fragment inserts a known NS address into
+a \fIns_addr\fP:
+.DS
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netns/ns.h>
+ ...
+u_long netnum;
+struct sockaddr_ns dst;
+ ...
+bzero((char *)&dst, sizeof(dst));
+
+/*
+ * There is no convenient way to assign a long
+ * integer to a ``union ns_net'' at present; in
+ * the future, something will hopefully be provided,
+ * but this is the portable way to go for now.
+ * The network number below is the one for the NS net
+ * that the desired host (gyre) is on.
+ */
+netnum = htonl(2266);
+dst.sns_addr.x_net = *(union ns_net *) &netnum;
+dst.sns_family = AF_NS;
+
+/*
+ * host 2.7.1.0.2a.18 == "gyre:Computer Science:UofMaryland"
+ */
+dst.sns_addr.x_host.c_host[0] = 0x02;
+dst.sns_addr.x_host.c_host[1] = 0x07;
+dst.sns_addr.x_host.c_host[2] = 0x01;
+dst.sns_addr.x_host.c_host[3] = 0x00;
+dst.sns_addr.x_host.c_host[4] = 0x2a;
+dst.sns_addr.x_host.c_host[5] = 0x18;
+dst.sns_addr.x_port = htons(75);
+.DE
+.NH 2
+Network names
+.PP
+As for host names, routines for mapping network names to numbers,
+and back, are provided.  These routines return a \fInetent\fP
+structure:
+.DS
+.DT
+/*
+ * Assumption here is that a network number
+ * fits in 32 bits -- probably a poor one.
+ */
+struct	netent {
+	char	*n_name;	/* official name of net */
+	char	**n_aliases;	/* alias list */
+	int	n_addrtype;	/* net address type */
+	int	n_net;	/* network number, host byte order */
+};
+.DE
+The routines \fIgetnetbyname\fP(3N), \fIgetnetbynumber\fP(3N),
+and \fIgetnetent\fP(3N) are the network counterparts to the
+host routines described above.  The routines extract their
+information from \fI/etc/networks\fP.
+.PP
+NS network numbers are determined either by asking your local
+Xerox Network Administrator (and hardcoding the information
+into your code), or by querying the Clearinghouse for addresses.
+The internetwork router is the only process
+that needs to manipulate network numbers on a regular basis; if
+a process wishes to communicate with a machine, it should ask the
+Clearinghouse for that machine's address (which will include
+the net number).
+.NH 2
+Protocol names
+.PP
+For protocols, which are defined in \fI/etc/protocols\fP,
+the \fIprotoent\fP structure defines the
+protocol-name mapping
+used with the routines \fIgetprotobyname\fP(3N),
+\fIgetprotobynumber\fP(3N),
+and \fIgetprotoent\fP(3N):
+.DS
+.DT
+struct	protoent {
+	char	*p_name;	/* official protocol name */
+	char	**p_aliases;	/* alias list */
+	int	p_proto;	/* protocol number */
+};
+.DE
+.PP
+In the NS domain, protocols are indicated by the "client type"
+field of a IDP header.  No protocol database exists; see section
+5 for more information.
+.NH 2
+Service names
+.PP
+Information regarding services is a bit more complicated.  A service
+is expected to reside at a specific \*(lqport\*(rq and employ
+a particular communication protocol.  This view is consistent with
+the Internet domain, but inconsistent with other network architectures.
+Further, a service may reside on multiple ports.
+If this occurs, the higher level library routines
+will have to be bypassed or extended.
+Services available are contained in tceae
+ehrwaldite
+ehuawa
+eichbergite
+Eichhornia
+eichwaldite
+eicosane
+eident
+eidently
+eider
+eidetic
+eidograph
+eidolic
+eidolism
+eidology
+eidolology
+eidolon
+eidoptometry
+eidouranion
+eigenfunction
+eigenvalue
+eight
+eighteen
+eighteenfold
+eighteenmo
+eighteenth
+eighteenthly
+eightfoil
+eightfold
+eighth
+eighthly
+eightieth
+eightling
+eightpenny
+eightscore
+eightsman
+eightsome
+eighty
+eightyfold
+eigne
+Eikonogen
+eikonology
+Eileen
+Eimak
+eimer
+Eimeria
+einkorn
+Einsteinian
+Eireannach
+Eirene
+eiresione
+eisegesis
+eisegetical
+eisodic
+eisteddfod
+eisteddfodic
+eisteddfodism
+either
+ejaculate
+ejaculation
+ejaculative
+ejaculator
+ejaculatory
+Ejam
+eject
+ejecta
+ejectable
+ejection
+ejective
+ejectively
+ejectivity
+ejectment
+ejector
+ejicient
+ejoo
+ekaboron
+ekacaesium
+ekaha
+ekamanganese
+ekasilicon
+ekatantalum
+eke
+ekebergite
+eker
+ekerite
+eking
+ekka
+Ekoi
+ekphore
+Ekron
+Ekronite
+ektene
+ektenes
+ektodynamorphic
+el
+elaborate
+elaborately
+elaborateness
+elaboration
+elaborative
+elaborator
+elaboratory
+elabrate
+Elachista
+Elachistaceae
+elachistaceous
+Elaeagnaceae
+elaeagnaceous
+Elaeagnus
+Elaeis
+elaeoblast
+elaeoblastic
+Elaeocarpaceae
+elaeocarpaceous
+Elaeocarpus
+Elaeococca
+Elaeodendron
+elaeodochon
+elaeomargaric
+elaeometer
+elaeoptene
+elaeosaccharum
+elaeothesium
+elaidate
+elaidic
+elaidin
+elaidinic
+elain
+Elaine
+elaine
+elaioleucite
+elaioplast
+elaiosome
+Elamite
+Elamitic
+Elamitish
+elance
+eland
+elanet
+Elanus
+Elaphe
+Elaphebolion
+elaphine
+Elaphodus
+Elaphoglossum
+Elaphomyces
+Elaphomycetaceae
+Elaphrium
+elaphure
+elaphurine
+Elaphurus
+elapid
+Elapidae
+Elapinae
+elapine
+elapoid
+Elaps
+elapse
+Elapsoidea
+elasmobranch
+elasmobranchian
+elasmobranchiate
+Elasmobranchii
+elasmosaur
+Elasmosaurus
+elasmothere
+Elasmotherium
+elastance
+elastic
+elastica
+elastically
+elastician
+elasticin
+elasticity
+elasticize
+elasticizer
+elasticness
+elastin
+elastivity
+elastomer
+elastomeric
+elastometer
+elastometry
+elastose
+elatcha
+elate
+elated
+elatedly
+elatedness
+elater
+elaterid
+Elateridae
+elaterin
+elaterite
+elaterium
+elateroid
+Elatha
+Elatinaceae
+elatinaceous
+Elatine
+elation
+elative
+elator
+elatrometer
+elb
+Elbert
+Elberta
+elbow
+elbowboard
+elbowbush
+elbowchair
+elbowed
+elbower
+elbowpiece
+elbowroom
+elbowy
+elcaja
+elchee
+eld
+elder
+elderberry
+elderbrotherhood
+elderbrotherish
+elderbrotherly
+elderbush
+elderhood
+elderliness
+elderly
+elderman
+eldership
+eldersisterly
+elderwoman
+elderwood
+elderwort
+eldest
+eldin
+elding
+Eldred
+eldress
+eldritch
+Elean
+Eleanor
+Eleatic
+Eleaticism
+Eleazar
+elecampane
+elect
+electable
+electee
+electicism
+election
+electionary
+electioneer
+electioneerer
+elective
+electively
+electiveness
+electivism
+electivity
+electly
+elector
+electoral
+electorally
+electorate
+electorial
+electorship
+Electra
+electragist
+electragy
+electralize
+electrepeter
+electress
+electret
+electric
+electrical
+electricalize
+electrically
+electricalness
+electrician
+electricity
+electricize
+electrics
+electriferous
+electrifiable
+electrification
+electrifier
+electrify
+electrion
+electrionic
+electrizable
+electrization
+electrize
+electrizer
+electro
+electroacoustic
+electroaffinity
+electroamalgamation
+electroanalysis
+electroanalytic
+electroanalytical
+electroanesthesia
+electroballistic
+electroballistics
+electrobath
+electrobiological
+electrobiologist
+electrobiology
+electrobioscopy
+electroblasting
+electrobrasser
+electrobus
+electrocapillarity
+electrocapillary
+electrocardiogram
+electrocardiograph
+electrocardiographic
+electrocardiography
+electrocatalysis
+electrocatalytic
+electrocataphoresis
+electrocataphoretic
+electrocauterization
+electrocautery
+electroceramic
+electrochemical
+electrochemically
+electrochemist
+electrochemistry
+electrochronograph
+electrochronographic
+electrochronometer
+electrochronometric
+electrocoagulation
+electrocoating
+electrocolloidal
+electrocontractility
+electrocorticogram
+electroculture
+electrocute
+electrocution
+electrocutional
+electrocutioner
+electrocystoscope
+electrode
+electrodeless
+electrodentistry
+electrodeposit
+electrodepositable
+electrodeposition
+electrodepositor
+electrodesiccate
+electrodesiccation
+electrodiagnosis
+electrodialysis
+electrodialyze
+electrodialyzer
+electrodiplomatic
+electrodispersive
+electrodissolution
+electrodynamic
+electrodynamical
+electrodynamics
+electrodynamism
+electrodynamometer
+electroencephalogram
+electroencephalograph
+electroencephalography
+electroendosmose
+electroendosmosis
+electroendosmotic
+electroengrave
+electroengraving
+electroergometer
+electroetching
+electroethereal
+electroextraction
+electroform
+electroforming
+electrofuse
+electrofused
+electrofusion
+electrogalvanic
+electrogalvanize
+electrogenesis
+electrogenetic
+electrogild
+electrogilding
+electrogilt
+electrograph
+electrographic
+electrographite
+electrography
+electroharmonic
+electrohemostasis
+electrohomeopathy
+electrohorticulture
+electrohydraulic
+electroimpulse
+electroindustrial
+electroionic
+electroirrigation
+electrokinematics
+electrokinetic
+electrokinetics
+electrolier
+electrolithotrity
+electrologic
+electrological
+electrologist
+electrology
+electroluminescence
+electroluminescent
+electrolysis
+electrolyte
+electrolytic
+electrolytical
+electrolytically
+electrolyzability
+electrolyzable
+electrolyzation
+electrolyze
+electrolyzer
+electromagnet
+electromagnetic
+electromagnetical
+electromagnetically
+electromagnetics
+electromagnetism
+electromagnetist
+electromassage
+electromechanical
+electromechanics
+electromedical
+electromer
+electromeric
+electromerism
+electrometallurgical
+electrometallurgist
+electrometallurgy
+electrometer
+electrometric
+electrometrical
+electrometrically
+electrometry
+electromobile
+electromobilism
+electromotion
+electromotive
+electromotivity
+electromotograph
+electromotor
+electromuscular
+electromyographic
+electron
+electronarcosis
+electronegative
+electronervous
+electronic
+electronics
+electronographic
+electrooptic
+electrooptical
+electrooptically
+electrooptics
+electroosmosis
+electroosmotic
+electroosmotically
+electrootiatrics
+electropathic
+electropathology
+electropathy
+electropercussive
+electrophobia
+electrophone
+electrophore
+electrophoresis
+electrophoretic
+electrophoric
+Electrophoridae
+electrophorus
+electrophotometer
+electrophotometry
+electrophototherapy
+electrophrenic
+electrophysics
+electrophysiological
+electrophysiologist
+electrophysiology
+electropism
+electroplate
+electroplater
+electroplating
+electroplax
+electropneumatic
+electropneumatically
+electropoion
+electropolar
+electropositive
+electropotential
+electropower
+electropsychrometer
+electropult
+electropuncturation
+electropuncture
+electropuncturing
+electropyrometer
+electroreceptive
+electroreduction
+electrorefine
+electroscission
+electroscope
+electroscopic
+electrosherardizing
+electroshock
+electrosmosis
+electrostatic
+electrostatical
+electrostatically
+electrostatics
+electrosteel
+electrostenolysis
+electrostenolytic
+electrostereotype
+electrostriction
+electrosurgery
+electrosurgical
+electrosynthesis
+electrosynthetic
+electrosynthetically
+electrotactic
+electrotautomerism
+electrotaxis
+electrotechnic
+electrotechnical
+electrotechnician
+electrotechnics
+electrotechnology
+electrotelegraphic
+electrotelegraphy
+electrotelethermometer
+electrotellurograph
+electrotest
+electrothanasia
+electrothanatosis
+electrotherapeutic
+electrotherapeutical
+electrotherapeutics
+electrotherapeutist
+electrotherapist
+electrotherapy
+electrothermal
+electrothermancy
+electrothermic
+electrothermics
+electrothermometer
+electrothermostat
+electrothermostatic
+electrothermotic
+electrotitration
+electrotonic
+electrotonicity
+electrotonize
+electrotonus
+electrotrephine
+electrotropic
+electrotropism
+electrotype
+electrotyper
+electrotypic
+electrotyping
+electrotypist
+electrotypy
+electrovalence
+electrovalency
+electrovection
+electroviscous
+electrovital
+electrowin
+electrum
+electuary
+eleemosynarily
+eleemosynariness
+eleemosynary
+elegance
+elegancy
+elegant
+elegantly
+elegiac
+elegiacal
+elegiambic
+elegiambus
+elegiast
+elegist
+elegit
+elegize
+elegy
+eleidin
+element
+elemental
+elementalism
+elementalist
+elementalistic
+elementalistically
+elementality
+elementalize
+elementally
+elementarily
+elementariness
+elementary
+elementoid
+elemi
+elemicin
+elemin
+elench
+elenchi
+elenchic
+elenchical
+elenchically
+elenchize
+elenchtic
+elenchtical
+elenctic
+elenge
+eleoblast
+Eleocharis
+eleolite
+eleomargaric
+eleometer
+eleonorite
+eleoptene
+eleostearate
+eleostearic
+elephant
+elephanta
+elephantiac
+elephantiasic
+elephantiasis
+elephantic
+elephanticide
+Elephantidae
+elephantine.\" Copyright (c) 1986 Regents of the University of California.
+.\" All rights reserved.  The Berkeley software License Agreement
+.\" specifies the terms and conditions for redistribution.
+.\"
+.\"	@(#)4.t	1.3 (Berkeley) 5/2/86
+.\"
+.\".ds RH "Client/Server Model
+.bp
+.nr H1 4
+.nr H2 0
+.sp 8i
+.bp
+.LG
+.B
+.ce
+4. CLIENT/SERVER MODEL
+.sp 2
+.R
+.NL
+.PP
+The most commonly used paradigm in constructing distributed applications
+is the client/server model.  In this scheme client applications request
+services from a server process.  This implies an asymmetry in establishing
+communication between the client and server which has been examined
+in section 2.  In this section we will look more closely at the interactions
+between client and server, and consider some of the problems in developing
+client and server applications.
+.PP
+The client and server require a well known set of conventions before
+service may be rendered (and accepted).  This set of conventions
+comprises a protocol which must be implemented at both ends of a
+connection.  Depending on the situation, the protocol may be symmetric
+or asymmetric.  In a symmetric protocol, either side may play the 
+master or slave roles.  In an asymmetric protocol, one side is
+immutably recognized as the master, with the other as the slave.  
+An example of a symmetric protocol is the TELNET protocol used in
+the Internet for remote terminal emulation.  An example
+of an asymmetric protocol is the Internet file transfer protocol,
+FTP.  No matter whether the specific protocol used in obtaining
+a service is symmetric or asymmetric, when accessing a service there
+is a \*(lqclient process\*(rq and a \*(lqserver process\*(rq.  We
+will first consider the properties of server processes, then
+client processes.
+.PP
+A server process normally listens at a well known address for
+service requests.  That is, the server process remains dormant
+until a connection is requested by a client's connection
+to the server's address.  At such a time
+the server process ``wakes up'' and services the client,
+performing whatever appropriate actions the client requests of it.
+.PP
+Alternative schemes which use a service server
+may be used to eliminate a flock of server processes clogging the
+system while remaining dormant most of the time.  For Internet
+servers in 4.3BSD,
+this scheme has been implemented via \fIinetd\fP, the so called
+``internet super-server.''  \fIInetd\fP listens at a variety
+of ports, determined at start-up by reading a configuration file.
+When a connection is requested to a port on which \fIinetd\fP is
+listening, \fIinetd\fP executes the appropriate server program to handle the
+client.  With this method, clients are unaware that an
+intermediary such as \fIinetd\fP has played any part in the
+connection.  \fIInetd\fP will be described in more detail in
+section 5.
+.PP
+A similar alternative scheme is used by most Xerox services.  In general,
+the Courier dispatch process (if used) accepts connections from
+processes requesting services of some sort or another.  The client
+processes request a particular <program number, version number, procedure
+number> triple.  If the dispatcher knows of such a program, it is
+started to handle the request; if not, an error is reported to the
+client.  In this way, only one port is required to service a large
+variety of different requests.  Again, the Courier facilities are
+not available without the use and installation of the Courier
+compiler.  The information presented in this section applies only
+to NS clients and services that do not use Courier.
+.NH 2
+Servers
+.PP
+In 4.3BSD most servers are accessed at well known Internet addresses
+or UNIX domain names.  For
+example, the remote login server's main loop is of the form shown
+in Figure 2.
+.KF
+.if t .ta .5i 1.0i 1.5i 2.0i 2.5i 3.0i 3.5i
+.if n .ta .7i 1.4i 2.1i 2.8i 3.5i 4.2i 4.9i
+.sp 0.5i
+.DS
+main(argc, argv)
+	int argc;
+	char *argv[];
+{
+	int f;
+	struct sockaddr_in from;
+	struct servent *sp;
+
+	sp = getservbyname("login", "tcp");
+	if (sp == NULL) {
+		fprintf(stderr, "rlogind: tcp/login: unknown service\en");
+		exit(1);
+	}
+	...
+#ifndef DEBUG
+	/* Disassociate server from controlling terminal */
+	...
+#endif
+
+	sin.sin_port = sp->s_port;	/* Restricted port -- see section 5 */
+	...
+	f = socket(AF_INET, SOCK_STREAM, 0);
+	...
+	if (bind(f, (struct sockaddr *) &sin, sizeof (sin)) < 0) {
+		...
+	}
+	...
+	listen(f, 5);
+	for (;;) {
+		int g, len = sizeof (from);
+
+		g = accept(f, (struct sockaddr *) &from, &len);
+		if (g < 0) {
+			if (errno != EINTR)
+				syslog(LOG_ERR, "rlogind: accept: %m");
+			continue;
+		}
+		if (fork() == 0) {
+			close(f);
+			doit(g, &from);
+		}
+		close(g);
+	}
+}
+.DE
+.ce
+Figure 2.  Remote login server.
+.sp 0.5i
+.KE
+.PP
+The first step taken by the server is look up its service
+definition:
+.sp 1
+.nf
+.in +5
+.if t .ta .5i 1.0i 1.5i 2.0i
+.if n .ta .7i 1.4i 2.1i 2.8i
+sp = getservbyname("login", "tcp");
+if (sp == NULL) {
+	fprintf(stderr, "rlogind: tcp/login: unknown service\en");
+	exit(1);
+}
+.sp 1
+.in -5
+.fi
+The result of the \fIgetservbyname\fP call
+is used in later portions of the code to
+define the Internet port at which it listens for service
+requests (indicated by a connection).
+.KS
+.PP
+Step two is to disassociate the server from the controlling
+terminal of its invoker:
+.DS
+	for (i = 0; i < 3; ++i)
+		close(i);
+
+	open("/", O_RDONLY);
+	dup2(0, 1);
+	dup2(0, 2);
+
+	i = open("/dev/tty", O_RDWR);
+	if (i >= 0) {
+		ioctl(i, TIOCNOTTY, 0);
+		close(i);
+	}
+.DE
+.KE
+This step is important as the server will
+likely not want to receive signals delivered to the process
+group of the controlling terminal.  Note, however, that
+once a server has disassociated itself it can no longer
+send reports of errors to a terminal, and must log errors
+via \fIsyslog\fP.
+.PP
+Once a server has established a pristine environment, it
+creates a socket and begins accepting service requests.
+The \fIbind\fP call is required to insure the server listens
+at its expected location.  It should be noted that the
+remote login server listens at a restricted port number, and must
+therefore be run
+with a user-id of root.
+This concept of a ``restricted port number'' is 4BSD
+specific, and is covered in section 5.
+.PP
+The main body of the loop is fairly simple:
+.DS
+.if t .ta .5i 1.0i 1.5i 2.0i
+.if n .ta .7i 1.4i 2.1i 2.8i
+for (;;) {
+	int g, len = sizeof (from);
+
+	g = accept(f, (struct sockaddr *)&from, &len);
+	if (g < 0) {
+		if (errno != EINTR)
+			syslog(LOG_ERR, "rlogind: accept: %m");
+		continue;
+	}
+	if (fork() == 0) {	/* Child */
+		close(f);
+		doit(g, &from);
+	}
+	close(g);		/* Parent */
+}
+.DE
+An \fIaccept\fP call blocks the server until
+a client requests service.  This call could return a
+failure status if the call is interrupted by a signal
+such as SIGCHLD (to be discussed in section 5).  Therefore,
+the return value from \fIaccept\fP is checked to insure
+a connection has actually been established, and
+an error report is logged via \fIsyslog\fP if an error
+has occurred.
+.PP
+With a connection
+in hand, the server then forks a child process and invokes
+the main body of the remote login protocol processing.  Note
+how the socket used by the parent for queuing connection
+requests is closed in the child, while the socket created as
+a result of the \fIaccept\fP is closed in the parent.  The
+address of the client is also handed the \fIdoit\fP routine
+because it requires it in authenticating clients.
+.NH 2
+Clients
+.PP
+The client side of the remote login service was shown
+earlier in Figure 1.
+One can see the separate, asymmetric roles of the client
+and server clearly in the code.  The server is a passive entity,
+listening for client connections, while the client process is
+an active entity, initiating a connection when invoked.  
+.PP
+Let us consider more closely the steps taken
+by the client remote login process.  As in the server process,
+the first step is to locate the service definition for a remote
+login:
+.DS
+sp = getservbyname("login", "tcp");
+if (sp == NULL) {
+	fprintf(stderr, "rlogin: tcp/login: unknown service\en");
+	exit(1);
+}
+.DE
+Next the destination host is looked up with a
+\fIgethostbyname\fP call:
+.DS
+hp = gethostbyname(argv[1]);
+if (hp == NULL) {
+	fprintf(stderr, "rlogin: %s: unknown host\en", arg
+elephantlike
+elephantoid
+elephantoidal
+Elephantopus
+elephantous
+elephantry
+Elephas
+Elettaria
+Eleusine
+Eleusinia
+Eleusinian
+Eleusinion
+Eleut
+eleutherarch
+Eleutheri
+Eleutheria
+Eleutherian
+Eleutherios
+eleutherism
+eleutherodactyl
+Eleutherodactyli
+Eleutherodactylus
+eleutheromania
+eleutheromaniac
+eleutheromorph
+eleutheropetalous
+eleutherophyllous
+eleutherosepalous
+Eleutherozoa
+eleutherozoan
+elevate
+elevated
+elevatedly
+elevatedness
+elevating
+elevatingly
+elevation
+elevational
+elevator
+elevatory
+eleven
+elevener
+elevenfold
+eleventh
+eleventhly
+elevon
+elf
+elfenfolk
+elfhood
+elfic
+elfin
+elfinwood
+elfish
+elfishly
+elfishness
+elfkin
+elfland
+elflike
+elflock
+elfship
+elfwife
+elfwort
+Eli
+Elia
+Elian
+Elianic
+Elias
+eliasite
+elicit
+elicitable
+elicitate
+elicitation
+elicitor
+elicitory
+elide
+elidible
+eligibility
+eligible
+eligibleness
+eligibly
+Elihu
+Elijah
+eliminable
+eliminand
+eliminant
+eliminate
+elimination
+eliminative
+eliminator
+eliminatory
+Elinor
+Elinvar
+Eliphalet
+eliquate
+eliquation
+Elisha
+Elishah
+elision
+elisor
+Elissa
+elite
+elixir
+Eliza
+Elizabeth
+Elizabethan
+Elizabethanism
+Elizabethanize
+elk
+Elkanah
+Elkdom
+Elkesaite
+elkhorn
+elkhound
+Elkoshite
+elkslip
+Elkuma
+elkwood
+ell
+Ella
+ellachick
+ellagate
+ellagic
+ellagitannin
+Ellasar
+elle
+elleck
+Ellen
+ellenyard
+Ellerian
+ellfish
+Ellice
+Ellick
+ellipse
+ellipses
+ellipsis
+ellipsograph
+ellipsoid
+ellipsoidal
+ellipsone
+ellipsonic
+elliptic
+elliptical
+elliptically
+ellipticalness
+ellipticity
+elliptograph
+elliptoid
+ellops
+ellwand
+elm
+Elmer
+elmy
+Eloah
+elocular
+elocute
+elocution
+elocutionary
+elocutioner
+elocutionist
+elocutionize
+elod
+Elodea
+Elodeaceae
+Elodes
+eloge
+elogium
+Elohim
+Elohimic
+Elohism
+Elohist
+Elohistic
+eloign
+eloigner
+eloignment
+Eloise
+Elon
+elongate
+elongated
+elongation
+elongative
+Elonite
+elope
+elopement
+eloper
+Elopidae
+elops
+eloquence
+eloquent
+eloquential
+eloquently
+eloquentness
+Elotherium
+elotillo
+elpasolite
+elpidite
+els
+Elsa
+else
+elsehow
+elsewards
+elseways
+elsewhen
+elsewhere
+elsewheres
+elsewhither
+elsewise
+Elsholtzia
+elsin
+elt
+eluate
+elucidate
+elucidation
+elucidative
+elucidator
+elucidatory
+elucubrate
+elucubration
+elude
+eluder
+elusion
+elusive
+elusively
+elusiveness
+elusoriness
+elusory
+elute
+elution
+elutor
+elutriate
+elutriation
+elutriator
+eluvial
+eluviate
+eluviation
+eluvium
+elvan
+elvanite
+elvanitic
+elver
+elves
+elvet
+Elvira
+elvish
+elvishly
+elydoric
+Elymi
+Elymus
+Elysee
+Elysia
+elysia
+Elysian
+Elysiidae
+Elysium
+elytral
+elytriferous
+elytriform
+elytrigerous
+elytrin
+elytrocele
+elytroclasia
+elytroid
+elytron
+elytroplastic
+elytropolypus
+elytroposis
+elytrorhagia
+elytrorrhagia
+elytrorrhaphy
+elytrostenosis
+elytrotomy
+elytrous
+elytrum
+Elzevir
+Elzevirian
+Em
+em
+emaciate
+emaciation
+emajagua
+emanant
+emanate
+emanation
+emanational
+emanationism
+emanationist
+emanatism
+emanatist
+emanatistic
+emanativ
+emanative
+emanatively
+emanator
+emanatory
+emancipate
+emancipation
+emancipationist
+emancipatist
+emancipative
+emancipator
+emancipatory
+emancipatress
+emancipist
+emandibulate
+emanium
+emarcid
+emarginate
+emarginately
+emargination
+Emarginula
+emasculate
+emasculation
+emasculative
+emasculator
+emasculatory
+Embadomonas
+emball
+emballonurid
+Emballonuridae
+emballonurine
+embalm
+embalmer
+embalmment
+embank
+embankment
+embannered
+embar
+embargo
+embargoist
+embark
+embarkation
+embarkment
+embarras
+embarrass
+embarrassed
+embarrassedly
+embarrassing
+embarrassingly
+embarrassment
+embarrel
+embassage
+embassy
+embastioned
+embathe
+embatholithic
+embattle
+embattled
+embattlement
+embay
+embayment
+Embden
+embed
+embedment
+embeggar
+Embelia
+embelic
+embellish
+embellisher
+embellishment
+ember
+embergoose
+Emberiza
+emberizidae
+Emberizinae
+emberizine
+embezzle
+embezzlement
+embezzler
+Embiidae
+Embiidina
+embind
+Embiodea
+Embioptera
+embiotocid
+Embiotocidae
+embiotocoid
+embira
+embitter
+embitterer
+embitterment
+emblaze
+emblazer
+emblazon
+emblazoner
+emblazonment
+emblazonry
+emblem
+emblema
+emblematic
+emblematical
+emblematically
+emblematicalness
+emblematicize
+emblematist
+emblematize
+emblematology
+emblement
+emblemist
+emblemize
+emblemology
+emblic
+emblossom
+embodier
+embodiment
+embody
+embog
+emboitement
+embolden
+emboldener
+embole
+embolectomy
+embolemia
+embolic
+emboliform
+embolism
+embolismic
+embolismus
+embolite
+embolium
+embolize
+embolo
+embololalia
+Embolomeri
+embolomerism
+embolomerous
+embolomycotic
+embolum
+embolus
+emboly
+emborder
+emboscata
+embosom
+emboss
+embossage
+embosser
+embossing
+embossman
+embossment
+embosture
+embottle
+embouchure
+embound
+embow
+embowed
+embowel
+emboweler
+embowelment
+embower
+embowerment
+embowment
+embox
+embrace
+embraceable
+embraceably
+embracement
+embraceor
+embracer
+embracery
+embracing
+embracingly
+embracingness
+embracive
+embrail
+embranchment
+embrangle
+embranglement
+embrasure
+embreathe
+embreathement
+Embrica
+embright
+embrittle
+embrittlement
+embroaden
+embrocate
+embrocation
+embroider
+embroiderer
+embroideress
+embroidery
+embroil
+embroiler
+embroilment
+embronze
+embrown
+embryectomy
+embryo
+embryocardia
+embryoctonic
+embryoctony
+embryoferous
+embryogenesis
+embryogenetic
+embryogenic
+embryogeny
+embryogony
+embryographer
+embryographic
+embryography
+embryoid
+embryoism
+embryologic
+embryological
+embryologically
+embryologist
+embryology
+embryoma
+embryon
+embryonal
+embryonary
+embryonate
+embryonated
+embryonic
+embryonically
+embryoniferous
+embryoniform
+embryony
+embryopathology
+embryophagous
+embryophore
+Embryophyta
+embryophyte
+embryoplastic
+embryoscope
+embryoscopic
+embryotega
+embryotic
+embryotome
+embryotomy
+embryotrophic
+embryotrophy
+embryous
+embryulcia
+embryulcus
+embubble
+embuia
+embus
+embusk
+embuskin
+emcee
+eme
+emeer
+emeership
+Emeline
+emend
+emendable
+emendandum
+emendate
+emendation
+emendator
+emendatory
+emender
+emerald
+emeraldine
+emeraude
+emerge
+emergence
+emergency
+emergent
+emergently
+emergentness
+Emerita
+emerited
+emeritus
+emerize
+emerse
+emersed
+emersion
+Emersonian
+Emersonianism
+Emery
+emery
+Emesa
+Emesidae
+emesis
+emetatrophia
+emetic
+emetically
+emetine
+emetocathartic
+emetology
+emetomorphine
+emgalla
+emication
+emiction
+emictory
+emigrant
+emigrate
+emigration
+emigrational
+emigrationist
+emigrative
+emigrator
+emigratory
+emigree
+Emil
+Emilia
+Emily
+Emim
+eminence
+eminency
+eminent
+eminently
+emir
+emirate
+emirship
+emissarium
+emissary
+emissaryship
+emissile
+emission
+emissive
+emissivity
+emit
+emittent
+emitter
+Emm
+Emma
+emma
+Emmanuel
+emmarble
+emmarvel
+emmenagogic
+emmenagogue
+emmenic
+emmeniopathy
+emmenology
+emmensite
+Emmental
+emmer
+emmergoose
+emmet
+emmetrope
+emmetropia
+emmetropic
+emmetropism
+emmetropy
+emodin
+emollescence
+emolliate
+emollient
+emoloa
+emolument
+emolumental
+emolumentary
+emote
+emotion
+emotionable
+emotional
+emotionalism
+emotionalist
+emotionality
+emotionalization
+emotionalize
+emotionally
+emotioned
+emotionist
+emotionize
+emotionless
+emotionlessness
+emotive
+emotively
+emotiveness
+emotivity
+empacket
+empaistic
+empall
+empanel
+empanelment
+empanoply
+empaper
+emparadise
+emparchment
+empark
+empasm
+empathic
+empathically
+empathize
+empathy
+Empedoclean
+empeirema
+Empeo
+emperor
+emperorship
+empery
+Empetraceae
+empetraceous
+Empetrum
+emphases
+emphasis
+emphasize
+emphatic
+emphatical
+emphatically
+emphaticalness
+emphlysis
+emphractic
+emphraxis
+emphysema
+emphysematous
+emphyteusis
+emphyteuta
+emphyteutic
+empicture
+Empididae
+Empidonax
+empiecement
+Empire
+empire
+empirema
+empiric
+empirical
+empiricalness
+empiricism
+empiricist
+empirics
+empiriocritcism
+empiriocritical
+empiriological
+empirism
+empiristic
+emplace
+emplacement
+emplane
+emplastic
+emplastration
+emplastrum
+emplectite
+empleomania
+employ
+employability
+employable
+employed
+employee
+employer
+employless
+employment
+emplume
+empocket
+empodium
+empoison
+empoisonment
+emporetic
+emporeutic
+emporia
+emporial
+emporium
+empower
+empowerment
+empress
+emprise
+emprosthotonic
+emprosthotonos
+emprosthotonus
+empt
+emptier
+emptily
+emptiness
+emptings
+emptins
+emption
+emptional
+emptor
+empty
+emptyhearted
+emptysis
+empurple
+Empusa
+empyema
+empyemic
+empyesis
+empyocele
+empyreal
+empyrean
+empyreuma
+empyreumatic
+empyreumatical
+empyreumatize
+empyromancy
+emu
+emulable
+emulant
+emulate
+emulation
+emulative
+emulatively
+emulator
+emulatory
+emulatress
+emulgence
+emulgent
+emulous
+emulously
+emulousness
+emulsibility
+emulsible
+emulsifiability
+emulsifiable
+emulsification
+emulsifier
+emulsify
+emulsin
+emulsion
+emulsionize
+emulsive
+emulsoid
+emulsor
+emunctory
+emundation
+emyd
+Emydea
+emydian
+Emydidae
+Emydinae
+Emydosauria
+emydosaurian
+Emys
+en
+enable
+enablement
+enabler
+enact
+enactable
+enaction
+enactive
+ev[1]);
+	exit(2);
+}
+.DE
+With this accomplished, all that is required is to establish a
+connection to the server at the requested host and start up the
+remote login protocol.  The address buffer is cleared, then filled
+in with the Internet address of the foreign host and the port
+number at which the login process resides on the foreign host:
+.DS
+bzero((char *)&server, sizeof (server));
+bcopy(hp->h_addr, (char *) &server.sin_addr, hp->h_length);
+server.sin_family = hp->h_addrtype;
+server.sin_port = sp->s_port;
+.DE
+A socket is created, and a connection initiated.  Note
+that \fIconnect\fP implicitly performs a \fIbind\fP
+call, since \fIs\fP is unbound.
+.DS
+s = socket(hp->h_addrtype, SOCK_STREAM, 0);
+if (s < 0) {
+	perror("rlogin: socket");
+	exit(3);
+}
+ ...
+if (connect(s, (struct sockaddr *) &server, sizeof (server)) < 0) {
+	perror("rlogin: connect");
+	exit(4);
+}
+.DE
+The details of the remote login protocol will not be considered here.
+.NH 2
+Connectionless servers
+.PP
+While connection-based services are the norm, some services
+are based on the use of datagram sockets.  One, in particular,
+is the \*(lqrwho\*(rq service which provides users with status
+information for hosts connected to a local area
+network.  This service, while predicated on the ability to
+\fIbroadcast\fP information to all hosts connected to a particular
+network, is of interest as an example usage of datagram sockets.
+.PP
+A user on any machine running the rwho server may find out
+the current status of a machine with the \fIruptime\fP(1) program.
+The output generated is illustrated in Figure 3.
+.KF
+.DS B
+.TS
+l r l l l l l.
+arpa	up	9:45,	5 users, load	1.15,	1.39,	1.31
+cad	up	2+12:04,	8 users, load	4.67,	5.13,	4.59
+calder	up	10:10,	0 users, load	0.27,	0.15,	0.14
+dali	up	2+06:28,	9 users, load	1.04,	1.20,	1.65
+degas	up	25+09:48,	0 users, load	1.49,	1.43,	1.41
+ear	up	5+00:05,	0 users, load	1.51,	1.54,	1.56
+ernie	down	0:24
+esvax	down	17:04
+ingres	down	0:26
+kim	up	3+09:16,	8 users, load	2.03,	2.46,	3.11
+matisse	up	3+06:18,	0 users, load	0.03,	0.03,	0.05
+medea	up	3+09:39,	2 users, load	0.35,	0.37,	0.50
+merlin	down	19+15:37
+miro	up	1+07:20,	7 users, load	4.59,	3.28,	2.12
+monet	up	1+00:43,	2 users, load	0.22,	0.09,	0.07
+oz	down	16:09
+statvax	up	2+15:57,	3 users, load	1.52,	1.81,	1.86
+ucbvax	up	9:34,	2 users, load	6.08,	5.16,	3.28
+.TE
+.DE
+.ce
+Figure 3. ruptime output.
+.sp
+.KE
+.PP
+Status information for each host is periodically broadcast
+by rwho server processes on each machine.  The same server
+process also receives the status information and uses it
+to update a database.  This database is then interpreted
+to generate the status information for each host.  Servers
+operate autonomously, coupled only by the local network and
+its broadcast capabilities.
+.PP
+Note that the use of broadcast for such a task is fairly inefficient,
+as all hosts must process each message, whether or not using an rwho server.
+Unless such a service is sufficiently universal and is frequently used,
+the expense of periodic broadcasts outweighs the simplicity.
+.PP
+The rwho server, in a simplified form, is pictured in Figure
+4.  There are two separate tasks performed by the server.  The
+first task is to act as a receiver of status information broadcast
+by other hosts on the network.  This job is carried out in the
+main loop of the program.  Packets received at the rwho port
+are interrogated to insure they've been sent by another rwho
+server process, then are time stamped with their arrival time
+and used to update a file indicating the status of the host.
+When a host has not been heard from for an extended period of
+time, the database interpretation routines assume the host is
+down and indicate such on the status reports.  This algorithm
+is prone to error as a server may be down while a host is actually
+up, but serves our current needs.
+.KF
+.DS
+.if t .ta .5i 1.0i 1.5i 2.0i
+.if n .ta .7i 1.4i 2.1i 2.8i
+main()
+{
+	...
+	sp = getservbyname("who", "udp");
+	net = getnetbyname("localnet");
+	sin.sin_addr = inet_makeaddr(INADDR_ANY, net);
+	sin.sin_port = sp->s_port;
+	...
+	s = socket(AF_INET, SOCK_DGRAM, 0);
+	...
+	on = 1;
+	if (setsockopt(s, SOL_SOCKET, SO_BROADCAST, &on, sizeof(on)) < 0) {
+		syslog(LOG_ERR, "setsockopt SO_BROADCAST: %m");
+		exit(1);
+	}
+	bind(s, (struct sockaddr *) &sin, sizeof (sin));
+	...
+	signal(SIGALRM, onalrm);
+	onalrm();
+	for (;;) {
+		struct whod wd;
+		int cc, whod, len = sizeof (from);
+
+		cc = recvfrom(s, (char *)&wd, sizeof (struct whod), 0,
+		    (struct sockaddr *)&from, &len);
+		if (cc <= 0) {
+			if (cc < 0 && errno != EINTR)
+				syslog(LOG_ERR, "rwhod: recv: %m");
+			continue;
+		}
+		if (from.sin_port != sp->s_port) {
+			syslog(LOG_ERR, "rwhod: %d: bad from port",
+				ntohs(from.sin_port));
+			continue;
+		}
+		...
+		if (!verify(wd.wd_hostname)) {
+			syslog(LOG_ERR, "rwhod: malformed host name from %x",
+				ntohl(from.sin_addr.s_addr));
+			continue;
+		}
+		(void) sprintf(path, "%s/whod.%s", RWHODIR, wd.wd_hostname);
+		whod = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0666);
+		...
+		(void) time(&wd.wd_recvtime);
+		(void) write(whod, (char *)&wd, cc);
+		(void) close(whod);
+	}
+}
+.DE
+.ce
+Figure 4.  rwho server.
+.sp
+.KE
+.PP
+The second task performed by the server is to supply information
+regarding the status of its host.  This involves periodically
+acquiring system status information, packaging it up in a message
+and broadcasting it on the local network for other rwho servers
+to hear.  The supply function is triggered by a timer and 
+runs off a signal.  Locating the system status
+information is somewhat involved, but uninteresting.  Deciding
+where to transmit the resultant packet
+is somewhat problematical, however.
+.PP
+Status information must be broadcast on the local network.
+For networks which do not support the notion of broadcast another
+scheme must be used to simulate or
+replace broadcasting.  One possibility is to enumerate the
+known neighbors (based on the status messages received
+from other rwho servers).  This, unfortunately,
+requires some bootstrapping information,
+for a server will have no idea what machines are its
+neighbors until it receives status messages from them.
+Therefore, if all machines on a net are freshly booted,
+no machine will have any
+known neighbors and thus never receive, or send, any status information.
+This is the identical problem faced by the routing table management
+process in propagating routing status information.  The standard
+solution, unsatisfactory as it may be, is to inform one or more servers
+of known neighbors and request that they always communicate with
+these neighbors.  If each server has at least one neighbor supplied
+to it, status information may then propagate through
+a neighbor to hosts which
+are not (possibly) directly neighbors.  If the server is able to
+support networks which provide a broadcast capability, as well as
+those which do not, then networks with an
+arbitrary topology may share status information*.
+.FS
+* One must, however, be concerned about \*(lqloops\*(rq.
+That is, if a host is connected to multiple networks, it
+will receive status information from itself.  This can lead
+to an endless, wasteful, exchange of information.
+.FE
+.PP
+It is important that software operating in a distributed
+environment not have any site-dependent information compiled into it.
+This would require a separate copy of the server at each host and
+make maintenance a severe headache.  4.3BSD attempts to isolate
+host-specific information from applications by providing system
+calls which return the necessary information*.
+.FS
+* An example of such a system call is the \fIgethostname\fP(2)
+call which returns the host's \*(lqofficial\*(rq name.
+.FE
+A mechanism exists, in the form of an \fIioctl\fP call,
+for finding the collection
+of networks to which a host is directly connected.
+Further, a local network broadcasting mechanism
+has been implemented at the socket level.
+Combining these two features allows a process
+to broadcast on any directly connected local
+network which supports the notion of broadcasting
+in a site independent manner.  This allows 4.3BSD
+to solve the problem of deciding how to propagate
+status information in the case of \fIrwho\fP, or
+more generally in broadcasting:
+Sucnactment
+enactor
+enactory
+enaena
+enage
+Enajim
+enalid
+Enaliornis
+enaliosaur
+Enaliosauria
+enaliosaurian
+enallachrome
+enallage
+enaluron
+enam
+enamber
+enambush
+enamdar
+enamel
+enameler
+enameling
+enamelist
+enamelless
+enamellist
+enameloma
+enamelware
+enamor
+enamorato
+enamored
+enamoredness
+enamorment
+enamourment
+enanguish
+enanthem
+enanthema
+enanthematous
+enanthesis
+enantiobiosis
+enantioblastic
+enantioblastous
+enantiomer
+enantiomeride
+enantiomorph
+enantiomorphic
+enantiomorphism
+enantiomorphous
+enantiomorphously
+enantiomorphy
+enantiopathia
+enantiopathic
+enantiopathy
+enantiosis
+enantiotropic
+enantiotropy
+enantobiosis
+enapt
+enarbor
+enarbour
+enarch
+enarched
+enargite
+enarm
+enarme
+enarthrodia
+enarthrodial
+enarthrosis
+enate
+enatic
+enation
+enbrave
+encaenia
+encage
+encake
+encalendar
+encallow
+encamp
+encampment
+encanker
+encanthis
+encapsulate
+encapsulation
+encapsule
+encarditis
+encarnadine
+encarnalize
+encarpium
+encarpus
+encase
+encasement
+encash
+encashable
+encashment
+encasserole
+encastage
+encatarrhaphy
+encauma
+encaustes
+encaustic
+encaustically
+encave
+encefalon
+Encelia
+encell
+encenter
+encephala
+encephalalgia
+Encephalartos
+encephalasthenia
+encephalic
+encephalin
+encephalitic
+encephalitis
+encephalocele
+encephalocoele
+encephalodialysis
+encephalogram
+encephalograph
+encephalography
+encephaloid
+encephalolith
+encephalology
+encephaloma
+encephalomalacia
+encephalomalacosis
+encephalomalaxis
+encephalomeningitis
+encephalomeningocele
+encephalomere
+encephalomeric
+encephalometer
+encephalometric
+encephalomyelitis
+encephalomyelopathy
+encephalon
+encephalonarcosis
+encephalopathia
+encephalopathic
+encephalopathy
+encephalophyma
+encephalopsychesis
+encephalopyosis
+encephalorrhagia
+encephalosclerosis
+encephaloscope
+encephaloscopy
+encephalosepsis
+encephalospinal
+encephalothlipsis
+encephalotome
+encephalotomy
+encephalous
+enchain
+enchainment
+enchair
+enchalice
+enchannel
+enchant
+enchanter
+enchanting
+enchantingly
+enchantingness
+enchantment
+enchantress
+encharge
+encharnel
+enchase
+enchaser
+enchasten
+Enchelycephali
+enchequer
+enchest
+enchilada
+enchiridion
+Enchodontid
+Enchodontidae
+Enchodontoid
+Enchodus
+enchondroma
+enchondromatous
+enchondrosis
+enchorial
+enchurch
+enchylema
+enchylematous
+enchymatous
+enchytrae
+enchytraeid
+Enchytraeidae
+Enchytraeus
+encina
+encinal
+encincture
+encinder
+encinillo
+encipher
+encircle
+encirclement
+encircler
+encist
+encitadel
+enclaret
+enclasp
+enclave
+enclavement
+enclisis
+enclitic
+enclitical
+enclitically
+encloak
+encloister
+enclose
+encloser
+enclosure
+enclothe
+encloud
+encoach
+encode
+encoffin
+encoignure
+encoil
+encolden
+encollar
+encolor
+encolpion
+encolumn
+encomendero
+encomia
+encomiast
+encomiastic
+encomiastical
+encomiastically
+encomic
+encomienda
+encomiologic
+encomium
+encommon
+encompass
+encompasser
+encompassment
+encoop
+encorbelment
+encore
+encoronal
+encoronate
+encoronet
+encounter
+encounterable
+encounterer
+encourage
+encouragement
+encourager
+encouraging
+encouragingly
+encowl
+encraal
+encradle
+encranial
+encratic
+Encratism
+Encratite
+encraty
+encreel
+encrimson
+encrinal
+encrinic
+Encrinidae
+encrinidae
+encrinital
+encrinite
+encrinitic
+encrinitical
+encrinoid
+Encrinoidea
+Encrinus
+encrisp
+encroach
+encroacher
+encroachingly
+encroachment
+encrotchet
+encrown
+encrownment
+encrust
+encrustment
+encrypt
+encryption
+encuirassed
+encumber
+encumberer
+encumberingly
+encumberment
+encumbrance
+encumbrancer
+encup
+encurl
+encurtain
+encushion
+encyclic
+encyclical
+encyclopedia
+encyclopediac
+encyclopediacal
+encyclopedial
+encyclopedian
+encyclopediast
+encyclopedic
+encyclopedically
+encyclopedism
+encyclopedist
+encyclopedize
+encyrtid
+Encyrtidae
+encyst
+encystation
+encystment
+end
+endable
+endamage
+endamageable
+endamagement
+endamask
+endameba
+endamebic
+Endamoeba
+endamoebiasis
+endamoebic
+Endamoebidae
+endanger
+endangerer
+endangerment
+endangium
+endaortic
+endaortitis
+endarch
+endarchy
+endarterial
+endarteritis
+endarterium
+endaspidean
+endaze
+endboard
+endbrain
+endear
+endearance
+endeared
+endearedly
+endearedness
+endearing
+endearingly
+endearingness
+endearment
+endeavor
+endeavorer
+ended
+endeictic
+endellionite
+endemial
+endemic
+endemically
+endemicity
+endemiological
+endemiology
+endemism
+endenizen
+ender
+endere
+endermatic
+endermic
+endermically
+enderon
+enderonic
+endevil
+endew
+endgate
+endiadem
+endiaper
+ending
+endite
+endive
+endless
+endlessly
+endlessness
+endlichite
+endlong
+endmatcher
+endmost
+endoabdominal
+endoangiitis
+endoaortitis
+endoappendicitis
+endoarteritis
+endoauscultation
+endobatholithic
+endobiotic
+endoblast
+endoblastic
+endobronchial
+endobronchially
+endobronchitis
+endocannibalism
+endocardiac
+endocardial
+endocarditic
+endocarditis
+endocardium
+endocarp
+endocarpal
+endocarpic
+endocarpoid
+endocellular
+endocentric
+Endoceras
+Endoceratidae
+endoceratite
+endoceratitic
+endocervical
+endocervicitis
+endochondral
+endochorion
+endochorionic
+endochrome
+endochylous
+endoclinal
+endocline
+endocoelar
+endocoele
+endocoeliac
+endocolitis
+endocolpitis
+endocondensation
+endocone
+endoconidium
+endocorpuscular
+endocortex
+endocranial
+endocranium
+endocrinal
+endocrine
+endocrinic
+endocrinism
+endocrinological
+endocrinologist
+endocrinology
+endocrinopathic
+endocrinopathy
+endocrinotherapy
+endocrinous
+endocritic
+endocycle
+endocyclic
+endocyemate
+endocyst
+endocystitis
+endoderm
+endodermal
+endodermic
+endodermis
+endodontia
+endodontic
+endodontist
+endodynamomorphic
+endoenteritis
+endoenzyme
+endoesophagitis
+endofaradism
+endogalvanism
+endogamic
+endogamous
+endogamy
+endogastric
+endogastrically
+endogastritis
+endogen
+Endogenae
+endogenesis
+endogenetic
+endogenic
+endogenous
+endogenously
+endogeny
+endoglobular
+endognath
+endognathal
+endognathion
+endogonidium
+endointoxication
+endokaryogamy
+endolabyrinthitis
+endolaryngeal
+endolemma
+endolumbar
+endolymph
+endolymphangial
+endolymphatic
+endolymphic
+endolysin
+endomastoiditis
+endome
+endomesoderm
+endometrial
+endometritis
+endometrium
+endometry
+endomitosis
+endomitotic
+endomixis
+endomorph
+endomorphic
+endomorphism
+endomorphy
+Endomyces
+Endomycetaceae
+endomysial
+endomysium
+endoneurial
+endoneurium
+endonuclear
+endonucleolus
+endoparasite
+endoparasitic
+Endoparasitica
+endopathic
+endopelvic
+endopericarditis
+endoperidial
+endoperidium
+endoperitonitis
+endophagous
+endophagy
+endophasia
+endophasic
+endophlebitis
+endophragm
+endophragmal
+Endophyllaceae
+endophyllous
+Endophyllum
+endophytal
+endophyte
+endophytic
+endophytically
+endophytous
+endoplasm
+endoplasma
+endoplasmic
+endoplast
+endoplastron
+endoplastular
+endoplastule
+endopleura
+endopleural
+endopleurite
+endopleuritic
+endopod
+endopodite
+endopoditic
+endoproct
+Endoprocta
+endoproctous
+endopsychic
+Endopterygota
+endopterygote
+endopterygotic
+endopterygotism
+endopterygotous
+endorachis
+endoral
+endore
+endorhinitis
+endorsable
+endorsation
+endorse
+endorsed
+endorsee
+endorsement
+endorser
+endorsingly
+endosalpingitis
+endosarc
+endosarcode
+endosarcous
+endosclerite
+endoscope
+endoscopic
+endoscopy
+endosecretory
+endosepsis
+endosiphon
+endosiphonal
+endosiphonate
+endosiphuncle
+endoskeletal
+endoskeleton
+endosmometer
+endosmometric
+endosmosic
+endosmosis
+endosmotic
+endosmotically
+endosome
+endosperm
+endospermic
+endospore
+endosporium
+endosporous
+endoss
+endosteal
+endosteally
+endosteitis
+endosteoma
+endosternite
+endosternum
+endosteum
+endostitis
+endostoma
+endostome
+endostosis
+endostracal
+endostracum
+endostylar
+endostyle
+endostylic
+endotheca
+endothecal
+endothecate
+endothecial
+endothecium
+endothelia
+endothelial
+endothelioblastoma
+endotheliocyte
+endothelioid
+endotheliolysin
+endotheliolytic
+endothelioma
+endotheliomyoma
+endotheliomyxoma
+endotheliotoxin
+endothelium
+endothermal
+endothermic
+endothermous
+endothermy
+Endothia
+endothoracic
+endothorax
+Endothrix
+endothys
+endotoxic
+endotoxin
+endotoxoid
+endotracheitis
+endotrachelitis
+Endotrophi
+endotrophic
+endotys
+endovaccination
+endovasculitis
+endovenous
+endow
+endower
+endowment
+endozoa
+endpiece
+Endromididae
+Endromis
+endue
+enduement
+endungeon
+endura
+endurability
+endurable
+endurableness
+endurably
+endurance
+endurant
+endure
+endurer
+enduring
+enduringly
+enduringness
+endways
+endwise
+endyma
+endymal
+Endymion
+endysis
+Eneas
+eneclann
+enema
+enemy
+enemylike
+enemyship
+enepidermic
+energeia
+energesis
+energetic
+energetical
+energetically
+energeticalness
+energeticist
+energetics
+energetistic
+energic
+energical
+energid
+energism
+energist
+energize
+energizer
+energumen
+energumenon
+energy
+enervate
+enervation
+enervative
+enervator
+eneuch
+eneugh
+enface
+enfacement
+enfamous
+enfasten
+e.\" Copyright (c) 1986 Regents of the University of California.
+.\" All rights reserved.  The Berkeley software License Agreement
+.\" specifies the terms and conditions for redistribution.
+.\"
+.\"	@(#)5.t	1.4 (Berkeley) 5/2/86
+.\"
+.\".ds RH "Advanced Topics
+.bp
+.nr H1 5
+.nr H2 0
+.LG
+.B
+.ce
+5. ADVANCED TOPICS
+.sp 2
+.R
+.NL
+.PP
+A number of facilities have yet to be discussed.  For most users
+of the IPC the mechanisms already
+described will suffice in constructing distributed
+applications.  However, others will find the need to utilize some
+of the features which we consider in this section.
+.NH 2
+Out of band data
+.PP
+The stream socket abstraction includes the notion of \*(lqout
+of band\*(rq data.  Out of band data is a logically independent 
+transmission channel associated with each pair of connected
+stream sockets.  Out of band data is delivered to the user
+independently of normal data.
+The abstraction defines that the out of band data facilities
+must support the reliable delivery of at least one
+out of band message at a time.  This message may contain at least one
+byte of data, and at least one message may be pending delivery
+to the user at any one time.  For communications protocols which
+support only in-band signaling (i.e. the urgent data is
+delivered in sequence with the normal data), the system normally extracts
+the data from the normal data stream and stores it separately.
+This allows users to choose between receiving the urgent data
+in order and receiving it out of sequence without having to
+buffer all the intervening data.  It is possible
+to ``peek'' (via MSG_PEEK) at out of band data.
+If the socket has a process group, a SIGURG signal is generated
+when the protocol is notified of its existence.
+A process can set the process group
+or process id to be informed by the SIGURG signal via the
+appropriate \fIfcntl\fP call, as described below for
+SIGIO.
+If multiple sockets may have out of band data awaiting
+delivery, a \fIselect\fP call for exceptional conditions
+may be used to determine those sockets with such data pending.
+Neither the signal nor the select indicate the actual arrival
+of the out-of-band data, but only notification that it is pending.
+.PP
+In addition to the information passed, a logical mark is placed in
+the data stream to indicate the point at which the out
+of band data was sent.  The remote login and remote shell
+applications use this facility to propagate signals between
+client and server processes.  When a signal
+flushs any pending output from the remote process(es), all
+data up to the mark in the data stream is discarded.
+.PP
+To send an out of band message the MSG_OOB flag is supplied to
+a \fIsend\fP or \fIsendto\fP calls,
+while to receive out of band data MSG_OOB should be indicated
+when performing a \fIrecvfrom\fP or \fIrecv\fP call.
+To find out if the read pointer is currently pointing at
+the mark in the data stream, the SIOCATMARK ioctl is provided:
+.DS
+ioctl(s, SIOCATMARK, &yes);
+.DE
+If \fIyes\fP is a 1 on return, the next read will return data
+after the mark.  Otherwise (assuming out of band data has arrived), 
+the next read will provide data sent by the client prior
+to transmission of the out of band signal.  The routine used
+in the remote login process to flush output on receipt of an
+interrupt or quit signal is shown in Figure 5.
+It reads the normal data up to the mark (to discard it),
+then reads the out-of-band byte.
+.KF
+.DS
+#include <sys/ioctl.h>
+#include <sys/file.h>
+ ...
+oob()
+{
+	int out = FWRITE;
+	char waste[BUFSIZ], mark;
+
+	/* flush local terminal output */
+	ioctl(1, TIOCFLUSH, (char *)&out);
+	for (;;) {
+		if (ioctl(rem, SIOCATMARK, &mark) < 0) {
+			perror("ioctl");
+			break;
+		}
+		if (mark)
+			break;
+		(void) read(rem, waste, sizeof (waste));
+	}
+	if (recv(rem, &mark, 1, MSG_OOB) < 0) {
+		perror("recv");
+		...
+	}
+	...
+}
+.DE
+.ce
+Figure 5.  Flushing terminal I/O on receipt of out of band data.
+.sp
+.KE
+.PP
+A process may also read or peek at the out-of-band data
+without first reading up to the mark.
+This is more difficult when the underlying protocol delivers
+the urgent data in-band with the normal data, and only sends
+notification of its presence ahead of time (e.g., the TCP protocol
+used to implement streams in the Internet domain).
+With such protocols, the out-of-band byte may not yet have arrived
+when a \fIrecv\fP is done with the MSG_OOB flag.
+In that case, the call will return an error of EWOULDBLOCK.
+Worse, there may be enough in-band data in the input buffer
+that normal flow control prevents the peer from sending the urgent data
+until the buffer is cleared.
+The process must then read enough of the queued data
+that the urgent data may be delivered.
+.PP
+Certain programs that use multiple bytes of urgent data and must
+handle multiple urgent signals (e.g., \fItelnet\fP\|(1C))
+need to retain the position of urgent data within the stream.
+This treatment is available as a socket-level option, SO_OOBINLINE;
+see \fIsetsockopt\fP\|(2) for usage.
+With this option, the position of urgent data (the \*(lqmark\*(rq)
+is retained, but the urgent data immediately follows the mark
+within the normal data stream returned without the MSG_OOB flag.
+Reception of multiple urgent indications causes the mark to move,
+but no out-of-band data are lost.
+.NH 2
+Non-Blocking Sockets
+.PP
+It is occasionally convenient to make use of sockets
+which do not block; that is, I/O requests which
+cannot complete immediately and
+would therefore cause the process to be suspended awaiting completion are
+not executed, and an error code is returned.
+Once a socket has been created via
+the \fIsocket\fP call, it may be marked as non-blocking
+by \fIfcntl\fP as follows:
+.DS
+#include <fcntl.h>
+ ...
+int	s;
+ ...
+s = socket(AF_INET, SOCK_STREAM, 0);
+ ...
+if (fcntl(s, F_SETFL, FNDELAY) < 0)
+	perror("fcntl F_SETFL, FNDELAY");
+	exit(1);
+}
+ ...
+.DE
+.PP
+When performing non-blocking I/O on sockets, one must be
+careful to check for the error EWOULDBLOCK (stored in the
+global variable \fIerrno\fP), which occurs when
+an operation would normally block, but the socket it
+was performed on is marked as non-blocking.
+In particular, \fIaccept\fP, \fIconnect\fP, \fIsend\fP, \fIrecv\fP,
+\fIread\fP, and \fIwrite\fP can
+all return EWOULDBLOCK, and processes should be prepared
+to deal with such return codes.
+If an operation such as a \fIsend\fP cannot be done in its entirety,
+but partial writes are sensible (for example, when using a stream socket),
+the data that can be sent immediately will be processed,
+and the return value will indicate the amount actually sent.
+.NH 2
+Interrupt driven socket I/O
+.PP
+The SIGIO signal allows a process to be notified
+via a signal when a socket (or more generally, a file
+descriptor) has data waiting to be read.  Use of
+the SIGIO facility requires three steps:  First,
+the process must set up a SIGIO signal handler
+by use of the \fIsignal\fP or \fIsigvec\fP calls.  Second,
+it must set the process id or process group id which is to receive
+notification of pending input to its own process id,
+or the process group id of its process group (note that
+the default process group of a socket is group zero).
+This is accomplished by use of an \fIfcntl\fP call.
+Third, it must enable asynchronous notification of pending I/O requests
+with another \fIfcntl\fP call.  Sample code to
+allow a given process to receive information on
+pending I/O requests as they occur for a socket \fIs\fP
+is given in Figure 6.  With the addition of a handler for SIGURG,
+this code can also be used to prepare for receipt of SIGURG signals.
+.KF
+.DS
+#include <fcntl.h>
+ ...
+int	io_handler();
+ ...
+signal(SIGIO, io_handler);
+
+/* Set the process receiving SIGIO/SIGURG signals to us */
+
+if (fcntl(s, F_SETOWN, getpid()) < 0) {
+	perror("fcntl F_SETOWN");
+	exit(1);
+}
+
+/* Allow receipt of asynchronous I/O signals */
+
+if (fcntl(s, F_SETFL, FASYNC) < 0) {
+	perror("fcntl F_SETFL, FASYNC");
+	exit(1);
+}
+.DE
+.ce
+Figure 6.  Use of asynchronous notification of I/O requests.
+.sp
+.KE
+.NH 2
+Signals and process groups
+.PP
+Due to the existence of the SIGURG and SIGIO signals each socket has an
+associated process number, just as is done for terminals.
+This value is initialized to zero,
+but may be redefined nfatico
+enfeature
+enfeeble
+enfeeblement
+enfeebler
+enfelon
+enfeoff
+enfeoffment
+enfester
+enfetter
+enfever
+enfigure
+enfilade
+enfilading
+enfile
+enfiled
+enflagellate
+enflagellation
+enflesh
+enfleurage
+enflower
+enfoil
+enfold
+enfolden
+enfolder
+enfoldment
+enfonced
+enforce
+enforceability
+enforceable
+enforced
+enforcedly
+enforcement
+enforcer
+enforcibility
+enforcible
+enforcingly
+enfork
+enfoul
+enframe
+enframement
+enfranchisable
+enfranchise
+enfranchisement
+enfranchiser
+enfree
+enfrenzy
+enfuddle
+enfurrow
+engage
+engaged
+engagedly
+engagedness
+engagement
+engager
+engaging
+engagingly
+engagingness
+engaol
+engarb
+engarble
+engarland
+engarment
+engarrison
+engastrimyth
+engastrimythic
+engaud
+engaze
+Engelmannia
+engem
+engender
+engenderer
+engenderment
+engerminate
+enghosted
+engild
+engine
+engineer
+engineering
+engineership
+enginehouse
+engineless
+enginelike
+engineman
+enginery
+enginous
+engird
+engirdle
+engirt
+engjateigur
+englacial
+englacially
+englad
+engladden
+Englander
+Engler
+Englerophoenix
+Englifier
+Englify
+English
+Englishable
+Englisher
+Englishhood
+Englishism
+Englishize
+Englishly
+Englishman
+Englishness
+Englishry
+Englishwoman
+englobe
+englobement
+engloom
+englory
+englut
+englyn
+engnessang
+engobe
+engold
+engolden
+engore
+engorge
+engorgement
+engouled
+engrace
+engraff
+engraft
+engraftation
+engrafter
+engraftment
+engrail
+engrailed
+engrailment
+engrain
+engrained
+engrainedly
+engrainer
+engram
+engramma
+engrammatic
+engrammic
+engrandize
+engrandizement
+engraphia
+engraphic
+engraphically
+engraphy
+engrapple
+engrasp
+Engraulidae
+Engraulis
+engrave
+engraved
+engravement
+engraver
+engraving
+engreen
+engrieve
+engroove
+engross
+engrossed
+engrossedly
+engrosser
+engrossing
+engrossingly
+engrossingness
+engrossment
+enguard
+engulf
+engulfment
+engyscope
+engysseismology
+Engystomatidae
+enhallow
+enhalo
+enhamper
+enhance
+enhanced
+enhancement
+enhancer
+enhancive
+enharmonic
+enharmonical
+enharmonically
+enhat
+enhaunt
+enhearse
+enheart
+enhearten
+enhedge
+enhelm
+enhemospore
+enherit
+enheritage
+enheritance
+enhorror
+enhunger
+enhusk
+Enhydra
+Enhydrinae
+Enhydris
+enhydrite
+enhydritic
+enhydros
+enhydrous
+enhypostasia
+enhypostasis
+enhypostatic
+enhypostatize
+eniac
+Enicuridae
+Enid
+Enif
+enigma
+enigmatic
+enigmatical
+enigmatically
+enigmaticalness
+enigmatist
+enigmatization
+enigmatize
+enigmatographer
+enigmatography
+enigmatology
+enisle
+enjail
+enjamb
+enjambed
+enjambment
+enjelly
+enjeopard
+enjeopardy
+enjewel
+enjoin
+enjoinder
+enjoiner
+enjoinment
+enjoy
+enjoyable
+enjoyableness
+enjoyably
+enjoyer
+enjoying
+enjoyingly
+enjoyment
+enkerchief
+enkernel
+Enki
+Enkidu
+enkindle
+enkindler
+enkraal
+enlace
+enlacement
+enlard
+enlarge
+enlargeable
+enlargeableness
+enlarged
+enlargedly
+enlargedness
+enlargement
+enlarger
+enlarging
+enlargingly
+enlaurel
+enleaf
+enleague
+enlevement
+enlief
+enlife
+enlight
+enlighten
+enlightened
+enlightenedly
+enlightenedness
+enlightener
+enlightening
+enlighteningly
+enlightenment
+enlink
+enlinkment
+enlist
+enlisted
+enlister
+enlistment
+enliven
+enlivener
+enlivening
+enliveningly
+enlivenment
+enlock
+enlodge
+enlodgement
+enmarble
+enmask
+enmass
+enmesh
+enmeshment
+enmist
+enmity
+enmoss
+enmuffle
+enneacontahedral
+enneacontahedron
+ennead
+enneadianome
+enneadic
+enneagon
+enneagynous
+enneahedral
+enneahedria
+enneahedron
+enneapetalous
+enneaphyllous
+enneasemic
+enneasepalous
+enneaspermous
+enneastyle
+enneastylos
+enneasyllabic
+enneateric
+enneatic
+enneatical
+ennerve
+enniche
+ennoble
+ennoblement
+ennobler
+ennobling
+ennoblingly
+ennoic
+ennomic
+ennui
+Enoch
+Enochic
+enocyte
+enodal
+enodally
+enoil
+enol
+enolate
+enolic
+enolizable
+enolization
+enolize
+enomania
+enomaniac
+enomotarch
+enomoty
+enophthalmos
+enophthalmus
+Enopla
+enoplan
+enoptromancy
+enorganic
+enorm
+enormity
+enormous
+enormously
+enormousness
+Enos
+enostosis
+enough
+enounce
+enouncement
+enow
+enphytotic
+enplane
+enquicken
+enquire
+enquirer
+enquiry
+enrace
+enrage
+enraged
+enragedly
+enragement
+enrange
+enrank
+enrapt
+enrapture
+enrapturer
+enravish
+enravishingly
+enravishment
+enray
+enregiment
+enregister
+enregistration
+enregistry
+enrib
+enrich
+enricher
+enriching
+enrichingly
+enrichment
+enring
+enrive
+enrobe
+enrobement
+enrober
+enrockment
+enrol
+enroll
+enrolled
+enrollee
+enroller
+enrollment
+enrolment
+enroot
+enrough
+enruin
+enrut
+ens
+ensaffron
+ensaint
+ensample
+ensand
+ensandal
+ensanguine
+ensate
+enscene
+ensconce
+enscroll
+ensculpture
+ense
+enseam
+enseat
+enseem
+ensellure
+ensemble
+ensepulcher
+ensepulchre
+enseraph
+enserf
+ensete
+enshade
+enshadow
+enshawl
+ensheathe
+enshell
+enshelter
+enshield
+enshrine
+enshrinement
+enshroud
+Ensiferi
+ensiform
+ensign
+ensigncy
+ensignhood
+ensignment
+ensignry
+ensignship
+ensilage
+ensilate
+ensilation
+ensile
+ensilist
+ensilver
+ensisternum
+ensky
+enslave
+enslavedness
+enslavement
+enslaver
+ensmall
+ensnare
+ensnarement
+ensnarer
+ensnaring
+ensnaringly
+ensnarl
+ensnow
+ensorcelize
+ensorcell
+ensoul
+enspell
+ensphere
+enspirit
+enstamp
+enstar
+enstate
+enstatite
+enstatitic
+enstatolite
+ensteel
+enstool
+enstore
+enstrengthen
+ensuable
+ensuance
+ensuant
+ensue
+ensuer
+ensuingly
+ensulphur
+ensure
+ensurer
+enswathe
+enswathement
+ensweep
+entablature
+entablatured
+entablement
+entach
+entad
+Entada
+entail
+entailable
+entailer
+entailment
+ental
+entame
+Entamoeba
+entamoebiasis
+entamoebic
+entangle
+entangled
+entangledly
+entangledness
+entanglement
+entangler
+entangling
+entanglingly
+entapophysial
+entapophysis
+entarthrotic
+entasia
+entasis
+entelam
+entelechy
+entellus
+Entelodon
+entelodont
+entempest
+entemple
+entente
+Ententophil
+entepicondylar
+enter
+enterable
+enteraden
+enteradenographic
+enteradenography
+enteradenological
+enteradenology
+enteral
+enteralgia
+enterate
+enterauxe
+enterclose
+enterectomy
+enterer
+entergogenic
+enteria
+enteric
+entericoid
+entering
+enteritidis
+enteritis
+entermete
+enteroanastomosis
+enterobiliary
+enterocele
+enterocentesis
+enterochirurgia
+enterochlorophyll
+enterocholecystostomy
+enterocinesia
+enterocinetic
+enterocleisis
+enteroclisis
+enteroclysis
+Enterocoela
+enterocoele
+enterocoelic
+enterocoelous
+enterocolitis
+enterocolostomy
+enterocrinin
+enterocyst
+enterocystoma
+enterodynia
+enteroepiplocele
+enterogastritis
+enterogastrone
+enterogenous
+enterogram
+enterograph
+enterography
+enterohelcosis
+enterohemorrhage
+enterohepatitis
+enterohydrocele
+enteroid
+enterointestinal
+enteroischiocele
+enterokinase
+enterokinesia
+enterokinetic
+enterolith
+enterolithiasis
+Enterolobium
+enterology
+enteromegalia
+enteromegaly
+enteromere
+enteromesenteric
+Enteromorpha
+enteromycosis
+enteromyiasis
+enteron
+enteroneuritis
+enteroparalysis
+enteroparesis
+enteropathy
+enteropexia
+enteropexy
+enterophthisis
+enteroplasty
+enteroplegia
+enteropneust
+Enteropneusta
+enteropneustan
+enteroptosis
+enteroptotic
+enterorrhagia
+enterorrhaphy
+enterorrhea
+enteroscope
+enterosepsis
+enterospasm
+enterostasis
+enterostenosis
+enterostomy
+enterosyphilis
+enterotome
+enterotomy
+enterotoxemia
+enterotoxication
+enterozoa
+enterozoan
+enterozoic
+enterprise
+enterpriseless
+enterpriser
+enterprising
+enterprisingly
+enterritoriality
+entertain
+entertainable
+entertainer
+entertaining
+entertainingly
+entertainingness
+entertainment
+enthalpy
+entheal
+enthelmintha
+enthelminthes
+enthelminthic
+enthetic
+enthral
+enthraldom
+enthrall
+enthralldom
+enthraller
+enthralling
+enthrallingly
+enthrallment
+enthralment
+enthrone
+enthronement
+enthronization
+enthronize
+enthuse
+enthusiasm
+enthusiast
+enthusiastic
+enthusiastical
+enthusiastically
+enthusiastly
+enthymematic
+enthymematical
+enthymeme
+entia
+entic

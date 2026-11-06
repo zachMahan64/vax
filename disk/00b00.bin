@@ -1,0 +1,3979 @@
+e
+enticeable
+enticeful
+enticement
+enticer
+enticing
+enticingly
+enticingness
+entifical
+entification
+entify
+entincture
+entire
+entirely
+entireness
+entirety
+entiris
+entitative
+entitatively
+entitle
+entitlement
+entity
+entoblast
+entoblastic
+entobranchiate
+entobronchium
+entocalcaneal
+entocarotid
+entocele
+entocnemial
+entocoele
+entocoelic
+entocondylar
+entocondyle
+entocondyloid
+entocone
+entoconid
+entocornea
+entocranial
+entocuneiform
+entocuniform
+entocyemate
+entocyst
+entoderm
+entodermal
+entodermic
+entogastric
+entogenous
+entoglossal
+entohyal
+entoil
+entoilment
+Entoloma
+entomb
+entombment
+entomere
+entomeric
+entomic
+entomical
+entomion
+entomogenous
+entomoid
+entomologic
+entomological
+entomologically
+entomologist
+entomologize
+entomology
+Entomophaga
+entomophagan
+entomophagous
+Entomophila
+entomophilous
+entomophily
+Entomophthora
+Entomophthoraceae
+entomophthoraceous
+Entomophthorales
+entomophthorous
+entomophytous
+Entomosporium
+Entomostraca
+entomostracan
+entomostracous
+entomotaxy
+entomotomist
+entomotomy
+entone
+entonement
+entoolitic
+entat a later time with the F_SETOWN
+\fIfcntl\fP, such as was done in the code above for SIGIO.
+To set the socket's process id for signals, positive arguments
+should be given to the \fIfcntl\fP call.  To set the socket's
+process group for signals, negative arguments should be 
+passed to \fIfcntl\fP.  Note that the process number indicates
+either the associated process id or the associated process
+group; it is impossible to specify both at the same time.
+A similar \fIfcntl\fP, F_GETOWN, is available for determining the
+current process number of a socket.
+.PP
+Another signal which is useful when constructing server processes
+is SIGCHLD.  This signal is delivered to a process when any
+child processes have changed state.  Normally servers use
+the signal to \*(lqreap\*(rq child processes that have exited
+without explicitly awaiting their termination
+or periodic polling for exit status.
+For example, the remote login server loop shown in Figure 2
+may be augmented as shown in Figure 7.
+.KF
+.DS
+int reaper();
+ ...
+signal(SIGCHLD, reaper);
+listen(f, 5);
+for (;;) {
+	int g, len = sizeof (from);
+
+	g = accept(f, (struct sockaddr *)&from, &len,);
+	if (g < 0) {
+		if (errno != EINTR)
+			syslog(LOG_ERR, "rlogind: accept: %m");
+		continue;
+	}
+	...
+}
+ ...
+#include <wait.h>
+reaper()
+{
+	union wait status;
+
+	while (wait3(&status, WNOHANG, 0) > 0)
+		;
+}
+.DE
+.sp
+.ce
+Figure 7.  Use of the SIGCHLD signal.
+.sp
+.KE
+.PP
+If the parent server process fails to reap its children,
+a large number of \*(lqzombie\*(rq processes may be created.
+.NH 2
+Pseudo terminals
+.PP
+Many programs will not function properly without a terminal
+for standard input and output.  Since sockets do not provide
+the semantics of terminals,
+it is often necessary to have a process communicating over
+the network do so through a \fIpseudo-terminal\fP.  A pseudo-
+terminal is actually a pair of devices, master and slave,
+which allow a process to serve as an active agent in communication
+between processes and users.  Data written on the slave side
+of a pseudo-terminal is supplied as input to a process reading
+from the master side, while data written on the master side are
+processed as terminal input for the slave.
+In this way, the process manipulating
+the master side of the pseudo-terminal has control over the
+information read and written on the slave side
+as if it were manipulating the keyboard and reading the screen
+on a real terminal.
+The purpose of this abstraction is to
+preserve terminal semantics over a network connection\(em
+that is, the slave side appears as a normal terminal to
+any process reading from or writing to it.
+.PP
+For example, the remote
+login server uses pseudo-terminals for remote login sessions.
+A user logging in to a machine across the network is provided
+a shell with a slave pseudo-terminal as standard input, output,
+and error.  The server process then handles the communication
+between the programs invoked by the remote shell and the user's
+local client process.
+When a user sends a character that generates an interrupt
+on the remote machine that flushes terminal output,
+the pseudo-terminal generates a control message for the server process.
+The server then sends an out of band message
+to the client process to signal a flush of data at the real terminal
+and on the intervening data buffered in the network.
+.PP
+Under 4.3BSD, the name of the slave side of a pseudo-terminal is of the form
+\fI/dev/ttyxy\fP, where \fIx\fP is a single letter
+starting at `p' and continuing to `t'.
+\fIy\fP is a hexadecimal digit (i.e., a single
+character in the range 0 through 9 or `a' through `f').
+The master side of a pseudo-terminal is \fI/dev/ptyxy\fP,
+where \fIx\fP and \fIy\fP correspond to the
+slave side of the pseudo-terminal.
+.PP
+In general, the method of obtaining a pair of master and
+slave pseudo-terminals is to
+find a pseudo-terminal which
+is not currently in use.
+The master half of a pseudo-terminal is a single-open device;
+thus, each master may be opened in turn until an open succeeds.
+The slave side of the pseudo-terminal is then opened,
+and is set to the proper terminal modes if necessary.
+The process then \fIfork\fPs; the child closes
+the master side of the pseudo-terminal, and \fIexec\fPs the
+appropriate program.  Meanwhile, the parent closes the
+slave side of the pseudo-terminal and begins reading and
+writing from the master side.  Sample code making use of
+pseudo-terminals is given in Figure 8; this code assumes
+that a connection on a socket \fIs\fP exists, connected
+to a peer who wants a service of some kind, and that the
+process has disassociated itself from any previous controlling terminal.
+.KF
+.DS
+gotpty = 0;
+for (c = 'p'; !gotpty && c <= 's'; c++) {
+	line = "/dev/ptyXX";
+	line[sizeof("/dev/pty")-1] = c;
+	line[sizeof("/dev/ptyp")-1] = '0';
+	if (stat(line, &statbuf) < 0)
+		break;
+	for (i = 0; i < 16; i++) {
+		line[sizeof("/dev/ptyp")-1] = "0123456789abcdef"[i];
+		master = open(line, O_RDWR);
+		if (master > 0) {
+			gotpty = 1;
+			break;
+		}
+	}
+}
+if (!gotpty) {
+	syslog(LOG_ERR, "All network ports in use");
+	exit(1);
+}
+
+line[sizeof("/dev/")-1] = 't';
+slave = open(line, O_RDWR);	/* \fIslave\fP is now slave side */
+if (slave < 0) {
+	syslog(LOG_ERR, "Cannot open slave pty %s", line);
+	exit(1);
+}
+
+ioctl(slave, TIOCGETP, &b);	/* Set slave tty modes */
+b.sg_flags = CRMOD|XTABS|ANYP;
+ioctl(slave, TIOCSETP, &b);
+
+i = fork();
+if (i < 0) {
+	syslog(LOG_ERR, "fork: %m");
+	exit(1);
+} else if (i) {		/* Parent */
+	close(slave);
+	...
+} else {		 /* Child */
+	(void) close(s);
+	(void) close(master);
+	dup2(slave, 0);
+	dup2(slave, 1);
+	dup2(slave, 2);
+	if (slave > 2)
+		(void) close(slave);
+	...
+}
+.DE
+.ce
+Figure 8.  Creation and use of a pseudo terminal
+.sp
+.KE
+.NH 2
+Selecting specific protocols
+.PP
+If the third argument to the \fIsocket\fP call is 0,
+\fIsocket\fP will select a default protocol to use with
+the returned socket of the type requested.
+The default protocol is usually correct, and alternate choices are not
+usually available.
+However, when using ``raw'' sockets to communicate directly with
+lower-level protocols or hardware interfaces,
+the protocol argument may be important for setting up demultiplexing.
+For example, raw sockets in the Internet family may be used to implement
+a new protocol above IP, and the socket will receive packets
+only for the protocol specified.
+To obtain a particular protocol one determines the protocol number
+as defined within the communication domain.  For the Internet
+domain one may use one of the library routines
+discussed in section 3, such as \fIgetprotobyname\fP:
+.DS
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netdb.h>
+ ...
+pp = getprotobyname("newtcp");
+s = socket(AF_INET, SOCK_STREAM, pp->p_proto);
+.DE
+This would result in a socket \fIs\fP using a stream
+based connection, but with protocol type of ``newtcp''
+instead of the default ``tcp.''
+.PP
+In the NS domain, the available socket protocols are defined in
+<\fInetns/ns.h\fP>.  To create a raw socket for Xerox Error Protocol
+messages, one might use:
+.DS
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netns/ns.h>
+ ...
+s = socket(AF_NS, SOCK_RAW, NSPROTO_ERROR);
+.DE
+.NH 2
+Address binding
+.PP
+As was mentioned in section 2, 
+binding addresses to sockets in the Internet and NS domains can be
+fairly complex.  As a brief reminder, these associations
+are composed of local and foreign
+addresses, and local and foreign ports.  Port numbers are
+allocated out of separate spaces, one for each system and one
+for each domain on that system.
+Through the \fIbind\fP system call, a
+process may specify half of an association, the
+<local address, local port> part, while the
+\fIconnect\fP
+and \fIaccept\fP
+primitives are used to complete a socket's association by
+specifying the <foreign address, foreign port> part.
+Since the association is created in two steps the association
+uniqueness requirement indicated previously could be violated unless
+care is taken.  Further, it is unrealistic to expect user
+programs to always know proper values to use for the local address
+and local port since a host may reside on multiple networks and
+the set of allocated port numbers is not directly accessible
+to a user.
+.oparasite
+entoparasitic
+entoperipheral
+entophytal
+entophyte
+entophytic
+entophytically
+entophytous
+entopic
+entopical
+entoplasm
+entoplastic
+entoplastral
+entoplastron
+entopopliteal
+Entoprocta
+entoproctous
+entopterygoid
+entoptic
+entoptical
+entoptically
+entoptics
+entoptoscope
+entoptoscopic
+entoptoscopy
+entoretina
+entorganism
+entosarc
+entosclerite
+entosphenal
+entosphenoid
+entosphere
+entosternal
+entosternite
+entosternum
+entothorax
+entotic
+Entotrophi
+entotympanic
+entourage
+entozoa
+entozoal
+entozoan
+entozoarian
+entozoic
+entozoological
+entozoologically
+entozoologist
+entozoology
+entozoon
+entracte
+entrail
+entrails
+entrain
+entrainer
+entrainment
+entrammel
+entrance
+entrancedly
+entrancement
+entranceway
+entrancing
+entrancingly
+entrant
+entrap
+entrapment
+entrapper
+entrappingly
+entreasure
+entreat
+entreating
+entreatingly
+entreatment
+entreaty
+entree
+entremets
+entrench
+entrenchment
+entrepas
+entrepot
+entrepreneur
+entrepreneurial
+entrepreneurship
+entresol
+entrochite
+entrochus
+entropion
+entropionize
+entropium
+entropy
+entrough
+entrust
+entrustment
+entry
+entryman
+entryway
+enturret
+entwine
+entwinement
+entwist
+Entyloma
+enucleate
+enucleation
+enucleator
+Enukki
+enumerable
+enumerate
+enumeration
+enumerative
+enumerator
+enunciability
+enunciable
+enunciate
+enunciation
+enunciative
+enunciatively
+enunciator
+enunciatory
+enure
+enuresis
+enuretic
+enurny
+envapor
+envapour
+envassal
+envassalage
+envault
+enveil
+envelop
+envelope
+enveloper
+envelopment
+envenom
+envenomation
+enverdure
+envermeil
+enviable
+enviableness
+enviably
+envied
+envier
+envineyard
+envious
+enviously
+enviousness
+environ
+environage
+environal
+environic
+environment
+environmental
+environmentalism
+environmentalist
+environmentally
+environs
+envisage
+envisagement
+envision
+envolume
+envoy
+envoyship
+envy
+envying
+envyingly
+enwallow
+enwiden
+enwind
+enwisen
+enwoman
+enwomb
+enwood
+enworthed
+enwound
+enwrap
+enwrapment
+enwreathe
+enwrite
+enwrought
+enzone
+enzootic
+enzooty
+enzym
+enzymatic
+enzyme
+enzymic
+enzymically
+enzymologist
+enzymology
+enzymolysis
+enzymolytic
+enzymosis
+enzymotic
+eoan
+Eoanthropus
+Eocarboniferous
+Eocene
+Eodevonian
+Eogaea
+Eogaean
+Eoghanacht
+Eohippus
+eolation
+eolith
+eolithic
+Eomecon
+eon
+eonism
+Eopalaeozoic
+Eopaleozoic
+eophyte
+eophytic
+eophyton
+eorhyolite
+eosate
+Eosaurus
+eoside
+eosin
+eosinate
+eosinic
+eosinoblast
+eosinophile
+eosinophilia
+eosinophilic
+eosinophilous
+eosphorite
+Eozoic
+eozoon
+eozoonal
+epacmaic
+epacme
+epacrid
+Epacridaceae
+epacridaceous
+Epacris
+epact
+epactal
+epagoge
+epagogic
+epagomenae
+epagomenal
+epagomenic
+epagomenous
+epaleaceous
+epalpate
+epanadiplosis
+Epanagoge
+epanalepsis
+epanaleptic
+epanaphora
+epanaphoral
+epanastrophe
+epanisognathism
+epanisognathous
+epanodos
+epanody
+Epanorthidae
+epanorthosis
+epanorthotic
+epanthous
+epapillate
+epappose
+eparch
+eparchate
+Eparchean
+eparchial
+eparchy
+eparcuale
+eparterial
+epaule
+epaulement
+epaulet
+epauleted
+epauletted
+epauliere
+epaxial
+epaxially
+epedaphic
+epee
+epeeist
+Epeira
+epeiric
+epeirid
+Epeiridae
+epeirogenesis
+epeirogenetic
+epeirogenic
+epeirogeny
+epeisodion
+epembryonic
+epencephal
+epencephalic
+epencephalon
+ependyma
+ependymal
+ependyme
+ependymitis
+ependymoma
+ependytes
+epenthesis
+epenthesize
+epenthetic
+epephragmal
+epepophysial
+epepophysis
+epergne
+eperotesis
+Eperua
+epexegesis
+epexegetic
+epexegetical
+epexegetically
+epha
+ephah
+epharmonic
+epharmony
+ephebe
+ephebeion
+ephebeum
+ephebic
+ephebos
+ephebus
+ephectic
+Ephedra
+Ephedraceae
+ephedrine
+ephelcystic
+ephelis
+Ephemera
+ephemera
+ephemerae
+ephemeral
+ephemerality
+ephemerally
+ephemeralness
+ephemeran
+ephemerid
+Ephemerida
+Ephemeridae
+ephemerides
+ephemeris
+ephemerist
+ephemeromorph
+ephemeromorphic
+ephemeron
+Ephemeroptera
+ephemerous
+Ephesian
+Ephesine
+ephetae
+ephete
+ephetic
+ephialtes
+ephidrosis
+ephippial
+ephippium
+ephod
+ephor
+ephoral
+ephoralty
+ephorate
+ephoric
+ephorship
+ephorus
+ephphatha
+Ephraim
+Ephraimite
+Ephraimitic
+Ephraimitish
+Ephraitic
+Ephrathite
+Ephthalite
+Ephthianura
+ephthianure
+Ephydra
+ephydriad
+ephydrid
+Ephydridae
+ephymnium
+ephyra
+ephyrula
+epibasal
+Epibaterium
+epibatholithic
+epibenthic
+epibenthos
+epiblast
+epiblastema
+epiblastic
+epiblema
+epibole
+epibolic
+epibolism
+epiboly
+epiboulangerite
+epibranchial
+epic
+epical
+epically
+epicalyx
+epicanthic
+epicanthus
+epicardia
+epicardiac
+epicardial
+epicardium
+epicarid
+epicaridan
+Epicaridea
+Epicarides
+epicarp
+Epicauta
+epicede
+epicedial
+epicedian
+epicedium
+epicele
+epicene
+epicenism
+epicenity
+epicenter
+epicentral
+epicentrum
+Epiceratodus
+epicerebral
+epicheirema
+epichil
+epichile
+epichilium
+epichindrotic
+epichirema
+epichondrosis
+epichordal
+epichorial
+epichoric
+epichorion
+epichoristic
+Epichristian
+epicism
+epicist
+epiclastic
+epicleidian
+epicleidium
+epiclesis
+epiclidal
+epiclinal
+epicly
+epicnemial
+Epicoela
+epicoelar
+epicoele
+epicoelia
+epicoeliac
+epicoelian
+epicoeloma
+epicoelous
+epicolic
+epicondylar
+epicondyle
+epicondylian
+epicondylic
+epicontinental
+epicoracohumeral
+epicoracoid
+epicoracoidal
+epicormic
+epicorolline
+epicortical
+epicostal
+epicotyl
+epicotyleal
+epicotyledonary
+epicranial
+epicranium
+epicranius
+Epicrates
+epicrisis
+epicritic
+epicrystalline
+Epictetian
+epicure
+Epicurean
+Epicureanism
+epicurish
+epicurishly
+Epicurism
+Epicurize
+epicycle
+epicyclic
+epicyclical
+epicycloid
+epicycloidal
+epicyemate
+epicyesis
+epicystotomy
+epicyte
+epideictic
+epideictical
+epideistic
+epidemic
+epidemical
+epidemically
+epidemicalness
+epidemicity
+epidemiographist
+epidemiography
+epidemiological
+epidemiologist
+epidemiology
+epidemy
+epidendral
+epidendric
+Epidendron
+Epidendrum
+epiderm
+epiderma
+epidermal
+epidermatic
+epidermatoid
+epidermatous
+epidermic
+epidermical
+epidermically
+epidermidalization
+epidermis
+epidermization
+epidermoid
+epidermoidal
+epidermolysis
+epidermomycosis
+Epidermophyton
+epidermophytosis
+epidermose
+epidermous
+epidesmine
+epidialogue
+epidiascope
+epidiascopic
+epidictic
+epidictical
+epididymal
+epididymectomy
+epididymis
+epididymite
+epididymitis
+epididymodeferentectomy
+epididymodeferential
+epididymovasostomy
+epidiorite
+epidiorthosis
+epidosite
+epidote
+epidotic
+epidotiferous
+epidotization
+epidural
+epidymides
+epifascial
+epifocal
+epifolliculitis
+Epigaea
+epigamic
+epigaster
+epigastraeum
+epigastral
+epigastrial
+epigastric
+epigastrical
+epigastriocele
+epigastrium
+epigastrocele
+epigeal
+epigean
+epigeic
+epigene
+epigenesis
+epigenesist
+epigenetic
+epigenetically
+epigenic
+epigenist
+epigenous
+epigeous
+epiglottal
+epiglottic
+epiglottidean
+epiglottiditis
+epiglottis
+epiglottitis
+epignathous
+epigonal
+epigonation
+epigone
+Epigoni
+epigonic
+Epigonichthyidae
+Epigonichthys
+epigonium
+epigonos
+epigonous
+Epigonus
+epigram
+epigrammatic
+epigrammatical
+epigrammatically
+epigrammatism
+epigrammatist
+epigrammatize
+epigrammatizer
+epigraph
+epigrapher
+epigraphic
+epigraphical
+epigraphically
+epigraphist
+epigraphy
+epiguanine
+epigyne
+epigynous
+epigynum
+epigyny
+Epihippus
+epihyal
+epihydric
+epihydrinic
+epikeia
+epiklesis
+Epikouros
+epilabrum
+Epilachna
+Epilachnides
+epilamellar
+epilaryngeal
+epilate
+epilation
+epilatory
+epilegomenon
+epilemma
+epilemmal
+epilepsy
+epileptic
+epileptically
+epileptiform
+epileptogenic
+epileptogenous
+epileptoid
+epileptologist
+epileptology
+epilimnion
+epilobe
+Epilobiaceae
+Epilobium
+epilogation
+epilogic
+epilogical
+epilogist
+epilogistic
+epilogize
+epilogue
+Epimachinae
+epimacus
+epimandibular
+epimanikia
+Epimedium
+Epimenidean
+epimer
+epimeral
+epimere
+epimeric
+epimeride
+epimerite
+epimeritic
+epimeron
+epimerum
+epimorphic
+epimorphosis
+epimysium
+epimyth
+epinaos
+epinastic
+epinastically
+epinasty
+epineolithic
+Epinephelidae
+Epinephelus
+epinephrine
+epinette
+epineural
+epineurial
+epineurium
+epinglette
+epinicial
+epinician
+epinicion
+epinine
+epiopticon
+epiotic
+Epipactis
+epipaleolithic
+epiparasite
+epiparodos
+epipastic
+epiperipheral
+epipetalous
+epiphanous
+Epiphany
+epipharyngeal
+epipharynx
+Epiphegus
+epiphenomenal
+epiphenomenalism
+epiphenomenalist
+epiphenomenon
+epiphloedal
+epiphloedic
+epiphloeum
+epiphonema
+epiphora
+epiphragm
+epiphylline
+epiphyllous
+Epiphyllum
+epiphysary
+epiphyseal
+epiphyseolysis
+epiphysial
+epiphysis
+epiphysitis
+epiphytal
+epiphyte
+epiphytic
+epiphytical
+epiphytically
+epiphytism
+epiphytology
+epiphytotic
+epiphytous
+epipial
+epiplankton
+epiplanktonic
+epiplasm
+epiplasmic
+epiplastral
+epiplastron
+epiplectic
+epipleura
+epipleural
+epiplexis
+epiploce
+epiplocele
+epiploic
+epiploitis
+epiploon
+epiplopexy
+epipodial
+epipodiale
+epipodite
+epipoditic
+epipodium
+epipolic
+epipolism
+epipolize
+epiprecoracoid
+Epipsychidion
+PP
+To simplify local address binding in the Internet domain the notion of a
+\*(lqwildcard\*(rq address has been provided.  When an address
+is specified as INADDR_ANY (a manifest constant defined in
+<netinet/in.h>), the system interprets the address as 
+\*(lqany valid address\*(rq.  For example, to bind a specific
+port number to a socket, but leave the local address unspecified,
+the following code might be used:
+.DS
+#include <sys/types.h>
+#include <netinet/in.h>
+ ...
+struct sockaddr_in sin;
+ ...
+s = socket(AF_INET, SOCK_STREAM, 0);
+sin.sin_family = AF_INET;
+sin.sin_addr.s_addr = htonl(INADDR_ANY);
+sin.sin_port = htons(MYPORT);
+bind(s, (struct sockaddr *) &sin, sizeof (sin));
+.DE
+Sockets with wildcarded local addresses may receive messages
+directed to the specified port number, and sent to any
+of the possible addresses assigned to a host.  For example,
+if a host has addresses 128.32.0.4 and 10.0.0.78, and a socket is bound as
+above, the process will be
+able to accept connection requests which are addressed to
+128.32.0.4 or 10.0.0.78.
+If a server process wished to only allow hosts on a
+given network connect to it, it would bind
+the address of the host on the appropriate network.
+.PP
+In a similar fashion, a local port may be left unspecified
+(specified as zero), in which case the system will select an
+appropriate port number for it.  This shortcut will work
+both in the Internet and NS domains.  For example, to
+bind a specific local address to a socket, but to leave the
+local port number unspecified:
+.DS
+hp = gethostbyname(hostname);
+if (hp == NULL) {
+	...
+}
+bcopy(hp->h_addr, (char *) sin.sin_addr, hp->h_length);
+sin.sin_port = htons(0);
+bind(s, (struct sockaddr *) &sin, sizeof (sin));
+.DE
+The system selects the local port number based on two criteria.
+The first is that on 4BSD systems,
+Internet ports below IPPORT_RESERVED (1024) (for the Xerox domain,
+0 through 3000) are reserved
+for privileged users (i.e., the super user);
+Internet ports above IPPORT_USERRESERVED (50000) are reserved
+for non-privileged servers.  The second is
+that the port number is not currently bound to some other
+socket.  In order to find a free Internet port number in the privileged
+range the \fIrresvport\fP library routine may be used as follows
+to return a stream socket in with a privileged port number:
+.DS
+int lport = IPPORT_RESERVED \- 1;
+int s;
+...
+s = rresvport(&lport);
+if (s < 0) {
+	if (errno == EAGAIN)
+		fprintf(stderr, "socket: all ports in use\en");
+	else
+		perror("rresvport: socket");
+	...
+}
+.DE
+The restriction on allocating ports was done to allow processes
+executing in a \*(lqsecure\*(rq environment to perform authentication
+based on the originating address and port number.  For example,
+the \fIrlogin\fP(1) command allows users to log in across a network
+without being asked for a password, if two conditions hold:
+First, the name of the system the user
+is logging in from is in the file
+\fI/etc/hosts.equiv\fP on the system he is logging
+in to (or the system name and the user name are in
+the user's \fI.rhosts\fP file in the user's home
+directory), and second, that the user's rlogin
+process is coming from a privileged port on the machine from which he is
+logging.  The port number and network address of the
+machine from which the user is logging in can be determined either
+by the \fIfrom\fP result of the \fIaccept\fP call, or
+from the \fIgetpeername\fP call.
+.PP
+In certain cases the algorithm used by the system in selecting
+port numbers is unsuitable for an application.  This is because
+associations are created in a two step process.  For example,
+the Internet file transfer protocol, FTP, specifies that data
+connections must always originate from the same local port.  However,
+duplicate associations are avoided by connecting to different foreign
+ports.  In this situation the system would disallow binding the
+same local address and port number to a socket if a previous data
+connection's socket still existed.  To override the default port
+selection algorithm, an option call must be performed prior
+to address binding:
+.DS
+ ...
+int	on = 1;
+ ...
+setsockopt(s, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
+bind(s, (struct sockaddr *) &sin, sizeof (sin));
+.DE
+With the above call, local addresses may be bound which
+are already in use.  This does not violate the uniqueness
+requirement as the system still checks at connect time to
+be sure any other sockets with the same local address and
+port do not have the same foreign address and port.
+If the association already exists, the error EADDRINUSE is returned.
+.NH 2
+Broadcasting and determining network configuration
+.PP
+By using a datagram socket, it is possible to send broadcast
+packets on many networks supported by the system.
+The network itself must support broadcast; the system
+provides no simulation of broadcast in software.
+Broadcast messages can place a high load on a network since they force
+every host on the network to service them.  Consequently,
+the ability to send broadcast packets has been limited
+to sockets which are explicitly marked as allowing broadcasting.
+Broadcast is typically used for one of two reasons:
+it is desired to find a resource on a local network without prior
+knowledge of its address,
+or important functions such as routing require that information
+be sent to all accessible neighbors.
+.PP
+To send a broadcast message, a datagram socket 
+should be created:
+.DS
+s = socket(AF_INET, SOCK_DGRAM, 0);
+.DE
+or
+.DS
+s = socket(AF_NS, SOCK_DGRAM, 0);
+.DE
+The socket is marked as allowing broadcasting,
+.DS
+int	on = 1;
+
+setsockopt(s, SOL_SOCKET, SO_BROADCAST, &on, sizeof (on));
+.DE
+and at least a port number should be bound to the socket:
+.DS
+sin.sin_family = AF_INET;
+sin.sin_addr.s_addr = htonl(INADDR_ANY);
+sin.sin_port = htons(MYPORT);
+bind(s, (struct sockaddr *) &sin, sizeof (sin));
+.DE
+or, for the NS domain,
+.DS
+sns.sns_family = AF_NS;
+netnum = htonl(net);
+sns.sns_addr.x_net = *(union ns_net *) &netnum; /* insert net number */
+sns.sns_addr.x_port = htons(MYPORT);
+bind(s, (struct sockaddr *) &sns, sizeof (sns));
+.DE
+The destination address of the message to be broadcast
+depends on the network(s) on which the message is to be broadcast.
+The Internet domain supports a shorthand notation for broadcast
+on the local network, the address INADDR_BROADCAST (defined in
+<\fInetinet/in.h\fP>.
+To determine the list of addresses for all reachable neighbors
+requires knowledge of the networks to which the host is connected.
+Since this information should
+be obtained in a host-independent fashion and may be impossible
+to derive, 4.3BSD provides a method of
+retrieving this information from the system data structures.
+The SIOCGIFCONF \fIioctl\fP call returns the interface
+configuration of a host in the form of a
+single \fIifconf\fP structure; this structure contains
+a ``data area'' which is made up of an array of
+of \fIifreq\fP structures, one for each network interface
+to which the host is connected.
+These structures are defined in
+\fI<net/if.h>\fP as follows:
+.DS
+.if t .ta .5i 1.0i 1.5i 3.5i
+.if n .ta .7i 1.4i 2.1i 3.4i
+struct ifconf {
+	int	ifc_len;		/* size of associated buffer */
+	union {
+		caddr_t	ifcu_buf;
+		struct	ifreq *ifcu_req;
+	} ifc_ifcu;
+};
+
+#define	ifc_buf	ifc_ifcu.ifcu_buf		/* buffer address */
+#define	ifc_req	ifc_ifcu.ifcu_req		/* array of structures returned */
+
+#define	IFNAMSIZ	16
+
+struct ifreq {
+	char	ifr_name[IFNAMSIZ];		/* if name, e.g. "en0" */
+	union {
+		struct	sockaddr ifru_addr;
+		struct	sockaddr ifru_dstaddr;
+		struct	sockaddr ifru_broadaddr;
+		short	ifru_flags;
+		caddr_t	ifru_data;
+	} ifr_ifru;
+};
+
+.if t .ta \w'  #define'u +\w'  ifr_broadaddr'u +\w'  ifr_ifru.ifru_broadaddr'u
+#define	ifr_addr	ifr_ifru.ifru_addr	/* address */
+#define	ifr_dstaddr	ifr_ifru.ifru_dstaddr	/* other end of p-to-p link */
+#define	ifr_broadaddr	ifr_ifru.ifru_broadaddr	/* broadcast address */
+#define	ifr_flags	ifr_ifru.ifru_flags	/* flags */
+#define	ifr_data	ifr_ifru.ifru_data	/* for use by interface */
+.DE
+The actual call which obtains the
+interface configuration is
+.DS
+struct ifconf ifc;
+char buf[BUFSIZ];
+
+ifc.ifc_len = sizeof (buf);
+ifc.ifc_buf = buf;
+if (ioctl(s, SIOCGIFCONF, (char *) &ifc) < 0) {
+	...
+}
+.DE
+After this call \fepipteric
+epipterous
+epipterygoid
+epipubic
+epipubis
+epirhizous
+epirogenic
+epirogeny
+Epirote
+Epirotic
+epirotulian
+epirrhema
+epirrhematic
+epirrheme
+episarcine
+episcenium
+episclera
+episcleral
+episcleritis
+episcopable
+episcopacy
+Episcopal
+episcopal
+episcopalian
+Episcopalianism
+Episcopalianize
+episcopalism
+episcopality
+Episcopally
+episcopally
+episcopate
+episcopature
+episcope
+episcopicide
+episcopization
+episcopize
+episcopolatry
+episcotister
+episematic
+episepalous
+episiocele
+episiohematoma
+episioplasty
+episiorrhagia
+episiorrhaphy
+episiostenosis
+episiotomy
+episkeletal
+episkotister
+episodal
+episode
+episodial
+episodic
+episodical
+episodically
+epispadiac
+epispadias
+epispastic
+episperm
+epispermic
+epispinal
+episplenitis
+episporangium
+epispore
+episporium
+epistapedial
+epistasis
+epistatic
+epistaxis
+epistemic
+epistemolog
+epistemological
+epistemologically
+epistemologist
+epistemology
+epistemonic
+epistemonical
+epistemophilia
+epistemophiliac
+epistemophilic
+episternal
+episternalia
+episternite
+episternum
+epistilbite
+epistlar
+epistle
+epistler
+epistolarian
+epistolarily
+epistolary
+epistolatory
+epistoler
+epistolet
+epistolic
+epistolical
+epistolist
+epistolizable
+epistolization
+epistolize
+epistolizer
+epistolographer
+epistolographic
+epistolographist
+epistolography
+epistoma
+epistomal
+epistome
+epistomian
+epistroma
+epistrophe
+epistropheal
+epistropheus
+epistrophic
+epistrophy
+epistylar
+epistyle
+Epistylis
+episyllogism
+episynaloephe
+episynthetic
+episyntheton
+epitactic
+epitaph
+epitapher
+epitaphial
+epitaphian
+epitaphic
+epitaphical
+epitaphist
+epitaphize
+epitaphless
+epitasis
+epitela
+epitendineum
+epitenon
+epithalamia
+epithalamial
+epithalamiast
+epithalamic
+epithalamion
+epithalamium
+epithalamize
+epithalamus
+epithalamy
+epithalline
+epitheca
+epithecal
+epithecate
+epithecium
+epithelia
+epithelial
+epithelioblastoma
+epithelioceptor
+epitheliogenetic
+epithelioglandular
+epithelioid
+epitheliolysin
+epitheliolysis
+epitheliolytic
+epithelioma
+epitheliomatous
+epitheliomuscular
+epitheliosis
+epitheliotoxin
+epithelium
+epithelization
+epithelize
+epitheloid
+epithem
+epithesis
+epithet
+epithetic
+epithetical
+epithetically
+epithetician
+epithetize
+epitheton
+epithumetic
+epithyme
+epithymetic
+epithymetical
+epitimesis
+epitoke
+epitomator
+epitomatory
+epitome
+epitomic
+epitomical
+epitomically
+epitomist
+epitomization
+epitomize
+epitomizer
+epitonic
+Epitoniidae
+epitonion
+Epitonium
+epitoxoid
+epitrachelion
+epitrichial
+epitrichium
+epitrite
+epitritic
+epitrochlea
+epitrochlear
+epitrochoid
+epitrochoidal
+epitrope
+epitrophic
+epitrophy
+epituberculosis
+epituberculous
+epitympanic
+epitympanum
+epityphlitis
+epityphlon
+epiural
+epivalve
+epixylous
+epizeuxis
+Epizoa
+epizoa
+epizoal
+epizoan
+epizoarian
+epizoic
+epizoicide
+epizoon
+epizootic
+epizootiology
+epoch
+epocha
+epochal
+epochally
+epochism
+epochist
+epode
+epodic
+epollicate
+Epomophorus
+eponychium
+eponym
+eponymic
+eponymism
+eponymist
+eponymize
+eponymous
+eponymus
+eponymy
+epoophoron
+epopee
+epopoean
+epopoeia
+epopoeist
+epopt
+epoptes
+epoptic
+epoptist
+epornitic
+epornitically
+epos
+Eppie
+Eppy
+Eproboscidea
+epruinose
+epsilon
+Epsom
+epsomite
+Eptatretidae
+Eptatretus
+epulary
+epulation
+epulis
+epulo
+epuloid
+epulosis
+epulotic
+epupillate
+epural
+epurate
+epuration
+epyllion
+equability
+equable
+equableness
+equably
+equaeval
+equal
+equalable
+equaling
+equalist
+equalitarian
+equalitarianism
+equality
+equalization
+equalize
+equalizer
+equalizing
+equalling
+equally
+equalness
+equangular
+equanimity
+equanimous
+equanimously
+equanimousness
+equant
+equatable
+equate
+equation
+equational
+equationally
+equationism
+equationist
+equator
+equatorial
+equatorially
+equatorward
+equatorwards
+equerry
+equerryship
+equestrial
+equestrian
+equestrianism
+equestrianize
+equestrianship
+equestrienne
+equianchorate
+equiangle
+equiangular
+equiangularity
+equianharmonic
+equiarticulate
+equiatomic
+equiaxed
+equiaxial
+equibalance
+equibiradiate
+equicellular
+equichangeable
+equicohesive
+equiconvex
+equicostate
+equicrural
+equicurve
+equid
+equidense
+equidensity
+equidiagonal
+equidifferent
+equidimensional
+equidistance
+equidistant
+equidistantial
+equidistantly
+equidistribution
+equidiurnal
+equidivision
+equidominant
+equidurable
+equielliptical
+equiexcellency
+equiform
+equiformal
+equiformity
+equiglacial
+equigranular
+equijacent
+equilateral
+equilaterally
+equilibrant
+equilibrate
+equilibration
+equilibrative
+equilibrator
+equilibratory
+equilibria
+equilibrial
+equilibriate
+equilibrio
+equilibrious
+equilibrist
+equilibristat
+equilibristic
+equilibrity
+equilibrium
+equilibrize
+equilobate
+equilobed
+equilocation
+equilucent
+equimodal
+equimolar
+equimolecular
+equimomental
+equimultiple
+equinate
+equine
+equinecessary
+equinely
+equinia
+equinity
+equinoctial
+equinoctially
+equinovarus
+equinox
+equinumerally
+equinus
+equiomnipotent
+equip
+equipaga
+equipage
+equiparant
+equiparate
+equiparation
+equipartile
+equipartisan
+equipartition
+equiped
+equipedal
+equiperiodic
+equipluve
+equipment
+equipoise
+equipollence
+equipollency
+equipollent
+equipollently
+equipollentness
+equiponderance
+equiponderancy
+equiponderant
+equiponderate
+equiponderation
+equipostile
+equipotent
+equipotential
+equipotentiality
+equipper
+equiprobabilism
+equiprobabilist
+equiprobability
+equiproducing
+equiproportional
+equiproportionality
+equiradial
+equiradiate
+equiradical
+equirotal
+equisegmented
+Equisetaceae
+equisetaceous
+Equisetales
+equisetic
+Equisetum
+equisided
+equisignal
+equisized
+equison
+equisonance
+equisonant
+equispaced
+equispatial
+equisufficiency
+equisurface
+equitable
+equitableness
+equitably
+equitangential
+equitant
+equitation
+equitative
+equitemporal
+equitemporaneous
+equites
+equitist
+equitriangular
+equity
+equivalence
+equivalenced
+equivalency
+equivalent
+equivalently
+equivaliant
+equivalue
+equivaluer
+equivalve
+equivalved
+equivalvular
+equivelocity
+equivocacy
+equivocal
+equivocality
+equivocally
+equivocalness
+equivocate
+equivocatingly
+equivocation
+equivocator
+equivocatory
+equivoluminal
+equivoque
+equivorous
+equivote
+equoid
+equoidean
+equuleus
+Equus
+er
+era
+erade
+eradiate
+eradiation
+eradicable
+eradicant
+eradicate
+eradication
+eradicative
+eradicator
+eradicatory
+eradiculose
+Eragrostis
+eral
+eranist
+Eranthemum
+Eranthis
+erasable
+erase
+erased
+erasement
+eraser
+erasion
+Erasmian
+Erasmus
+Erastian
+Erastianism
+Erastianize
+Erastus
+erasure
+Erava
+erbia
+erbium
+erd
+erdvark
+ere
+Erechtheum
+Erechtheus
+Erechtites
+erect
+erectable
+erecter
+erectile
+erectility
+erecting
+erection
+erective
+erectly
+erectness
+erectopatent
+erector
+erelong
+eremacausis
+Eremian
+eremic
+eremital
+eremite
+eremiteship
+eremitic
+eremitical
+eremitish
+eremitism
+Eremochaeta
+eremochaetous
+eremology
+eremophyte
+Eremopteris
+Eremurus
+erenach
+erenow
+erepsin
+erept
+ereptase
+ereptic
+ereption
+erethic
+erethisia
+erethism
+erethismic
+erethistic
+erethitic
+Erethizon
+Erethizontidae
+Eretrian
+erewhile
+erewhiles
+erg
+ergal
+ergamine
+Ergane
+ergasia
+ergasterion
+ergastic
+ergastoplasm
+ergastoplasmic
+ergastulum
+ergatandromorph
+ergatandromorphic
+ergatandrous
+ergatandry
+ergates
+ergatocracy
+ergatocrat
+ergatogyne
+ergatogynous
+ergatogyny
+ergatoid
+ergatomorph
+ergatomorphic
+ergatomorphism
+ergmeter
+ergodic
+ergogram
+ergograph
+ergographic
+ergoism
+ergology
+ergomaniac
+ergometer
+ergometric
+ergometrine
+ergon
+ergonovine
+ergophile
+ergophobia
+ergophobiac
+ergoplasm
+ergostat
+ergosterin
+ergosterol
+ergot
+ergotamine
+ergotaminine
+ergoted
+ergothioneine
+ergotic
+ergotin
+ergotinine
+ergotism
+ergotist
+ergotization
+ergotize
+ergotoxin
+ergotoxine
+ergusia
+eria
+Erian
+Erianthus
+Eric
+eric
+Erica
+Ericaceae
+ericaceous
+ericad
+erical
+Ericales
+ericetal
+ericeticolous
+ericetum
+erichthus
+erichtoid
+ericineous
+ericius
+ericoid
+ericolin
+ericophyte
+Eridanid
+Erie
+Erigenia
+Erigeron
+erigible
+Eriglossa
+eriglossate
+erika
+erikite
+Erinaceidae
+erinaceous
+Erinaceus
+erineum
+erinite
+Erinize
+erinose
+Eriobotrya
+Eriocaulaceae
+eriocaulaceous
+Eriocaulon
+Eriocomi
+Eriodendron
+Eriodictyon
+erioglaucine
+Eriogonum
+eriometer
+erionite
+Eriophorum
+Eriophyes
+Eriophyidae
+eriophyllous
+Eriosoma
+Eriphyle
+Eristalis
+eristic
+eristical
+eristically
+Erithacus
+Eritrean
+erizo
+erlking
+Erma
+Ermanaric
+Ermani
+Ermanrich
+ermelin
+ermine
+ermined
+erminee
+ermines
+erminites
+erminois
+erne
+Ernest
+Ernestine
+erode
+eroded
+erodent
+erodible
+Erodium
+erogeneity
+erogenesis
+erogenetic
+erogenic
+erogenous
+erogeny
+Eros
+eros
+erose
+erosely
+erosible
+erosion
+erosional
+erosionist
+erosive
+erostrate
+eroteme
+erotesis
+erotetic
+erotic
+erotica
+erotical
+erotically
+eroticism
+eroticize
+eroIbuf\fP will contain one \fIifreq\fP structure for
+each network to which the host is connected, and
+\fIifc.ifc_len\fP will have been modified to reflect the number
+of bytes used by the \fIifreq\fP structures.
+.PP
+For each structure
+there exists a set of ``interface flags'' which tell
+whether the network corresponding to that interface is
+up or down, point to point or broadcast, etc.  The
+SIOCGIFFLAGS \fIioctl\fP retrieves these
+flags for an interface specified by an \fIifreq\fP
+structure as follows:
+.DS
+struct ifreq *ifr;
+
+ifr = ifc.ifc_req;
+
+for (n = ifc.ifc_len / sizeof (struct ifreq); --n >= 0; ifr++) {
+	/*
+	 * We must be careful that we don't use an interface
+	 * devoted to an address family other than those intended;
+	 * if we were interested in NS interfaces, the
+	 * AF_INET would be AF_NS.
+	 */
+	if (ifr->ifr_addr.sa_family != AF_INET)
+		continue;
+	if (ioctl(s, SIOCGIFFLAGS, (char *) ifr) < 0) {
+		...
+	}
+	/*
+	 * Skip boring cases.
+	 */
+	if ((ifr->ifr_flags & IFF_UP) == 0 ||
+	    (ifr->ifr_flags & IFF_LOOPBACK) ||
+	    (ifr->ifr_flags & (IFF_BROADCAST | IFF_POINTTOPOINT)) == 0)
+		continue;
+.DE
+.PP
+Once the flags have been obtained, the broadcast address 
+must be obtained.  In the case of broadcast networks this is
+done via the SIOCGIFBRDADDR \fIioctl\fP, while for point-to-point networks
+the address of the destination host is obtained with SIOCGIFDSTADDR.
+.DS
+struct sockaddr dst;
+
+if (ifr->ifr_flags & IFF_POINTTOPOINT) {
+	if (ioctl(s, SIOCGIFDSTADDR, (char *) ifr) < 0) {
+		...
+	}
+	bcopy((char *) ifr->ifr_dstaddr, (char *) &dst, sizeof (ifr->ifr_dstaddr));
+} else if (ifr->ifr_flags & IFF_BROADCAST) {
+	if (ioctl(s, SIOCGIFBRDADDR, (char *) ifr) < 0) {
+		...
+	}
+	bcopy((char *) ifr->ifr_broadaddr, (char *) &dst, sizeof (ifr->ifr_broadaddr));
+}
+.DE
+.PP
+After the appropriate \fIioctl\fP's have obtained the broadcast
+or destination address (now in \fIdst\fP), the \fIsendto\fP call may be
+used:
+.DS
+	sendto(s, buf, buflen, 0, (struct sockaddr *)&dst, sizeof (dst));
+}
+.DE
+In the above loop one \fIsendto\fP occurs for every
+interface to which the host is connected that supports the notion of
+broadcast or point-to-point addressing.
+If a process only wished to send broadcast
+messages on a given network, code similar to that outlined above
+would be used, but the loop would need to find the
+correct destination address.
+.PP
+Received broadcast messages contain the senders address
+and port, as datagram sockets are bound before
+a message is allowed to go out.
+.NH 2
+Socket Options
+.PP
+It is possible to set and get a number of options on sockets
+via the \fIsetsockopt\fP and \fIgetsockopt\fP system calls.
+These options include such things as marking a socket for
+broadcasting, not to route, to linger on close, etc.
+The general forms of the calls are:
+.DS
+setsockopt(s, level, optname, optval, optlen);
+.DE
+and
+.DS
+getsockopt(s, level, optname, optval, optlen);
+.DE
+.PP
+The parameters to the calls are as follows: \fIs\fP
+is the socket on which the option is to be applied.
+\fILevel\fP specifies the protocol layer on which the
+option is to be applied; in most cases this is
+the ``socket level'', indicated by the symbolic constant
+SOL_SOCKET, defined in \fI<sys/socket.h>.\fP
+The actual option is specified in \fIoptname\fP, and is
+a symbolic constant also defined in \fI<sys/socket.h>\fP.
+\fIOptval\fP and \fIOptlen\fP point to the value of the
+option (in most cases, whether the option is to be turned
+on or off), and the length of the value of the option,
+respectively.
+For \fIgetsockopt\fP, \fIoptlen\fP is
+a value-result parameter, initially set to the size of
+the storage area pointed to by \fIoptval\fP, and modified
+upon return to indicate the actual amount of storage used.
+.PP
+An example should help clarify things.  It is sometimes
+useful to determine the type (e.g., stream, datagram, etc.)
+of an existing socket; programs
+under \fIinetd\fP (described below) may need to perform this
+task.  This can be accomplished as follows via the
+SO_TYPE socket option and the \fIgetsockopt\fP call:
+.DS
+#include <sys/types.h>
+#include <sys/socket.h>
+
+int type, size;
+
+size = sizeof (int);
+
+if (getsockopt(s, SOL_SOCKET, SO_TYPE, (char *) &type, &size) < 0) {
+	...
+}
+.DE
+After the \fIgetsockopt\fP call, \fItype\fP will be set
+to the value of the socket type, as defined in
+\fI<sys/socket.h>\fP.  If, for example, the socket were
+a datagram socket, \fItype\fP would have the value
+corresponding to SOCK_DGRAM.
+.NH 2
+NS Packet Sequences
+.PP
+The semantics of NS connections demand that
+the user both be able to look inside the network header associated
+with any incoming packet and be able to specify what should go
+in certain fields of an outgoing packet.
+Using different calls to \fIsetsockopt\fP, it is possible
+to indicate whether prototype headers will be associated by
+the user with each outgoing packet (SO_HEADERS_ON_OUTPUT),
+to indicate whether the headers received by the system should be
+delivered to the user (SO_HEADERS_ON_INPUT), or to indicate
+default information that should be associated with all
+outgoing packets on a given socket (SO_DEFAULT_HEADERS).
+.PP
+The contents of a SPP header (minus the IDP header) are:
+.DS
+.if t .ta \w"  #define"u +\w"  u_short"u +2.0i
+struct sphdr {
+	u_char	sp_cc;		/* connection control */
+#define	SP_SP	0x80		/* system packet */
+#define	SP_SA	0x40		/* send acknowledgement */
+#define	SP_OB	0x20		/* attention (out of band data) */
+#define	SP_EM	0x10		/* end of message */
+	u_char	sp_dt;		/* datastream type */
+	u_short	sp_sid;		/* source connection identifier */
+	u_short	sp_did;		/* destination connection identifier */
+	u_short	sp_seq;		/* sequence number */
+	u_short	sp_ack;		/* acknowledge number */
+	u_short	sp_alo;		/* allocation number */
+};
+.DE
+Here, the items of interest are the \fIdatastream type\fP and
+the \fIconnection control\fP fields.  The semantics of the
+datastream type are defined by the application(s) in question;
+the value of this field is, by default, zero, but it can be
+used to indicate things such as Xerox's Bulk Data Transfer
+Protocol (in which case it is set to one).  The connection control
+field is a mask of the flags defined just below it.  The user may
+set or clear the end-of-message bit to indicate
+that a given message is the last of a given substream type,
+or may set/clear the attention bit as an alternate way to
+indicate that a packet should be sent out-of-band.
+As an example, to associate prototype headers with outgoing
+SPP packets, consider:
+.DS
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netns/ns.h>
+#include <netns/sp.h>
+ ...
+struct sockaddr_ns sns, to;
+int s, on = 1;
+struct databuf {
+	struct sphdr proto_spp;	/* prototype header */
+	char buf[534];		/* max. possible data by Xerox std. */
+} buf;
+ ...
+s = socket(AF_NS, SOCK_SEQPACKET, 0);
+ ...
+bind(s, (struct sockaddr *) &sns, sizeof (sns));
+setsockopt(s, NSPROTO_SPP, SO_HEADERS_ON_OUTPUT, &on, sizeof(on));
+ ...
+buf.proto_spp.sp_dt = 1;	/* bulk data */
+buf.proto_spp.sp_cc = SP_EM;	/* end-of-message */
+strcpy(buf.buf, "hello world\en");
+sendto(s, (char *) &buf, sizeof(struct sphdr) + strlen("hello world\en"),
+    (struct sockaddr *) &to, sizeof(to));
+ ...
+.DE
+Note that one must be careful when writing headers; if the prototype
+header is not written with the data with which it is to be associated,
+the kernel will treat the first few bytes of the data as the
+header, with unpredictable results.
+To turn off the above association, and to indicate that packet
+headers received by the system should be passed up to the user,
+one might use:
+.DS
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netns/ns.h>
+#include <netns/sp.h>
+ ...
+struct sockaddr sns;
+int s, on = 1, off = 0;
+ ...
+s = socket(AF_NS, SOCK_SEQPACKET, 0);
+ ...
+bind(s, (struct sockaddr *) &sns, sizeof (sns));
+setsockopt(s, NSPROTO_SPP, SO_HEADERS_ON_OUTPUT, &off, sizeof(off));
+setsockopt(s, NSPROTO_SPP, SO_HEADERS_ON_INPUT, &on, sizeof(on));
+ ...
+.DE
+.PP
+Output is handled somewhat differently in the IDP world.
+The header of an IDP-level packet looks like:
+.DS
+.if t .ta \w'struct  'u +\w"  struct ns_addr"u +2.0i
+struct idp {
+	u_short	idp_sum;	/* Checksum */
+	u_short	idp_len;	/* Length, in bytes, including header *ticomania
+erotism
+erotogenesis
+erotogenetic
+erotogenic
+erotogenicity
+erotomania
+erotomaniac
+erotopath
+erotopathic
+erotopathy
+Erotylidae
+Erpetoichthys
+erpetologist
+err
+errability
+errable
+errableness
+errabund
+errancy
+errand
+errant
+Errantia
+errantly
+errantness
+errantry
+errata
+erratic
+erratical
+erratically
+erraticalness
+erraticism
+erraticness
+erratum
+errhine
+erring
+erringly
+errite
+erroneous
+erroneously
+erroneousness
+error
+errorful
+errorist
+errorless
+ers
+Ersar
+ersatz
+Erse
+Ertebolle
+erth
+erthen
+erthling
+erthly
+erubescence
+erubescent
+erubescite
+eruc
+Eruca
+eruca
+erucic
+eruciform
+erucin
+erucivorous
+eruct
+eructance
+eructation
+eructative
+eruction
+erudit
+erudite
+eruditely
+eruditeness
+eruditical
+erudition
+eruditional
+eruditionist
+erugate
+erugation
+erugatory
+erumpent
+erupt
+eruption
+eruptional
+eruptive
+eruptively
+eruptiveness
+eruptivity
+ervenholder
+Ervipiame
+Ervum
+Erwinia
+eryhtrism
+Erymanthian
+Eryngium
+eryngo
+Eryon
+Eryops
+Erysibe
+Erysimum
+erysipelas
+erysipelatoid
+erysipelatous
+erysipeloid
+Erysipelothrix
+erysipelous
+Erysiphaceae
+Erysiphe
+Erythea
+erythema
+erythematic
+erythematous
+erythemic
+Erythraea
+Erythraean
+Erythraeidae
+erythrasma
+erythrean
+erythremia
+erythremomelalgia
+erythrene
+erythrin
+Erythrina
+erythrine
+Erythrinidae
+Erythrinus
+erythrismal
+erythristic
+erythrite
+erythritic
+erythritol
+erythroblast
+erythroblastic
+erythroblastosis
+erythrocarpous
+erythrocatalysis
+Erythrochaete
+erythrochroic
+erythrochroism
+erythroclasis
+erythroclastic
+erythrocyte
+erythrocytic
+erythrocytoblast
+erythrocytolysin
+erythrocytolysis
+erythrocytolytic
+erythrocytometer
+erythrocytorrhexis
+erythrocytoschisis
+erythrocytosis
+erythrodegenerative
+erythrodermia
+erythrodextrin
+erythrogenesis
+erythrogenic
+erythroglucin
+erythrogonium
+erythroid
+erythrol
+erythrolein
+erythrolitmin
+erythrolysin
+erythrolysis
+erythrolytic
+erythromelalgia
+erythron
+erythroneocytosis
+Erythronium
+erythronium
+erythropenia
+erythrophage
+erythrophagous
+erythrophilous
+erythrophleine
+erythrophobia
+erythrophore
+erythrophyll
+erythrophyllin
+erythropia
+erythroplastid
+erythropoiesis
+erythropoietic
+erythropsia
+erythropsin
+erythrorrhexis
+erythroscope
+erythrose
+erythrosiderite
+erythrosin
+erythrosinophile
+erythrosis
+Erythroxylaceae
+erythroxylaceous
+erythroxyline
+Erythroxylon
+Erythroxylum
+erythrozincite
+erythrozyme
+erythrulose
+Eryx
+es
+esca
+escadrille
+escalade
+escalader
+escalado
+escalan
+escalate
+Escalator
+escalator
+escalin
+Escallonia
+Escalloniaceae
+escalloniaceous
+escalop
+escaloped
+escambio
+escambron
+escapable
+escapade
+escapage
+escape
+escapee
+escapeful
+escapeless
+escapement
+escaper
+escapingly
+escapism
+escapist
+escarbuncle
+escargatoire
+escarole
+escarp
+escarpment
+eschalot
+eschar
+eschara
+escharine
+escharoid
+escharotic
+eschatocol
+eschatological
+eschatologist
+eschatology
+escheat
+escheatable
+escheatage
+escheatment
+escheator
+escheatorship
+Escherichia
+eschew
+eschewal
+eschewance
+eschewer
+Eschscholtzia
+eschynite
+esclavage
+escoba
+escobadura
+escobilla
+escobita
+escolar
+esconson
+escopette
+Escorial
+escort
+escortage
+escortee
+escortment
+escribe
+escritoire
+escritorial
+escrol
+escropulo
+escrow
+escruage
+escudo
+Esculapian
+esculent
+esculetin
+esculin
+escutcheon
+escutcheoned
+escutellate
+esdragol
+Esdras
+Esebrias
+esemplastic
+esemplasy
+eseptate
+esere
+eserine
+esexual
+eshin
+esiphonal
+esker
+Eskimauan
+Eskimo
+Eskimoic
+Eskimoid
+Eskimoized
+Eskualdun
+Eskuara
+Esmeralda
+Esmeraldan
+esmeraldite
+esne
+esoanhydride
+esocataphoria
+Esocidae
+esociform
+esocyclic
+esodic
+esoenteritis
+esoethmoiditis
+esogastritis
+esonarthex
+esoneural
+esophagal
+esophagalgia
+esophageal
+esophagean
+esophagectasia
+esophagectomy
+esophagi
+esophagism
+esophagismus
+esophagitis
+esophago
+esophagocele
+esophagodynia
+esophagogastroscopy
+esophagogastrostomy
+esophagomalacia
+esophagometer
+esophagomycosis
+esophagopathy
+esophagoplasty
+esophagoplegia
+esophagoplication
+esophagoptosis
+esophagorrhagia
+esophagoscope
+esophagoscopy
+esophagospasm
+esophagostenosis
+esophagostomy
+esophagotome
+esophagotomy
+esophagus
+esophoria
+esophoric
+Esopus
+esoteric
+esoterica
+esoterical
+esoterically
+esotericism
+esotericist
+esoterics
+esoterism
+esoterist
+esoterize
+esotery
+esothyropexy
+esotrope
+esotropia
+esotropic
+Esox
+espacement
+espadon
+espalier
+espantoon
+esparcet
+esparsette
+esparto
+espathate
+espave
+especial
+especially
+especialness
+esperance
+Esperantic
+Esperantidist
+Esperantido
+Esperantism
+Esperantist
+Esperanto
+espial
+espichellite
+espier
+espinal
+espingole
+espinillo
+espino
+espionage
+esplanade
+esplees
+esponton
+espousal
+espouse
+espousement
+espouser
+Espriella
+espringal
+espundia
+espy
+esquamate
+esquamulose
+Esquiline
+esquire
+esquirearchy
+esquiredom
+esquireship
+ess
+essang
+essay
+essayer
+essayette
+essayical
+essayish
+essayism
+essayist
+essayistic
+essayistical
+essaylet
+essed
+Essedones
+Esselen
+Esselenian
+essence
+essency
+Essene
+Essenian
+Essenianism
+Essenic
+Essenical
+Essenis
+Essenism
+Essenize
+essentia
+essential
+essentialism
+essentialist
+essentiality
+essentialize
+essentially
+essentialness
+essenwood
+Essex
+essexite
+Essie
+essling
+essoin
+essoinee
+essoiner
+essoinment
+essonite
+essorant
+establish
+establishable
+established
+establisher
+establishment
+establishmentarian
+establishmentarianism
+establishmentism
+estacade
+estadal
+estadio
+estado
+estafette
+estafetted
+estamene
+estamp
+estampage
+estampede
+estampedero
+estate
+estatesman
+esteem
+esteemable
+esteemer
+Estella
+ester
+esterase
+esterellite
+esteriferous
+esterification
+esterify
+esterization
+esterize
+esterlin
+esterling
+estevin
+Esth
+Esthacyte
+esthematology
+Esther
+Estheria
+estherian
+Estheriidae
+esthesia
+esthesio
+esthesioblast
+esthesiogen
+esthesiogenic
+esthesiogeny
+esthesiography
+esthesiology
+esthesiometer
+esthesiometric
+esthesiometry
+esthesioneurosis
+esthesiophysiology
+esthesis
+esthetology
+esthetophore
+esthiomene
+estimable
+estimableness
+estimably
+estimate
+estimatingly
+estimation
+estimative
+estimator
+estipulate
+estivage
+estival
+estivate
+estivation
+estivator
+estmark
+estoc
+estoile
+Estonian
+estop
+estoppage
+estoppel
+Estotiland
+estovers
+estrade
+estradiol
+estradiot
+estragole
+estrange
+estrangedness
+estrangement
+estranger
+estrapade
+estray
+estre
+estreat
+estrepe
+estrepement
+estriate
+estriche
+estrin
+estriol
+estrogen
+estrogenic
+estrone
+estrous
+estrual
+estruate
+estruation
+estuarial
+estuarine
+estuary
+estufa
+estuous
+estus
+esugarization
+esurience
+esurient
+esuriently
+eta
+etaballi
+etacism
+etacist
+etalon
+Etamin
+etamine
+etch
+Etchareottine
+etcher
+Etchimin
+etching
+Eteoclus
+Eteocretes
+Eteocreton
+eternal
+eternalism
+eternalist
+eternalization
+eternalize
+eternally
+eternalness
+eternity
+eternization
+eternize
+etesian
+ethal
+ethaldehyde
+Ethan
+ethanal
+ethanamide
+ethane
+ethanedial
+ethanediol
+ethanedithiol
+ethanethial
+ethanethiol
+Ethanim
+ethanol
+ethanolamine
+ethanolysis
+ethanoyl
+Ethel
+ethel
+ethene
+Etheneldeli
+ethenic
+ethenoid
+ethenoidal
+ethenol
+ethenyl
+Etheostoma
+Etheostomidae
+Etheostominae
+etheostomoid
+ether
+etherate
+ethereal
+etherealism
+ethereality
+etherealization
+etherealize
+ethereally
+etherealness
+etherean
+ethered
+ethereous
+Etheria
+etheric
+etherification
+etheriform
+etherify
+Etheriidae
+etherin
+etherion
+etherism
+etherization
+etherize
+etherizer
+etherolate
+etherous
+ethic
+ethical
+ethicalism
+ethicality
+ethically
+ethicalness
+ethician
+ethicism
+ethicist
+ethicize
+ethicoaesthetic
+ethicophysical
+ethicopolitical
+ethicoreligious
+ethicosocial
+ethics
+ethid
+ethide
+ethidene
+ethine
+ethiodide
+ethionic
+Ethiop
+Ethiopia
+Ethiopian
+Ethiopic
+ethiops
+ethmofrontal
+ethmoid
+ethmoidal
+ethmoiditis
+ethmolachrymal
+ethmolith
+ethmomaxillary
+ethmonasal
+ethmopalatal
+ethmopalatine
+ethmophysal
+ethmopresphenoidal
+ethmosphenoid
+ethmosphenoidal
+ethmoturbinal
+ethmoturbinate
+ethmovomer
+ethmovomerine
+ethmyphitis
+ethnal
+ethnarch
+ethnarchy
+ethnic
+ethnical
+ethnically
+ethnicism
+ethnicist
+ethnicize
+ethnicon
+ethnize
+ethnobiological
+ethnobiology
+ethnobotanic
+ethnobotanical
+ethnobotanist
+ethnobotany
+ethnocentric
+ethnocentrism
+ethnocracy
+ethnodicy
+ethnoflora
+ethnogenic
+ethnogeny
+ethnogeographer
+ethnogeographic
+ethnogeographical
+ethnogeographically
+ethnogeography
+ethnographer
+ethnographic
+ethnographical
+ethnographically
+ethnographist
+ethnography
+ethnologer
+ethnologic
+ethnological
+ethnologically
+ethnologist
+ethnology
+ethnomaniac
+ethnopsychic
+ethnopsychological
+ethnopsychology
+ethnos
+ethnotechnics
+ethnotechnography
+ethnozoological
+ethnozoology
+ethography
+etholide
+ethologic
+ethological
+ethology
+ethonomic
+ethonomics
+ethopoei/
+	u_char	idp_tc;		/* Transport Control (i.e., hop count) */
+	u_char	idp_pt;		/* Packet Type (i.e., level 2 protocol) */
+	struct ns_addr	idp_dna;	/* Destination Network Address */
+	struct ns_addr	idp_sna;	/* Source Network Address */
+};
+.DE
+The primary field of interest in an IDP header is the \fIpacket type\fP
+field.  The standard values for this field are (as defined
+in <\fInetns/ns.h\fP>):
+.DS
+.if t .ta \w"  #define"u +\w"  NSPROTO_ERROR"u +1.0i
+#define NSPROTO_RI	1		/* Routing Information */
+#define NSPROTO_ECHO	2		/* Echo Protocol */
+#define NSPROTO_ERROR	3		/* Error Protocol */
+#define NSPROTO_PE	4		/* Packet Exchange */
+#define NSPROTO_SPP	5		/* Sequenced Packet */
+.DE
+For SPP connections, the contents of this field are
+automatically set to NSPROTO_SPP; for IDP packets,
+this value defaults to zero, which means ``unknown''.
+.PP
+Setting the value of that field with SO_DEFAULT_HEADERS is
+easy:
+.DS
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netns/ns.h>
+#include <netns/idp.h>
+ ...
+struct sockaddr sns;
+struct idp proto_idp;		/* prototype header */
+int s, on = 1;
+ ...
+s = socket(AF_NS, SOCK_DGRAM, 0);
+ ...
+bind(s, (struct sockaddr *) &sns, sizeof (sns));
+proto_idp.idp_pt = NSPROTO_PE;	/* packet exchange */
+setsockopt(s, NSPROTO_IDP, SO_DEFAULT_HEADERS, (char *) &proto_idp,
+    sizeof(proto_idp));
+ ...
+.DE
+.PP
+Using SO_HEADERS_ON_OUTPUT is somewhat more difficult.  When
+SO_HEADERS_ON_OUTPUT is turned on for an IDP socket, the socket
+becomes (for all intents and purposes) a raw socket.  In this
+case, all the fields of the prototype header (except the 
+length and checksum fields, which are computed by the kernel)
+must be filled in correctly in order for the socket to send and
+receive data in a sensible manner.  To be more specific, the
+source address must be set to that of the host sending the
+data; the destination address must be set to that of the
+host for whom the data is intended; the packet type must be
+set to whatever value is desired; and the hopcount must be
+set to some reasonable value (almost always zero).  It should
+also be noted that simply sending data using \fIwrite\fP
+will not work unless a \fIconnect\fP or \fIsendto\fP call
+is used, in spite of the fact that it is the destination
+address in the prototype header that is used, not the one
+given in either of those calls.  For almost
+all IDP applications , using SO_DEFAULT_HEADERS is easier and
+more desirable than writing headers.
+.NH 2
+Three-way Handshake
+.PP
+The semantics of SPP connections indicates that a three-way
+handshake, involving changes in the datastream type, should \(em
+but is not absolutely required to \(em take place before a SPP
+connection is closed.  Almost all SPP connections are
+``well-behaved'' in this manner; when communicating with
+any process, it is best to assume that the three-way handshake
+is required unless it is known for certain that it is not
+required.  In a three-way close, the closing process
+indicates that it wishes to close the connection by sending
+a zero-length packet with end-of-message set and with
+datastream type 254.  The other side of the connection
+indicates that it is OK to close by sending a zero-length
+packet with end-of-message set and datastream type 255.  Finally,
+the closing process replies with a zero-length packet with 
+substream type 255; at this point, the connection is considered
+closed.  The following code fragments are simplified examples
+of how one might handle this three-way handshake at the user
+level; in the future, support for this type of close will
+probably be provided as part of the C library or as part of
+the kernel.  The first code fragment below illustrates how a process
+might handle three-way handshake if it sees that the process it
+is communicating with wants to close the connection:
+.DS
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netns/ns.h>
+#include <netns/sp.h>
+ ...
+#ifndef SPPSST_END
+#define SPPSST_END 254
+#define SPPSST_ENDREPLY 255
+#endif
+struct sphdr proto_sp;
+int s;
+ ...
+read(s, buf, BUFSIZE);
+if (((struct sphdr *)buf)->sp_dt == SPPSST_END) {
+	/*
+	 * SPPSST_END indicates that the other side wants to
+	 * close.
+	 */
+	proto_sp.sp_dt = SPPSST_ENDREPLY;
+	proto_sp.sp_cc = SP_EM;
+	setsockopt(s, NSPROTO_SPP, SO_DEFAULT_HEADERS, (char *)&proto_sp,
+	    sizeof(proto_sp));
+	write(s, buf, 0);
+	/*
+	 * Write a zero-length packet with datastream type = SPPSST_ENDREPLY
+	 * to indicate that the close is OK with us.  The packet that we
+	 * don't see (because we don't look for it) is another packet
+	 * from the other side of the connection, with SPPSST_ENDREPLY
+	 * on it it, too.  Once that packet is sent, the connection is
+	 * considered closed; note that we really ought to retransmit
+	 * the close for some time if we do not get a reply.
+	 */
+	close(s);
+}
+ ...
+.DE
+To indicate to another process that we would like to close the
+connection, the following code would suffice:
+.DS
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netns/ns.h>
+#include <netns/sp.h>
+ ...
+#ifndef SPPSST_END
+#define SPPSST_END 254
+#define SPPSST_ENDREPLY 255
+#endif
+struct sphdr proto_sp;
+int s;
+ ...
+proto_sp.sp_dt = SPPSST_END;
+proto_sp.sp_cc = SP_EM;
+setsockopt(s, NSPROTO_SPP, SO_DEFAULT_HEADERS, (char *)&proto_sp,
+    sizeof(proto_sp));
+write(s, buf, 0);	/* send the end request */
+proto_sp.sp_dt = SPPSST_ENDREPLY;
+setsockopt(s, NSPROTO_SPP, SO_DEFAULT_HEADERS, (char *)&proto_sp,
+    sizeof(proto_sp));
+/*
+ * We assume (perhaps unwisely)
+ * that the other side will send the
+ * ENDREPLY, so we'll just send our final ENDREPLY
+ * as if we'd seen theirs already.
+ */
+write(s, buf, 0);
+close(s);
+ ...
+.DE
+.NH 2
+Packet Exchange
+.PP
+The Xerox standard protocols include a protocol that is both
+reliable and datagram-oriented.  This protocol is known as
+Packet Exchange (PEX or PE) and, like SPP, is layered on top
+of IDP.  PEX is important for a number of things: Courier
+remote procedure calls may be expedited through the use
+of PEX, and many Xerox servers are located by doing a PEX
+``BroadcastForServers'' operation.  Although there is no
+implementation of PEX in the kernel,
+it may be simulated at the user level with some clever coding
+and the use of one peculiar \fIgetsockopt\fP.  A PEX packet
+looks like:
+.DS
+.if t .ta \w'struct  'u +\w"  struct idp"u +2.0i
+/*
+ * The packet-exchange header shown here is not defined
+ * as part of any of the system include files.
+ */
+struct pex {
+	struct idp	p_idp;	/* idp header */
+	u_short	ph_id[2];	/* unique transaction ID for pex */
+	u_short	ph_client;	/* client type field for pex */
+};
+.DE
+The \fIph_id\fP field is used to hold a ``unique id'' that
+is used in duplicate suppression; the \fIph_client\fP
+field indicates the PEX client type (similar to the packet
+type field in the IDP header).  PEX reliability stems from the
+fact that it is an idempotent (``I send a packet to you, you
+send a packet to me'') protocol.  Processes on each side of
+the connection may use the unique id to determine if they have
+seen a given packet before (the unique id field differs on each
+packet sent) so that duplicates may be detected, and to indicate
+which message a given packet is in response to.  If a packet with
+a given unique id is sent and no response is received in a given
+amount of time, the packet is retransmitted until it is decided
+that no response will ever be received.  To simulate PEX, one
+must be able to generate unique ids -- something that is hard to
+do at the user level with any real guarantee that the id is really
+unique.  Therefore, a means (via \fIgetsockopt\fP) has been provided
+for getting unique ids from the kernel.  The following code fragment
+indicates how to get a unique id:
+.DS
+long uniqueid;
+int s, idsize = sizeof(uniqueid);
+ ...
+s = socket(AF_NS, SOCK_DGRAM, 0);
+ ...
+/* get id from the kernel -- only on IDP sockets */
+getsockopt(s, NSPROTO_PE, SO_SEQNO, (char *)&uniqueid, &idsize);
+ ...
+.DE
+The retransmission and duplicate suppression code required to
+simulate PEX fully is left as an exercise for the reader.
+.NH 2
+Inetd
+.PP
+One of the daemons provided with 4.3BSD is \fIinetd\fP, the
+so called ``internet super-server.''  \fIInetd\fP is invoked at boot
+time, and determines from the filea
+ethos
+ethoxide
+ethoxycaffeine
+ethoxyl
+ethrog
+ethyl
+ethylamide
+ethylamine
+ethylate
+ethylation
+ethylene
+ethylenediamine
+ethylenic
+ethylenimine
+ethylenoid
+ethylhydrocupreine
+ethylic
+ethylidene
+ethylidyne
+ethylin
+ethylmorphine
+ethylsulphuric
+ethyne
+ethynyl
+etiogenic
+etiolate
+etiolation
+etiolin
+etiolize
+etiological
+etiologically
+etiologist
+etiologue
+etiology
+etiophyllin
+etioporphyrin
+etiotropic
+etiotropically
+etiquette
+etiquettical
+etna
+Etnean
+Etonian
+Etrurian
+Etruscan
+Etruscologist
+Etruscology
+Etta
+Ettarre
+ettle
+etua
+etude
+etui
+etym
+etymic
+etymography
+etymologer
+etymologic
+etymological
+etymologically
+etymologicon
+etymologist
+etymologization
+etymologize
+etymology
+etymon
+etymonic
+etypic
+etypical
+etypically
+eu
+Euahlayi
+euangiotic
+Euascomycetes
+euaster
+Eubacteriales
+eubacterium
+Eubasidii
+Euboean
+Euboic
+Eubranchipus
+eucaine
+eucairite
+eucalypt
+eucalypteol
+eucalyptian
+eucalyptic
+eucalyptography
+eucalyptol
+eucalyptole
+Eucalyptus
+eucalyptus
+Eucarida
+eucatropine
+eucephalous
+Eucharis
+Eucharist
+eucharistial
+eucharistic
+eucharistical
+Eucharistically
+eucharistically
+eucharistize
+Eucharitidae
+Euchite
+Euchlaena
+euchlorhydria
+euchloric
+euchlorine
+Euchlorophyceae
+euchological
+euchologion
+euchology
+Euchorda
+euchre
+euchred
+euchroic
+euchroite
+euchromatic
+euchromatin
+euchrome
+euchromosome
+euchrone
+Eucirripedia
+euclase
+Euclea
+Eucleidae
+Euclid
+Euclidean
+Euclideanism
+Eucnemidae
+eucolite
+Eucommia
+Eucommiaceae
+eucone
+euconic
+Euconjugatae
+Eucopepoda
+Eucosia
+eucosmid
+Eucosmidae
+eucrasia
+eucrasite
+eucrasy
+eucrite
+Eucryphia
+Eucryphiaceae
+eucryphiaceous
+eucryptite
+eucrystalline
+euctical
+eucyclic
+eudaemon
+eudaemonia
+eudaemonic
+eudaemonical
+eudaemonics
+eudaemonism
+eudaemonist
+eudaemonistic
+eudaemonistical
+eudaemonistically
+eudaemonize
+eudaemony
+eudaimonia
+eudaimonism
+eudaimonist
+Eudemian
+Eudendrium
+Eudeve
+eudiagnostic
+eudialyte
+eudiaphoresis
+eudidymite
+eudiometer
+eudiometric
+eudiometrical
+eudiometrically
+eudiometry
+eudipleural
+Eudist
+Eudora
+Eudorina
+Eudoxian
+Eudromias
+Eudyptes
+Euergetes
+euge
+Eugene
+eugenesic
+eugenesis
+eugenetic
+Eugenia
+eugenic
+eugenical
+eugenically
+eugenicist
+eugenics
+Eugenie
+eugenism
+eugenist
+eugenol
+eugenolate
+eugeny
+Euglandina
+Euglena
+Euglenaceae
+Euglenales
+Euglenida
+Euglenidae
+Euglenineae
+euglenoid
+Euglenoidina
+euglobulin
+eugranitic
+Eugregarinida
+Eugubine
+Eugubium
+euharmonic
+euhedral
+euhemerism
+euhemerist
+euhemeristic
+euhemeristically
+euhemerize
+euhyostylic
+euhyostyly
+euktolite
+eulachon
+Eulalia
+eulalia
+eulamellibranch
+Eulamellibranchia
+Eulamellibranchiata
+Eulima
+Eulimidae
+eulogia
+eulogic
+eulogical
+eulogically
+eulogious
+eulogism
+eulogist
+eulogistic
+eulogistical
+eulogistically
+eulogium
+eulogization
+eulogize
+eulogizer
+eulogy
+eulysite
+eulytine
+eulytite
+Eumenes
+eumenid
+Eumenidae
+Eumenidean
+Eumenides
+eumenorrhea
+eumerism
+eumeristic
+eumerogenesis
+eumerogenetic
+eumeromorph
+eumeromorphic
+eumitosis
+eumitotic
+eumoiriety
+eumoirous
+Eumolpides
+Eumolpus
+eumorphous
+eumycete
+Eumycetes
+eumycetic
+Eunectes
+Eunice
+eunicid
+Eunicidae
+Eunomia
+Eunomian
+Eunomianism
+eunomy
+eunuch
+eunuchal
+eunuchism
+eunuchize
+eunuchoid
+eunuchoidism
+eunuchry
+euomphalid
+Euomphalus
+euonym
+euonymin
+euonymous
+Euonymus
+euonymy
+Euornithes
+euornithic
+Euorthoptera
+euosmite
+euouae
+eupad
+Eupanorthidae
+Eupanorthus
+eupathy
+eupatoriaceous
+eupatorin
+Eupatorium
+eupatory
+eupatrid
+eupatridae
+eupepsia
+eupepsy
+eupeptic
+eupepticism
+eupepticity
+Euphausia
+Euphausiacea
+euphausiid
+Euphausiidae
+Euphemia
+euphemian
+euphemious
+euphemiously
+euphemism
+euphemist
+euphemistic
+euphemistical
+euphemistically
+euphemize
+euphemizer
+euphemous
+euphemy
+euphon
+euphone
+euphonetic
+euphonetics
+euphonia
+euphonic
+euphonical
+euphonically
+euphonicalness
+euphonious
+euphoniously
+euphoniousness
+euphonism
+euphonium
+euphonize
+euphonon
+euphonous
+euphony
+euphonym
+Euphorbia
+Euphorbiaceae
+euphorbiaceous
+euphorbium
+euphoria
+euphoric
+euphory
+Euphrasia
+euphrasy
+Euphratean
+euphroe
+Euphrosyne
+Euphues
+euphuism
+euphuist
+euphuistic
+euphuistical
+euphuistically
+euphuize
+Euphyllopoda
+eupione
+eupittonic
+euplastic
+Euplectella
+Euplexoptera
+Euplocomi
+Euploeinae
+euploid
+euploidy
+eupnea
+Eupolidean
+Eupolyzoa
+eupolyzoan
+Eupomatia
+Eupomatiaceae
+eupractic
+eupraxia
+Euprepia
+Euproctis
+eupsychics
+Euptelea
+Eupterotidae
+eupyrchroite
+eupyrene
+eupyrion
+Eurafric
+Eurafrican
+Euraquilo
+Eurasian
+Eurasianism
+Eurasiatic
+eureka
+eurhodine
+eurhodol
+Eurindic
+Euripidean
+euripus
+eurite
+Euroaquilo
+eurobin
+Euroclydon
+Europa
+Europasian
+European
+Europeanism
+Europeanization
+Europeanize
+Europeanly
+Europeward
+europium
+Europocentric
+Eurus
+Euryalae
+Euryale
+Euryaleae
+euryalean
+Euryalida
+euryalidan
+Euryalus
+eurybathic
+eurybenthic
+eurycephalic
+eurycephalous
+Eurycerotidae
+Euryclea
+Eurydice
+Eurygaea
+Eurygaean
+eurygnathic
+eurygnathism
+eurygnathous
+euryhaline
+Eurylaimi
+Eurylaimidae
+eurylaimoid
+Eurylaimus
+Eurymus
+euryon
+Eurypelma
+Eurypharyngidae
+Eurypharynx
+euryprognathous
+euryprosopic
+eurypterid
+Eurypterida
+eurypteroid
+Eurypteroidea
+Eurypterus
+Eurypyga
+Eurypygae
+Eurypygidae
+eurypylous
+euryscope
+Eurystheus
+eurystomatous
+eurythermal
+eurythermic
+eurythmic
+eurythmical
+eurythmics
+eurythmy
+eurytomid
+Eurytomidae
+Eurytus
+euryzygous
+Euscaro
+Eusebian
+Euselachii
+Euskaldun
+Euskara
+Euskarian
+Euskaric
+Euskera
+eusol
+Euspongia
+eusporangiate
+Eustace
+Eustachian
+eustachium
+Eustathian
+eustatic
+Eusthenopteron
+eustomatous
+eustyle
+Eusuchia
+eusuchian
+eusynchite
+Eutaenia
+eutannin
+eutaxic
+eutaxite
+eutaxitic
+eutaxy
+eutechnic
+eutechnics
+eutectic
+eutectoid
+Euterpe
+Euterpean
+eutexia
+Euthamia
+euthanasia
+euthanasy
+euthenics
+euthenist
+Eutheria
+eutherian
+euthermic
+Euthycomi
+euthycomic
+Euthyneura
+euthyneural
+euthyneurous
+euthytatic
+euthytropic
+eutomous
+eutony
+Eutopia
+Eutopian
+eutrophic
+eutrophy
+eutropic
+eutropous
+Eutychian
+Eutychianism
+euxanthate
+euxanthic
+euxanthone
+euxenite
+Euxine
+Eva
+evacuant
+evacuate
+evacuation
+evacuative
+evacuator
+evacue
+evacuee
+evadable
+evade
+evader
+evadingly
+Evadne
+evagation
+evaginable
+evaginate
+evagination
+evaluable
+evaluate
+evaluation
+evaluative
+evalue
+Evan
+evanesce
+evanescence
+evanescency
+evanescent
+evanescently
+evanescible
+evangel
+evangelary
+evangelian
+evangeliarium
+evangeliary
+evangelical
+evangelicalism
+evangelicality
+evangelically
+evangelicalness
+evangelican
+evangelicism
+evangelicity
+Evangeline
+evangelion
+evangelism
+evangelist
+evangelistarion
+evangelistarium
+evangelistary
+evangelistic
+evangelistically
+evangelistics
+evangelistship
+evangelium
+evangelization
+evangelize
+evangelizer
+Evaniidae
+evanish
+evanishment
+evanition
+evansite
+evaporability
+evaporable
+evaporate
+evaporation
+evaporative
+evaporativity
+evaporator
+evaporimeter
+evaporize
+evaporometer
+evase
+evasible
+evasion
+evasional
+evasive
+evasively
+evasiveness
+Eve
+eve
+Evea
+evechurr
+evection
+evectional
+Evehood
+evejar
+Eveless
+evelight
+Evelina
+Eveline
+evelong
+Evelyn
+even
+evenblush
+evendown
+evener
+evenfall
+evenforth
+evenglow
+evenhanded
+evenhandedly
+evenhandedness
+evening
+evenlight
+evenlong
+evenly
+evenmete
+evenminded
+evenmindedness
+evenness
+evens
+evensong
+event
+eventful
+eventfully
+eventfulness
+eventide
+eventime
+eventless
+eventlessly
+eventlessness
+eventognath
+Eventognathi
+eventognathous
+eventration
+eventual
+eventuality
+eventualize
+eventually
+eventuate
+eventuation
+evenwise
+evenworthy
+eveque
+ever
+Everard
+everbearer
+everbearing
+everbloomer
+everblooming
+everduring
+everglade
+e

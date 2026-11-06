@@ -1,0 +1,1766 @@
+d to get more paging space by changing
+the appropriate partition table in the disk driver.
+.PP
+Many common system programs (C, the editor, the assembler etc.)
+create intermediate files in the /tmp directory,
+so the file system where this is stored also should be made
+large enough to accommodate
+most high-water marks; if you have several disks, it makes
+sense to mount this in a ``root'' (i.e. first partition)
+file system on another disk.
+All the programs that create files in /tmp take
+care to delete them, but are not immune to rare events
+and can leave dregs.
+The directory should be examined every so often and the old
+files deleted.
+.PP
+The efficiency with which UNIX is able to use the CPU
+is often strongly affected by the configuration of disk controllers.
+For general time-sharing applications,
+the best strategy is to try to split the root file system (/), system binaries
+(/usr), the temporary files (/tmp),
+and the user files among several disk arms, and to interleave
+the paging activity among several arms.
+..\" Copyright (c) 1980 Regents of the University of California.
+.\" All rights reserved.  The Berkeley software License Agreement
+.\" specifies the terms and conditions for redistribution.
+.\"
+.\"	@(#)6.t	6.1 (Berkeley) 5/14/86
+.\"
+.de IR
+\fI\\$1\fP\|\\$2
+..
+.ds LH "Installing/Operating \*(4B
+.nr H1 6
+.nr H2 0
+.ds RH "System Operation
+.ds CF \*(DY
+.bp
+.LG
+.B
+.ce
+6. SYSTEM OPERATION
+.sp 2
+.R
+.NL
+.PP
+This section describes procedures used to operate a VAX UNIX system.
+Procedures described here are used periodically, to reboot the system,
+analyze error messages from devices, do disk backups, monitor
+system performance, recompile system software and control local changes.
+.NH 2
+Bootstrap and shutdown procedures
+.PP
+In a normal reboot, the system checks the disks and comes up multi-user
+without intervention at the console.
+Such a reboot
+can be stopped (after it prints the date) with a ^C (interrupt).
+This will leave the system in single-user mode, with only the console
+terminal active.
+It is also possible to allow the filesystem checks to complete
+and then to return to single-user mode by signaling \fIfsck\fP
+with a QUIT signal (^\).
+.PP
+If booting from the console command level is needed, then the command
+.DS
+\fB>>>\fP B
+.DE
+will boot from the default device.
+On an 8650, 8600, 11/785, 11/780, or 11/730 the default device is
+determined by a ``DEPOSIT''
+command stored on the console boot device in the file ``DEFBOO.CMD''
+(``DEFBOO.COM'' on an 8650 or 8600);
+on an 11/750 the default device is determined by the setting of a switch
+on the front panel.
+.PP
+You can boot a system up single user
+on an 8650, 8600, 785, 780, or 730 by doing
+.DS
+\fB>>>\fP B \fIXX\fP\|S
+.DE
+where \fIXX\fP is one of HP, HK, UP, RA, or RB for a 730.
+The corresponding command on an 11/750 is
+.DS
+\fB>>>\fP B/2
+.DE
+.PP
+For second vendor storage modules on the
+UNIBUS or MASSBUS of an 11/750 you will need to
+have a boot prom.  Most vendors will sell you
+such proms for their controllers; contact your vendor
+if you don't have one.
+.PP
+Other possibilities are:
+.DS
+\fB>>>\fP B ANY
+.DE
+or, on a 750
+.DS
+\fB>>>\fP B/3
+.DE
+These commands boot and ask for the name of the system to be booted.
+They can be used after building a new test system to give the
+boot program the name of the test version of the system.
+.PP
+To bring the system up to a multi-user configuration from the single-user
+status after, e.g., a ``B HPS'' on an 8650, 8600, 11/785 or 11/780, ``B RBS''
+on a 11/730, or a ``B/2'' on an
+11/750 all you have to do is hit ^D on the console.  The system
+will then execute /etc/rc,
+a multi-user restart script (and /etc/rc.local),
+and come up on the terminals listed as
+active in the file /etc/ttys.
+See
+\fIinit\fP\|(8)
+and
+\fIttys\fP\|(5).
+Note, however, that this does not cause a file system check to be performed.
+Unless the system was taken down cleanly, you should run
+``fsck \-p'' or force a reboot with
+\fIreboot\fP\|(8)
+to have the disks checked.
+.PP
+To take the system down to a single user state you can use
+.DS
+\fB#\fP kill 1
+.DE
+or use the
+\fIshutdown\fP\|(8)
+command (which is much more polite, if there are other users logged in.)
+when you are up multi-user.
+Either command will kill all processes and give you a shell on the console,
+as if you had just booted.  File systems remain mounted after the
+system is taken single-user.  If you wish to come up multi-user again, you
+should do this by:
+.DS
+\fB#\fP cd /
+\fB#\fP /etc/umount -a
+\fB#\fP ^D
+.DE
+.PP
+Each system shutdown, crash, processor halt and reboot
+is recorded in the file /usr/adm/shutdownlog
+with the cause.
+.NH 2
+Device errors and diagnostics
+.PP
+When serious errors occur on peripherals or in the system, the system
+prints a warning diagnostic on the console.
+These messages are collected
+by the system error logging process
+.IR syslogd (8)
+and written into a system error log file
+\fI/usr/adm/messages\fP.
+Less serious errors are sent directly to \fIsyslogd\fP,
+which may log them on the console.
+The error priorities that are logged and the locations to which they are logged
+are controlled by \fI/etc/syslog.conf\fP.  See
+.IR syslogd (8)
+for details.
+.PP
+Error messages printed by the devices in the system are described with the
+drivers for the devices in section 4 of the programmer's manual.
+If errors occur suggesting hardware problems, you should contact
+your hardware support group or field service.  It is a good idea to
+examine the error log file regularly
+(e.g. with ``tail \-r \fI/usr/adm/messages\fP'').
+.NH 2
+File system checks, backups and disaster recovery
+.PP
+Periodically (say every week or so in the absence of any problems)
+and always (usually automatically) after a crash,
+all the file systems should be checked for consistency
+by
+\fIfsck\fP\|(1).
+The procedures of
+\fIreboot\fP\|(8)
+should be used to get the system to a state where a file system
+check can be performed manually or automatically.
+.PP
+Dumping of the file systems should be done regularly,
+since once the system is going it is easy to
+become complacent.
+Complete and incremental dumps are easily done with
+\fIdump\fP\|(8).
+You should arrange to do a towers-of-hanoi dump sequence; we tune
+ours so that almost all files are dumped on two tapes and kept for at
+least a week in most every case.  We take full dumps every month (and keep
+these indefinitely).
+Operators can execute ``dump w'' at login that will tell them what needs
+to be dumped
+(based on the /etc/fstab
+information).
+Be sure to create a group
+.B operator
+in the file /etc/group
+so that dump can notify logged-in operators when it needs help.
+.PP
+More precisely, we have three sets of dump tapes: 10 daily tapes,
+5 weekly sets of 2 tapes, and fresh sets of three tapes monthly.
+We do daily dumps circularly on the daily tapes with sequence
+`3 2 5 4 7 6 9 8 9 9 9 ...'.
+Each weekly is a level 1 and the daily dump sequence level
+restarts after each weekly dump.
+Full dumps are level 0 and the daily sequence restarts after each full dump
+also.
+.PP
+Thus a typical dump sequence would be:
+.br
+.ne 6
+.KS
+.TS
+center;
+c c c c c
+n n n l l.
+tape name	level number	date	opr	size
+_
+FULL	0	Nov 24, 1979	jkf	137K
+D1	3	Nov 28, 1979	jkf	29K
+D2	2	Nov 29, 1979	rrh	34K
+D3	5	Nov 30, 1979	rrh	19K
+D4	4	Dec 1, 1979	rrh	22K
+W1	1	Dec 2, 1979	etc	40K
+D5	3	Dec 4, 1979	rrh	15K
+D6	2	Dec 5, 1979	jkf	25K
+D7	5	Dec 6, 1979	jkf	15K
+D8	4	Dec 7, 1979	rrh	19K
+W2	1	Dec 9, 1979	etc	118K
+D9	3	Dec 11, 1979	rrh	15K
+D10	2	Dec 12, 1979	rrh	26K
+D1	5	Dec 15, 1979	rrh	14K
+W3	1	Dec 17, 1979	etc	71K
+D2	3	Dec 18, 1979	etc	13K
+FULL	0	Dec 22, 1979	etc	135K
+.TE
+.KE
+We do weekly dumps often enough that daily dumps always fit on one tape.
+.PP
+Dumping of files by name is best done by
+\fItar\fP\|(1)
+but the amount of data that can be moved in this way is limited
+to a single tape.
+Finally if there are enough drives entire
+disks can be copied with
+\fIdd\fP\|(1)
+using the raw special files and an appropriate
+blocking factor; the number of sectors per track is usually
+a good value to use, consult \fI/etc/disktab\fP.
+.PP
+It is desirable that full dumps of the root file system be
+made regularly.
+This is especially true when only one disk is available.
+Then, if the
+root file system is damaged by a hardware or software failure, you
+can rebuild a workable disk doing a restore in the
+same way that the initial root file system was created.
+.PP
+Exhaustion of user-file space is certain to occur
+now and then; disk quotas may be imposed, or if you
+prefer a less facist approach, try using the programs
+\fIdu\fP\|(1),
+\fIdf\fP\|(1),
+\fIquot\fP\|(8),
+combined with threatening
+messages of the day, and personal letters.
+.NH 2
+Moving file system data
+.PP
+If you have the equipment,
+the best way to move a file system
+is to dump it to magtape using
+\fIdump\fP\|(8),
+use
+\fInewfs\fP\|(8)
+to create the new file system,
+and restore the tape, using \fIrestore\fP\|(8).
+If for some reason you don't want to use magtape,
+dump accepts an argument telling where to put the dump;
+you might use another disk.
+Filesystems may also be moved by piping the output of \fIdump\fP
+to \fIrestore\fP.
+The \fIrestore\fP program uses an ``in-place'' algorithm that
+allows file system dumps to be restored without concern for the
+origiPP
+It is critical for good performance to balance disk load.
+There are at least five components of the disk load that you can
+divide between the available disks:
+.DS
+1. The root file system.
+2. The /tmp file system.
+3. The /usr file system.
+4. The user files.
+5. The paging activity.
+.DE
+The following possibilities are ones we have used at times
+when we had 2, 3 and 4 disks:
+.TS
+center doublebox;
+l | c s s
+l | lw(5) | lw(5) | lw(5).
+	disks
+what	2	3	4
+_
+/	0	0	0
+tmp	1	2	3
+usr	1	1	1
+paging	0+1	0+2	0+2+3
+users	0	0+2	0+2
+archive	x	x	3
+.TE
+.PP
+The most important things to consider are to
+even out the disk load as much as possible, and to do this by
+decoupling file systems (on separate arms) between which heavy copying occurs.
+Note that a long term average balanced load is not important; it is
+much more important to have an instantaneously balanced
+load when the system is busy.
+.PP
+Intelligent experimentation with a few file system arrangements can
+pay off in much improved performance.  It is particularly easy to
+move the root, the
+/tmp
+file system and the paging areas.  Place the
+user files and the
+/usr
+directory as space needs dictate and experiment
+with the other, more easily moved file systems.
+.NH 3
+File system parameters
+.PP
+Each file system is parameterized according to its block size,
+fragment size, and the disk geometry characteristics of the
+medium on which it resides.  Inaccurate specification of the disk
+characteristics or haphazard choice of the file system parameters
+can result in substantial throughput degradation or significant
+waste of disk space.  As distributed,
+file systems are configured according to the following table.
+.DS
+.TS
+center;
+l l l.
+File system	Block size	Fragment size
+_
+/	8 Kbytes	1 Kbytes
+usr	4 Kbytes	512 bytes
+users	4 Kbytes	1 Kbytes
+.TE
+.DE
+.PP
+The root file system block size is
+made large to optimize bandwidth to the associated
+disk;  this is particularly important since the
+/tmp directory is normally part of the root file or a similar filesystem.
+The large block size is also
+important as many of the most heavily used programs
+are demand paged out of the /bin directory.  The
+fragment size of 1 Kbytes is a ``nominal'' value to use
+with a file system.  With a 1 Kbyte fragment size
+disk space utilization is about the same
+as with the earlier versions of the file system.
+.PP
+The usr file system uses a 4 Kbyte block size
+with 512 byte fragment size in an effort to get
+high performance while conserving the amount of
+space wasted by a large fragment size.  Space compaction
+has been deemed important here because the source code
+for the system is normally placed on this file system.
+If the source code is placed on a separate filesystem,
+use of an 8 Kbyte block size with 1 Kbyte fragments might
+be considered for improved performance when paging from \fI/usr\fP binaries.
+.PP
+The file systems for users have a 4 Kbyte block
+size with 1 Kbyte fragment size.  These parameters
+have been selected based on observations of the
+performance of our user file systems.  The 4 Kbyte
+block size provides adequate bandwidth while the
+1 Kbyte fragment size provides acceptable space compaction
+and disk fragmentation.
+.PP
+Other parameters may be chosen in constructing file
+systems, but the factors involved in choosing a block
+size and fragment size are many and interact in complex
+ways.  Larger block sizes result in better
+throughput to large files in the file system as
+larger I/O requests will then be performed by the
+system.  However,
+consideration must be given to the average file sizes
+found in the file system and the performance of the
+internal system buffer cache.   The system
+currently provides space in the inode for
+12 direct block pointers, 1 single indirect block
+pointer, and 1 double indirect block pointer.*
+.FS
+* A triple indirect block pointer is also reserved, but
+not currently supported.
+.FE
+If a file uses only direct blocks, access time to
+it will be optimized by maximizing the block size.
+If a file spills over into an indirect block,
+increasing the block size of the file system may
+decrease the amount of space used
+by eliminating the need to allocate an indirect block.
+However, if the block size is increased and an indirect
+block is still required, then more disk space will be
+used by the file because indirect blocks are allocated
+according to the block size of the file system. 
+.PP
+In selecting a fragment size for a file system, at least
+two considerations should be given.  The major performance
+tradeoffs observed are between an 8 Kbyte block file system
+and a 4 Kbyte block file system.  Because of implementation
+constraints, the block size / fragment size ratio can not
+be greater than 8.  This means that an 8 Kbyte file system
+will always have a fragment size of at least 1 Kbytes.  If
+a file system is created with a 4 Kbyte block size and a
+1 Kbyte fragment size, then upgraded to an 8 Kbyte block size
+and 1 Kbyte fragment size, identical space compaction will be
+observed.  However, if a file system has a 4 Kbyte block size
+and 512 byte fragment size, converting it to an 8K/1K
+file system will result in significantly more space being
+used.  This implies that 4 Kbyte block file systems that
+might be upgraded to 8 Kbyte blocks for higher performance should
+use fragment sizes of at least 1 Kbytes to minimize the amount
+of work required in conversion.
+.PP
+A second, more important, consideration when selecting the
+fragment size for a file system is the level of fragmentation 
+on the disk.  With a 512 byte fragment size, storage fragmentation
+occurs much sooner, particularly with a busy file system running
+near full capacity.  By comparison, the level of fragmentation in a 
+1 Kbyte fragment file system is one tenth as severe.  This
+means that on file systems where many files are created and
+deleted, the 512 byte fragment size is more likely to result in apparent
+space exhaustion because of fragmentation.  That is, when the file 
+system is nearly full, file expansion that requires locating a
+contiguous area of disk space is more likely to fail on a 512
+byte file system than on a 1 Kbyte file system.  To minimize
+fragmentation problems of this sort, a parameter in the super
+block specifies a minimum acceptable free space threshold.  When
+normal users (i.e. anyone but the super-user) attempt to allocate
+disk space and the free space threshold is exceeded, the user is
+returned an error as if the file system were really full.  This
+parameter is nominally set to 10%; it may be changed by supplying
+a parameter to \fInewfs\fP, or by updating the super block of an
+existing file system using \fItunefs\fP\|(8).
+.PP
+In general, unless a file system is to be used
+for a special purpose application (for example, storing
+image processing data), we recommend using the
+values supplied above.
+Remember that the current
+implementation limits the block size to at most 8 Kbytes
+and the ratio of block size / fragment size must be 1, 2, 4, or 8.
+.PP
+The disk geometry information used by the file system
+affects the block layout policies employed.  The file
+/etc/disktab, as supplied, contains the data for most
+all drives supported by the system.  When constructing
+a file system you should use the \fInewfs\fP\|(8) program
+and specify the type of disk on which the file system
+resides.  This file also contains the default
+file system partition
+sizes, and default block and fragment sizes.  To
+override any of the default values you can modify the file
+or use an option to \fInewfs\fP.
+.NH 3
+Implementing a layout
+.PP
+To put a chosen disk layout into effect, you should use the
+.IR newfs (8)
+command to create each new file system.
+Each file system must also be added to the file
+/etc/fstab
+so that it will be checked and mounted when the system is bootstrapped.
+.PP
+As an example, consider a system with RM80's.  On the first RM80, hp0,
+we will put the root file system in hp0a, and the /usr
+file system in hp0g, which has enough space to hold it and then some.
+The /tmp directory will be part of the root file system,
+as no file system will be mounted on /tmp.
+If we had only one RM80, we would put user files
+in the hp0g partition with the system source and binaries.
+.Pnal size of the file system.  Further, portions of a
+file system may be selectively restored using a method similar
+to the tape archive program.
+.PP
+If you have to merge a file system into another, existing one,
+the best bet is to
+use \fItar\fP\|(1).
+If you must shrink a file system, the best bet is to dump
+the original and restore it onto the new file system.
+If you
+are playing with the root file system and only have one drive,
+the procedure is more complicated.
+If the only drive is a Winchester disk, this procedure may not be used
+without overwriting the existing root or another partition.
+What you do is the following:
+.IP 1.
+GET A SECOND PACK!!!!
+.IP 2.
+Dump the root file system to tape using
+\fIdump\fP\|(8).
+.IP 3.
+Bring the system down and mount the new pack.
+.IP 4.
+Load the distribution tape and install the new
+root file system as you did when first installing the system.
+.IP 5.
+Boot normally
+using the newly created disk file system.
+.PP
+Note that if you change the disk partition tables or add new disk
+drivers they should also be added to the standalone system in
+\fI/sys/stand\fP and the default disk partition tables in \fI/etc/disktab\fP
+should be modified.
+.NH 2
+Monitoring System Performance
+.PP
+The
+.I systat
+program provided with the system is designed to be an aid to monitoring
+systemwide activity.  The default ``pigs'' mode shows a dynamic ``ps''.
+By running in the ``vmstat'' mode
+when the system is active you can judge the system activity in several
+dimensions: job distribution, virtual memory load, paging and swapping
+activity, device interrupts, and disk and cpu utilization.
+Ideally, there should be few blocked (b) jobs,
+there should be little paging or swapping activity, there should
+be available bandwidth on the disk devices (most single arms peak
+out at 20-30 tps in practice), and the user cpu utilization (us) should
+be high (above 50%).
+.PP
+If the system is busy, then the count of active jobs may be large,
+and several of these jobs may often be blocked (b).  If the virtual
+memory is active, then the paging demon will be running (sr will
+be non-zero).  It is healthy for the paging demon to free pages when
+the virtual memory gets active; it is triggered by the amount of free
+memory dropping below a threshold and increases its pace as free memory
+goes to zero.
+.PP
+If you run in the ``vmstat'' mode
+when the system is busy, you can find
+imbalances by noting abnormal job distributions.  If many
+processes are blocked (b), then the disk subsystem
+is overloaded or imbalanced.  If you have several non-dma
+devices or open teletype lines that are ``ringing'', or user programs
+that are doing high-speed non-buffered input/output, then the system
+time may go high (60-70% or higher).
+It is often possible to pin down the cause of high system time by
+looking to see if there is excessive context switching (cs), interrupt
+activity (in) and per-device interrupt counts,
+or system call activity (sy).  Cumulatively on one of
+our large machines we average about 60-100 context switches and interrupts
+per second and about 70-120 system calls per second.
+.PP
+If the system is heavily loaded, or if you have little memory
+for your load (2M is little in most any case), then the system
+may be forced to swap.  This is likely to be accompanied by a noticeable
+reduction in system performance and pregnant pauses when interactive
+jobs such as editors swap out.
+If you expect to be in a memory-poor environment
+for an extended period you might consider administratively
+limiting system load.
+.NH 2
+Recompiling and reinstalling system software
+.PP
+It is easy to regenerate the system, and it is a good
+idea to try rebuilding pieces of the system to build confidence
+in the procedures.
+The system consists of two major parts:
+the kernel itself (/sys) and the user programs
+(/usr/src and subdirectories).
+The major part of this is /usr/src.
+.PP
+The three major libraries are the C library in /usr/src/lib/libc
+and the \s-2FORTRAN\s0 libraries /usr/src/usr.lib/libI77 and
+/usr/src/usr.lib/libF77.  In each
+case the library is remade by changing into the corresponding directory
+and doing
+.DS
+\fB#\fP make
+.DE
+and then installed by
+.DS
+\fB#\fP make install
+.DE
+Similar to the system,
+.DS
+\fB#\fP make clean
+.DE
+cleans up.
+.PP
+The source for all other libraries is kept in subdirectories of
+/usr/src/usr.lib; each has a makefile and can be recompiled by the above
+recipe.
+.PP
+If you look at /usr/src/Makefile, you will see that
+you can recompile the entire system source with one command.
+To recompile a specific program, find
+out where the source resides with the \fIwhereis\fP\|(1)
+command, then change to that directory and remake it
+with the makefile present in the directory.
+For instance, to recompile ``date'', 
+all one has to do is
+.DS
+\fB#\fP whereis date
+\fBdate: /usr/src/bin/date.c /bin/date /usr/man/man1/date.1\fP
+\fB#\fP cd /usr/src/bin
+\fB#\fP make date
+.DE
+this will create an unstripped version of the binary of ``date''
+in the current directory.  To install the binary image, use the
+install command as in
+.DS
+\fB#\fP install \-s date /bin/date
+.DE
+The \-s option will insure the installed version of date has
+its symbol table stripped.  The install command should be used
+instead of mv or cp as it understands how to install programs
+even when the program is currently in use.
+.PP
+If you wish to recompile and install all programs in a particular
+target area you can override the default target by doing:
+.DS
+\fB#\fP make
+\fB#\fP make DESTDIR=\fIpathname\fP install
+.DE
+.PP
+To regenerate all the system source you can do
+.DS
+\fB#\fP cd /usr/src
+\fB#\fP make
+.DE
+.PP
+If you modify the C library, say to change a system call,
+and want to rebuild and install everything from scratch you
+have to be a little careful.
+You must insure that the libraries are installed before the
+remainder of the source, otherwise the loaded images will not
+contain the new routine from the library.  The following
+sequence will accomplish this.
+.DS
+\fB#\fP cd /usr/src
+\fB#\fP make clean
+\fB#\fP make build
+\fB#\fP make installsrc
+.DE
+The first \fImake\fP removes any existing binaries in the source trees
+to insure that everything is reloaded.
+The next \fImake\fP compiles and installs the libraries and compilers,
+then compiles the remainder of the sources.
+The final line installs all of the commands not installed in the first phase.
+This will take about 18 hours on a reasonably configured 11/750.
+.NH 2
+Making local modifications
+.PP
+To keep track of changes to system source we migrate changed
+versions of commands in /usr/src/bin, /usr/src/usr.bin, and /usr/src/ucb
+in through the directory /usr/src/new
+and out of the original directory into /usr/src/old for
+a time before removing them.
+(/usr/new is also used by default for the programs that constitute
+the contributed software portion of the distribution.)
+Locally written commands that aren't distributed are kept in /usr/src/local
+and their binaries are kept in /usr/local.  This allows /usr/bin, /usr/ucb,
+and /bin to correspond to the distribution tape (and to the manuals that
+people can buy).  People wishing to use /usr/local commands are made
+aware that they aren't in the base manual.  As manual updates incorporate
+these commands they are moved to /usr/ucb.
+.PP
+A directory, /usr/junk, to throw garbage into, as well as binary directories,
+/usr/old and /usr/new, are useful.  The man command supports manual
+directories such as /usr/man/mano for old and /usr/man/manl for local
+to make this or something similar practical.
+.NH 2
+Accounting
+.PP
+UNIX optionally records two kinds of accounting information:
+connect time accounting and process resource accounting.  The connect
+time accounting information is stored in the file \fI/usr/adm/wtmp\fP, which
+is summarized by the program
+.IR ac (8).
+The process time accounting information is stored in the file
+\fI/usr/adm/acct\fP after it is enabled by
+.IR accton (8),
+and is analyzed and summarized by the program
+.IR sa (8).
+.PP
+If you need to recharge for computing time, you can develop
+procedures based on the information provided by these commands.
+A convenient way to do this is to give commands to the clock daemon
+.I /etc/cron
+to be P
+If we had a second RM80, we would place \fI/usr\fP in hp1g.
+We would put user files in hp0g, calling the file system /mnt.
+We would also interleave the paging
+between the 2 RM80's.  To do this we would build a system configuration
+that specified:
+.DS
+config	vmunix	root on hp0 swap on hp0 and hp1
+.DE
+to get the swap interleaved, and \fI/etc/fstab would then contain
+.DS
+/dev/hp0a:/:rw:1:1
+/dev/hp0b::sw::
+/dev/hp0g:/mnt:rw:1:2
+/dev/hp1b::sw::
+/dev/hp1g:/usr:rw:1:2
+.DE
+We would keep a backup copy of the root
+file system in the \fBhp1a\fP disk partition.
+Alternatively, that partition could be used for \fI/tmp\fP.
+.PP
+To make the /mnt file system we would do:
+.DS
+\fB#\fP cd /dev
+\fB#\fP MAKEDEV hp1
+\fB#\fP newfs hp1g rm80
+(information about file system prints out)
+\fB#\fP mkdir /mnt
+\fB#\fP mount /dev/hp1g /mnt
+.DE
+.NH 2
+Configuring terminals
+.PP
+If UNIX is to support simultaneous
+access from directly-connected terminals other than the console,
+the file \fI/etc/ttys\fP (\fIttys\fP\|(5)) must be edited.
+.PP
+Terminals connected via DZ11 interfaces are conventionally named \fBttyDD\fP
+where DD is a decimal number, the ``minor device'' number.
+The lines on dz0 are named /dev/tty00, /dev/tty01, ... /dev/tty07.
+By convention, all other terminal names are of the form \fBtty\fPCX, where
+C is an alphabetic character according to the type of terminal multiplexor
+and its unit number,
+and X is a digit for the first ten lines on the interface
+and an increasing lower case letter for the rest of the lines.
+C is defined for the number of interfaces of each type listed below.
+.DS
+.TS
+center box;
+c c c c
+c c c c
+l c n n.
+Interface		Number of lines	Number of
+Type	Characters	per board	Interfaces
+_
+DZ11	see above	8	10
+DMF32	A-C,E-I	8	8
+DMZ32	a-c,e-g	24	6
+DH11	h-o	16	8
+DHU11	S-Z	16	8
+pty	p-u	16	6
+.TE
+.DE
+.PP
+To add a new terminal device, be sure the device is configured into the system
+and that the special files for the device have been made by /dev/MAKEDEV.
+Then, enable the appropriate lines of /etc/ttys by setting the ``status''
+field to \fBon\fP (or add new lines).
+Note that lines in \fI/etc/ttys\fP are one-for-one with entries
+in the file of current users (\fI/etc/utmp\fP),
+and therefore it is best to make changes
+while running in single-user mode
+and to add all of the entries for a new device at once.
+.PP
+The format of the /etc/ttys file is completely new in \*(4B.
+Each line in the file is broken into four tab separated
+fields (comments are shown by a `#' character and extend to
+the end of the line).  For each terminal line the four fields
+are:
+the device (without a leading /dev),
+the program /etc/init should startup to service the line
+(or \fBnone\fP if the line is to be left alone),
+the terminal type (found in /etc/termcap),
+and optional status information describing if the terminal is
+enabled or not and if it is ``secure'' (i.e. the super user should
+be allowed to login on the line).  All fields are character strings
+with entries requiring embedded white space enclosed in double
+quotes.
+Thus a newly added terminal /dev/tty00 could be added as
+.DS
+tty00 	"/etc/getty std.9600"	vt100	on secure	# mike's office
+.DE
+The std.9600 parameter provided
+to /etc/getty is used in searching the file /etc/gettytab; it specifies
+a terminal's characteristics (such as baud rate).
+To make custom terminal types, consult 
+.IR gettytab (5)
+before modifying /etc/gettytab.
+.PP
+Dialup terminals should be wired so that carrier is asserted only when the
+phone line is dialed up.
+For non-dialup terminals from which modem control
+is not available, you must either wire back the signals so that
+the carrier appears to always be present, or show in the system
+configuration that carrier is to be assumed to be present
+with \fIflags\fP for each terminal device.  See
+.IR dh (4),
+.IR dhu (4),
+.IR dz (4),
+.IR dmz (4),
+and
+.IR dmf (4)
+for details.
+.PP
+For network terminals (i.e. pseudo terminals), no program should
+be started up on the lines.  Thus, the normal entry in /etc/ttys
+would look like
+.DS
+ttyp0 	none	network
+.DE
+(Note the fourth field is not needed when here.)
+.PP
+When the system is running multi-user, all terminals that are listed
+in /etc/ttys as \fBon\fP have their line are enabled.
+If, during normal operations, it is desired
+to disable a terminal line, you can edit the file
+/etc/ttys
+to change the terminal's status to \fBoff\fP and
+then send a hangup signal to the \fIinit\fP process, by doing
+.DS
+\fB#\fP kill \-1 1
+.DE
+Terminals can similarly be enabled by changing the status field
+from \fBoff\fP to \fBon\fP and sending a hangup signal to \fIinit\fP.
+.PP
+Note that if a special file is inaccessible when \fIinit\fP tries
+to create a process for it, init will log a message to the
+system error logging process (/etc/syslogd)
+and try to reopen the terminal every minute, reprinting the warning
+message every 10 minutes.  Messages of this sort are normally
+printed on the console, though other actions may occur depending
+on the configuration information found in /etc/syslog.conf.
+.PP
+Finally note that you should change the names of any dialup
+terminals to ttyd?
+where ? is in [0-9a-zA-Z], as some programs use this property of the
+names to determine if a terminal is a dialup.
+Shell commands to do this should be put in the /dev/MAKEDEV.local
+script.
+.PP
+While it is possible to use truly arbitrary strings for terminal names,
+the accounting and noticeably the
+\fIps\fP\|(1)
+command make good use of the convention that tty names
+(by default, and also after dialups are named as suggested above)
+are distinct in the last 2 characters. 
+Change this and you may be sorry later, as the heuristic
+\fIps\fP\|(1)
+uses based on these conventions will then break down and ps will
+run MUCH slower.
+.NH 2
+Adding users
+.PP
+New users can be added to the system by adding a line to the
+password file
+/etc/passwd.
+The procedure for adding a new user is described in
+.IR adduser (8).
+.PP
+You should add accounts for the initial user community, giving
+each a directory and a password, and putting users who will wish
+to share software in the same groups.
+.PP
+Several guest accounts have been provided on the distribution
+system; these accounts are for people at Berkeley, 
+Bell Laboratories, and others
+who have done major work on UNIX in the past.  You can delete these accounts,
+or leave them on the system if you expect that these people would have
+occasion to login as guests on your system.
+.NH 2
+Site tailoring
+.PP
+All programs that require the site's name, or some similar
+characteristic, obtain the information through system calls
+or from files located in /etc.  Aside from parts of the
+system related to the network, to tailor the system to your
+site you must simply select a site name, then edit the file
+.DS
+/etc/rc.local
+.DE
+The first line in /etc/rc.local,
+.DS
+/bin/hostname \fImysitename\fP
+.DE
+defines the value returned by the 
+.IR gethostname (2)
+system call.  If you are running the name server, your site
+name should be your fully qualified domain name.  Programs such as
+.IR getty (8),
+.IR mail (1),
+.IR wall (1),
+.IR uucp (1),
+and
+.IR who (1)
+use this system call so that the binary images are site
+independent.
+.NH 2
+Setting up the line printer system
+.PP
+The line printer system consists of at least
+the following files and commands:
+.DS
+.TS
+l l.
+/usr/ucb/lpq	spooling queue examination program
+/usr/ucb/lprm	program to delete jobs from a queue
+/usr/ucb/lpr	program to enter a job in a printer queue
+/etc/printcap	printer configuration and capability data base
+/usr/lib/lpd	line printer daemon, scans spooling queues
+/etc/lpc	line printer control program
+/etc/hosts.lpd	list of host allowed to use the printers
+.TE
+.DE
+.PP
+The file /etc/printcap is a master data base describing line
+printers directly attached to a machine and, also, printers
+accessible across a network.  The manual page
+.IR printcap (5)
+describes the format of this data base and also
+shows the default values for such things as the directory
+in which spooling is performed.  The line printer system handles
+multiple printers, multiple spooling queues, local and remote
+printers, and also printers attached via serial lines that require
+line initialization such as the baud rexecuted every day at a specified time.  This is done by adding
+lines to \fI/usr/adm/crontab\fP; see
+.IR cron (8)
+for details.
+.NH 2
+Resource control
+.PP
+Resource control in the current version of UNIX is more
+elaborate than in most UNIX systems.  The disk quota
+facilities developed at the University of Melbourne have
+been incorporated in the system and allow control over the
+number of files and amount of disk space each user may use
+on each file system.  In addition, the resources consumed
+by any single process can be limited by the mechanisms of
+\fIsetrlimit\fP\|(2).  As distributed, the latter mechanism
+is voluntary, though sites may choose to modify the login
+mechanism to impose limits not covered with disk quotas.
+.PP
+To use the disk quota facilities, the system must be
+configured with ``options QUOTA''.  File systems may then
+be placed under the quota mechanism by creating a null file
+.I quotas
+at the root of the file system, running
+.IR quotacheck (8),
+and modifying \fI/etc/fstab\fP to show that the file system is read-write
+with disk quotas (an ``rq'' type field).  The
+.IR quotaon (8)
+program may then be run to enable quotas.
+.PP
+Individual quotas are applied by using the quota editor
+.IR edquota (8).
+Users may view their quotas (but not those of other users) with the
+.IR quota (1)
+program.  The 
+.IR repquota (8)
+program may be used to summarize the quotas and current
+space usage on a particular file system or file systems.
+.PP
+Quotas are enforced with 
+.I soft
+and
+.I hard
+limits.  When a user first reaches a soft limit on a resource, a
+message is generated on his/her terminal.  If the user fails to
+lower the resource usage below the soft limit the next time
+they log in to the system the
+.I login
+program will generate a warning about excessive usage.  Should
+three login sessions go by with the soft limit breached the
+system then treats the soft limit as a
+.I hard
+limit and disallows any allocations until enough space is
+reclaimed to bring the user back below the soft limit.  Hard
+limits are enforced strictly resulting in errors when a user
+tries to create or write a file.  Each time a hard limit is
+exceeded the system will generate a message on the user's 
+terminal.
+.PP
+Consult the auxiliary document, ``Disc Quotas in a UNIX Environment''
+and the appropriate manual entries for more information.
+.NH 2
+Network troubleshooting
+.PP
+If you have anything more than a trivial network configuration,
+from time to time you are bound to run into problems.  Before
+blaming the software, first check your network connections.  On
+networks such as the Ethernet a
+loose cable tap or misplaced power cable can result in severely
+deteriorated service.  The \fInetstat\fP\|(1) program may be of
+aid in tracking down hardware malfunctions.  In particular, look
+at the \fB\-i\fP and \fB\-s\fP options in the manual page.
+.PP
+Should you believe a communication protocol problem exists,
+consult the protocol specifications and attempt to isolate the
+problem in a packet trace.  The SO_DEBUG option may be supplied
+before establishing a connection on a socket, in which case the
+system will trace all traffic and internal actions (such as timers
+expiring) in a circular trace buffer.  This buffer may then
+be printed out with the \fItrpt\fP\|(8C) program.  Most of the
+servers distributed with the system accept a \fB\-d\fP option forcing
+all sockets to be created with debugging turned on.  Consult the
+appropriate manual pages for more information.
+.NH 2
+Files that need periodic attention
+.PP
+We conclude the discussion of system operations by listing
+the files that require periodic attention or are system specific
+.de BP
+.IP \fB\\$1\fP
+.br
+..
+.TS
+center;
+lb a.
+/etc/fstab	how disk partitions are used
+/etc/disktab	disk partition sizes
+/etc/printcap	printer data base
+/etc/gettytab	terminal type definitions
+/etc/remote	names and phone numbers of remote machines for \fItip\fP(1)
+/etc/group	group memberships
+/etc/motd	message of the day
+/etc/passwd	password file; each account has a line
+/etc/rc.local	local system restart script; runs reboot; starts daemons
+/etc/inetd.conf	local internet servers
+/etc/hosts	host name data base
+/etc/networks	network name data base
+/etc/services	network services data base
+/etc/hosts.equiv	hosts under same administrative control
+/etc/syslog.conf	error log configuration for \fIsyslogd\fP\|(8)
+/etc/ttys	enables/disables ports
+/usr/lib/crontab	commands that are run periodically
+/usr/lib/aliases	mail forwarding and distribution groups
+/usr/adm/acct	raw process account data
+/usr/adm/messages	system error log
+/usr/adm/shutdownlog	log of system reboots
+/usr/adm/wtmp	login session accounting
+.TE
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                        #
+# Copyright (c) 1986 Regents of the University of California.
+# All rights reserved.  The Berkeley software License Agreement
+# specifies the terms and conditions for redistribution.
+#
+#	@(#)Makefile	6.1 (Berkeley) 5/14/86
+#
+SRCS=	network.ms
+MACROS=	-msU
+PRINTER=Pdp
+REFER=	refer -p /usr/doc/run/Ind
+TBL=	dtbl -${PRINTER}
+TROFF=	ditroff -${PRINTER}
+
+paper:	paper.${PRINTER}
+	lpr -${PRINTER} -n paper.${PRINTER}
+
+paper.${PRINTER}: ${SRCS}
+	${REFER} -e ${SRCS} | ${TBL} | ${TROFF} ${MACROS} -t > paper.${PRINTER}
+
+clean:
+	rm -f paper.[PT]* *.spell errs Errs make.out
+
+spell:	${SRCS}
+	@for i in ${SRCS}; do \
+		echo $$i; spell $$i | sort | comm -23 - spell.ok > $$i.spell; \
+	done
+                                                                                                                                                                                                                                                                                                                                                        E    .   S€    ..  F    tab37  9G    tablpr 9H    tab300 9I   	 tab300-12 lmJ    tab302 1K   	 tab302-12 lmL    tab382 1M   	 tab382-12 lmN    tab450 1O   	 tab450-12 lmP    tab833 1Q   	 tab833-12 lmR    tabepson  lmS    tabitoh T   	 tabitoh12 lmU    tabnec 1V    tabnec12  lmW    tabnec-t  lmX    tabqume Y   	 tabqume12 lmZ    tabxerox  lm[   
+ tabxerox12 m\    tabx-ecs 2 m]   
+ tabx-ecs12 m^    README sG    tabcrt sJ    tabdtc sN    tabipsi O   	 tabipsi12  m_   
+ tabnec25-t mJ    tab300s G    tabtn300 t mK   
+ tab300s-12 mK   tabdtc12   m                                                                                                                                                                                                                                                                                                                                                                                            .\" Copyright (c) 1980 Regents of the University of California.
+.\" All rights reserved.  The Berkeley software License Agreement
+.\" specifies the terms and conditions for redistribution.
+.\"
+.\"	@(#)dmesg.8	6.2 (Berkeley) 5/19/86
+.\"
+.TH DMESG 8 "May 19, 1986"
+.UC 4
+.SH NAME
+dmesg \- collect system diagnostic messages to form error log
+.SH SYNOPSIS
+.B /etc/dmesg
+[ \- ]
+.SH DESCRIPTION
+.B N.B.:
+.I Dmesg
+is obsoleted by
+.IR syslogd (8)
+for maintenance of the system error log.
+.PP
+.I Dmesg
+looks in a system buffer for recently printed diagnostic messages
+and prints them on the standard output.
+The messages are those printed or logged
+by the system when errors occur.
+If the
+.B \-
+flag is given, then
+.I dmesg
+computes (incrementally) the new messages since the last time it
+was run and places these on the standard output.
+.SH FILES
+.ta 2i
+/usr/adm/msgbuf	scratch file for memory of \- option
+.SH SEE ALSO
+syslogd(8)
+                                                                                                    ate.  Raster output devices
+such as a Varian or Versatec, and laser printers such as an Imagen,
+are also supported by the line printer system.
+.PP
+Remote spooling via the network is handled with two spooling
+queues, one on the local machine and one on the remote machine.
+When a remote printer job is started with
+.IR lpr ,
+the job is
+queued locally and a daemon process created to oversee the
+transfer of the job to the remote machine.  If the destination
+machine is unreachable, the job will remain queued until it is
+possible to transfer the files to the spooling queue on the
+remote machine.  The
+.I lpq 
+program shows the contents of spool
+queues on both the local and remote machines.
+.PP
+To configure your line printers, consult the printcap manual page
+and the accompanying document, ``\*(4B Line Printer Spooler Manual''.
+A call to the
+.I lpd
+program should be present in /etc/rc.
+.NH 2
+Setting up the mail system
+.PP
+The mail system consists of the following commands:
+.DS
+.TS
+l l.
+/bin/mail	old standard mail program, \fIbinmail\fP\|(1)
+/usr/ucb/mail	UCB mail program, described in \fImail\fP\|(1)
+/usr/lib/sendmail	mail routing program
+/usr/spool/mail	mail spooling directory
+/usr/spool/secretmail	secure mail directory
+/usr/bin/xsend	secure mail sender
+/usr/bin/xget	secure mail receiver
+/usr/lib/aliases	mail forwarding information
+/usr/ucb/newaliases	command to rebuild binary forwarding database
+/usr/ucb/biff	mail notification enabler
+/etc/comsat	mail notification daemon
+.TE
+.DE
+Mail is normally sent and received using the
+.IR mail (1)
+command, which provides a front-end to edit the messages sent
+and received, and passes the messages to
+.IR sendmail (8)
+for routing.
+The routing algorithm uses knowledge of the network name syntax,
+aliasing and forwarding information, and network topology, as
+defined in the configuration file /usr/lib/sendmail.cf, to
+process each piece of mail.
+Local mail is delivered by giving it to the program /bin/mail
+that adds it to the mailboxes in the directory /usr/spool/mail/\fIusername\fP,
+using a locking protocol to avoid problems with simultaneous updates.
+After the mail is delivered, the local mail delivery daemon /etc/comsat
+is notified, which in turn notifies
+users who have issued a ``\fIbiff\fP y'' command that mail has arrived.
+.PP
+Mail queued in the directory /usr/spool/mail is normally readable
+only by the recipient.  To send mail that is secure against any possible
+perusal (except by a code-breaker) you should
+use the secret mail facility,
+which encrypts the mail so that no one can read it.
+.PP
+To set up the mail facility you should read the instructions in the
+file READ_ME in the directory /usr/src/usr.lib/sendmail and then adjust
+the necessary configuration files.
+You should also set up the file /usr/lib/aliases for your installation,
+creating mail groups as appropriate.  Documents describing 
+.IR sendmail 's
+operation and installation are also included in the distribution.
+.NH 3
+Setting up a UUCP connection
+.PP
+The version of \fIuucp\fP included in \*(4B is an
+enhanced version of the one originally distributed with 32/V*.
+.FS
+* The \fIuucp\fP included in this distribution is the result
+of work by many people; we gratefully acknowledge their
+contributions, but refrain from mentioning names in the 
+interest of keeping this document current.
+.FE
+The enhancements include:
+.IP \(bu 3
+support for many auto call units and dialers
+in addition to the DEC DN11,
+.IP \(bu 3
+breakup of the spooling area into multiple subdirectories,
+.IP \(bu 3
+addition of an \fIL.cmds\fP file to control the set
+of commands that may be executed by a remote site,
+.IP \(bu 3
+enhanced ``expect-send'' sequence capabilities when
+logging in to a remote site,
+.IP \(bu 3
+new commands to be used in polling sites and
+obtaining snap shots of \fIuucp\fP activity,
+.IP \(bu 3
+additional protocols for different communication media.
+.LP
+This section gives a brief overview of \fIuucp\fP
+and points out the most important steps in its installation.
+.PP
+To connect two UNIX machines with a \fIuucp\fP network link using modems,
+one site must have an automatic call unit
+and the other must have a dialup port.
+It is better if both sites have both.
+.PP
+You should first read the paper in the UNIX System Manager's Manual:
+``Uucp Implementation Description''.
+It describes in detail the file formats and conventions,
+and will give you a little context.
+In addition,
+the document ``setup.tblms'',
+located in the directory /usr/src/usr.bin/uucp/UUAIDS,
+may be of use in tailoring the software to your needs.
+.PP
+The \fIuucp\fP support is located in three major directories:
+/usr/bin,
+/usr/lib/uucp,
+and /usr/spool/uucp.
+User commands are kept in /usr/bin,
+operational commands in /usr/lib/uucp,
+and /usr/spool/uucp is used as a spooling area.
+The commands in /usr/bin are:
+.DS
+.TS
+l l.
+/usr/bin/uucp	file-copy command
+/usr/bin/uux	remote execution command
+/usr/bin/uusend	binary file transfer using mail
+/usr/bin/uuencode	binary file encoder (for \fIuusend\fP)
+/usr/bin/uudecode	binary file decoder (for \fIuusend\fP)
+/usr/bin/uulog	scans session log files
+/usr/bin/uusnap	gives a snap-shot of \fIuucp\fP activity
+/usr/bin/uupoll	polls remote system until an answer is received
+/usr/bin/uuname	prints a list of known uucp hosts
+/usr/bin/uuq	gives information about the queue
+.TE
+.DE
+The important files and commands in /usr/lib/uucp are:
+.DS
+.TS
+l l.
+/usr/lib/uucp/L-devices	list of dialers and hard-wired lines
+/usr/lib/uucp/L-dialcodes	dialcode abbreviations
+/usr/lib/uucp/L.aliases	hostname aliases
+/usr/lib/uucp/L.cmds	commands remote sites may execute
+/usr/lib/uucp/L.sys	systems to communicate with, how to connect, and when
+/usr/lib/uucp/SEQF	sequence numbering control file
+/usr/lib/uucp/USERFILE	remote site pathname access specifications
+/usr/lib/uucp/uucico	\fIuucp\fP protocol daemon
+/usr/lib/uucp/uuclean	cleans up garbage files in spool area
+/usr/lib/uucp/uuxqt	\fIuucp\fP remote execution server
+.TE
+.DE
+while the spooling area contains the following important files and directories:
+.DS
+.TS
+l l.
+/usr/spool/uucp/C.	directory for command, ``C.'' files
+/usr/spool/uucp/D.	directory for data, ``D.'', files
+/usr/spool/uucp/X.	directory for command execution, ``X.'', files
+/usr/spool/uucp/D.\fImachine\fP	directory for local ``D.'' files
+/usr/spool/uucp/D.\fImachine\fPX	directory for local ``X.'' files
+/usr/spool/uucp/TM.	directory for temporary, ``TM.'', files
+/usr/spool/uucp/LOGFILE	log file of \fIuucp\fP activity
+/usr/spool/uucp/SYSLOG	log file of \fIuucp\fP file transfers
+.TE
+.DE
+.PP
+To install \fIuucp\fP on your system,
+start by selecting a site name
+(shorter than 14 characters).  
+A \fIuucp\fP account must be created in the password file and a password set up.
+Then,
+create the appropriate spooling directories with mode 755
+and owned by user \fIuucp\fP, group \fIdaemon\fP.
+.PP
+If you have an auto-call unit,
+the L.sys, L-dialcodes, and L-devices files should be created.
+The L.sys file should contain
+the phone numbers and login sequences
+required to establish a connection with a \fIuucp\fP daemon on another machine.
+For example, our L.sys file looks something like:
+.DS
+adiron Any ACU 1200 out0123456789- ogin-EOT-ogin uucp
+cbosg Never Slave 300
+cbosgd Never Slave 300
+chico Never Slave 1200 out2010123456
+.DE
+The first field is the name of a site,
+the second shows when the machine may be called,
+the third field specifies how the host is connected
+(through an ACU, a hard-wired line, etc.),
+then comes the phone number to use in connecting through an auto-call unit,
+and finally a login sequence.
+The phone number
+may contain common abbreviations that are defined in the L-dialcodes file.
+The device specification should refer to devices
+specified in the L-devices file.
+Listing only ACU causes the \fIuucp\fP daemon, \fIuucico\fP,
+to search for any available auto-call unit in L-devices.
+Our L-dialcodes file is of the form:
+.DS
+ucb 2
+out 9%
+.DE
+while our L-devices file is:
+.DS
+ACU cul0 unused 1200 ventel
+.DE
+Refer to the README file in the \fIuucp\fP source directory
+for more information about installation.
+.PP
+As \fIuucp\fP operates it creates (and removes) many small
+files in the directories undernea.\" Copyright (c) 1980 Regents of the University of California.
+.\" All rights reserved.  The Berkeley software License Agreement
+.\" specifies the terms and conditions for redistribution.
+.\"
+.\"	@(#)b.t	6.1 (Berkeley) 5/14/86
+.\"
+.de IR
+\fI\\$1\fP\|\\$2
+..
+.ds LH "Installing/Operating \*(4B
+.nr H1 6
+.nr H2 0
+.ds RH "Appendix B \- loading the tape monitor
+.ds CF \*(DY
+.bp
+.LG
+.B
+.ce
+APPENDIX B \- LOADING THE TAPE MONITOR
+.sp 2
+.R
+.NL
+.PP
+This section describes how the bootstrap monitor located on
+the first tape of the distribution tape set may be loaded.
+This should not be necessary, but has been included as a fallback
+measure if it is not possible to read the distributed
+console medium.  \fBWARNING\fP:  the bootstraps supplied below
+may not work, in certain instances on an 11/730 because they
+use a buffered data path for transferring data from tape to
+memory; consult our group if you are unable to load the 
+monitor on an 11/730.  All of the addresses given below refer
+to the first SBIA on the 8650 and 8600.
+.PP
+To load the tape bootstrap monitor, first
+mount the magnetic tape on drive 0 at load point, making
+sure that the write ring is not inserted.
+Temporarily
+set the reboot switch on an 11/785, 11/780, or 11/730 to off;
+on an 8650, 8600, or 11/750 set the power-on action to halt.
+(In normal operation an 11/785, 11/780, or 11/730
+will have the reboot switch on,
+and an 8650, 8600, or 11/750 will have the power-on action
+set to boot/restart.)
+.PP
+If you have an 8650, 8600, 11/785 or 11/780 give the commands:
+.RT
+.DS
+\fB>>>\|\fPHALT
+\fB>>>\|\fPUNJAM
+.DE
+Then, on any machine, give the init command:
+.DS
+\fB>>>\|\fPI
+.DE
+and then
+key in at location 200 and execute either the TS, HT, TM, or MT
+bootstrap that follows, as appropriate.  \fBNOTE\fP: All of the addresses
+given in this section refer to the first SBIA on the 8650 and 8600.
+The machine's printouts are shown in boldface,
+explanatory comments are within ( ).
+(You can use `delete' to erase a character and `control U' to kill the
+whole line.)
+.br
+.ne 5
+.sp
+.ID
+.nf
+TS bootstrap
+
+\fB>>>\|\fPD/P 200 3AEFD0
+\fB>>>\|\fPD + D05A0000
+\fB>>>\|\fPD + 3BEF
+\fB>>>\|\fPD + 800CA00
+\fB>>>\|\fPD + 32EFC1
+\fB>>>\|\fPD + CA010000
+\fB>>>\|\fPD + EFC10804
+\fB>>>\|\fPD + 24
+\fB>>>\|\fPD + 15508F
+\fB>>>\|\fPD + ABB45B00
+\fB>>>\|\fPD + 2AB9502
+\fB>>>\|\fPD + 8FB0FB18
+\fB>>>\|\fPD + 956B024C
+\fB>>>\|\fPD + FB1802AB
+\fB>>>\|\fPD + 25C8FB0
+\fB>>>\|\fPD + 6B
+        (The next two deposits set up the addresses of the UNIBUS)
+        (adapter and its memory; the 20006000 here is the address of)
+        (uba0 and the 2013E000 the address of the I/O page, umem0)
+	(on an 8650, 8600, 11/785 or 11/780)
+\fB>>>\|\fPD + 20006000		(8650/8600/785/780 uba0)
+	(8650/8600/785/780 uba1: 20008000, uba2 2000A000)
+	(750 uba0: F30000, uba1: F32000; 730 uba: F26000)
+\fB>>>\|\fPD + 2013E000		(8650/8600/785/780 umem0)
+	(8650/8600/785/780 umem1: 2017E000, umem2: 201BE000)
+	(750 umem0: FFE000, umem1: FBE000; 730 umem: FFE000)
+\fB>>>\|\fPD + 80000000
+\fB>>>\|\fPD + 254C004
+\fB>>>\|\fPD + 80000
+\fB>>>\|\fPD + 264
+\fB>>>\|\fPD + E
+\fB>>>\|\fPD + C001
+\fB>>>\|\fPD + 2000000
+\fB>>>\|\fPS 200
+
+HT bootstrap
+
+\fB>>>\|\fPD/P 200 3EEFD0
+\fB>>>\|\fPD + C55A0000
+\fB>>>\|\fPD + 3BEF
+\fB>>>\|\fPD + 808F00
+\fB>>>\|\fPD + C15B0000
+\fB>>>\|\fPD + C05B5A5B
+\fB>>>\|\fPD + 4008F
+\fB>>>\|\fPD + D05B00
+\fB>>>\|\fPD + 9D004AA
+\fB>>>\|\fPD + C08F326B
+\fB>>>\|\fPD + D424AB14
+\fB>>>\|\fPD + 8FD00CAA
+\fB>>>\|\fPD + 80000000
+\fB>>>\|\fPD + 320800CA
+\fB>>>\|\fPD + AAFE008F
+\fB>>>\|\fPD + 6B39D010
+\fB>>>\|\fPD + 0
+        (The next two deposits set up the addresses of the MASSBUS)
+        (adapter and the drive number for the tape formatter)
+        (the 20010000 here is the address of mba0 on an 8650, 8600, 11/785,)
+	(or 11/780 and the 0 indicates the formatter is drive 0 on mba0)
+\fB>>>\|\fPD + 20010000		(8650/8600/785/780 mba0)
+	(8650/8600/785/780 mba1: 20012000; 750 mba0: F28000, mba1: F2A000)
+\fB>>>\|\fPD + 0				(Formatter unit number in range 0-7)
+\fB>>>\|\fPS 200
+\fB>>>\|\fPS 200
+
+TM bootstrap
+
+\fB>>>\|\fPD/P 200 2AEFD0
+\fB>>>\|\fPD + D0510000
+\fB>>>\|\fPD + 2000008F
+\fB>>>\|\fPD + 800C180
+\fB>>>\|\fPD + 804C1D4
+\fB>>>\|\fPD + 1AEFD0
+\fB>>>\|\fPD + C8520000
+\fB>>>\|\fPD + F5508F
+\fB>>>\|\fPD + 8FAE5200
+\fB>>>\|\fPD + 4A20200
+\fB>>>\|\fPD + B006A2B4
+\fB>>>\|\fPD + 2A203
+        (The following two numbers are uba0 and umem0 on a 8650/8600/785/780)
+	(See TS above for values for other CPU's and UBA's)
+\fB>>>\|\fPD + 20006000		(8650/8600/785/780 uba0)
+\fB>>>\|\fPD + 2013E000		(8650/8600/785/780 umem0)
+\fB>>>\|\fPS 200
+\fB>>>\|\fPS 200
+\fB>>>\|\fPS 200
+
+MT bootstrap
+
+\fB>>>\|\fPD/P 200 46EFD0
+\fB>>>\|\fPD + C55A0000
+\fB>>>\|\fPD + 43EF
+\fB>>>\|\fPD + 808F00
+\fB>>>\|\fPD + C15B0000
+\fB>>>\|\fPD + C05B5A5B
+\fB>>>\|\fPD + 4008F
+\fB>>>\|\fPD + 19A5B00
+\fB>>>\|\fPD + 49A04AA
+\fB>>>\|\fPD + AAD408AB
+\fB>>>\|\fPD + 8FD00C
+\fB>>>\|\fPD + CA800000
+\fB>>>\|\fPD + 8F320800
+\fB>>>\|\fPD + 10AAFE00
+\fB>>>\|\fPD + 2008F3C
+\fB>>>\|\fPD + ABD014AB
+\fB>>>\|\fPD + FE15044
+\fB>>>\|\fPD + 399AF850
+\fB>>>\|\fPD + 6B
+        (The next two deposits set up the addresses of the MASSBUS)
+        (adapter and the drive number for the tape formatter)
+        (the 20012000 here is the address of mba1 on an 8650, 8600, 11/785)
+	(or 11/780 and the 0 indicates the formatter is drive 0 on mba1)
+\fB>>>\|\fPD + 20012000
+\fB>>>\|\fPD + 0
+\fB>>>\|\fPS 200
+\fB>>>\|\fPS 200
+\fB>>>\|\fPS 200
+\fB>>>\|\fPS 200
+.fi
+.sp
+(no functioning toggle-in code exists for the UT device)
+.DE
+.PP
+If the tape doesn't move the first time you start the bootstrap
+program with ``S 200'' you probably have entered the program
+incorrectly (but also check that the tape is online).
+Start over and check your typing.
+For the HT, MT, and TM bootstraps you will not be able to see the
+tape motion as you advance through the first few blocks
+as the tape motion is all within the vacuum columns.
+.PP
+Next, deposit in R10 the address of the tape MBA/UBA and in R11 the
+address of the device registers or unit number from one of:
+.DS
+.TS
+lw(1.5i) l.
+\fB>>>\|\fPD/G A 20006000	(for tapes on 8650/8600/785/780 uba0)
+\fB>>>\|\fPD/G A 20008000	(for tapes on 8650/8600/785/780 uba1)
+\fB>>>\|\fPD/G A 20010000	(for tapes on 8650/8600/785/780 mba0)
+\fB>>>\|\fPD/G A 20012000	(for tapes on 8650/8600/785/780 mba1)
+\fB>>>\|\fPD/G A F30000	(for tapes on 750 uba0)
+\fB>>>\|\fPD/G A F32000	(for tapes on 750 uba1)
+\fB>>>\|\fPD/G A F28000	(for tapes on 750 mba0)
+\fB>>>\|\fPD/G A F2A000	(for tapes on 750 mba1)
+\fB>>>\|\fPD/G A F26000	(for tapes on 730 uba0)
+.TE
+.DE
+and for register 11:
+.DS
+.TS
+lw(1.5i) l.
+\fB>>>\|\fPD/G B 0	(for TM03/TM78 formatters at mba? drive 0)
+\fB>>>\|\fPD/G B 1	(for TM03/TM78 formatters at mba? drive 1)
+\fB>>>\|\fPD/G B 2013F550	(for TM11/TS11/TU80 tapes on 8650/8600/785/780 uba0)
+\fB>>>\|\fPD/G B FFF550	(for TM11/TS11/TU80 tapes on 750 or 730 uba0)
+.TE
+.DE
+Then start the bootstrap program with
+.DS
+\fB>>>\|\fPS 0
+.DE
+.PP
+The console should type
+.DS
+.I
+\fB=\fP
+.R
+.DE
+You are now talking to the tape bootstrap monitor.
+At any point in the following procedure you can return
+to this section, reload the tape bootstrap, and restart the
+procedure.  The console monitor is identical to that
+loaded from a TU58 console cassette, follow the instructions
+in section 2 as they apply to this device.  The only
+exception is that when using programs loaded from the
+tape bootstrap monitor, programs will always return to
+the monitor (the ``='' prompt).  This saves your having
+to type in the above toggle-in code for each program to
+be loaded.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         .\" Copyright (c) 1980 Regents of the University of California.
+.\" All rights reserved.  The Berkeley software License Agreement
+.\" specifies the terms and conditions for redistribution.
+.\"
+.\"	@(#)c.t	6.1 (Berkeley) 5/14/86
+.\"
+.de IR
+\fI\\$1\fP\|\\$2
+..
+.ds LH "Installing/Operating \*(4B
+.nr H1 6
+.nr H2 0
+.ds RH "Appendix C \- installation troubleshooting
+.ds CF \*(DY
+.bp
+.LG
+.B
+.ce
+APPENDIX C \- INSTALLATION TROUBLESHOOTING
+.sp 2
+.R
+.NL
+.PP
+This appendix lists and explains certain problems
+that might be encountered while trying to install the \*(4B
+distribution.  The information provided here is
+limited to the early steps in the installation process;
+i.e. up to the point where the root file system is installed.
+If you have a problem installing
+the release consult this section before contacting our group.
+.SH
+\fBUsing the distribution console medium.\fP
+.LP
+This section describes problems that may occur when using
+the programs provided on the distributed console medium:
+TU58 cassette or RX01 floppy disk.
+.LP
+\fIprogram can not be loaded\fP.
+.LP
+Check to make
+sure the correct floppy or cassette is being used.
+If using a floppy, be sure it is not in upside down.  If using
+a cassette on an 11/730, be certain drive 0 is being used.
+If a hard I/O error occurred while reading a floppy, try resetting
+the console LSI-11 by powering it on and off.  If you can not
+boot the cassette's bootstrap monitor, verify that the standard
+DEC console cassette can be read; if it can not, your cassette
+drive is probably broken.
+.LP
+\fIprogram halts without warning\fP.
+.LP
+Check to make sure you have specified
+the correct disk to format; consult sections 1.3 and 1.4 for a
+discussion of
+the VAX and UNIX device naming conventions.  On 11/750's,
+specifying a non-existent MASSBUS device will cause the
+program to halt as it receives an interrupt (standalone
+programs operate by polling devices).
+.LP
+If using a floppy, try reading the floppy under
+your current system.  If this works, copy the floppy to a new 
+one and begin again.  If using a cassette on an 11/730,
+do likewise.
+.LP
+\fIformat prints ``Known devices are ...''\fP.
+.LP
+You have requested
+.I format
+to work on a device for which it has no driver, or that does not exist;
+only the listed devices are supported.
+.LP
+\fIformat, boot, or copy prints ``unknown drive type''\fP.
+.LP
+A MASSBUS disk was specified, but the associated MASSBUS
+drive type register indicates a drive of unknown type.
+This probably means you typed something wrong or your
+hardware is incorrectly configured.
+.LP
+\fIformat, boot, or copy prints ``unknown device''\fP.
+.LP
+The device specified is probably not one of those supported
+by the distribution; consult section 1.1.  If the device
+is listed in section 1.1, the drive may be dual-ported, or
+for some other reason the driver was unable to decipher
+its characteristics.  If this is a MASSBUS drive, try
+powering the MASSBUS adapter and/or controller on and
+off to clear the drive type register.
+.LP
+\fIcopy does not copy 205 records\fP
+.LP
+If a tape read error occurred,
+clean your tape drive heads.  If a disk write error occurred,
+the disk formatting may have failed.  If the disk pack is
+removable, try another one.  If you are currently running
+UNIX, you can reboot your old system and use \fIdd\fP to
+copy the mini-root file system into a disk partition
+(assuming the destination is not in use by the running
+system).
+.LP
+\fIboot prints ``not a directory''\fP
+.LP
+The
+.I boot
+program was unable to find the requested program because
+it encountered something other than a directory while
+searching the file system.
+This usually suggests that
+no file system is present on the disk partition supplied,
+or the file system has been corrupted.  First check to
+make sure you typed the correct line to boot.  If this
+is the case and you are booting from the mini-root file
+system, the mini-root was probably not copied correctly off the
+tape (perhaps it was not placed in the correct disk partition).
+Try reinstalling the mini-root file system or, if trying
+to boot the true root file system, try booting from the
+mini-root file system and run \fIfsck\fP on the restored
+root file system to insure its integrity.  Finally, as
+a last resort, copy the \fIboot\fP program from the 
+mini-root file system to the newly installed root file system.
+.LP
+\fIboot prints ``bad format''\fP
+.LP
+The program you requested 
+.I boot
+to load did not have a 407, 410, or 413 magic number in its
+header.  This should never happen on a distribution system.
+If you were trying to boot off the root file system, reboot
+the system on the mini-root file system and look at the
+program on the root file system.  Try copying the copy
+of vmunix on the mini-root to the root file system also.
+.LP
+\fIboot prints ``read short''\fP
+.LP
+The file header for the program contained a size larger
+than the actual size of the file located on disk.  This
+is probably the result of file system corruption (or a 
+disk I/O error).  Try booting again or creating a new
+copy of the program to be loaded (see above).
+.SH
+\fBBooting the generic system\fP
+.LP
+This section contains common problems encountered when booting
+the generic version of the system.
+.LP
+\fIsystem panics with ``panic: iinit''\fP
+.LP
+This occurred because the system was unable to mount
+the root file system.
+The root file system supplied at the ``root device?''
+prompt was probably incorrect.  Remember that when running on the
+mini-root file system, this question must be answered
+with something of the form ``hp0*''.  If the answer
+had been ``hp0'', the system would have used the ``a''
+partition on unit 0 of the ``hp'' drive, where presumably 
+no file system exists.
+.LP
+Alternatively, the file system on which you were trying
+to run is corrupted.  Try
+reinstalling the appropriate file system.
+.LP
+\fIsystem selects incorrect root device\fP
+.LP
+That is, you try to boot the system single user with
+``B/2'' or ``B xxS'' but do not get the root file system
+in the expected location.  This is most likely caused
+by your having many disks available more suited to be
+a root file system than the one you wanted.  For example,
+if you have a ``up'' disk and an ``hk'' disk and install
+the system on the ``hk'', then try to boot the system 
+to single-user mode, the heuristic used by the generic
+system to select the root file system will choose the
+``up'' disk.  The following list gives, in descending
+order, those disks thought most suitable to be a root
+file system: ``hp'', ``up'', ``ra'', ``rb'', ``rl'', ``hk''
+(the position of ``rl'' is subject to argument). 
+To get the root device you want you must boot
+using ``B/3'' or ``B ANY'', then supply the root device
+at the prompt.
+.LP
+\fIsystem crashes during autoconfiguration\fP
+.LP
+This is almost always caused by an
+unsupported UNIBUS device being present at a
+location where a supported device was expected.
+You must disable the device in some way, either
+by pulling it off the bus, or by moving the location
+of the console status register (consult Appendix A
+for a complete list of UNIBUS csr's used in the generic system).
+.LP
+\fIsystem does not find device(s)\fP
+.LP
+The UNIBUS device

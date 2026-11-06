@@ -1,0 +1,2644 @@
+, DZ_BRK, DMBIS);
+		else
+			dzaddr->dzbrk = (dz_brk[dz] |= 1 << (unit&07));
+		break;
+
+	case TIOCCBRK:
+		dzaddr = ((struct pdma *)(tp->t_addr))->p_addr;
+		if (dzaddr->dzcsr&DZ_32)
+			(void) dzmctl(dev, DZ_BRK, DMBIC);
+		else
+			dzaddr->dzbrk = (dz_brk[dz] &= ~(1 << (unit&07)));
+		break;
+
+	case TIOCSDTR:
+		(void) dzmctl(dev, DZ_DTR|DZ_RTS, DMBIS);
+		break;
+
+	case TIOCCDTR:
+		(void) dzmctl(dev, DZ_DTR|DZ_RTS, DMBIC);
+		break;
+
+	case TIOCMSET:
+		(void) dzmctl(dev, dmtodz(*(int *)data), DMSET);
+		break;
+
+	case TIOCMBIS:
+		(void) dzmctl(dev, dmtodz(*(int *)data), DMBIS);
+		break;
+
+	case TIOCMBIC:
+		(void) dzmctl(dev, dmtodz(*(int *)data), DMBIC);
+		break;
+
+	case TIOCMGET:
+		*(int *)data = dztodm(dzmctl(dev, 0, DMGET));
+		break;
+
+	default:
+		return (ENOTTY);
+	}
+	return (0);
+}
+
+dmtodz(bits)
+	register int bits;
+{
+	register int b;
+
+	b = (bits >>1) & 0370;
+	if (bits & DML_ST) b |= DZ_ST;
+	if (bits & DML_RTS) b |= DZ_RTS;
+	if (bits & DML_DTR) b |= DZ_DTR;
+	if (bits & DML_LE) b |= DZ_LE;
+	return(b);
+}
+
+dztodm(bits)
+	regis = &dmf_tty[minor(dev)];
+	return ((*linesw[tp->t_line].l_read)(tp, uio));
+}
+
+dmfwrite(dev, uio)
+	dev_t dev;
+	struct uio *uio;
+{
+	register struct tty *tp;
+
+	if (minor(dev) & 0200)
+		return (dmflwrite(dev,uio));
+	tp = &dmf_tty[minor(dev)];
+	return ((*linesw[tp->t_line].l_write)(tp, uio));
+}
+
+/*
+ * DMF32 receiver interrupt.
+ */
+dmfrint(dmf)
+	int dmf;
+{
+	register c;
+	register struct tty *tp;
+	register struct dmfdevice *addr;
+	register struct tty *tp0;
+	int unit;
+	int overrun = 0;
+	register struct uba_device *ui;
+
+	ui = dmfinfo[dmf];
+	if (ui == 0 || ui->ui_alive == 0)
+		return;
+	addr = (struct dmfdevice *)ui->ui_addr;
+	tp0 = &dmf_tty[dmf * 8];
+	/*
+	 * Loop fetching characters from the silo for this
+	 * dmf until there are no more in the silo.
+	 */
+	while ((c = addr->dmfrbuf) < 0) {
+
+		unit = (c >> 8) & 07;
+		tp = tp0 + unit;
+		if (c & DMF_DSC) {
+			addr->dmfcsr = DMF_IE | DMFIR_TBUF | unit;
+			if (addr->dmfrms & DMF_CAR)
+				(void)(*linesw[tp->t_line].l_modem)(tp, 1);
+			else if ((dmfsoftCAR[dmf] & (1 << unit)) == 0 &&
+			    (*linesw[tp->t_line].l_modem)(tp, 0) == 0) {
+				addr->dmfcsr = DMF_IE | DMFIR_LCR | unit;
+				addr->dmflctms = DMFLCR_ENA;
+			}
+			continue;
+		}
+		if ((tp->t_state&TS_ISOPEN) == 0) {
+			wakeup((caddr_t)&tp->t_rawq);
+#ifdef PORTSELECTOR
+			if ((tp->t_state & TS_WOPEN) == 0)
+#endif
+				continue;
+		}
+		if (c & (DMF_PE|DMF_DO|DMF_FE)) {
+			if (c & DMF_PE)
+				if ((tp->t_flags & (EVENP|ODDP)) == EVENP
+			 	|| (tp->t_flags & (EVENP|ODDP)) == ODDP)
+					continue;
+			if ((c & DMF_DO) && overrun == 0) {
+				log(LOG_WARNING, "dmf%d: silo overflow\n", dmf);
+				overrun = 1;
+			}
+			if (c & DMF_FE)
+				/*
+			 	* At framing error (break) generate
+			 	* a null (in raw mode, for getty), or a
+			 	* interrupt (in cooked/cbreak mode).
+			 	*/
+				if (tp->t_flags & RAW)
+					c = 0;
+				else
+					c = tp->t_intrc;
+		}
+#if NBK > 0
+		if (tp->t_line == NETLDISC) {
+			c &= 0177;
+			BKINPUT(c, tp);
+		} else
+#endif
+			(*linesw[tp->t_line].l_rint)(c, tp);
+	}
+}
+
+/*
+ * Ioctl for DMF32.
+ */
+/*ARGSUSED*/
+dmfioctl(dev, cmd, data, flag)
+	dev_t dev;
+	caddr_t data;
+{
+	register struct tty *tp;
+	register int unit = minor(dev);
+	int error;
+ 
+	if (unit & 0200)
+		return (ENOTTY);
+	tp = &dmf_tty[unit];
+	error = (*linesw[tp->t_line].l_ioctl)(tp, cmd, data, flag);
+	if (error >= 0)
+		return (error);
+	error = ttioctl(tp, cmd, data, flag);
+	if (error >= 0) {
+		if (cmd == TIOCSETP || cmd == TIOCSETN || cmd == TIOCLBIS ||
+		    cmd == TIOCLBIC || cmd == TIOCLSET)
+			dmfparam(unit);
+		return (error);
+	}
+	switch (cmd) {
+
+	case TIOCSBRK:
+		(void) dmfmctl(dev, DMF_BRK, DMBIS);
+		break;
+
+	case TIOCCBRK:
+		(void) dmfmctl(dev, DMF_BRK, DMBIC);
+		break;
+
+	case TIOCSDTR:
+		(void) dmfmctl(dev, DMF_DTR|DMF_RTS, DMBIS);
+		break;
+
+	case TIOCCDTR:
+		(void) dmfmctl(dev, DMF_DTR|DMF_RTS, DMBIC);
+		break;
+
+	case TIOCMSET:
+		(void) dmfmctl(dev, dmtodmf(*(int *)data), DMSET);
+		break;
+
+	case TIOCMBIS:
+		(void) dmfmctl(dev, dmtodmf(*(int *)data), DMBIS);
+		break;
+
+	case TIOCMBIC:
+		(void) dmfmctl(dev, dmtodmf(*(int *)data), DMBIC);
+		break;
+
+	case TIOCMGET:
+		*(int *)data = dmftodm(dmfmctl(dev, 0, DMGET));
+		break;
+
+	default:
+		return (ENOTTY);
+	}
+	return (0);
+}
+
+dmtodmf(bits)
+	register int bits;
+{
+	register int b;
+
+	b = bits & 012;
+	if (bits & DML_ST) b |= DMF_RATE;
+	if (bits & DML_RTS) b |= DMF_RTS;
+	if (bits & DML_USR) b |= DMF_USRW;
+	return(b);
+}
+
+dmftodm(bits)
+	register int bits;
+{
+	register int b;
+
+	b = (bits & 012) | ((bits >> 7) & 0760) | DML_LE;
+	if (bits & DMF_USRR) b |= DML_USR;
+	if (bits & DMF_RTS) b |= DML_RTS;
+	return(b);
+}
+ 
+
+/*
+ * Set parameters from open or stty into the DMF hardware
+ * registers.
+ */
+dmfparam(unit)
+	register int unit;
+{
+	register struct tty *tp;
+	register struct dmfdevice *addr;
+	register int lpar, lcr;
+	int s;
+
+	tp = &dmf_tty[unit];
+	addr = (struct dmfdevice *)tp->t_addr;
+	/*
+	 * Block interrupts so parameters will be set
+	 * before the line interrupts.
+	 */
+	s = spltty();
+	addr->dmfcsr = (unit&07) | DMFIR_LCR | DMF_IE;
+	if ((tp->t_ispeed)==0) {
+		tp->t_state |= TS_HUPCLS;
+		(void) dmfmctl(unit, DMF_OFF, DMSET);
+		splx(s);
+		return;
+	}
+	lpar = (dmf_speeds[tp->t_ospeed]<<12) | (dmf_speeds[tp->t_ispeed]<<8);
+	lcr = DMFLCR_ENA;
+	if ((tp->t_ispeed) == B134)
+		lpar |= BITS6|PENABLE;
+	else if (tp->t_flags & (RAW|LITOUT|PASS8))
+		lpar |= BITS8;
+	else {
+		lpar |= BITS7|PENABLE;
+		/* CHECK FOR XON/XOFF AND SET lcr |= DMF_AUTOX; */
+	}
+	if (tp->t_flags&EVENP)
+		lpar |= EPAR;
+	if ((tp->t_ospeed) == B110)
+		lpar |= TWOSB;
+	lpar |= (unit&07);
+	addr->dmflpr = lpar;
+	addr->dmflctms = (addr->dmflctms &~ 0xff) | lcr;
+	splx(s);
+}
+
+/*
+ * DMF32 transmitter interrupt.
+ * Restart the idle line.
+ */
+dmfxint(dmf)
+	int dmf;
+{
+	int unit0 = dmf * 8;
+	struct tty *tp0 = &dmf_tty[unit0];
+	register struct tty *tp;
+	register struct dmfdevice *addr;
+	register struct uba_device *ui;
+	register int t;
+	short cntr;
+
+	ui = dmfinfo[dmf];
+	addr = (struct dmfdevice *)ui->ui_addr;
+	while ((t = addr->dmfcsr) & DMF_TI) {
+		if (t & DMF_NXM)
+			/* SHOULD RESTART OR SOMETHING... */
+			printf("dmf%d: NXM line %d\n", dmf, t >> 8 & 7);
+		t = t >> 8 & 7;
+		tp = tp0 + t;
+		tp->t_state &= ~TS_BUSY;
+		if (tp->t_state&TS_FLUSH)
+			tp->t_state &= ~TS_FLUSH;
+		else if (dmf_dma[unit0 + t]) {
+			/*
+			 * Do arithmetic in a short to make up
+			 * for lost 16&17 bits.
+			 */
+			addr->dmfcsr = DMFIR_TBA | DMF_IE | t;
+			cntr = addr->dmftba -
+			    UBACVT(tp->t_outq.c_cf, ui->ui_ubanum);
+			ndflush(&tp->t_outq, (int)cntr);
+		}
+		if (tp->t_line)
+			(*linesw[tp->t_line].l_start)(tp);
+		else
+			dmfstart(tp);
+	}
+}
+
+/*
+ * Start (restart) transmission on the given DMF32 line.
+ */
+dmfstart(tp)
+	register struct tty *tp;
+{
+	register struct dmfdevice *addr;
+	register int unit, nch;
+	int s;
+	register int dmf;
+
+	unit = minor(tp->t_dev);
+	dmf = unit >> 3;
+	unit &= 07;
+	addr = (struct dmfdevice *)tp->t_addr;
+
+	/*
+	 * Must hold interrupts in following code to prevent
+	 * state of the tp from changing.
+	 */
+	s = spltty();
+	/*
+	 * If it's currently active, or delaying, no need to do anything.
+	 */
+	if (tp->t_state&(TS_TIMEOUT|TS_BUSY|TS_TTSTOP))
+		goto out;
+	/*
+	 * If there are still characters in the silo,
+	 * just reenable the transmitter.
+	 */
+	addr->dmfcsr = DMF_IE | DMFIR_TBUF | unit;
+	if (addr->dmftsc) {
+		addr->dmfcsr = DMF_IE | DMFIR_LCR | unit;
+		addr->dmflctms = addr->dmflctms | DMF_TE;
+		tp->t_state |= TS_BUSY;
+		goto out;
+	}
+	/*
+	 * If there are sleepers, and output has drained below low
+	 * water mark, wake up the sleepers.
+	 */
+	if (tp->t_outq.c_cc<=TTLOWAT(tp)) {
+		if (tp->t_state&TS_ASLEEP) {
+			tp->t_state &= ~TS_ASLEEP;
+			wakeup((caddr_t)&tp->t_outq);
+		}
+		if (tp->t_wsel) {
+			selwakeup(tp->t_wsel, tp->t_state & TS_WCOLL);
+			tp->t_wsel = 0;
+			tp->t_state &= ~TS_WCOLL;
+		}
+	}
+	/*
+	 * Now restart transmission unless the output queue is
+	 * empty.
+	 */
+	if (tp->t_outq.c_cc == 0)
+		goto out;
+	if (tp->t_flags & (RAW|LITOUT))
+		nch = ndqb(&tp->t_outq, 0);
+	else {
+		if ((nch = ndqb(&tp->t_outq, 0200)) == 0) {
+			/*
+		 	* If first thing on queue is a delay process it.
+		 	*/
+			nch = getc(&tp->t_outq);
+			timeout(ttrstrt, (caddr_t)tp, (nch&0x7f)+6);
+			tp->t_state |= TS_TIMEOUT;
+			goto out;
+		}
+	}
+	/*
+	 * If characters to transmit, restart transmission.
+	 */
+	if (nch >= dmf_mindma) {
+		register car;
+
+		dmf_dma[minor(tp->t_dev)] = 1;
+		addr->dmfcsr = DMF_IE | DMFIR_LCR | unit;
+		addr->dmflctms = addr->dmflctms | DMF_TE;
+		car = UBACVT(tp->t_outq.c_cf, dmfinfo[dmf]->ui_ubanum);
+		addr->dmfcsr = DMF_IE | DMFIR_TBA | unit;
+		addr->dmftba = car;
+		addr->dmftcc = ((car >> 2) & 0xc000) | nch;
+		tp->t_state |= TS_BUSY;
+	} else if (nch) {
+		register char *cp = tp->t_outq.c_cf;
+		register int i;
+
+		dmf_dma[minor(tp->t_dev)] = 0;
+		nch = MIN(nch, DMF_SILOCNT);
+		addr->dmfcsr = DMF_IE | DMFIR_LCR | unit;
+		addr->dmflctms = addr->dmflctms | DMF_TE;
+		addr->dmfcsr = DMF_IE | DMFIR_TBUF | unit;
+		for (i = 0; i < nch; i++)
+			addr->dmftbuf = *cp++;
+		ndflush(&tp->t_outq, nch);
+		tp->t_state |= TS_BUSY;
+	}
+out:
+	splx(s);
+}
+
+/*
+ * Stop output on a line, e.g. for ^S/^Q or output flush.
+ */
+/*ARGSUSED*/
+dmfstop(tp, flag)
+	register struct tty *tp;
+{
+	register struct dmfdevice *addr;
+	register unit = minor(tp->t_dev) & 7;
+	int s;
+
+	ad/*
+ * Copyright (c) 1982, 1986 Regents of the University of California.
+ * All rights reserved.  The Berkeley software License Agreement
+ * specifies the terms and conditions for redistribution.
+ *
+ *	@(#)ct.c	7.1 (Berkeley) 6/5/86
+ */
+
+#include "ct.h"
+#if NCT > 0
+/*
+ * GP DR11C driver used for C/A/T or Autologic APS micro-5
+ */
+#include "../machine/pte.h"
+
+#include "param.h"
+#include "systm.h"
+#include "ioctl.h"
+#include "tty.h"
+#include "map.h"
+#include "buf.h"
+#include "conf.h"
+#include "dir.h"
+#include "user.h"
+#include "kernel.h"
+
+#include "ubareg.h"
+#include "ubavar.h"
+
+#define	PCAT	(PZERO+9)
+#define	CATHIWAT	100
+#define	CATLOWAT	30
+
+#define	REQUEST_B	0x8000
+#define REQUEST_A	0x80
+#define	INT_ENB_A	0x40
+#define	INT_ENB_B	0x20
+#define	CSR1		0x2
+#define	CSR0		0x1
+
+struct ct_softc {
+	int	sc_state;
+	struct	clist sc_oq;
+} ct_softc[NCT];
+
+#define	CT_OPEN		0x1
+#define	CT_RUNNING	0x2
+
+struct ctdevice {
+	u_short	ctcsr;
+	u_short	ctobuf;
+	u_short ctibuf;
+};
+
+int	ctprobe(), ctattach(), ctintr();
+struct	uba_device *ctdinfo[NCT];
+u_short	ctstd[] = { 0167770, 0 };
+struct	uba_driver ctdriver = 
+    { ctprobe, 0, ctattach, 0, ctstd, "ct", ctdinfo };
+
+#define	CTUNIT(dev)	(minor(dev))
+
+int	ct_init	= 0;	/* set to CSR1 for testing loopback on controller */
+
+ctprobe(reg)
+	caddr_t reg;
+{
+	register int br, cvec;		/* value-result */
+	register struct ctdevice *ctaddr = (struct ctdevice *)reg;
+
+#ifdef lint
+	br = 0; cvec = br; br = cvec;
+	ctintr(0);
+#endif
+	/*
+	 * There is no way to make a DR11c interrupt without some
+	 * external support. We can't always trust that the typesetter
+	 * will be online and ready so we've made other provisions.
+	 * This probe assumes setting the B Int Enb will generate
+	 * an interrupt. To do this, we set CSR0 and loop this back
+	 * to REQUEST_B in the second plug on the controller.
+	 * Then, we reset the vector to be that for the "real" device.
+	 */
+	ctaddr->ctcsr = INT_ENB_B | CSR0; /* Assume hardware loopback! */
+	DELAY(1000);
+	ctaddr->ctcsr = ct_init; /* should be CSR1 for loopback testing */
+	if (cvec & 04) {
+		printf("ct: resetting vector %o to %o\n", cvec, cvec&0773);
+		cvec &= 0773;
+	}
+	return (sizeof (struct ctdevice));
+}
+
+/*ARGSUSED*/
+ctattach(ui)
+	struct uba_device *ui;
+{
+}
+
+ctopen(dev)
+	dev_t dev;
+{
+	register struct ct_softc *sc;
+	register struct uba_device *ui;
+	register struct ctdevice *ctaddr;
+
+	if (CTUNIT(dev) >= NCT || (ui = ctdinfo[CTUNIT(dev)]) == 0 ||
+	    ui->ui_alive == 0)
+		return (ENODEV);
+	if ((sc = &ct_softc[CTUNIT(dev)])->sc_state&CT_OPEN)
+		return (EBUSY);
+	sc->sc_state = CT_OPEN;
+	ctaddr = (struct ctdevice *)ui->ui_addr;
+	ctaddr->ctcsr |= INT_ENB_A;
+	return (0);
+}
+
+ctclose(dev)
+	dev_t dev;
+{
+	ct_softc[CTUNIT(dev)].sc_state = 0;
+	ctintr(dev);
+	return (0);
+}
+
+ctwrite(dev, uio)
+	dev_t dev;
+	struct uio *uio;
+{
+	register struct ct_softc *sc = &ct_softc[CTUNIT(dev)];
+	register int c;
+	int s;
+
+	while ((c = uwritec(uio)) >= 0) {
+		s = spl5();
+		while (sc->sc_oq.c_cc > CATHIWAT)
+			sleep((caddr_t)&sc->sc_oq, PCAT);
+		while (putc(c, &sc->sc_oq) < 0)
+			sleep((caddr_t)&lbolt, PCAT);
+		if ( ! (sc->sc_state & CT_RUNNING) )
+			ctintr(dev);
+		splx(s);
+	}
+	return (0);
+}
+
+/*
+ * The C/A/T is usually wired to accept data on the .5us DATA_AVAIL strobe.
+ * If you use this with a C/A/T you can remove the lines with "APSu5" below.
+ * This is way out of spec for the Autologic APS micro-5 which requires
+ * at least a 40 microsec strobe. We therefore use CSR1 output as the
+ * "strobe". It is set after data is loaded and reset only in the
+ * interrupt routine. Therefore, the "strobe" is high for adequate time.
+ * The constant "ctdelay" determines the "low" time for the strobe
+ * and may have to be larger on a 780. "2" gives about 10us on a 750.
+ */
+int	ctdelay	= 2;	/* here so it's visible & changeable */
+
+ctintr(dev)
+	dev_t dev;
+{
+	register int c;
+	register struct ct_softc *sc = &ct_softc[CTUNIT(dev)];
+	register struct ctdevice *ctaddr =
+	    (struct ctdevice *)ctdinfo[CTUNIT(dev)]->ui_addr;
+
+	if ((ctaddr->ctcsr&(INT_ENB_B|REQUEST_B)) == (INT_ENB_B|REQUEST_B)) {
+		ctaddr->ctcsr &= ~(CSR0 | INT_ENB_B);	/* set in ctprobe */
+	}
+	if ((ctaddr->ctcsr&(INT_ENB_A|REQUEST_A)) == (INT_ENB_A|REQUEST_A)) {
+		if ((c = getc(&sc->sc_oq)) >= 0) {
+			ctaddr->ctcsr &= ~CSR1;	/* APSu5 - drop strobe */
+			ctaddr->ctobuf = c;
+			DELAY(ctdelay);		/* APSu5 - pause a bit */
+			ctaddr->ctcsr |= CSR1;	/* APSu5 - raise strobe */
+			sc->sc_state |= CT_RUNNING;
+			if (sc->sc_oq.c_cc==0 || sc->sc_oq.c_cc==CATLOWAT)
+				wakeup((caddr_t)&sc->sc_oq);
+		} else if (sc->sc_state == 0) {
+				ctaddr->ctcsr = 0;
+		} else
+			sc->sc_state &= ~CT_RUNNING;
+	}
+}
+#endif
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  /*
+ * Copyright (c) 1982, 1986 Regents of the University of California.
+ * All rights reserved.  The Berkeley software License Agreement
+ * specifies the terms and conditions for redistribution.
+ *
+ *	@(#)dzreg.h	7.1 (Berkeley) 6/5/86
+ */
+
+/*
+ * DZ-11/DZ-32 Registers and bits.
+ */
+struct dzdevice {
+	short dzcsr;
+	short dzrbuf;
+	union {
+		struct {
+			char	dztcr0;
+			char	dzdtr0;
+			char	dztbuf0;
+			char	dzbrk0;
+		} dz11;
+		struct {
+			short	dzlcs0;
+			char	dztbuf0;
+			char	dzlnen0;
+		} dz32;
+	} dzun;
+};
+
+#define dzlpr	dzrbuf
+#define dzmsr	dzun.dz11.dzbrk0
+#define dztcr	dzun.dz11.dztcr0
+#define dzdtr	dzun.dz11.dzdtr0
+#define dztbuf	dzun.dz11.dztbuf0
+#define dzlcs	dzun.dz32.dzlcs0
+#define	dzbrk	dzmsr
+#define dzlnen	dzun.dz32.dzlnen0
+#define dzmtsr	dzun.dz32.dztbuf0
+
+/* bits in dzlpr */
+#define	BITS7	0020
+#define	BITS8	0030
+#define	TWOSB	0040
+#define	PENABLE	0100
+#define	OPAR	0200
+
+/* bits in dzrbuf */
+#define	DZ_PE	010000
+#define	DZ_FE	020000
+#define	DZ_DO	040000
+
+/* bits in dzcsr */
+#define	DZ_32	000001		/* DZ32 mode */
+#define	DZ_MIE	000002		/* Modem Interrupt Enable */
+#define	DZ_CLR	000020		/* Reset dz */
+#define	DZ_MSE	000040		/* Master Scan Enable */
+#define	DZ_RIE	000100		/* Receiver Interrupt Enable */
+#define DZ_MSC	004000		/* Modem Status Change */
+#define	DZ_SAE	010000		/* Silo Alarm Enable */
+#define	DZ_TIE	040000		/* Transmit Interrupt Enable */
+#define	DZ_IEN	(DZ_32|DZ_MIE|DZ_MSE|DZ_RIE|DZ_TIE)
+
+/* flags for modem-control */
+#define	DZ_ON	DZ_DTR
+#define	DZ_OFF	0
+
+/* bits in dzlcs */
+#define DZ_ACK	0100000		/* ACK bit in dzlcs */
+#define DZ_RTS	0010000		/* Request To Send */
+#define	DZ_ST	0004000		/* Secondary Transmit */
+#define	DZ_BRK	0002000		/* Break */
+#define DZ_DTR	0001000		/* Data Terminal Ready */
+#define	DZ_LE	0000400		/* Line Enable */
+#define	DZ_DSR	0000200		/* Data Set Ready */
+#define	DZ_RI	0000100		/* Ring Indicate */
+#define DZ_CD	0000040		/* Carrier Detect */
+#define	DZ_CTS	0000020		/* Clear To Send */
+#define	DZ_SR	0000010		/* Secondary Receive */
+ 
+/* bits in dm lsr, copied from dmreg.h */
+#define	DML_DSR		0000400		/* data set ready, not a real DM bit */
+#define	DML_RNG		0000200		/* ring */
+#define	DML_CAR		0000100		/* carrier detect */
+#define	DML_CTS		0000040		/* clear to send */
+#define	DML_SR		0000020		/* secondary receive */
+#define	DML_ST		0000010		/* secondary transmit */
+#define	DML_RTS		0000004		/* request to send */
+#define	DML_DTR		0000002		/* data terminal ready */
+#define	DML_LE		0000001		/* line enable */
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    dr = (struct dmfdevice *)tp->t_addr;
+	/*
+	 * Block input/output interrupts while messing with state.
+	 */
+	s = spltty();
+	if (flag) {
+		addr->dmfcsr = DMF_IE | DMFIR_TBUF | unit;
+		if (addr->dmftsc) {
+			/*
+			 * Flush regardless of whether we're transmitting
+			 * (TS_BUSY), if the silo contains untransmitted
+			 * characters.
+			 */
+			addr->dmfcsr = DMFIR_LCR | unit | DMF_IE;
+			addr->dmflctms = addr->dmflctms | DMF_TE | DMF_FLUSH;
+			/* this will interrupt so let dmfxint handle the rest */
+			tp->t_state |= TS_FLUSH|TS_BUSY;
+		}
+	} else {
+		if (tp->t_state & TS_BUSY) {
+			/*
+			 * Stop transmission by disabling
+			 * the transmitter.  We'll pick up where we
+			 * left off by reenabling in dmfstart.
+			 */
+			addr->dmfcsr = DMFIR_LCR | unit | DMF_IE;
+			addr->dmflctms = addr->dmflctms &~ DMF_TE;
+			/* no interrupt here */
+			tp->t_state &= ~TS_BUSY;
+		}
+	}
+	splx(s);
+}
+
+/*
+ * DMF32 modem control
+ */
+dmfmctl(dev, bits, how)
+	dev_t dev;
+	int bits, how;
+{
+	register struct dmfdevice *dmfaddr;
+	register int unit, mbits, lcr;
+	int s;
+
+	unit = minor(dev);
+	dmfaddr = (struct dmfdevice *)(dmf_tty[unit].t_addr);
+	unit &= 07;
+	s = spltty();
+	dmfaddr->dmfcsr = DMF_IE | DMFIR_TBUF | unit;
+	mbits = dmfaddr->dmfrms << 8;
+	dmfaddr->dmfcsr = DMF_IE | DMFIR_LCR | unit;
+	lcr = dmfaddr->dmflctms;
+	mbits |= (lcr & 0xff00) >> 8;
+	switch (how) {
+	case DMSET:
+		mbits = (mbits &0xff00) | bits;
+		break;
+
+	case DMBIS:
+		mbits |= bits;
+		break;
+
+	case DMBIC:
+		mbits &= ~bits;
+		break;
+
+	case DMGET:
+		(void) splx(s);
+		return(mbits);
+	}
+	if (mbits & DMF_BRK)
+		lcr |= DMF_RBRK;
+	else
+		lcr &= ~DMF_RBRK;
+	dmfaddr->dmflctms = ((mbits & 037) << 8) | (lcr & 0xff);
+	(void) splx(s);
+	return(mbits);
+}
+
+/*
+ * Reset state of driver if UBA reset was necessary.
+ * Reset the csr, lpr, and lcr registers on open lines, and
+ * restart transmitters.
+ */
+dmfreset(uban)
+	int uban;
+{
+	register int dmf, unit;
+	register struct tty *tp;
+	register struct uba_device *ui;
+	register struct dmfdevice *addr;
+	int i;
+
+	for (dmf = 0; dmf < NDMF; dmf++) {
+		ui = dmfinfo[dmf];
+		if (ui == 0 || ui->ui_alive == 0 || ui->ui_ubanum != uban)
+			continue;
+		printf(" dmf%d", dmf);
+		if (dmf_ubinfo[uban]) {
+			dmf_ubinfo[uban] = uballoc(uban, (caddr_t)cfree,
+			    nclist*sizeof (struct cblock), 0);
+			cbase[uban] = UBAI_ADDR(dmf_ubinfo[uban]);
+		}
+		addr = (struct dmfdevice *)ui->ui_addr;
+		addr->dmfcsr = DMF_IE;
+		addr->dmfrsp = dmf_timeout;
+		unit = dmf * 8;
+		for (i = 0; i < 8; i++) {
+			tp = &dmf_tty[unit];
+			if (tp->t_state & (TS_ISOPEN|TS_WOPEN)) {
+				dmfparam(unit);
+				(void) dmfmctl(unit, DMF_ON, DMSET);
+				tp->t_state &= ~TS_BUSY;
+				dmfstart(tp);
+			}
+			unit++;
+		}
+	}
+}
+
+/*
+ * dmflopen -- open the line printer port on a dmf32
+ */
+/* ARGSUSED */
+dmflopen(dev, flag)
+	dev_t dev;
+	int flag;
+{
+	register int dmf;
+	register struct dmfl_softc *sc;
+	register struct uba_device *ui;
+	register struct dmfdevice *addr;
+
+	dmf = DMFL_UNIT(dev);
+	if (dmf >= NDMF || (ui = dmfinfo[dmf]) == 0 || ui->ui_alive == 0)
+		return (ENXIO);
+	sc = &dmfl_softc[dmf];
+	if (sc->dmfl_state & OPEN)
+		return (EBUSY);
+	addr = (struct dmfdevice *)ui->ui_addr;
+	if (addr->dmfl_ctrl & DMFL_OFFLINE) {
+#ifdef notdef
+		log(LOG_WARNING, "dmf%d: line printer offline/jammed\n",
+			dmf);
+#endif
+		return (EIO);
+	}
+	if ((addr->dmfl_ctrl & DMFL_CONV)) {
+		log(LOG_WARNING, "dmf%d: line printer disconnected\n", dmf);
+		return (EIO);
+	}
+
+	addr->dmfl_ctrl = 0;
+	sc->dmfl_state |= OPEN;
+	return (0);
+}
+
+/* ARGSUSED */
+dmflclose(dev, flag)
+	dev_t dev;
+	int flag;
+{
+	register int dmf = DMFL_UNIT(dev);
+	register struct dmfl_softc *sc = &dmfl_softc[dmf];
+	register struct uba_device *ui = dmfinfo[dmf];
+
+	sc->dmfl_state = 0;
+	if (sc->dmfl_info != 0)
+		ubarelse((int)ui->ui_ubanum, &sc->dmfl_info);
+
+	((struct dmfdevice *)ui->ui_addr)->dmfl_ctrl = 0;
+}
+
+dmflwrite(dev, uio)
+	dev_t dev;
+	struct uio *uio;
+{
+	register int n;
+	register int error;
+	register struct dmfl_softc *sc;
+
+	sc = &dmfl_softc[DMFL_UNIT(dev)];
+	if (sc->dmfl_state & ERROR)
+		return (EIO);
+	while (n = (unsigned)uio->uio_resid) {
+		if (n > DMFL_BUFSIZ) {
+			n = DMFL_BUFSIZ;
+			sc->dmfl_state |= MOREIO;
+		} else
+			sc->dmfl_state &= ~MOREIO;
+		if (error = uiomove(sc->dmfl_buf, (int)n, UIO_WRITE, uio))
+			return (error);
+		if (error = dmflout(dev, sc->dmfl_buf, n))
+			return (error);
+	}
+	return (0);
+}
+
+
+/*
+ * dmflout -- start io operation to dmf line printer
+ *		cp is addr of buf of n chars to be sent.
+ *
+ *	-- dmf will be put in formatted output mode, this will
+ *		be selectable from an ioctl if the
+ *		need ever arises.
+ */
+dmflout(dev, cp, n)
+	dev_t dev;
+	char *cp;
+	int n;
+{
+	register struct dmfl_softc *sc;
+	register int dmf;
+	register struct uba_device *ui;
+	register struct dmfdevice *d;
+	int s;
+
+	dmf = DMFL_UNIT(dev);
+	sc = &dmfl_softc[dmf];
+	if (sc->dmfl_state & ERROR)
+		return (EIO);
+	ui = dmfinfo[dmf];
+	/*
+	 * allocate unibus resources, will be released when io
+	 * operation is done.
+	 */
+	if (sc->dmfl_info == 0)
+		sc->dmfl_info = uballoc(ui->ui_ubanum, cp, n, 0);
+	d = (struct dmfdevice *)ui->ui_addr;
+	d->dmfl_ctrl = sc->dmfl_format;		/* indir reg 2 */
+	/* indir reg auto increments on r/w */
+	/* SO DON'T CHANGE THE ORDER OF THIS CODE */
+	d->dmfl_indrct = 0;			/* prefix chars & num */
+	d->dmfl_indrct = 0;			/* suffix chars & num */
+	d->dmfl_indrct = sc->dmfl_info; 	/* dma lo 16 bits addr */
+	d->dmfl_indrct = -n;			/* number of chars */
+
+	d->dmfl_indrct = ((sc->dmfl_info>>16)&3) | DMFL_OPTIONS;
+						/* dma hi 2 bits addr */
+	d->dmfl_indrct = sc->dmfl_lines 	/* lines per page */
+		| (sc->dmfl_cols<<8);		/* carriage width */
+	sc->dmfl_state |= ASLP;
+	s = spltty();
+	d->dmfl_ctrl |= DMFL_PEN | DMFL_IE;
+	while (sc->dmfl_state & ASLP) {
+		sleep(sc->dmfl_buf, PZERO + 8);
+		while (sc->dmfl_state & ERROR) {
+			timeout(dmflint, (caddr_t)dmf, 10 * hz);
+			sleep((caddr_t)&sc->dmfl_state, PZERO + 8);
+		}
+	}
+	splx(s);
+	return (0);
+}
+
+/*
+ * dmflint -- handle an interrupt from the line printer part of the dmf32
+ */
+dmflint(dmf)
+	int dmf;
+{
+	register struct uba_device *ui;
+	register struct dmfl_softc *sc;
+	register struct dmfdevice *d;
+	short dmfl_stats;
+
+	ui = dmfinfo[dmf];
+	sc = &dmfl_softc[dmf];
+	d = (struct dmfdevice *)ui->ui_addr;
+
+	d->dmfl_ctrl &= ~DMFL_IE;
+	dmfl_stats = d->dmfl_ctrl;
+	if (sc->dmfl_state & ERROR) {
+		if ((dmfl_stats & DMFL_OFFLINE) == 0)
+			sc->dmfl_state &= ~ERROR;
+		wakeup((caddr_t)&sc->dmfl_state);
+		return;
+	}
+	if (dmfl_stats & DMFL_DMAERR)
+		log(LOG_WARNING, "dmf%d: NXM\n", dmf);
+	if (dmfl_stats & DMFL_OFFLINE) {
+		log(LOG_WARNING, "dmf%d: printer error\n", dmf);
+		sc->dmfl_state |= ERROR;
+	}
+#ifdef notdef
+	if (dmfl_stats & DMFL_PDONE) {
+		printf("bytes= %d\n", d->dmfl_indrct);
+		printf("lines= %d\n", d->dmfl_indrct);
+	}
+#endif
+	sc->dmfl_state &= ~ASLP;
+	wakeup((caddr_t)sc->dmfl_buf);
+	if (sc->dmfl_info && (sc->dmfl_state & MOREIO) == 0)
+		ubarelse(ui->ui_ubanum, &sc->dmfl_info);
+}
+
+/* stubs for interrupt routines for devices not yet supported */
+
+dmfsrint()
+{
+	printf("dmfsrint\n");
+}
+
+dmfsxint()
+{
+	printf("dmfsxint\n");
+}
+
+dmfdaint()
+{
+	printf("dmfdaint\n");
+}
+
+dmfdbint()
+{
+	printf("dmfdbint\n");
+}
+#endif NDMF
+                                                              == 0)
+		return;
+	addr = (struct dmdevice *)ui->ui_addr;
+	if (addr->dmcsr&DM_DONE) {
+		if (addr->dmcsr&DM_CF) {
+			unit = addr->dmcsr & 0xf;
+			tp = &dh11[(dm << 4) + unit];
+			if (addr->dmlstat & DML_CAR)
+				(void)(*linesw[tp->t_line].l_modem)(tp, 1);
+			else if ((dhsoftCAR[dm] & (1<<unit)) == 0 &&
+			    (*linesw[tp->t_line].l_modem)(tp, 0) == 0)
+				addr->dmlstat = 0;
+		}
+		addr->dmcsr = DM_IE|DM_SE;
+	}
+}
+#endif
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            ive = 0;
+		break;
+	}
+	/*
+	 * If still ``active'', then don't need any more retries.
+	 */
+	if (um->um_tab.b_active) {
+		/*
+		 * If we were offset positioning,
+		 * return to centerline.
+		 */
+		if (um->um_tab.b_errcnt >= 16) {
+			upaddr->upof = UPOF_FMT22;
+			upaddr->upcs1 = UP_RTC|UP_GO|UP_IE;
+			while (upaddr->upds & UPDS_PIP)
+				DELAY(25);
+			needie = 0;
+		}
+		um->um_tab.b_active = 0;
+		um->um_tab.b_errcnt = 0;
+		um->um_tab.b_actf = dp->b_forw;
+		dp->b_active = 0;
+		dp->b_errcnt = 0;
+		dp->b_actf = bp->av_forw;
+		bp->b_resid = (-upaddr->upwc * sizeof(short));
+		iodone(bp);
+		/*
+		 * If this unit has more work to do,
+		 * then start it up right away.
+		 */
+		if (dp->b_actf)
+			if (upustart(ui))
+				needie = 0;
+	}
+	as &= ~(1<<ui->ui_slave);
+	/*
+	 * Release unibus resources and flush data paths.
+	 */
+	ubadone(um);
+doattn:
+	/*
+	 * Process other units which need attention.
+	 * For each unit which needs attention, call
+	 * the unit start routine to place the slave
+	 * on the controller device queue.
+	 */
+	while (unit = ffs((long)as)) {
+		unit--;		/* was 1 origin */
+		as &= ~(1<<unit);
+		upaddr->upas = 1<<unit;
+		if (unit < UPIPUNITS && upustart(upip[sc21][unit]))
+			needie = 0;
+	}
+	/*
+	 * If the controller is not transferring, but
+	 * there are devices ready to transfer, start
+	 * the controller.
+	 */
+	if (um->um_tab.b_actf && um->um_tab.b_active == 0)
+		if (upstart(um))
+			needie = 0;
+	if (needie)
+		upaddr->upcs1 = UP_IE;
+}
+
+upread(dev, uio)
+	dev_t dev;
+	struct uio *uio;
+{
+	register int unit = upunit(dev);
+
+	if (unit >= NUP)
+		return (ENXIO);
+	return (physio(upstrategy, &rupbuf[unit], dev, B_READ, minphys, uio));
+}
+
+upwrite(dev, uio)
+	dev_t dev;
+	struct uio *uio;
+{
+	register int unit = upunit(dev);
+
+	if (unit >= NUP)
+		return (ENXIO);
+	return (physio(upstrategy, &rupbuf[unit], dev, B_WRITE, minphys, uio));
+}
+
+/*
+ * Correct an ECC error, and restart the i/o to complete
+ * the transfer if necessary.  This is quite complicated because
+ * the transfer may be going to an odd memory address base and/or
+ * across a page boundary.
+ */
+upecc(ui, flag)
+	register struct uba_device *ui;
+	int flag;
+{
+	register struct updevice *up = (struct updevice *)ui->ui_addr;
+	register struct buf *bp = uputab[ui->ui_unit].b_actf;
+	register struct uba_ctlr *um = ui->ui_mi;
+	register struct upst *st;
+	struct uba_regs *ubp = ui->ui_hd->uh_uba;
+	register int i;
+	caddr_t addr;
+	int reg, bit, byte, npf, mask, o, cmd, ubaddr;
+	int bn, cn, tn, sn;
+
+	/*
+	 * Npf is the number of sectors transferred before the sector
+	 * containing the ECC error, and reg is the UBA register
+	 * mapping (the first part of) the transfer.
+	 * O is offset within a memory page of the first byte transferred.
+	 */
+	if (flag == CONT)
+		npf = bp->b_error;
+	else
+		npf = btodb(bp->b_bcount + (up->upwc * sizeof(short)) + 511);
+	reg = btop(um->um_ubinfo&0x3ffff) + npf;
+	o = (int)bp->b_un.b_addr & PGOFSET;
+	mask = up->upec2;
+#ifdef UPECCDEBUG
+	printf("npf %d reg %x o %d mask %o pos %d\n", npf, reg, o, mask,
+	    up->upec1);
+#endif
+	bn = bp->b_blkno;
+	st = &upst[ui->ui_type];
+	cn = bp->b_cylin;
+	sn = bn%st->nspc + npf;
+	tn = sn/st->nsect;
+	sn %= st->nsect;
+	cn += tn/st->ntrak;
+	tn %= st->ntrak;
+	ubapurge(um);
+	um->um_tab.b_active=2;
+	/*
+	 * action taken depends on the flag
+	 */
+	switch(flag){
+	case ECC:
+		npf--;
+		reg--;
+		mask = up->upec2;
+		log(LOG_WARNING, "up%d%c: soft ecc sn%d\n", upunit(bp->b_dev),
+			'a'+(minor(bp->b_dev)&07), bp->b_blkno + npf);
+		/*
+		 * Flush the buffered data path, and compute the
+		 * byte and bit position of the error.  The variable i
+		 * is the byte offset in the transfer, the variable byte
+		 * is the offset from a page boundary in main memory.
+		 */
+		i = up->upec1 - 1;		/* -1 makes 0 origin */
+		bit = i&07;
+		i = (i&~07)>>3;
+		byte = i + o;
+		/*
+		 * Correct while possible bits remain of mask.  Since mask
+		 * contains 11 bits, we continue while the bit offset is > -11.
+		 * Also watch out for end of this block and the end of the whole
+		 * transfer.
+		 */
+		while (i < 512 && (int)dbtob(npf)+i < bp->b_bcount && bit > -11) {
+			struct pte pte;
+
+			pte = ubp->uba_map[reg + btop(byte)];
+			addr = ptob(pte.pg_pfnum) + (byte & PGOFSET);
+#ifdef UPECCDEBUG
+			printf("addr %x map reg %x\n",
+				addr, *(int *)(&ubp->uba_map[reg+btop(byte)]));
+			printf("old: %x, ", getmemc(addr));
+#endif
+			putmemc(addr, getmemc(addr)^(mask<<bit));
+#ifdef UPECCDEBUG
+			printf("new: %x\n", getmemc(addr));
+#endif
+			byte++;
+			i++;
+			bit -= 8;
+		}
+		if (up->upwc == 0)
+			return (0);
+		npf++;
+		reg++;
+		break;
+	case BSE:
+		/*
+		 * if not in bad sector table, return 0
+		 */
+		if ((bn = isbad(&upbad[ui->ui_unit], cn, tn, sn)) < 0)
+			return(0);
+		/*
+		 * flag this one as bad
+		 */
+		bp->b_flags |= B_BAD;
+		bp->b_error = npf + 1;
+#ifdef UPECCDEBUG
+		printf("BSE: restart at %d\n",npf+1);
+#endif
+		bn = st->ncyl * st->nspc -st->nsect - 1 - bn;
+		cn = bn / st->nspc;
+		sn = bn % st->nspc;
+		tn = sn / st->nsect;
+		sn %= st->nsect;
+		up->upwc = -(512 / sizeof (short));
+#ifdef UPECCDEBUG
+		printf("revector to cn %d tn %d sn %d\n", cn, tn, sn);
+#endif
+		break;
+	case CONT:
+#ifdef UPECCDEBUG
+		printf("upecc, CONT: bn %d cn %d tn %d sn %d\n", bn, cn, tn, sn);
+#endif
+		bp->b_flags &= ~B_BAD;
+		if ((int)dbtob(npf) >= bp->b_bcount)
+			return (0);
+		up->upwc = -((bp->b_bcount - (int)dbtob(npf)) / sizeof(short));
+		break;
+	}
+	if (up->upwc == 0) {
+		um->um_tab.b_active = 0;
+		return (0);
+	}
+	/*
+	 * Have to continue the transfer... clear the drive,
+	 * and compute the position where the transfer is to continue.
+	 * We have completed npf+1 sectors of the transfer already;
+	 * restart at offset o of next sector (i.e. in UBA register reg+1).
+	 */
+#ifdef notdef
+	up->uper1 = 0;
+	up->upcs1 |= UP_GO;
+#else
+	up->upcs1 = UP_TRE|UP_IE|UP_DCLR|UP_GO;
+	up->updc = cn;
+	up->upda = (tn << 8) | sn;
+	ubaddr = (int)ptob(reg) + o;
+	up->upba = ubaddr;
+	cmd = (ubaddr >> 8) & 0x300;
+	cmd |= ((bp->b_flags&B_READ)?UP_RCOM:UP_WCOM)|UP_IE|UP_GO;
+	um->um_tab.b_errcnt = 0;
+	up->upcs1 = cmd;
+#endif
+	return (1);
+}
+
+/*
+ * Reset driver after UBA init.
+ * Cancel software state of all pending transfers
+ * and restart all units and the controller.
+ */
+upreset(uban)
+	int uban;
+{
+	register struct uba_ctlr *um;
+	register struct uba_device *ui;
+	register sc21, unit;
+
+	for (sc21 = 0; sc21 < NSC; sc21++) {
+		if ((um = upminfo[sc21]) == 0 || um->um_ubanum != uban ||
+		    um->um_alive == 0)
+			continue;
+		printf(" sc%d", sc21);
+		um->um_tab.b_active = 0;
+		um->um_tab.b_actf = um->um_tab.b_actl = 0;
+		up_softc[sc21].sc_recal = 0;
+		up_softc[sc21].sc_wticks = 0;
+		if (um->um_ubinfo) {
+			printf("<%d>", (um->um_ubinfo>>28)&0xf);
+			um->um_ubinfo = 0;
+		}
+		((struct updevice *)(um->um_addr))->upcs2 = UPCS2_CLR;
+		for (unit = 0; unit < NUP; unit++) {
+			if ((ui = updinfo[unit]) == 0)
+				continue;
+			if (ui->ui_alive == 0 || ui->ui_mi != um)
+				continue;
+			uputab[unit].b_active = 0;
+			(void) upustart(ui);
+		}
+		(void) upstart(um);
+	}
+}
+
+/*
+ * Wake up every second and if an interrupt is pending
+ * but nothing has happened increment a counter.
+ * If nothing happens for 20 seconds, reset the UNIBUS
+ * and begin anew.
+ */
+upwatch()
+{
+	register struct uba_ctlr *um;
+	register sc21, unit;
+	register struct up_softc *sc;
+
+	timeout(upwatch, (caddr_t)0, hz);
+	for (sc21 = 0; sc21 < NSC; sc21++) {
+		um = upminfo[sc21];
+		if (um == 0 || um->um_alive == 0)
+			continue;
+		sc = &up_softc[sc21];
+		if (um->um_tab.b_active == 0) {
+			for (unit = 0; unit < NUP; unit++)
+				if (uputab[unit].b_active &&
+				    updinfo[unit]->ui_mi == um)
+					goto active;
+			sc->sc_wticks = 0;
+			continue;
+		}
+active:
+		sc->sc_wticks++;
+		if (sc->sc_wticks >= 20) {
+			sc->sc_wticks = 0;
+			printf("sc%d: lost interrupt\n", sc21);
+			ubareset(um->um_ubanum);
+		}
+	}
+}
+
+#define	DBSIZE	20
+
+updump(dev)
+	dev_t dev;
+{
+	struct updevice *upaddr;
+	char *start;
+	int num, blk, unit;
+	struct size *sizes;
+	register struct uba_regs *uba;
+	register struct uba_device *ui;
+	register short *rp;
+	struct upst *st;
+	register int retry;
+
+	unit = upunit(dev);
+	if (unit >= NUP)
+		return (ENXIO);
+#define	phys(cast, addr) ((cast)((int)addr & 0x7fffffff))
+	ui = phys(struct uba_device *, updinfo[unit]);
+	if (ui->ui_alive == 0)
+		re/*
+ * Copyright (c) 1982, 1986 Regents of the University of California.
+ * All rights reserved.  The Berkeley software License Agreement
+ * specifies the terms and conditions for redistribution.
+ *
+ *	@(#)lp.c	7.1 (Berkeley) 6/5/86
+ */
+
+#include "lp.h"
+#if NLP > 0
+/*
+ * LP-11 Line printer driver
+ *
+ * This driver has been modified to work on printers where
+ * leaving IENABLE set would cause continuous interrupts.
+ */
+#include "../machine/pte.h"
+
+#include "param.h"
+#include "dir.h"
+#include "user.h"
+#include "buf.h"
+#include "systm.h"
+#include "map.h"
+#include "uio.h"
+#include "ioctl.h"
+#include "tty.h"
+#include "kernel.h"
+
+#include "ubavar.h"
+
+#define	LPPRI	(PZERO+8)
+#define	IENABLE	0100
+#define	DONE	0200
+#define	ERROR	0100000
+#define	LPLWAT	650
+#define	LPHWAT	800
+
+#define	LPBUFSIZE	1024
+#define MAXCOL		132
+#define CAP		1
+
+#define LPUNIT(dev)	(minor(dev) >> 3)
+
+struct lpdevice {
+	short	lpsr;
+	short	lpbuf;
+};
+
+struct lp_softc {
+	struct	clist sc_outq;
+	int	sc_state;
+	int	sc_physcol;
+	int	sc_logcol;
+	int	sc_physline;
+	char	sc_flags;
+	short	sc_maxcol;
+	int	sc_lpchar;
+	struct	buf *sc_inbuf;
+} lp_softc[NLP];
+
+struct uba_device *lpinfo[NLP];
+
+int lpprobe(), lpattach(), lptout();
+u_short lpstd[] = { 0177514, 0 };
+struct uba_driver lpdriver =
+	{ lpprobe, 0, lpattach, 0, lpstd, "lp", lpinfo };
+
+/* bits for state */
+#define	OPEN		1	/* device is open */
+#define	TOUT		2	/* timeout is active */
+#define	MOD		4	/* device state has been modified */
+#define	ASLP		8	/* awaiting draining of printer */
+
+lpattach(ui)
+	struct uba_device *ui;
+{
+	register struct lp_softc *sc;
+
+	sc = &lp_softc[ui->ui_unit];
+	sc->sc_lpchar = -1;
+	if (ui->ui_flags)
+		sc->sc_maxcol = ui->ui_flags;
+	else
+		sc->sc_maxcol = MAXCOL;
+}
+
+lpprobe(reg)
+	caddr_t reg;
+{
+	register int br, cvec;			/* value-result */
+	register struct lpdevice *lpaddr = (struct lpdevice *)reg;
+#ifdef lint
+	br = 0; cvec = br; br = cvec;
+	lpintr(0);
+#endif
+
+	lpaddr->lpsr = IENABLE;
+	DELAY(5);
+	lpaddr->lpsr = 0;
+	return (sizeof (struct lpdevice));
+}
+
+/*ARGSUSED*/
+lpopen(dev, flag)
+	dev_t dev;
+	int flag;
+{
+	register struct lpdevice *lpaddr;
+	register struct lp_softc *sc;
+	register struct uba_device *ui;
+	register int unit, s;
+
+	if ((unit = LPUNIT(dev)) >= NLP ||
+	    (sc = &lp_softc[unit])->sc_state&OPEN ||
+	    (ui = lpinfo[unit]) == 0 || ui->ui_alive == 0)
+		return (ENXIO);
+	lpaddr = (struct lpdevice *)ui->ui_addr;
+	if (lpaddr->lpsr&ERROR)
+		return (EIO);
+	sc->sc_state |= OPEN;
+	sc->sc_inbuf = geteblk(LPBUFSIZE);
+	sc->sc_flags = minor(dev) & 07;
+	s = spl4();
+	if ((sc->sc_state&TOUT) == 0) {
+		sc->sc_state |= TOUT;
+		timeout(lptout, (caddr_t)dev, 10*hz);
+	}
+	splx(s);
+	lpcanon(dev, '\f');
+	return (0);
+}
+
+/*ARGSUSED*/
+lpclose(dev, flag)
+	dev_t dev;
+	int flag;
+{
+	register struct lp_softc *sc = &lp_softc[LPUNIT(dev)];
+
+	lpcanon(dev, '\f');
+	brelse(sc->sc_inbuf);
+	sc->sc_state &= ~OPEN;
+}
+
+lpwrite(dev, uio)
+	dev_t dev;
+	struct uio *uio;
+{
+	register unsigned n;
+	register char *cp;
+	register struct lp_softc *sc = &lp_softc[LPUNIT(dev)];
+	int error;
+
+	while (n = MIN(LPBUFSIZE, (unsigned)uio->uio_resid)) {
+		cp = sc->sc_inbuf->b_un.b_addr;
+		error = uiomove(cp, (int)n, UIO_WRITE, uio);
+		if (error)
+			return (error);
+		do
+			lpcanon(dev, *cp++);
+		while (--n);
+	}
+	return (0);
+}
+
+lpcanon(dev, c)
+	dev_t dev;
+	register int c;
+{
+	register struct lp_softc *sc = &lp_softc[LPUNIT(dev)];
+	register int logcol, physcol, s;
+
+	if (sc->sc_flags&CAP) {
+		register c2;
+
+		if (c>='a' && c<='z')
+			c += 'A'-'a'; else
+		switch (c) {
+
+		case '{':
+			c2 = '(';
+			goto esc;
+
+		case '}':
+			c2 = ')';
+			goto esc;
+
+		case '`':
+			c2 = '\'';
+			goto esc;
+
+		case '|':
+			c2 = '!';
+			goto esc;
+
+		case '~':
+			c2 = '^';
+
+		esc:
+			lpcanon(dev, c2);
+			sc->sc_logcol--;
+			c = '-';
+		}
+	}
+	logcol = sc->sc_logcol;
+	physcol = sc->sc_physcol;
+	if (c == ' ')
+		logcol++;
+	else switch(c) {
+
+	case '\t':
+		logcol = (logcol+8) & ~7;
+		break;
+
+	case '\f':
+		if (sc->sc_physline == 0 && physcol == 0)
+			break;
+		/* fall into ... */
+
+	case '\n':
+		lpoutput(dev, c);
+		if (c == '\f')
+			sc->sc_physline = 0;
+		else
+			sc->sc_physline++;
+		physcol = 0;
+		/* fall into ... */
+
+	case '\r':
+		s = spl4();
+		logcol = 0;
+		lpintr(LPUNIT(dev));
+		splx(s);
+		break;
+
+	case '\b':
+		if (logcol > 0)
+			logcol--;
+		break;
+
+	default:
+		if (logcol < physcol) {
+			lpoutput(dev, '\r');
+			physcol = 0;
+		}
+		if (logcol < sc->sc_maxcol) {
+			while (logcol > physcol) {
+				lpoutput(dev, ' ');
+				physcol++;
+			}
+			lpoutput(dev, c);
+			physcol++;
+		}
+		logcol++;
+	}
+	if (logcol > 1000)	/* ignore long lines  */
+		logcol = 1000;
+	sc->sc_logcol = logcol;
+	sc->sc_physcol = physcol;
+}
+
+lpoutput(dev, c)
+	dev_t dev;
+	int c;
+{
+	register struct lp_softc *sc = &lp_softc[LPUNIT(dev)];
+	int s;
+
+	if (sc->sc_outq.c_cc >= LPHWAT) {
+		s = spl4();
+		lpintr(LPUNIT(dev));				/* unchoke */
+		while (sc->sc_outq.c_cc >= LPHWAT) {
+			sc->sc_state |= ASLP;		/* must be ERROR */
+			sleep((caddr_t)sc, LPPRI);
+		}
+		splx(s);
+	}
+	while (putc(c, &sc->sc_outq))
+		sleep((caddr_t)&lbolt, LPPRI);
+}
+
+lpintr(lp11)
+	int lp11;
+{
+	register int n;
+	register struct lp_softc *sc = &lp_softc[lp11];
+	register struct uba_device *ui = lpinfo[lp11];
+	register struct lpdevice *lpaddr = (struct lpdevice *)ui->ui_addr;
+
+	lpaddr->lpsr &= ~IENABLE;
+	n = sc->sc_outq.c_cc;
+	if (sc->sc_lpchar < 0)
+		sc->sc_lpchar = getc(&sc->sc_outq);
+	while ((lpaddr->lpsr&DONE) && sc->sc_lpchar >= 0) {
+		lpaddr->lpbuf = sc->sc_lpchar;
+		sc->sc_lpchar = getc(&sc->sc_outq);
+	}
+	sc->sc_state |= MOD;
+	if (sc->sc_outq.c_cc > 0 && (lpaddr->lpsr&ERROR)==0)
+		lpaddr->lpsr |= IENABLE;	/* ok and more to do later */
+	if (n>LPLWAT && sc->sc_outq.c_cc<=LPLWAT && sc->sc_state&ASLP) {
+		sc->sc_state &= ~ASLP;
+		wakeup((caddr_t)sc);		/* top half should go on */
+	}
+}
+
+lptout(dev)
+	dev_t dev;
+{
+	register struct lp_softc *sc;
+	register struct uba_device *ui;
+	register struct lpdevice *lpaddr;
+
+	sc = &lp_softc[LPUNIT(dev)];
+	ui = lpinfo[LPUNIT(dev)];
+	lpaddr = (struct lpdevice *) ui->ui_addr;
+	if ((sc->sc_state&MOD) != 0) {
+		sc->sc_state &= ~MOD;		/* something happened */
+		timeout(lptout, (caddr_t)dev, 2*hz);	/* so don't sweat */
+		return;
+	}
+	if ((sc->sc_state&OPEN) == 0 && sc->sc_outq.c_cc == 0) {
+		sc->sc_state &= ~TOUT;		/* no longer open */
+		lpaddr->lpsr = 0;
+		return;
+	}
+	if (sc->sc_outq.c_cc && (lpaddr->lpsr&DONE) && (lpaddr->lpsr&ERROR)==0)
+		lpintr(LPUNIT(dev));			/* ready to go */
+	timeout(lptout, (caddr_t)dev, 10*hz);
+}
+
+lpreset(uban)
+	int uban;
+{
+	register struct uba_device *ui;
+	register struct lpdevice *lpaddr;
+	register int unit;
+
+	for (unit = 0; unit < NLP; unit++) {
+		if ((ui = lpinfo[unit]) == 0 || ui->ui_ubanum != uban ||
+		    ui->ui_alive == 0)
+			continue;
+		printf(" lp%d", unit);
+		lpaddr = (struct lpdevice *)ui->ui_addr;
+		lpaddr->lpsr |= IENABLE;
+	}
+}
+#endif
+                                                                                                                                                                                                                                                                                                                                                                                                             /*
+ * Copyright (c) 1982, 1986 Regents of the University of California.
+ * All rights reserved.  The Berkeley software License Agreement
+ * specifies the terms and conditions for redistribution.
+ *
+ *	@(#)pdma.h	7.1 (Berkeley) 6/5/86
+ */
+
+struct pdma {
+	struct	dzdevice *p_addr;
+	char	*p_mem;
+	char	*p_end;
+	int	p_arg;
+	int	(*p_fcn)();
+};
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             /*
+ * Copyright (c) 1982, 1986 Regents of the University of California.
+ * All rights reserved.  The Berkeley software License Agreement
+ * specifies the terms and conditions for redistribution.
+ *
+ *	@(#)dn.c	7.1 (Berkeley) 6/5/86
+ */
+
+#include "dn.h"
+#if NDN > 0
+/*
+ * DN-11 ACU interface
+ */
+#include "../machine/pte.h"
+
+#include "param.h"
+#include "systm.h"
+#include "dir.h"
+#include "user.h"
+#include "buf.h"
+#include "map.h"
+#include "conf.h"
+#include "uio.h"
+
+#include "ubavar.h"
+
+struct dndevice {
+	u_short	dn_reg[4];
+};
+
+struct uba_device *dninfo[NDN];
+int dnprobe(), dnattach(), dnintr();
+u_short dnstd[] = { 0175200, 0 };
+struct uba_driver dndriver =
+	{ dnprobe, 0, dnattach, 0, dnstd, "dn", dninfo };
+
+#define	CRQ	0x001		/* call request */
+#define	DPR	0x002		/* digit present */
+#define	MENABLE	0x004		/* master enable */
+#define MAINT	0x008		/* maintenance mode */
+#define	PND	0x010		/* present next digit */
+#define	DSS	0x020		/* data set status */
+#define	IENABLE	0x040		/* interrupt enable */
+#define	DONE	0x080		/* operation complete */
+#define	DLO	0x1000		/* data line occupied */
+#define	ACR	0x4000		/* abandon call and retry */
+#define	PWI	0x8000		/* power indicate */
+
+#define	DNPRI	(PZERO+5)
+#define DNUNIT(dev)	(minor(dev)>>2)
+#define DNREG(dev)	((dev)&03)
+
+#define OBUFSIZ	40		/* largest phone # dialer can handle */
+
+/*
+ * There's no good way to determine the correct number of dialers attached
+ * to a single device (especially when dialers such as Vadic-821 MACS
+ * exist which can address four chassis, each with its own dialer).
+ */
+dnprobe(reg)
+	caddr_t reg;
+{
+	register int br, cvec;	/* value-result, must be r11, r10 */
+	register struct dndevice *dnaddr = (struct dndevice *)reg;
+
+#ifdef lint
+	br = 0; cvec = 0; br = cvec; cvec = br;
+	dnintr(0);
+#endif
+	/*
+	 * If there's at least one dialer out there it better be
+	 * at chassis 0.
+	 */
+	dnaddr->dn_reg[0] = MENABLE|IENABLE|DONE;
+	DELAY(5);
+	dnaddr->dn_reg[0] = 0;
+	return (sizeof (struct dndevice));
+}
+
+/*ARGSUSED*/
+dnattach(ui)
+	struct uba_device *ui;
+{
+
+}
+
+/*ARGSUSED*/
+dnopen(dev, flag)
+	dev_t dev;
+	int flag;
+{
+	register struct dndevice *dp;
+	register u_short unit, *dnreg;
+	register struct uba_device *ui;
+	register short dialer;
+
+	if ((unit = DNUNIT(dev)) >= NDN || (ui = dninfo[unit]) == 0 ||
+	    ui->ui_alive == 0)
+		return (ENXIO);
+	dialer = DNREG(dev);
+	dp = (struct dndevice *)ui->ui_addr;
+	if (dp->dn_reg[dialer] & PWI)
+		return (ENXIO);
+	dnreg = &(dp->dn_reg[dialer]);
+	if (*dnreg&(DLO|CRQ))
+		return (EBUSY);
+	dp->dn_reg[0] |= MENABLE;
+	*dnreg = IENABLE|MENABLE|CRQ;
+	return (0);
+}
+
+/*ARGSUSED*/
+dnclose(dev, flag)
+	dev_t dev;
+{
+	register struct dndevice *dp;
+
+	dp = (struct dndevice *)dninfo[DNUNIT(dev)]->ui_addr;
+	dp->dn_reg[DNREG(dev)] = MENABLE;
+}
+
+dnwrite(dev, uio)
+	dev_t dev;
+	struct uio *uio;
+{
+	register u_short *dnreg;
+	register int cc;
+	register struct dndevice *dp;
+	char obuf[OBUFSIZ];
+	register char *cp;
+	extern lbolt;
+	int error;
+
+	dp = (struct dndevice *)dninfo[DNUNIT(dev)]->ui_addr;
+	dnreg = &(dp->dn_reg[DNREG(dev)]);
+	cc = MIN(uio->uio_resid, OBUFSIZ);
+	cp = obuf;
+	error = uiomove(cp, cc, UIO_WRITE, uio);
+	if (error)
+		return (error);
+	while ((*dnreg & (PWI|ACR|DSS)) == 0 && cc >= 0) {
+		(void) spl4();
+		if ((*dnreg & PND) == 0 || cc == 0)
+			sleep((caddr_t)dnreg, DNPRI);
+		else switch(*cp) {
+		
+		case '-':
+			sleep((caddr_t)&lbolt, DNPRI);
+			sleep((caddr_t)&lbolt, DNPRI);
+			break;
+
+		case 'f':
+			*dnreg &= ~CRQ;
+			sleep((caddr_t)&lbolt, DNPRI);
+			*dnreg |= CRQ;
+			break;
+
+		case '*': case ':':
+			*cp = 012;
+			goto dial;
+
+		case '#': case ';':
+			*cp = 013;
+			goto dial;
+
+		case 'e': case '<':
+			*cp = 014;
+			goto dial;
+
+		case 'w': case '=':
+			*cp = 015;
+			goto dial;
+
+		default:
+			if (*cp < '0' || *cp > '9')
+				break;
+		dial:
+			*dnreg = (*cp << 8) | (IENABLE|MENABLE|DPR|CRQ);
+			sleep((caddr_t)dnreg, DNPRI);
+		}
+		cp++, cc--;
+		spl0();
+	}
+	if (*dnreg & (PWI|ACR))
+		return (EIO);
+	return (0);
+}
+
+dnintr(dev)
+	dev_t dev;
+{
+	register u_short *basereg, *dnreg;
+
+	basereg = (u_short *)dninfo[dev]->ui_addr;
+	*basereg &= ~MENABLE;
+	for (dnreg = basereg; dnreg < basereg + 4; dnreg++)
+		if (*dnreg & DONE) {
+			*dnreg &= ~(DONE|DPR);
+			wakeup((caddr_t)dnreg);
+		}
+	*basereg |= MENABLE;
+}
+#endif
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 /*
+ * Copyright (c) 1982, 1986 Regents of the University of California.
+ * All rights reserved.  The Berkeley software License Agreement
+ * specifies the terms and conditions for redistribution.
+ *
+ *	@(#)ikreg.h	7.1 (Berkeley) 6/5/86
+ */
+
+struct ikdevice {
+	short	ik_wc;			/* Unibus word count reg */
+	u_short	ik_ubaddr;		/* Unibus address register */
+	u_short	ik_ustat;		/* Unibus status/command reg */
+	u_short	ik_data;		/* Data register */
+	u_short	ik_xaddr;		/* X address in frame buffer */
+	u_short	ik_yaddr;		/* Y address in frame buffer */
+	u_short	ik_istat;		/* Ikonas status/command reg */
+	u_short	ik_chan;		/* Channel control register */
+};
+
+#define IK_GETADDR 	IKIOGETADDR
+#define IK_WAITINT 	IKIOWAITINT
+#define	IKIOGETADDR	_IOR(i, 0, caddr_t)	/* get Unibus device address */
+#define	IKIOWAITINT	_IO(i, 1)		/* await device interrupt */
+
+/*
+ * Unibus status/command register bits
+ */
+
+#define IK_GO		01
+#define IK_IENABLE	0100
+#define IK_READY	0200
+#define IK_IKONAS_INTR	0100000
+
+/*
+ * Ikonas status/command register bits
+ */
+
+#define WORD32		0
+#define RES512		2
+#define RES1024		3
+#define READ_SELECT	0
+#define WRITE_MASK	010
+#define WRITE_SELECT	020
+#define HALFWORD	040
+#define DMAENABLE	0100
+#define INVISIBLE_IO	0200
+#define AUTOINCREMENT	0400
+#define RUN_PROCESSOR	01000
+#define CLEAR		02000
+#define BYTE_MODE	04000
+#define FRAME_ENABLE	010000
+#define PROC_ENABLE	020000
+#define RED_SELECT	0
+#define GREEN_SELECT	040000
+#define BLUE_SELECT	0100000
+#define ALPHA_SELECT	0140000
+
+/*
+ * Frame buffer controller
+ */
+
+#define FBC0		060000000
+#define FBC1		062000000
+
+#define VIEWPORT_LOC	0
+#define VIEWPORT_SIZE	1
+#define WINDOW_LOC	2
+#define ZOOM		3
+#define DISPLAY_RATE	4
+#define VIDEO_CONTROL	5
+#define		FORMAT_CONTROL_MASK	03
+#define		CURSOR_ON		04
+#define		LOW_RESOL		0
+#define		HIGH_RESOL		010
+#define		AUTO_CLEAR		040
+#define		EXT_SYNC		0100
+#define		COLOR_MAP_PAGES		0600
+#define		HIGH_RESOL_SYNC		01000
+#define		REPEAT_FIELD		02000
+#define		PIXEL_CLOCK_RATE_MASK	077
+#define CURSOR_LOC	6
+#define CURSOR_SHADE	7
+
+#define CURSOR_MAP	0400
+
+/*
+ * Color map lookup table
+ */
+
+#define CMAP0		040600000
+#define CMAP1		040610000
+
+#define CHAN_SELECT	02000
+
+/*
+ * Frame buffer memories
+ */
+
+#define MEM0		000000000
+#define MEM1		004000000
+
+/*
+ * Bit-slice processor
+ */
+
+#define UMEM		040000000
+#define SCRPAD		040400000
+#define PROC		041200000
+
+/*
+ * Frame grabber
+ */
+
+#define FMG0		060200000
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      /*
+ * Copyright (c) 1982, 1986 Regents of the University of California.
+ * All rights reserved.  The Berkeley software License Agreement
+ * specifies the terms and conditions for redistribution.
+ *
+ *	@(#)up.c	7.1 (Berkeley) 6/5/86
+ */
+
+#include "up.h"
+#if NSC > 0
+/*
+ * UNIBUS disk driver with:
+ *	overlapped seeks,
+ *	ECC recovery, and
+ *	bad sector forwarding.
+ *
+ * TODO:
+ *	Check that offset recovery code works
+ */
+#include "../machine/pte.h"
+
+#include "param.h"
+#include "systm.h"
+#include "dk.h"
+#include "dkbad.h"
+#include "buf.h"
+#include "conf.h"
+#include "dir.h"
+#include "user.h"
+#include "map.h"
+#include "vm.h"
+#include "cmap.h"
+#include "uio.h"
+#include "kernel.h"
+#include "syslog.h"
+
+#include "../vax/cpu.h"
+#include "../vax/nexus.h"
+#include "ubavar.h"
+#include "ubareg.h"
+#include "upreg.h"
+
+struct	up_softc {
+	int	sc_softas;
+	int	sc_ndrive;
+	int	sc_wticks;
+	int	sc_recal;
+} up_softc[NSC];
+
+#define upunit(dev)	(minor(dev) >> 3)
+
+/* THIS SHOULD BE READ OFF THE PACK, PER DRIVE */
+struct	size {
+	daddr_t	nblocks;
+	int	cyloff;
+} up9300_sizes[8] = {
+	15884,	0,		/* A=cyl 0 thru 26 */
+	33440,	27,		/* B=cyl 27 thru 81 */
+	495520,	0,		/* C=cyl 0 thru 814 */
+	15884,	562,		/* D=cyl 562 thru 588 */
+	55936,	589,		/* E=cyl 589 thru 680 */
+	81376,	681,		/* F=cyl 681 thru 814 */
+	153728,	562,		/* G=cyl 562 thru 814 */
+	291346,	82,		/* H=cyl 82 thru 561 */
+}, up9766_sizes[8] = {
+	15884,	0,		/* A=cyl 0 thru 26 */
+	33440,	27,		/* B=cyl 27 thru 81 */
+	500384,	0,		/* C=cyl 0 thru 822 */
+	15884,	562,		/* D=cyl 562 thru 588 */
+	55936,	589,		/* E=cyl 589 thru 680 */
+	86240,	681,		/* F=cyl 681 thru 822 */
+	158592,	562,		/* G=cyl 562 thru 822 */
+	291346,	82,		/* H=cyl 82 thru 561 */
+}, up160_sizes[8] = {
+	15884,	0,		/* A=cyl 0 thru 49 */
+	33440,	50,		/* B=cyl 50 thru 154 */
+	263360,	0,		/* C=cyl 0 thru 822 */
+	15884,	155,		/* D=cyl 155 thru 204 */
+	55936,	205,		/* E=cyl 205 thru 379 */
+	141664,	380,		/* F=cyl 380 thru 822 */
+	213664,	155,		/* G=cyl 155 thru 822 */
+	0,	0,
+}, upam_sizes[8] = {
+	15884,	0,		/* A=cyl 0 thru 31 */
+	33440,	32,		/* B=cyl 32 thru 97 */
+	524288,	0,		/* C=cyl 0 thru 1023 */
+	15884,	668,		/* D=cyl 668 thru 699 */
+	55936,	700,		/* E=cyl 700 thru 809 */
+	109472,	810,		/* F=cyl 810 thru 1023 */
+	182176,	668,		/* G=cyl 668 thru 1023 */
+	291346,	98,		/* H=cyl 98 thru 667 */
+}, up980_sizes[8] = {
+	15884,	0,		/* A=cyl 0 thru 99 */
+	33440,	100,		/* B=cyl 100 thru 308 */
+	131680,	0,		/* C=cyl 0 thru 822 */
+	15884,	309,		/* D=cyl 309 thru 408 */
+	55936,	409,		/* E=cyl 409 thru 758 */
+	10080,	759,		/* F=cyl 759 thru 822 */
+	82080,	309,		/* G=cyl 309 thru 822 */
+	0,	0,
+}, upeagle_sizes[8] = {
+	15884,	0,		/* A=cyl 0 thru 16 */
+	66880,	17,		/* B=cyl 17 thru 86 */
+	808320,	0,		/* C=cyl 0 thru 841 */
+	15884,	391,		/* D=cyl 391 thru 407 */
+	307200,	408,		/* E=cyl 408 thru 727 */
+	109296,	728,		/* F=cyl 728 thru 841 */
+	432816,	391,		/* G=cyl 391 thru 841 */
+	291346,	87,		/* H=cyl 87 thru 390 */
+};
+/* END OF STUFF WHICH SHOULD BE READ IN PER DISK */
+
+int	upprobe(), upslave(), upattach(), updgo(), upintr();
+struct	uba_ctlr *upminfo[NSC];
+struct	uba_device *updinfo[NUP];
+#define	UPIPUNITS	8
+struct	uba_device *upip[NSC][UPIPUNITS]; /* fuji w/fixed head gives n,n+4 */
+
+u_short	upstd[] = { 0776700, 0774400, 0776300, 0 };
+struct	uba_driver scdriver =
+    { upprobe, upslave, upattach, updgo, upstd, "up", updinfo, "sc", upminfo };
+struct	buf	uputab[NUP];
+char upinit[NUP];
+
+struct	upst {
+	short	nsect;		/* # sectors/track */
+	short	ntrak;		/* # tracks/cylinder */
+	short	nspc;		/* # sectors/cylinder */
+	short	ncyl;		/* # cylinders */
+	struct	size *sizes;	/* partition tables */
+	short	sdist;		/* seek distance metric */
+	short	rdist;		/* rotational distance metric */
+} upst[] = {
+	{ 32,	19,	32*19,	815,	up9300_sizes,	3, 4 },	/* 9300 */
+	{ 32,	19,	32*19,	823,	up9766_sizes,	3, 4 },	/* 9766 */
+	{ 32,	10,	32*10,	823,	up160_sizes,	3, 4 },	/* fuji 160m */
+	{ 32,	16,	32*16,	1024,	upam_sizes,	7, 8 },	/* Capricorn */
+	{ 32,	5,	32*5,	823,	up980_sizes,	3, 4 }, /* DM980 */
+        { 48,	20,	48*20,	842,	upeagle_sizes, 15, 8 },	/* EAGLE */
+	{ 0,	0,	0,	0,	0,		0, 0 }
+};
+
+u_char	up_offset[16] = {
+	UPOF_P400, UPOF_M400, UPOF_P400, UPOF_M400,
+	UPOF_P800, UPOF_M800, UPOF_P800, UPOF_M800, 
+	UPOF_P1200, UPOF_M1200, UPOF_P1200, UPOF_M1200,
+	0, 0, 0, 0
+};
+
+struct	buf	rupbuf[NUP];
+struct 	buf	bupbuf[NUP];
+struct	dkbad	upbad[NUP];
+
+#define	b_cylin b_resid
+
+int	upwstart, upwatch();		/* Have started guardian */
+int	upseek;
+int	upwaitdry;
+
+/*ARGSUSED*/
+upprobe(reg)
+	caddr_t reg;
+{
+	register int br, cvec;
+
+#ifdef lint	
+	br = 0; cvec = br; br = cvec; upintr(0);
+#endif
+	((struct updevice *)reg)->upcs1 = UP_IE|UP_RDY;
+	DELAY(10);
+	((struct updevice *)reg)->upcs1 = 0;
+	return (sizeof (struct updevice));
+}
+
+upslave(ui, reg)
+	struct uba_device *ui;
+	caddr_t reg;
+{
+	register struct updevice *upaddr = (struct updevice *)reg;
+
+	upaddr->upcs1 = 0;		/* conservative */
+	upaddr->upcs2 = ui->ui_slave;
+	upaddr->upcs1 = UP_NOP|UP_GO;
+	if (upaddr->upcs2&UPCS2_NED) {
+		upaddr->upcs1 = UP_DCLR|UP_GO;
+		return (0);
+	}
+	return (1);
+}
+
+upattach(ui)
+	register struct uba_device *ui;
+{
+
+	if (upwstart == 0) {
+		timeout(upwatch, (caddr_t)0, hz);
+		upwstart++;
+	}
+	if (ui->ui_dk >= 0)
+		dk_mspw[ui->ui_dk] = .0000020345;
+	upip[ui->ui_ctlr][ui->ui_slave] = ui;
+	up_softc[ui->ui_ctlr].sc_ndrive++;
+	ui->ui_type = upmaptype(ui);
+}
+
+upmaptype(ui)
+	register struct uba_device *ui;
+{
+	register struct updevice *upaddr = (struct updevice *)ui->ui_addr;
+	int type = ui->ui_type;
+	register struct upst *st;
+
+	upaddr->upcs1 = 0;
+	upaddr->upcs2 = ui->ui_slave;
+	upaddr->uphr = UPHR_MAXTRAK;
+	for (st = upst; st->nsect != 0; st++)
+		if (upaddr->uphr == st->ntrak - 1) {
+			type = st - upst;
+			break;
+		}
+	if (st->nsect == 0)
+		printf("up%d: uphr=%x\n", ui->ui_slave, upaddr->uphr);
+	if (type == 0) {
+		upaddr->uphr = UPHR_MAXCYL;
+		if (upaddr->uphr == 822)
+			type++;
+	}
+	upaddr->upcs2 = UPCS2_CLR;
+	return (type);
+}
+ 
+upopen(dev)
+	dev_t dev;
+{
+	register int unit = upunit(dev);
+	register struct uba_device *ui;
+
+	if (unit >= NUP || (ui = updinfo[unit]) == 0 || ui->ui_alive == 0)
+		return (ENXIO);
+	return (0);
+}
+
+upstrategy(bp)
+	register struct buf *bp;
+{
+	register struct uba_device *ui;
+	register struct upst *st;
+	register int unit;
+	register struct buf *dp;
+	int xunit = minor(bp->b_dev) & 07;
+	long bn, sz;
+	int s;
+
+	sz = (bp->b_bcount+511) >> 9;
+	unit = upunit(bp->b_dev);
+	if (unit >= NUP) {
+		bp->b_error = ENXIO;
+		goto bad;
+	}
+	ui = updinfo[unit];
+	if (ui == 0 || ui->ui_alive == 0) {
+		bp->b_error = ENXIO;
+		goto bad;
+	}
+	st = &upst[ui->ui_type];
+	if (bp->b_blkno < 0 ||
+	    (bn = bp->b_blkno)+sz > st->sizes[xunit].nblocks) {
+		if (bp->b_blkno == st->sizes[xunit].nblocks) {
+			bp->b_resid = bp->b_bcount;
+			goto done;
+		}
+		bp->b_error = EINVAL;
+		goto bad;
+	}
+	bp->b_cylin = bn/st->nspc + st->sizes[xunit].cyloff;
+	s = spl5();
+	dp = &uputab[ui->ui_unit];
+	disksort(dp, bp);
+	if (dp->b_active == 0) {
+		(void) upustart(ui);
+		bp = &ui->ui_mi->um_tab;
+		if (bp->b_actf && bp->b_active == 0)
+			(void) upstart(ui->ui_mi);
+	}
+	splx(s);
+	return;
+
+bad:
+	bp->b_flags |= B_ERROR;
+done:
+	iodone(bp);
+	return;
+}
+
+/*
+ * Unit start routine.
+ * Seek the drive to be where the data is
+ * and then generate another interrupt
+ * to actually start the transfer.
+ * If there is only one drive on the controller,
+ * or we are very close to the data, don't
+ * bother with the search.  If called after
+ * searching once, don't bother to look where
+ * we are, just queue for transfer (to avoid
+ * positioning forever without transferrring.)
+ */
+upustart(ui)
+	register struct uba_device *ui;
+{
+	register struct buf *bp, *dp;
+	register struct uba_ctlr *um;
+	register struct updevice *upaddr;
+	register struct upst *st;
+	daddr_t bn;
+	int sn, csn;
+	/*
+	 * The SC21 cancels commands if you just say
+	 *	cs1 = UP_IE
+	 * so we are cautious about handling of cs1.
+	 * Also don't bother to clear as bits other than in upintr().
+	 */
+	int didie = 0;
+
+	if (ui == 0)
+		return (0);
+	um = ui->ui_mi;
+	dk_busy &= ~(1<<ui->ui_dk);
+	dp = &uputab[ui->ui_unit];
+	if ((bp = dp->b_actf) == NULL)
+		goto out;
+	/*
+	 * If the controller is active, just remember
+	 * that this device would like to be positioned...
+	 * if/*
+ * Copyright (c) 1982, 1986 Regents of the University of California.
+ * All rights reserved.  The Berkeley software License Agreement
+ * specifies the terms and conditions for redistribution.
+ *
+ *	@(#)lpa.c	7.1 (Berkeley) 6/5/86
+ */
+
+#include "lpa.h"
+#if NLPA > 0
+
+#include "param.h"
+#include "dir.h"
+#include "user.h"
+#include "buf.h"
+#include "proc.h"
+#include "ioctl.h"
+#include "uio.h"
+
+#include "ubavar.h"
+
+/*
+ * LPA driver for -- Asa Romberger
+ *
+ *	open
+ *	write microcode
+ *	write dedicated mode dispatch table
+ *	ioctl TIOCSETP to set parameters
+ *		struct iocb {
+ *			short *baddr;	buffer address
+ *			short rate;	- 1,000,000 / frequency in Hz
+ *			short wc;	15-13 = number of buffers - 1
+ *					12-0 = buffer size in words
+ *		} iocb;
+ *	read - 1 character indicating buffer index
+ *		fill or empty buffer
+ * minor device number = DDCCCCCC where:
+ *	DD	= 00 for analog input
+ *		= 01 for analog output
+ *	CCCCCC	= channel number
+ */
+ *	define NOMCODE to eliminate the microcode download check
+ */
+/* #define TRACELPA */
+/* #define NOMCODE */
+
+#ifdef TRACELPA
+#	define TRACER(x)	printf(x)
+#	define TRACERN(x, d)	printf(x, d)
+#else
+#	define TRACER(x)
+#	define TRACERN(x, d)
+#endif
+
+	/* PRIORITY AT WHICH PROGRAM SHOULD RUN */
+	/* THIS SHOULD EVENTUALLY  TELL UNIX THIS IS A REAL-TIME DEVICE */
+
+#define NICE	0
+
+#define inc(v)		(sc->v = ((sc->v + 1) % sc->sc_nbuf))
+
+#define LPAPRI		(PZERO + 0)
+#define LPAUNIT(dev)	0
+#define LPADEVICE(dev)	(((dev) >> 6) & 03)
+#define LPACHANNEL(dev)	((dev) & 077)
+
+int	lpaprobe(), lpaattach(), lpaiintr(), lpaointr();
+u_short	lpastd[] = {0170460, 0};
+struct	uba_device *lpadinfo[NLPA];
+struct uba_driver lpadriver =
+  {lpaprobe, 0, lpaattach, 0, lpastd, "lpa", lpadinfo, 0, 0, 0 };
+
+struct lpa_softc {
+	int	sc_flag;	/* flags, as defined below */
+	int	sc_device;	/* device: 0 = analog in, 1 = analog out */
+	int	sc_channel;	/* device channel number */
+	struct buf sc_ubuffer;	/* user buffer header */
+	int	sc_ubabuf;	/* uba allocation pointer for buffer */
+	int	sc_ubufn;	/* present buffer that user is accessing */
+	int	sc_lbufn;	/* present buffer that lpa is accessing */
+	int	sc_lbufnx;	/* next buffer for lpa (value in ustat) */
+	int	sc_nbuf;	/* number of buffers */
+	int	sc_count;	/* buffer size in words */
+	short	sc_ustat;	/* user status word */
+	struct buf sc_ustatbuf;	/* dummy user status word buffer for ubasetup */
+	int	sc_ubaustat;	/* uba allocation pointer for ustat */
+	struct buf *sc_buffer;	/* scratch buffer header */
+	int	sc_start;	/* 0 if lpa operation has been started */
+} lpa_softc[NLPA];
+
+/* flags for sc_flag */
+#define OPEN	01		/* device is open */
+#define MCODE	02		/* microcode has been loaded */
+#define DMDT	04		/* dedicated mode dispatch table loaded */
+#define STTY	010		/* stty call and device initialized */
+#define SLEEP	020		/* sleeping */
+
+/* bits for ustat */
+#define DONE	0100000		/* done */
+#define STOP	0040000		/* stop data transfer */
+#define NBI	0003400		/* next buffer index */
+#define LBI	0000003		/* last buffer index */
+
+struct lpadevice {
+	short	lcim;		/* control in and maintenance */
+	short	lcos;		/* control and status out */
+	short	lrda;		/* request description array address word */
+	short	lms;		/* maintenance status */
+};
+
+/* control in and maintenance register bits */
+#define	READYI	0000200		/* ready in */
+#define IIE	0000100		/* in interrupt enable */
+#define RDAEXT	0000014		/* rda address extension */
+#define RDAEXTOFFSET	2	/* offset of RDAEXT from right side */
+#define GO	0000001		/* go */
+#define RUN	0100000		/* run */
+#define RESET	0040000		/* reset */
+#define CWRITE	0020000		/* cram write */
+#define EA	0004000		/* enable arbitration */
+#define ROMO	0002000		/* rom O */
+#define ROMI	0001000		/* rom I */
+#define SMICRO	0000400		/* step microprocessor */
+
+/* control and status out register bits */
+#define READYO	0200		/* ready out */
+#define OIE	0100		/* out interrupt enable */
+#define UINDEX	0007		/* user index */
+#define ERROR	0100000		/* error */
+#define ESTAT	0060000		/* error status */
+#define ESCODE	0017400		/* error sub code */
+#define ECODE	0077400		/* error status + error sub code */
+#define OVERRUN	0243		/* overrun error */
+
+/* LPA COMMAND DESCRIPTION AREA */
+
+/* INIT COMMAND */
+#define INIT	0		/* mode */
+#define MCVERS	4		/* microcode version */
+#define ACLOCKA	0170404		/* LPA bus addresses */
+#define ACLOCKB	0170432
+#define AAD1	0170400
+#define AAD2	1		/* 0170440 - DOES NOT EXIST */
+#define ADA	0170420
+#define ADIO1	1		/* 0167770 - DOES NOT EXIST */
+#define ADIO2	1		/* 0167760 - DOES NOT EXIST */
+#define ADIO3	1		/* 0167750 - DOES NOT EXIST */
+#define ADIO4	1		/* 0167740 - DOES NOT EXIST */
+#define ADIO5	1		/* 0167730 - DOES NOT EXIST */
+
+/* CLOCK START COMMAND */
+#define CLOCK	1		/* mode */
+#define CLOCKA	0<<4		/* clock A */
+	/* clock status word */
+#define ENACTR	1		/* enable counter */
+#define R1M	1<<1		/* 1 MHz rate */
+#define R100K	2<<1		/* 100 KHz rate */
+#define R10K	3<<1		/* 10 KHz rate */
+#define R1K	4<<1		/* 1 KHz rate */
+#define R100	5<<1		/* 100 Hz rate */
+#define REXT	6<<1		/* external rate (from st1 input) */
+#define R60	7<<1		/* line frequency rate */
+#define MFIE	0100		/* mode flag interrupt enable */
+#define MSI	0<<8		/* single interval mode */
+#define MRI	1<<8		/* repeat interval mode */
+#define MEET	2<<8		/* external event time mode */
+#define MEETZ	3<<8		/* external event time mode from zero base */
+#define ST1EC	020000		/* st1 enable counter */
+#define ST1IE	040000		/* st1 interrupt enable */
+
+/* DATA TRANSFER START COMMAND */
+#define DTS	2		/* mode */
+#define SCHAN	1<<8		/* single channel */
+
+lpaprobe(reg)
+	caddr_t reg;
+{
+	register int br, cvec;	/* value result */
+	register struct lpadevice *lpaaddr = (struct lpadevice *)reg;
+
+#ifdef lint
+	br = 0; cvec = br; br = cvec;
+#endif
+	/* this should force an interrupt, stall, clear the lpa */
+	br = 0x15;
+	cvec = 0330;
+TRACER("PROBE\n");
+	return (sizeof (struct lpadevice));
+}
+
+lpaattach(ui)
+	register struct upa_device *ui;
+{
+
+}
+
+lpaopen(dev, flag)
+	dev_t dev;
+	int flag;
+{
+	register int unit = LPAUNIT(dev);
+	register struct lpa_softc *sc = &lpa_softc[unit];
+	register struct uba_device *ui = lpadinfo[unit];
+	register struct lpadevice *lpaaddr = (struct lpadevice *) ui->ui_addr;
+
+TRACER("OPEN\n");
+	if (unit >= NLPA || sc->sc_flag & OPEN || ui == 0 ||
+	    ui->ui_alive == 0)
+		return (ENXIO);
+	(void) splhigh();
+	lpaaddr->lcim = RESET;
+	lpaaddr->lcim = 0;
+	(void) spl0();
+	lpaaddr->lcos = 0;	/* clear the registers as a precaution */
+	lpaaddr->lrda = 0;
+	lpaaddr->lms = 0;
+	sc->sc_flag = OPEN;
+	sc->sc_device = LPADEVICE(dev);
+	sc->sc_channel = LPACHANNEL(dev);
+	sc->sc_buffer = geteblk();
+	sc->sc_buffer->b_error = 0;
+	sc->sc_buffer->b_proc = u.u_procp;
+	sc->sc_ubufn = -1;
+	/* THIS SHOULD EVENTUALLY SPECIFY "REAL-TIME" */
+	u.u_procp->p_nice = NICE;
+	return (0);
+}
+
+lpaclose(dev, flag)
+	dev_t dev;
+	int flag;
+{
+	register int unit = LPAUNIT(dev);
+	register struct lpa_softc *sc = &lpa_softc[unit];
+	register struct uba_device *ui = lpadinfo[unit];
+	register struct lpadevice *lpaaddr = (struct lpadevice *) ui->ui_addr;
+
+	if (sc->sc_device && sc->sc_ubufn >= 0 && (sc->sc_flag & ERROR) == 0) {
+		if (sc->sc_start)
+			lpacmd(sc->sc

@@ -1,0 +1,2071 @@
+ and waits for it to
+                  die iff there are no pipe arguments given.
+
+(ptime)
+
+     RETURNS: a list of two  elements.   The  first  is  the
+              amount of processor time used by the lisp sys-
+              tem so far, and the second is  the  amount  of
+              time used by the garbage collector so far.
+
+     NOTE: the time is measured in those units used  by  the
+           _t_i_m_e_s(2)  system call, usually 60_t_hs of a second.
+           The first number includes the second number.  The
+           amount  of time used by garbage collection is not
+           recorded until the first call to ptime.  This  is
+           done  to  prevent  overhead  when the user is not
+           interested in garbage collection times.
+
+
+
+
+
+
+
+9
+
+9                                   Printed: January 31, 1984
+
+
+
+
+
+
+
+System Functions                                         6-9
+
+
+(reset)
+
+     SIDE EFFECT: the lisp runtime stack is cleared and  the
+                  system  restarts  at the tops  a  FRANZ  LISP
+                  source file.  If s_filename ends with ".o"
+                  then _l_o_a_d will only look for a file  named
+                  s_filename  and will assume that this is a
+                  FRANZ LISP object file to  be  _f_a_s_led  in.
+                  Otherwise,   _l_o_a_d   will  first  look  for
+                  s_filename.o,   then   s_filename.l    and
+                  finally  s_filename  itself.   If it finds
+                  s_filename.o it will assume that  this  is
+                  an  object  file, otherwise it will assume
+                  that it is a source file.  An object  file
+                  is  loaded using _f_a_s_l and a source file is
+                  loaded by reading and evaluating each form
+
+
+                                   Printed: January 31, 1984
+
+
+
+
+
+
+
+Input/Output                                             5-8
+
+
+                  in   the  file.   The  optional  arguments
+                  st_map  and  g_warn  are  passed  to  _f_a_s_l
+                  should _f_a_s_l be called.
+
+     NOTE: _l_o_a_d requires a port to open the file s_filename.
+           It  then  lambda  binds the symbol piport to this
+           port and reads and evaluates the forms.
+
+(makereadtable ['s_flag])
+
+     WHERE:   if s_flag is not present it is assumed  to  be
+              nil.
+
+     RETURNS: a readtable equal to the original readtable if
+              s_flag  is  non-null,  or  else  equal  to the
+              current  readtable.   See  chapter  7  for   a
+              description of readtables and their uses.
+
+(msg [l_option ...] ['g_msg ...])
+
+     NOTE: This function is intended for printing short mes-
+           sages.  Any of the arguments or options presented
+           can be used any number of times,  in  any  order.
+           The  messages  themselves  (g_msg) are evaluated,
+           and then they are transmitted  to  _p_a_t_o_m.   Typi-
+           cally,  they are strings, which evaluate to them-
+           selves.  The options are interpreted specially:
+
+
+    ____________________________________________________
+
+    _m_s_g _O_p_t_i_o_n _S_u_m_m_a_r_y
+
+    (_P _p__p_o_r_t_n_a_m_e)          causes subsequent output to go to the port p_portname
+                                    (port should be opened previously)
+
+    _B                       print a single blank.
+
+    (_B '_n__b)                evaluate n_b and print that many blanks.
+
+    _N                       print a single by calling _t_e_r_p_r.
+
+    (_N '_n__n)                evaluate n_n and transmit
+                                    that many newlines to the stream.
+
+    _D                       _d_r_a_i_n the current port.
+    ____________________________________________________
+
+
+
+
+
+9
+
+9                                   Printed: January 31, 1984
+
+
+
+
+
+
+
+Input/Output                                             5-9
+
+
+(nwritn ['p_port])
+
+     RETURNS: the number of characters in the buffer of  the
+              given port but not yet written out to the file
+              or device.  The buffer  is  flushed  automati-
+              cally when filled, or when _t_e_r_p_r is called.
+
+(outfile 's_filename ['st_type])
+
+     RETURNS: a port or nil
+
+     SIDE EFFECT: this opens a port to write s_filename.  If
+                  st_type is given and if it is  a symbol or
+                  string whose name begins  with  `a',  then
+                  the  file  will  be opened in append mode,
+                  that is the current contents will  not  be
+                  lost  and the next data will be written at
+                  the end of the file.  Otherwise, the  file
+                  opened  is  truncated  by  _o_u_t_f_i_l_e  if  it
+                  existed beforehand.  If there are no  free
+                  ports, outfile returns nil.  If one cannot
+                  write on  s_filename,  an  error  is  sig-
+                  nalled.
+
+(patom 'g_exp ['p_port])
+
+     RETURNS: g_exp
+
+     SIDE EFFECT: g_exp is printed to the given port or  the
+                  default  port.   If  g_exp  is a symbol or
+                  string, the print name is printed  without
+                  any escape characters around special char-
+                  acters in the print name.  If g_exp  is  a
+                  list  then  _p_a_t_o_m  has  the same effect as
+                  _p_r_i_n_t.
+
+(pntlen 'xfs_arg)
+
+     RETURNS: the  number  of  characters  needed  to  print
+              xfs_arg.
+
+(portp 'g_arg)
+
+     RETURNS: t iff g_arg is a port.
+
+
+
+
+
+
+
+
+9
+
+9                                   Printed: January 31, 1984
+
+
+
+
+
+
+
+Input/Output                                            5-10
+
+
+(pp [l_option] s_name1 ...)
+
+     RETURNS: t
+
+     SIDE EFFECT: If s_name_i has a function binding,  it  is
+                  pretty-printed, otherwise if s_name_i has a
+                  value then that is  pretty-printed.   Nor-
+                  mally  the  output  of  the pretty-printer
+                  goes to the standard output  port  poport.
+                  The options allow you to redirect it.
+
+
+    ____________________________________________________
+
+    _P_P _O_p_t_i_o_n _S_u_m_m_a_r_y
+
+    (_F _s__f_i_l_e_n_a_m_e)          direct future printing to s_filename
+
+    (_P _p__p_o_r_t_n_a_m_e)          causes output to go to the port p_portname
+                                    (port should be opened previously)
+
+    (_E _g__e_x_p_r_e_s_s_i_o_n)                evaluate g_expression and don't print
+    ____________________________________________________
+
+
+
+
+(princ 'g_arg ['p_port])
+
+     EQUIVALENT TO: patom.
+
+(print 'g_arg ['p_port])
+
+     RETURNS: nil
+
+     SIDE EFFECT: prints g_arg on the  port  p_port  or  the
+                  default port.
+
+(probef 'st_file)
+
+     RETURNS: t iff the file st_file exists.
+
+     NOTE: Just because it exists doesn't mean you can  read
+           it.
+
+
+
+
+
+
+
+
+9
+
+9                                   Printed: January 31, 1984
+
+
+
+
+
+
+
+Input/Output                                            5-11
+
+
+(pp-form 'g_form ['p_port])
+
+     RETURNS: t
+
+     SIDE EFFECT: g_form  is  pretty-printed  to  the   port
+                  p_port (or poport if p_port is not given).
+                  This is the  function which _p_p  uses.  _p_p-
+                  _f_o_r_m  does  not  look for function defini-
+                  tions or  values  of  variables,  it  just
+                  prints out the form it is given.
+
+     NOTE: This is useful as a top-level-printer, c.f.  _t_o_p-
+           _l_e_v_e_l in Chapter 6.
+
+(ratom ['p_port ['g_eof]])
+
+     RETURNS: the next atom read from the given  or  default
+              port.   On end of file, g_eof (default nil) is
+              returned.
+
+(read ['p_port ['g_eof]])
+
+     RETURNS: the next lisp expression read from  the  given
+              or  default  port.   On  end  of  file,  g_eof
+              (default nil) is returned.
+
+     NOTE: An error will occur if the reader is given an ill
+           formed  expression.  The most common error is too
+           many right parentheses (note  that  this  is  not
+           considered an error in Maclisp).
+
+(readc ['p_port ['g_eof]])
+
+     RETURNS: the next character  read  from  the  given  or
+              default  port.  On end of file, g_eof (default
+              nil) is returned.
+
+(readlist 'l_arg)
+
+     RETURNS: the lisp expression  read  from  the  list  of
+              characters in l_arg.
+
+
+
+
+
+
+
+
+
+
+
+9
+
+9                                   Printed: January 31, 1984
+
+
+
+
+
+
+
+Input/Output                                            5-12
+
+
+(removeaddress 's_name1 ['s_name2 ...])
+
+     RETURNS: nil
+
+     SIDE EFFECT: the entries for the s_name_i  in  the  Lisp
+                  symbol  table are removed.  This is useful
+                  if you wish to _c_f_a_s_l or _f_f_a_s_l  in  a  file
+                  twice, since it is illegal for a symbol in
+                  the file you are loading to already  exist
+                  in the lisp symbol level by exe-
+                  cuting a (_f_u_n_c_a_l_l _t_o_p-_l_e_v_e_l _n_i_l).
+
+(restorelisp 's_name)
+
+     SIDE EFFECT: this  reads  in  file  s_name  (which  was
+                  created  by  _s_a_v_e_l_i_s_p)  and  then  does  a
+                  (_r_e_s_e_t).
+
+     NOTE: This is only used on VMS systems  where  _d_u_m_p_l_i_s_p
+           cannot be used.
+
+(retbrk ['x_level])
+
+     WHERE:   x_level is a small integer of either sign.
+
+     SIDE EFFECT: The default error handler keeps  a  notion
+                  of  the current level of the error caught.
+                  If x_level is negative, control is  thrown
+                  to  this default error handler whose level
+                  is that many less than the present, or  to
+                  _t_o_p-_l_e_v_e_l  if  there  aren't  enough.   If
+                  x_level is non-negative, control is passed
+                  to  the handler at that level.  If x_level
+                  is not present, the value -1 is  taken  by
+                  default.
+
+(*rset 'g_flag)
+
+     RETURNS: g_flag
+
+     SIDE EFFECT: If g_flag is non nil then the lisp  system
+                  will   maintain  extra  information  about
+                  calls to _e_v_a_l and  _f_u_n_c_a_l_l.   This  record
+                  keeping slows down the evaluation but this
+                  is required  for the  functions  _e_v_a_l_h_o_o_k,
+                  _f_u_n_c_a_l_l_h_o_o_k,  and  _e_v_a_l_f_r_a_m_e  to  work. To
+                  debug  compiled  lisp  code  the  transfer
+                  tables       should      be      unlinked:
+                  (_s_s_t_a_t_u_s _t_r_a_n_s_l_i_n_k _n_i_l)
+
+
+
+
+
+
+
+
+
+9
+
+9                                   Printed: January 31, 1984
+
+
+
+
+
+
+
+System Functions                                        6-10
+
+
+(savelisp 's_name)
+
+     RETURNS: t
+
+     SIDE EFFECT: the state of the Lisp system is  saved  in
+                  the  file  s_name.   It  can be read in by
+                  _r_e_s_t_o_r_e_l_i_s_p.
+
+     NOTE: This is only used on VMS systems  where  _d_u_m_p_l_i_s_p
+           cannot be used.
+
+(segment 's_type 'x_size)
+
+     WHERE:   s_type is one of the data types given in 1.3
+
+     RETURNS: a  segment  of  contiguous  lispvals  of  type
+              s_type.
+
+     NOTE: In reality, _s_e_g_m_e_n_t returns a new  data  cell  of
+           type  s_type  and  allocates space for x_size - 1
+           more s_type's beyond the one  returned.   _S_e_g_m_e_n_t
+           always  allocates  new  space  and does so in 512
+           byte chunks.  If you ask for 2  fixnums,  segment
+           will  actually  allocate 128 of them thus wasting
+           126 fixnums.  The  function  _s_m_a_l_l-_s_e_g_m_e_n_t  is  a
+           smarter  space allocator and should be used when-
+           ever possible.
+
+(shell)
+
+     RETURNS: the exit code of the shell when it dies.
+
+     SIDE EFFECT: this forks a new shell  and  returns  when
+                  the shell dies.
+
+(showstack)
+
+     RETURNS: nil
+
+     SIDE EFFECT: all  forms  currently  in  evaluation  are
+                  printed,  beginning  with the most recent.
+                  For compiled code the most that  showstack
+                  will  show is the function name and it may
+                  miss some functions.
+
+
+
+
+
+
+
+
+9
+
+9                                   Printed: January 31, 1984
+
+
+
+
+
+
+
+System Functions                                        6-11
+
+
+(signal 'x_signum 's_name)
+
+     RETURNS: nil if no previous call  to  signal  has  been
+              made, or the previously installed s_name.
+
+     SIDE EFFECT: this  declares  that  the  function  named
+                  s_name   will  handle  the  signal  number
+                  x_signum.  If s_name is nil, the signal is
+                  ignored.  Presently only four UNIX signals
+                  are caught.  They and their  numbers  are:
+                  Interrupt(2),    Floating    exception(8),
+                  Alarm(14), and Hang-up(1).
+
+(sizeof 'g_arg)
+
+     RETURNS: the number of  bytes  required  to  store  one
+              object of type g_arg, encoded as a fixnum.
+
+(small-segment 's_type 'x_cells)
+
+     WHERE:   s_type is one of fixnum, flonum and value.
+
+     RETURNS: a segment of  x_cells  data  objects  of  type
+              s_type.
+
+     SIDE EFFECT: This may  call  _s_e_g_m_e_n_t  to  allocate  new
+                  space  or  it  may  be  able  to  fill the
+                  request on a page already allocated.   The
+                  value returned by _s_m_a_l_l-_s_e_g_m_e_n_t is usually
+                  stored in the data  subpart  of  an  array
+                  object.
+
+(sstatus g_type g_val)
+
+     RETURNS: g_val
+
+     SIDE EFFECT: If  g_type  is  not  one  of  the  special
+                  sstatus  codes  described  in the next few
+                  pages this simply sets g_val as the  value
+                  of status type g_type in the system status
+                  property list.
+
+
+
+
+
+
+
+
+
+
+
+9
+
+9                                   Printed: January 31, 1984
+
+
+
+
+
+
+
+System Functions                                        6-12
+
+
+(sstatus appendmap g_val)
+
+     RETURNS: g_val
+
+     SIDE EFFECT: If g_val is non-null when _f_a_s_l is told  to
+                  create  a  load map, it will append to the
+                  file  name  given  in  the  _f_a_s_l  command,
+                  rather  than creating a new map file.  The
+                  initial value is nil.
+
+(sstatus automatic-reset g_val)
+
+     RETURNS: g_val
+
+     SIDE EFFECT: If g_val is non-null when an error  occurs
+                  which no one wants to handle, a _r_e_s_e_t will
+                  be done instead of  entering  a  primitive
+                  internal break loop.  The initial value is
+                  t.
+
+(sstatus chainatom g_val)
+
+     RETURNS: g_val
+
+     SIDE EFFECT: If g_val is non nil and a _c_a_r or _c_d_r of  a
+                  symbol  is done, then nil will be returned
+                  instead of an error being signaled.   This
+                  only affects the interpreter, not the com-
+                  piler.  The initial value is nil.
+
+(sstatus dumpcore g_val)
+
+     RETURNS: g_val
+
+     SIDE EFFECT: If g_val is nil,  FRANZ  LISP  tells  UNIX
+                  that a segmentation violation or bus error
+                  should cause a core dump.  If g_val is non
+                  nil  then  FRANZ  LISP  will  catch  those
+                  errors and print a  message  advising  the
+                  user to reset.
+
+     NOTE: The initial value for this flag is nil, and  only
+           those  knowledgeable  of  the innards of the lisp
+           system should ever set this flag non nil.
+
+
+
+
+
+
+
+
+9
+
+9                                   Printed: January 31, 1984
+
+
+
+
+
+
+
+System Functions                                        6-13
+
+
+(sstatus dumpmode x_val)
+
+     RETURNS: x_val
+
+     SIDE EFFECT: All subsequent _d_u_m_p_l_i_s_p's will be done  in
+                  mode  x_val.   x_val  may be either 413 or
+                  410 (decimal).
+
+     NOTE: the advantage of mode 413 is that the dumped Lisp
+           can  be demand paged in when first started, which
+           will make it start faster and disrupt other users
+           less.  The initial value is 413.
+
+(sstatus evalhook g_val)
+
+     RETURNS: g_val
+
+     SIDE EFFECT: When g_val is non nil,  this  enables  the
+                  evalhook  and  funcallhook  traps  in  the
+                  evaluator.  See 14.4 for more details.
+
+(sstatus feature g_val)
+
+     RETURNS: g_val
+
+     SIDE EFFECT: g_val is added  to  the  (_s_t_a_t_u_s _f_e_a_t_u_r_e_s)
+                  list,
+
+(sstatus gcstrings g_val)
+
+     RETURNS: g_val
+
+     SIDE EFFECT: if g_val is non-null, and if  string  gar-
+                  bage  collection was enabled when the lisp
+                  system was compiled, string space will  be
+                  garbage collected.
+
+     NOTE: the default value for this is nil sinc
+
+
+
+
+
+
+                         CHAPTER  7
+
+
+                      The Lisp Reader
+
+
+
+
+
+
+   7.1.  Introduction
+
+           The _r_e_a_d function is responsible for converting a
+      stream  of characters into a Lisp expression.  _R_e_a_d is
+      table driven and the table it uses is called a  _r_e_a_d_t_-
+      _a_b_l_e.  The _p_r_i_n_t function does the inverse of _r_e_a_d; it
+      converts a Lisp expression into a  stream  of  charac-
+      ters.   Typically the conversion is done in such a way
+      that if that stream of characters were read  by  _r_e_a_d,
+      the  result  would  be  an expression equal to the one
+      _p_r_i_n_t was given.  _P_r_i_n_t must also refer to the  readt-
+      able  in  order to determine how to format its output.
+      The _e_x_p_l_o_d_e function, which returns a list of  charac-
+      ters  rather  than  printing them,  must also refer to
+      the readtable.
+
+           A readtable is  created  with  the  _m_a_k_e_r_e_a_d_t_a_b_l_e
+      function,  modified  with  the  _s_e_t_s_y_n_t_a_x function and
+      interrogated with the _g_e_t_s_y_n_t_a_x function.  The  struc-
+      ture  of  a  readtable  is  hidden  from the user  - a
+      readtable should only be manipulated  with  the  three
+      functions mentioned above.
+
+           There is one distinguished readtable  called  the
+      _c_u_r_r_e_n_t  _r_e_a_d_t_a_b_l_e  whose  value determines what _r_e_a_d,
+      _p_r_i_n_t and _e_x_p_l_o_d_e do.  The current  readtable  is  the
+      value  of  the symbol _r_e_a_d_t_a_b_l_e.  Thus it is  possible
+      to rapidly change the current syntax by lambda binding
+      a  different  readtable to the symbol _r_e_a_d_t_a_b_l_e.  When
+      the binding is undone, the syntax reverts to  its  old
+      form.
+
+
+
+   7.2.  Syntax Classes
+
+           The readtable describes how each of the 128 ascii
+      characters   should  be  treated  by  the  reader  and
+      printer.  Each character belongs  to  a  _s_y_n_t_a_x  _c_l_a_s_s
+      which has three properties:
+
+      character class -
+           Tells what the reader should do when it sees this
+
+
+The Lisp Reader                                          7-1
+
+
+
+
+
+
+
+The Lisp Reader                                          7-2
+
+
+           character.  There are a large number of character
+           classes. They are described below.
+
+      separator -
+           Most types of tokens the  reader  constructs  are
+           one  character  long.   Four  token types have an
+           arbitrary length:  number  (1234),  symbol  print
+           name   (franz),   escaped   symbol   print   name
+           (|franz|), and string ("franz").  The reader  can
+           easily  determine  when it has come to the end of
+           one of the last two types: it just looks for  the
+           matching  delimiter (| or ").  When the reader is
+           reading a number or symbol print name,  it  stops
+           reading  when  it  comes  to a character with the
+           _s_e_p_a_r_a_t_o_r property.  The separator  character  is
+           pushed back into the input stream and will be the
+           first character read when the  reader  is  called
+           again.
+
+      escape -
+           Tells the printer when to put  escapes  in  front
+           of, or around, a symbol whose print name contains
+           this character.  There are  three  possibilities:
+           always escape a symbol with this character in it,
+           only escape a symbol if this is the only  charac-
+           ter  in  the  symbol, and only escape a symbol if
+           this  is  the  first  character  in  the  symbol.
+           [note:  The  printer  will always escape a symbol
+           which, if printed out, would look  like  a  valid
+           number.]
+
+           When the Lisp system is built, Lisp code is added
+      to  a  C-coded kernel and the result becomes the stan-
+      dard lisp system.  The readtable  present  in  the  C-
+      coded  kernel,  called the _r_a_w _r_e_a_d_t_a_b_l_e, contains the
+      bare necessities for reading in Lisp code.  During the
+      construction  of  the  complete Lisp system, a copy is
+      made of the raw readtable and then the copy  is  modi-
+      fied  by  adding macro characters.  The result is what
+      is called the _s_t_a_n_d_a_r_d _r_e_a_d_t_a_b_l_e.  When a  new  readt-
+      able  is created with _m_a_k_e_r_e_a_d_t_a_b_l_e, a copy is made of
+      either the raw  readtable  or  the  current  readtable
+      (which is likely to be the standard readtable).
+
+
+
+   7.3.  Reader Operations
+
+           The reader has a very simple  algorithm.   It  is
+      either  _s_c_a_n_n_i_n_g  for  a token, _c_o_l_l_e_c_t_i_n_g a token, or
+      _p_r_o_c_e_s_s_i_n_g a token.  Scanning involves reading charac-
+      ters  and throwing away those which don't start tokens
+      (such as blanks and tabs).  Collecting means gathering
+
+
+                                   Printed: January 31, 1984
+
+
+
+
+
+
+
+The Lisp Reader                                          7-3
+
+
+      the  characters  which  make up a token into a buffer.
+      Processing  may  involve  creating  symbols,  strings,
+      lists,  fixnums,  bignums or flonums or calling a user
+      written function called a character macro.
+
+           The components of the syntax class determine when
+      the  reader  switches between the scanning, collecting
+      and processing states.  The reader will continue scan-
+      ning  as long as the character class of the characters
+      it reads is _c_s_e_p_a_r_a_t_o_r.  When  it  reads  a  character
+      whose character class is not _c_s_e_p_a_r_a_t_o_r it stores that
+      character in its  buffer  and  begins  the  collecting
+      phase.
+
+           If the character class of that first character is
+      _c_c_h_a_r_a_c_t_e_r,  _c_n_u_m_b_e_r, _c_p_e_r_i_o_d, or _c_s_i_g_n.  then it will
+      continue collecting until it  runs  into  a  character
+      whose  syntax class has the _s_e_p_a_r_a_t_o_r property.  (That
+      last character will be  pushed  back  into  the  input
+      buffer  and  will  be  the  first  character read next
+      time.) Now the reader goes into the processing  phase,
+      checking  to  see  if the token it read is a number or
+      symbol.  It is important to note that  after the first
+      character  is  collected  the  component of the syntax
+      class which tells the reader to   stop  collecting  is
+      the _s_e_p_a_r_a_t_o_r property, not the character class.
+
+           If the character class  of  the  character  which
+      stopped  the  scanning  is  not  _c_c_h_a_r_a_c_t_e_r,  _c_n_u_m_b_e_r,
+      _c_p_e_r_i_o_d, or _c_s_i_g_n.  then  the  reader  processes  that
+      character    immediately.    The   character   classes
+      _c_s_i_n_g_l_e-_m_a_c_r_o,  _c_s_i_n_g_l_e-_s_p_l_i_c_i_n_g-_m_a_c_r_o,  and  _c_s_i_n_g_l_e-
+      _i_n_f_i_x-_m_a_c_r_o  will act like _c_c_h_a_r_a_c_t_e_r if the following
+      token is not a _s_e_p_a_r_a_t_o_r.   The  processing  which  is
+      done  for  a  given  character  class  is described in
+      detail in the next section.
+
+
+
+   7.4.  Character Classes
+
+
+_c_c_h_a_r_a_c_t_e_r    raw readtable:A-Z a-z ^H !#$%&*,/:;<=>?@^_`{}~
+            standard readtable:A-Z a-z ^H !$%&*/:;<=>?@^_{}~
+      A normal character.
+
+
+_c_n_u_m_b_e_r                                    raw readtable:0-9
+                                      standard readtable:0-9
+      This type is a digit. The syntax for an integer  (fix-
+      num  or  bignum)  is  a  string  of _c_n_u_m_b_e_r characters
+      optionally followed by a _c_p_e_r_i_o_d.  If the  digits  are
+      not  followed  by a _c_p_e_r_i_o_d, then they are interpreted
+
+
+                                   Printed: January e  in  most
+           applications  garbage  collecting  strings  is  a
+           waste of time.
+
+(sstatus ignoreeof g_val)
+
+     RETURNS: g_val
+
+     SIDE EFFECT: If g_val is non-null when an end  of  file
+                  (CNTL-D  on UNIX) is typed to the standard
+                  top-level interpreter, it will be  ignored
+                  rather then cause the lisp system to exit.
+                  If the the standard input  is  a  file  or
+                  pipe  then this has no effect, an EOF will
+                  always cause lisp to  exit.   The  initial
+                  value is nil.
+
+
+                                   Printed: January 31, 1984
+
+
+
+
+
+
+
+System Functions                                        6-14
+
+
+(sstatus nofeature g_val)
+
+     RETURNS: g_val
+
+     SIDE EFFECT: g_val is removed from the status  features
+                  list if it was present.
+
+(sstatus translink g_val)
+
+     RETURNS: g_val
+
+     SIDE EFFECT: If g_val is nil then all  transfer  tables
+                  are  cleared and further calls through the
+                  transfer table will  not  cause  the  fast
+                  links  to be set up.  If g_val is the sym-
+                  bol _o_n then all  possible  transfer  table
+                  entries  will  be linked and the flag will
+                  be set to cause fast links to  be  set  up
+                  dynamically.   Otherwise  all that is done
+                  is to set the flag to cause fast links  to
+                  be  set up dynamically.  The initial value
+                  is nil.
+
+     NOTE: For a discussion of transfer tables, see 12.8.
+
+(sstatus uctolc g_val)
+
+     RETURNS: g_val
+
+     SIDE EFFECT: If g_val is not  nil  then  all  unescaped
+                  capital  letters  in  symbols  read by the
+                  reader will be converted to lower case.
+
+     NOTE: This allows FRANZ LISP to be compatible with sin-
+           gle  case  lisp  systems (e.g. Maclisp, Interlisp
+           and UCILisp).
+
+(status g_code)
+
+     RETURNS: the value  associated  with  the  status  code
+              g_code  if  g_code  is  not one of the special
+              cases given below
+
+
+
+
+
+
+
+
+
+
+9
+
+9                                   Printed: January 31, 1984
+
+
+
+
+
+
+
+System Functions                                        6-15
+
+
+(status ctime)
+
+     RETURNS: a symbol whose print name is the current  time
+              and date.
+
+     EXAMPLE: (_s_t_a_t_u_s _c_t_i_m_e) = |Sun Jun 29 16:51:26 1980|
+
+     NOTE: This  has  been  made  obsolete  by  _t_i_m_e-_s_t_r_i_n_g,
+           described below.
+
+(status feature g_val)
+
+     RETURNS: t iff g_val is in the status features list.
+
+(status features)
+
+     RETURNS: the value of the features  code,  which  is  a
+              list  of  features  which  are present in this
+              system.    You   add   to   this   list   with
+              (_s_s_t_a_t_u_s _f_e_a_t_u_r_e '_g__v_a_l)  and  test if feature
+              g_feat         is         present         with
+              (_s_t_a_t_u_s _f_e_a_t_u_r_e '_g__f_e_a_t).
+
+(status isatty)
+
+     RETURNS: t iff the standard input is a terminal.
+
+(status localtime)
+
+     RETURNS: a list of  fixnums  representing  the  current
+              time.
+
+     EXAMPLE: (_s_t_a_t_u_s _l_o_c_a_l_t_i_m_e) =  (3 51 13 31 6 81  5  211
+              1)
+              means 3_r_d second, 51_s_t minute,  13_t_h  hour  (1
+              p.m), 31_s_t day, month 6 (0 = January), year 81
+              (0 = 1900), day of the  week  5  (0 = Sunday),
+              211_t_h  day  of  the  year and daylight savings
+              time is in effect.
+
+(status syntax s_char)
+
+     NOTE: This  function  should  not  be  used.   See  the
+           description  of  _g_e_t_s_y_n_t_a_x  (in  Chapter 7) for a
+           replacement.
+
+
+
+
+
+
+
+9
+
+9                                   Printed: January 31, 1984
+
+
+
+
+
+
+
+System Functions                                        6-16
+
+
+(status undeffunc)
+
+     RETURNS: a list of all functions which  transfer  table
+              entries  point to but which are not defined at
+              this point.
+
+     NOTE: Some of the undefined functions listed  could  be
+           arrays which have yet to be created.
+
+(status version)
+
+     RETURNS: a string which is  the  current  lisp  version
+              name.
+
+     EXAMPLE: (_s_t_a_t_u_s _v_e_r_s_i_o_n) = "Franz Lisp, Opus 38.61"
+
+(syscall 'x_index ['xst_arg1 ...])
+
+     RETURNS: the result of issuing  the  UNIX  system  call
+              number x_index with arguments xst_arg_i.
+
+     NOTE: The UNIX system calls are described in section  2
+           of the UNIX Programmer's manual. If xst_arg_i is a
+           fixnum, then its value is passed as an  argument,
+           if  it  is  a symbol then its pname is passed and
+           finally if it is a string then the string  itself
+           is  passed  as an argument.  Some useful syscalls
+           are:
+           (_s_y_s_c_a_l_l _2_0) returns process id.
+           (_s_y_s_c_a_l_l _1_3) returns the number of seconds  since
+           Jan 1, 1970.
+           (_s_y_s_c_a_l_l _1_0 '_f_o_o) will unlink (delete)  the  file
+           foo.
+
+(sys:access 'st_filename 'x_mode)
+(sys:chmod 'st_filename 'x_mode)
+(sys:gethostname)
+(sys:getpid)
+(sys:getpwnam 'st_username)
+(sys:link 'st_oldfilename 'st_newfilename)
+(sys:time)
+(sys:unlink 'st_filename)
+
+     NOTE: We have been warned that the actual  system  call
+           numbers  may  vary  among different UNIX systems.
+           Users concerned about portability may wish to use
+           this  group  of  functions.  Another advantage is
+           that tilde-expansion is performed on all filename
+           arguments.   These functions do what is described
+           in the system call section of your UNIX manual.
+
+           _s_y_s:_g_e_t_p_w_n_a_m returns a  vector  of  four  entries
+           from the password file, being the user name, user
+
+
+                                   Printed: January 31, 1984
+
+
+
+
+
+
+
+System Functions                                        6-17
+
+
+           id, group id, and home directory.
+
+(time-string ['x_seconds])
+
+     RETURNS: an ascii string giving the time and date which
+              was  x_seconds  after  UNIX's idea of creation
+              (Midnight, Jan 1, 1970 GMT).  If  no  argument
+              is  given,  time-string  returns  the  current
+              date.  This supplants (_s_t_a_t_u_s _c_t_i_m_e), and  may
+              be  used  to make the results of _f_i_l_e_s_t_a_t more
+              intelligible.
+
+(top-level)
+
+     RETURNS: nothing (it never returns)
+
+     NOTE: This function is  the  top-level  read-eval-print
+           loop.   It  never  returns  any  value.  Its main
+           utility is that if you  redefine  it,  and  do  a
+           (reset)  then  the  redefined (top-level) is then
+           invoked.  The default top-level for Franz,  allow
+           one  to  specify  his  own  printer or reader, by
+           binding the symbols  top-level-printer  and  top-
+           level-reader.   One can let the default top-level
+           do most of the drudgery in catching _r_e_s_e_t's,  and
+           reading  in  .lisprc files, by binding the symbol
+           user-top-level, to a routine that concerns itself
+           only with the read-eval-print loop.
+
+(wait)
+
+     RETURNS: a dotted pair (_p_r_o_c_e_s_s_i_d .  _s_t_a_t_u_s)  when  the
+              next child process dies.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+9
+
+9                                   Printed: January 31, 1984
+
+
+
+                                                                                                                                                                                                                                                                                                                                                                                                                                                      31, 1984
+
+
+
+
+
+
+
+The Lisp Reader                                          7-4
+
+
+      in base _i_b_a_s_e which must be eight or ten.  The  syntax
+      for  a  floating  point  number is either zero or more
+      _c_n_u_m_b_e_r's followed by a _c_p_e_r_i_o_d and then  followed  by
+      one  or  more  _c_n_u_m_b_e_r's.  A floating point number may
+      also be  an integer or floating point number  followed
+      by 'e' or 'd', an optional '+' or '-' and then zero or
+      more _c_n_u_m_b_e_r's.
+
+
+_c_s_i_g_n                                       raw readtable:+-
+                                       standard readtable:+-
+      A leading sign  for  a  number.  No  other  characters
+      should be given this class.
+
+
+_c_l_e_f_t_-_p_a_r_e_n                                  raw readtable:(
+                                        standard readtable:(
+      A left parenthesis.  Tells the reader to begin forming
+      a list.
+
+
+_c_r_i_g_h_t_-_p_a_r_e_n                                 raw readtable:)
+                                        standard readtable:)
+      A right parenthesis.  Tells the  reader  that  it  has
+      reached the end of a list.
+
+
+_c_l_e_f_t_-_b_r_a_c_k_e_t                                raw readtable:[
+                                        standard readtable:[
+      A left bracket.  Tells the reader that it should begin
+      forming a list.  See the description of _c_r_i_g_h_t-_b_r_a_c_k_e_t
+      for the difference between  cleft-bracket  and  cleft-
+      paren.
+
+
+_c_r_i_g_h_t_-_b_r_a_c_k_e_t                               raw readtable:]
+                                        standard readtable:]
+      A right bracket.  A _c_r_i_g_h_t-_b_r_a_c_k_e_t finishes the forma-
+      tion of the current list and all enclosing lists until
+      it finds one which  begins  with  a  _c_l_e_f_t-_b_r_a_c_k_e_t  or
+      until it reaches the top level list.
+
+
+_c_p_e_r_i_o_d                                      raw readtable:.
+                                        standard readtable:.
+      The period is used to separate element of a cons  cell
+      [e.g.  (a . (b . nil)) is the same as (a b)].  _c_p_e_r_i_o_d
+      is also used in numbers as described above.
+
+
+_c_s_e_p_a_r_a_t_o_r                     raw readtable:^I-^M esc space
+                          standard readtable:^I-^M esc space
+      Separates tokens.  When the reader is scanning,  these
+
+
+                                   Printed: January 31, 1984
+
+
+
+
+
+
+
+The Lisp Reader                                          7-5
+
+
+      character  are  passed over.  Note: there is a differ-
+      ence between the _c_s_e_p_a_r_a_t_o_r character  class  and  the
+      _s_e_p_a_r_a_t_o_r property of a syntax class.
+
+
+_c_s_i_n_g_l_e_-_q_u_o_t_e                                raw readtable:'
+                                        standard readtable:'
+      This causes _r_e_a_d to be called recursively and the list
+      (quote <value read>) to be returned.
+
+
+_c_s_y_m_b_o_l_-_d_e_l_i_m_i_t_e_r                            raw readtable:|
+                                        standard readtable:|
+      This causes the reader to begin collecting  characters
+      and  to  stop  only  when  another  identical _c_s_y_m_b_o_l-
+      _d_e_l_i_m_i_t_e_r is seen. The only way to escape  a  _c_s_y_m_b_o_l-
+      _d_e_l_i_m_i_t_e_r within a symbol name is with a _c_e_s_c_a_p_e char-
+      acter.  The collected characters are converted into  a
+      string which becomes the print name of a symbol.  If a
+      symbol with an identical print  name  already  exists,
+      then  the  allocation is not done, rather the existing
+      symbol is used.
+
+
+_c_e_s_c_a_p_e                                      raw readtable:\
+                                        standard readtable:\
+      This causes the  next  character  to  read  in  to  be
+      treated  as  a  vcharacter.   A character whose syntax
+      class is vcharacter has a character  class  _c_c_h_a_r_a_c_t_e_r
+      and  does  not  have the _s_e_p_a_r_a_t_o_r property so it will
+      not separate symbols.
+
+
+_c_s_t_r_i_n_g_-_d_e_l_i_m_i_t_e_r                            raw readtable:"
+                                        standard readtable:"
+      This is  the  same  as  _c_s_y_m_b_o_l-_d_e_l_i_m_i_t_e_r  except  the
+      result is returned as a string instead of a symbol.
+
+
+_c_s_i_n_g_l_e_-_c_h_a_r_a_c_t_e_r_-_s_y_m_b_o_l                  raw readtable:none
+                                     standard readtable:none
+      This returns a symbol whose print name is the the sin-
+      gle character which has been collected.
+
+
+_c_m_a_c_r_o                                    raw readtable:none
+                                       standard readtable:`,
+      The reader calls the macro  function  associated  with
+      this  character  and the current readtable, passing it
+      no arguments.  The result of the macro is added to the
+      structure the reader is building, just as if that form
+      were directly read by the  reader.   More  details  on
+      macros are provided below.
+
+
+                                   Printed: January 31, 1984
+
+
+
+
+
+
+
+The Lisp Reader                                          7-6
+
+
+_c_s_p_l_i_c_i_n_g_-_m_a_c_r_o                           raw readtable:none
+                                       standard readtable:#;
+      A _c_s_p_l_i_c_i_n_g-_m_a_c_r_o differs from a _c_m_a_c_r_o in the way the
+      result  is incorporated in the structure the reader is
+      building.  A _c_s_p_l_i_c_i_n_g-_m_a_c_r_o must  return  a  list  of
+      forms (possibly empty).  The reader acts as if it read
+      each element of the list itself without the  surround-
+      ing parenthesis.
+
+
+_c_s_i_n_g_l_e_-_m_a_c_r_o                             raw readtable:none
+                                     standard readtable:none
+      This causes to reader to check the next character.  If
+      it is a _c_s_e_p_a_r_a_t_o_r then this acts like a _c_m_a_c_r_o.  Oth-
+      erwise, it acts like a _c_c_h_a_r_a_c_t_e_r.
+
+
+_c_s_i_n_g_l_e_-_s_p_l_i_c_i_n_g_-_m_a_c_r_o                    raw readtable:none
+                                     standard readtable:none
+      This is triggered like  a  _c_s_i_n_g_l_e-_m_a_c_r_o  however  the
+      result is spliced in like a _c_s_p_l_i_c_i_n_g-_m_a_c_r_o.
+
+
+_c_i_n_f_i_x_-_m_a_c_r_o                              raw readtable:none
+                                     standard readtable:none
+      This is differs from a _c_m_a_c_r_o in that the macro  func-
+      tion is passed a form representing what the reader has
+      read so far. The result of the macro replaces what the
+      reader had read so far.
+
+
+_c_s_i_n_g_l_e_-_i_n_f_i_x_-_m_a_c_r_o                       raw readtable:none
+                                     standard readtable:none
+      This differs from the _c_i_n_f_i_x-_m_a_c_r_o in that  the  macro
+      will  only be triggered if the character following the
+      _c_s_i_n_g_l_e-_i_n_f_i_x-_m_a_c_r_o character is a _c_s_e_p_a_r_a_t_o_r.
+
+
+_c_i_l_l_e_g_a_l                 raw readtable:^@-^G^N-^Z^\-^_rubout
+                    standard readtable:^@-^G^N-^Z^\-^_rubout
+      The characters cause the reader to signal an error  if
+      read.
+
+
+
+   7.5.  Syntax Classes
+
+           The readtable maps each character into  a  syntax
+      class.   The  syntax  class  contains  three pieces of
+      information: the character class, whether  this  is  a
+      separator,  and  the escape properties.  The first two
+      properties are used by the reader,  the  last  by  the
+      printer  (and  _e_x_p_l_o_d_e).   The initial lisp system ha
+
+
+
+
+
+
+                         CHAPTER  8
+
+
+              Functions, Fclosures, and Macros
+
+
+
+
+
+
+   8.1.  valid function objects
+
+           There are many different objects which can occupy
+      the  function field of a symbol object.  Table 8.1, on
+      the following page, shows all  of  the  possibilities,
+      how  to recognize them, and where to look for documen-
+      tation.
+
+
+
+   8.2.  functions
+
+           The basic Lisp function is the  lambda  function.
+      When a lambda function is called, the actual arguments
+      are evaluated from left to right and are  lambda-bound
+      to the formal parameters of the lambda function.
+
+           An nlambda function is usually used for functions
+      which  are  invoked  by  the  user at top level.  Some
+      built-in functions which evaluate their  arguments  in
+      special  ways  are  also  nlambdas (e.g _c_o_n_d, _d_o, _o_r).
+      When an  nlambda  function  is  called,  the  list  of
+      unevaluated  arguments  is  lambda bound to the single
+      formal parameter of the nlambda function.
+
+           Some programmers will  use  an  nlambda  function
+      when  they  are  not  sure  how many arguments will be
+      passed.  Then, the first thing  the  nlambda  function
+      does  is  map  _e_v_a_l over the list of unevaluated argu-
+      ments it has been passed.  This is usually  the  wrong
+      thing  to  do,  as it will not work compiled if any of
+      the arguments are local variables. The solution is  to
+      use  a  lexpr.   When  a lexpr function is called, the
+      arguments are evaluated and a fixnum  whose  value  is
+      the  number of arguments is lambda-bound to the single
+      formal parameter of the lexpr function.  The lexpr can
+      then access the arguments using the _a_r_g function.
+
+           When a function is compiled, _s_p_e_c_i_a_l declarations
+      may  be  needed to preserve its behavior.  An argument
+      is not lambda-bound to the name of  the  corresponding
+      formal parameter unless that formal parameter has been
+      declared _s_p_e_c_i_a_l (see 12.3.2.2).
+
+
+Functions, Fclosures, and Macros                         8-1
+
+
+
+
+
+
+
+Functions, Fclosures, and Macros                         8-2
+
+
+
+
+
+8_________________________________________________________________
+   informal name             object type          documentation
+8__________________________________________________________________________________________________________________________________
+    interpreted             list with _c_a_r              8.2
+  lambda function           _e_q to lambda
+8_________________________________________________________________
+    interpreted             list with _c_a_r              8.2
+  nlambda function          _e_q to nlambda
+8_________________________________________________________________
+    interpreted             list with _c_a_r              8.2
+   lexpr function            _e_q to lexpr
+8_________________________________________________________________
+    interpreted             list with _c_a_r              8.3
+       macro                 _e_q to macro
+8_________________________________________________________________
+      fclosure            vector with _v_p_r_o_p            8.4
+                           _e_q to fclosure
+8_________________________________________________________________
+      compiled         binary with discipline          8.2
+  lambda or lexpr           _e_q to lambda
+      function
+8_________________________________________________________________
+      compiled         binary with discipline          8.2
+  nlambda function          _e_q to nlambda
+8_________________________________________________________________
+      compiled         binary with discipline          8.3
+       macro                 _e_q to macro
+8_________________________________________________________________
+      foreign          binary with discipline          8.5
+     subroutine          of "subroutine"[|-]
+8_________________________________________________________________
+      foreign          binary with discipline          8.5
+      function            of "function"[|-]
+8_________________________________________________________________
+      foreign          binary with discipline          8.5
+  integer function    of "integer-function"[|-]
+8_________________________________________________________________
+      foreign          binary with discipline          8.5
+   real function        of "real-function"[|-]
+8_________________________________________________________________
+      foreign          binary with discipline          8.5
+     C function          of "c-function"[|-]
+8_________________________________________________________________
+      foreign          binary with discipline          8.5
+  double function     of "double-c-function"[|-]
+8_________________________________________________________________
+      foreign          binary with discipline          8.5
+ structure function   of "vector-c-function"[|-]
+8_________________________________________________________________
+       array                array object                9
+8_________________________________________________________________
+7|8|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+9                   |8|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+9                                               |8|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+9                                                                |8|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+9                         Table 8.1
+
+____________________
+9   [|-]Only the first character of the string is significant (i.e "s"
+is ok for "subroutine")
+
+
+
+9                                   Printed: January 31, 1984
+
+
+
+
+
+
+
+Functions, Fclosures, and Macros                         8-3
+
+
+           Lambda and lexpr functions both  compile  into  a
+      binary object with a discipline of lambda.  However, a
+      compiled lexpr still acts like an interpreted lexpr.
+
+
+
+   8.3.  macros
+
+           An important feature of Lisp is  its  ability  to
+      manipulate  programs  as  data.   As a result of this,
+      most Lisp implementations  have  very  powerful  macro
+      facilities.  The Lisp language's macro facility can be
+      used to incorporate  popular  features  of  the  other
+      languages  into  Lisp.   For  example, there are macro
+      packages which allow one to create records  (ala  Pas-
+      cal)  and  refer  to  elements of those records by the
+      field names.  The _s_t_r_u_c_t package imported from Maclisp
+      does  this.   Another  popular  use  for  macros is to
+      create more readable control structures  which  expand
+      into  _c_o_n_d,  _o_r  and  _a_n_d.  One such example is the If
+      macro.  It allows you to write
+
+      (_I_f (_e_q_u_a_l _n_u_m_b _0) _t_h_e_n (_p_r_i_n_t '_z_e_r_o) (_t_e_r_p_r)
+       _e_l_s_e_i_f (_e_q_u_a_l _n_u_m_b _1) _t_h_e_n (_p_r_i_n_t '_o_n_e) (_t_e_r_p_r)
+       _e_l_s_e (_p_r_i_n_t '|_I _g_i_v_e _u_p|))
+
+      which expands to
+
+      (_c_o_n_d
+          ((_e_q_u_a_l _n_u_m_b _0) (_p_r_i_n_t '_z_e_r_o) (_t_e_r_p_r))
+          ((_e_q_u_a_l _n_u_m_b _1) (_p_r_i_n_t '_o_n_e) (_t_e_r_p_r))
+          (_t (_p_r_is
+
+
+                                   Printed: January 31, 1984
+
+
+
+
+
+
+
+The Lisp Reader                                          7-7
+
+
+      the following syntax classes defined.   The  user  may
+      add  syntax  classes  with _a_d_d-_s_y_n_t_a_x-_c_l_a_s_s.  For each
+      syntax class, we list the properties of the class  and
+      which  characters  have  this syntax class by default.
+      More information about each syntax class can be  found
+      under  the description of the syntax class's character
+      class.
+
+vcharacter    raw readtable:A-Z a-z ^H !#$%&*,/:;<=>?@^_`{}~
+_c_c_h_a_r_a_c_t_e_r  standard readtable:A-Z a-z ^H !$%&*/:;<=>?@^_{}~
+
+
+
+vnumber                                    raw readtable:0-9
+_c_n_u_m_b_e_r                               standard readtable:0-9
+
+
+
+vsign                                       raw readtable:+-
+_c_s_i_g_n                                  standard readtable:+-
+
+
+
+vleft-paren                                  raw readtable:(
+_c_l_e_f_t_-_p_a_r_e_n                             standard readtable:(
+_e_s_c_a_p_e_-_a_l_w_a_y_s
+_s_e_p_a_r_a_t_o_r
+
+vright-paren                                 raw readtable:)
+_c_r_i_g_h_t_-_p_a_r_e_n                            standard readtable:)
+_e_s_c_a_p_e_-_a_l_w_a_y_s
+_s_e_p_a_r_a_t_o_r
+
+vleft-bracket                                raw readtable:[
+_c_l_e_f_t_-_b_r_a_c_k_e_t                           standard readtable:[
+_e_s_c_a_p_e_-_a_l_w_a_y_s
+_s_e_p_a_r_a_t_o_r
+
+vright-bracket                               raw readtable:]
+_c_r_i_g_h_t_-_b_r_a_c_k_e_t                          standard readtable:]
+_e_s_c_a_p_e_-_a_l_w_a_y_s
+_s_e_p_a_r_a_t_o_r
+
+vperiod                                      raw readtable:.
+_c_p_e_r_i_o_d                                 standard readtable:.
+_e_s_c_a_p_e_-_w_h_e_n_-_u_n_i_q_u_e
+
+
+vseparator                     raw readtable:^I-^M esc space
+_c_s_e_p_a_r_a_t_o_r                standard readtable:^I-^M esc space
+_e_s_c_a_p_e_-_a_l_w_a_y_s
+_s_e_p_a_r_a_t_o_r
+9
+
+9                                   Printed: January 31, 1984
+
+
+
+
+
+
+
+The Lisp Reader                                          7-8
+
+
+vsingle-quote                                raw readtable:'
+_c_s_i_n_g_l_e_-_q_u_o_t_e                           standard readtable:'
+_e_s_c_a_p_e_-_a_l_w_a_y_s
+_s_e_p_a_r_a_t_o_r
+
+vsymbol-delimiter                            raw readtable:|
+_c_s_i_n_g_l_e_-_d_e_l_i_m_i_t_e_r                       standard readtable:|
+_e_s_c_a_p_e_-_a_l_w_a_y_s
+
+
+vescape                                      raw readtable:\
+_c_e_s_c_a_p_e                                 standard readtable:\
+_e_s_c_a_p_e_-_a_l_w_a_y_s
+
+
+vstring-delimiter                            raw readtable:"
+_c_s_t_r_i_n_g_-_d_e_l_i_m_i_t_e_r                       standard readtable:"
+_e_s_c_a_p_e_-_a_l_w_a_y_s
+
+
+vsingle-character-symbol                  raw readtable:none
+_c_s_i_n_g_l_e_-_c_h_a_r_a_c_t_e_r_-_s_y_m_b_o_l             standard readtable:none
+_s_e_p_a_r_a_t_o_r
+
+
+vmacro                                    raw readtable:none
+_c_m_a_c_r_o                                 standard readtable:`,
+_e_s_c_a_p_e_-_a_l_w_a_y_s
+_s_e_p_a_r_a_t_o_r
+
+vsplicing-macro                           raw readtable:none
+_c_s_p_l_i_c_i_n_g_-_m_a_c_r_o                        standard readtable:#;
+_e_s_c_a_p_e_-_a_l_w_a_y_s
+_s_e_p_a_r_a_t_o_r
+
+vsingle-macro                             raw readtable:none
+_c_s_i_n_g_l_e_-_m_a_c_r_o                        standard readtable:none
+_e_s_c_a_p_e_-_w_h_e_n_-_u_n_i_q_u_e
+
+
+vsingle-splicing-macro                    raw readtable:none
+_c_s_i_n_g_l_e_-_s_p_l_i_c_i_n_g_-_m_a_c_r_o               standard readtable:none
+_e_s_c_a_p_e_-_w_h_e_n_-_u_n_i_q_u_e
+
+
+vinfix-macro                              raw readtable:none
+_c_i_n_f_i_x_-_m_a_c_r_o                         standard readtable:none
+_e_s_c_a_p_e_-_a_l_w_a_y_s
+_s_e_p_a_r_a_t_o_r
+
+vsingle-infix-macro                       raw readtable:none
+_c_s_i_n_g_l_e_-_i_n_f_i_x_-_m_a_c_r_o                  standard readtable:none
+_e_s_c_a_p_e_-_w_h_e_n_-_u_n_i_q_u_e
+
+
+                                   Printed: January 31, 1984
+
+
+
+
+
+
+
+The Lisp Reader                                          7-9
+
+
+
+
+villegal                 raw readtable:^@-^G^N-^Z^\-^_rubout
+_c_i_l_l_e_g_a_l            standard readtable:^@-^G^N-^Z^\-^_rubout
+_e_s_c_a_p_e_-_a_l_w_a_y_s
+_s_e_p_a_r_a_t_o_r
+
+
+
+   7.6.  Character Macros
+
+           Character macros are user written functions which
+      are  executed  during  the reading process.  The value
+      returned by a character macro may or may not  be  used
+      by  the reader, depending on the type of macro and the
+      value returned.  Character macros are always  attached
+      to a single character with the _s_e_t_s_y_n_t_a_x function.
+
+
+
+      7.6.1.  Types   There are  three  types  of  character
+         macros:  normal,  splicing  and infix.  These types
+         differ in the arguments they are given or  in  what
+         is done with the result they return.
+
+
+
+         7.6.1.1.  Normal
+
+                 A normal macro is passed no arguments.  The
+            value  returned by a normal macro is simply used
+            by the reader  as  if  it  had  read  the  value
+            itself.   Here  is  an  example of a macro which
+            returns the abbreviation for a given state.
+
+
+    ____________________________________________________
+
+    ->(_d_e_f_u_n _s_t_a_t_e_a_b_b_r_e_v _n_i_l
+         (_c_d_r (_a_s_s_q (_r_e_a_d) '((_c_a_l_i_f_o_r_n_i_a . _c_a) (_p_e_n_n_s_y_l_v_a_n_i_a . _p_a)))))
+    stateabbrev
+    -> (_s_e_t_s_y_n_t_a_x '_\! '_v_m_a_c_r_o '_s_t_a_t_e_a_b_b_r_e_v)
+    t
+    -> '( ! _c_a_l_i_f_o_r_n_i_a ! _w_y_o_m_i_n_g ! _p_e_n_n_s_y_l_v_a_n_i_a)
+    (ca nil pa)
+    ____________________________________________________
+
+
+
+Notice what happened to
+ ! _w_y_o_m_i_n_g.  Since it wasn't in the  table,  the  associated
+function  returned  nil.   The creator of the macro may have
+wanted to leave the list alone, in such a case, but couldn't
+
+
+                                   Printed: January 31, 1984
+
+
+
+
+
+
+
+The Lisp Reader                                         7-10
+
+
+with  this  type  of  reader  macro.   The  splicing  macro,
+described next, allows a character macro function to  return
+a value that is ignored.
+
+
+
+         7.6.1.2.  Splicing
+
+                 The value returned from  a  splicing  macro
+            must  be  a  list  or nil.  If the value is nil,
+            then the value is ignored, otherwise the  reader
+            acts  as  if  it  read  each object in the list.
+            Usually the list only contains one  element.  If
+            the reader is reading at the top level (i.e. not
+            collecting elements of list), then it is illegal
+            for  a  splicing  macro  to return more then one
+            element in the list.  The major advantage  of  a
+            splicing  macro over a normal macro is the abil-
+            ity of the splicing macro to return nothing. The
+            comment  character  (usually  ;)  is  a splicing
+            macro bound to a function which reads to the end
+            of the line and always returns nil.  Here is the
+            previous example written as a splicing macro
+
+
+    ____________________________________________________
+
+    -> (_d_e_f_u_n _s_t_a_t_e_a_b_b_r_e_v _n_i_l
+          ((_l_a_m_b_d_a (_v_a_l_u_e)
+               (_c_o_n_d (_v_a_l_u__n_t '|_I _g_i_v_e _u_p|)))
+
+
+
+
+      8.3.1.  macro forms
+
+              A macro is a function  which  accepts  a  Lisp
+         expression   as  input  and  returns  another  Lisp
+         expression.  The action the macro takes  is  called
+         macro expansion.  Here is a simple example:
+
+         -> (_d_e_f _f_i_r_s_t (_m_a_c_r_o (_x) (_c_o_n_s '_c_a_r (_c_d_r _x))))
+         first
+         -> (_f_i_r_s_t '(_a _b _c))
+         a
+         -> (_a_p_p_l_y '_f_i_r_s_t '(_f_i_r_s_t '(_a _b _c)))
+         (car '(a b c))
+
+         The first input line defines a macro called  _f_i_r_s_t.
+         Notice  that the macro has one formal parameter, _x.
+         On the second input line, we ask the interpreter to
+
+
+                                   Printed: January 31, 1984
+
+
+
+
+
+
+
+Functions, Fclosures, and Macros                         8-4
+
+
+         evaluate  (_f_i_r_s_t '(_a _b _c)).   _E_v_a_l  sees that _f_i_r_s_t
+         has a function definition  of  type  macro,  so  it
+         evaluates  _f_i_r_s_t's definition, passing to _f_i_r_s_t, as
+         an argument, the form _e_v_a_l  itself  was  trying  to
+         evaluate:  (_f_i_r_s_t '(_a _b _c)).  The _f_i_r_s_t macro chops
+         off the car of the argument with _c_d_r, cons'  a  _c_a_r
+         at   the   beginning   of   the  list  and  returns
+         (_c_a_r '(_a _b _c)), which _e_v_a_l evaluates.  The value  _a
+         is returned as the value of (_f_i_r_s_t '(_a _b _c)).  Thus
+         whenever _e_v_a_l tries to evaluate a  list  whose  car
+         has  a macro definition it ends up doing (at least)
+         two operations, the first of which is a call to the
+         macro  to  let  it  macro  expand the form, and the
+         other is the evaluation of the result of the macro.
+         The  result of the macro may be yet another call to
+         a macro, so _e_v_a_l may have to do even  more  evalua-
+         tions  until it can finally determine the  value of
+         an expression.  One way to see  how  a  macro  will
+         expand  is to use _a_p_p_l_y as shown on the third input
+         line above.
+
+
+
+      8.3.2.  defmacro
+
+              The macro _d_e_f_m_a_c_r_o makes it easier  to  define
+         macros  because it allows you to name the arguments
+         to the macro call.  For example,  suppose  we  find
+         ourselves      often      writing     code     like
+         (_s_e_t_q _s_t_a_c_k (_c_o_n_s _n_e_w_e_l_t _s_t_a_c_k).  We could define a
+         macro  named  _p_u_s_h  to  do this for us.  One way to
+         define it is:
+
+         -> (_d_e_f _p_u_s_h
+               (_m_a_c_r_o (_x) (_l_i_s_t '_s_e_t_q (_c_a_d_d_r _x) (_l_i_s_t '_c_o_n_s (_c_a_d_r _x) (_c_a_d_d_r _x)))))
+         push
+
+         then (_p_u_s_h _n_e_w_e_l_t _s_t_a_c_k) will expand  to  the  form
+         mentioned above.  The same macro written using def-
+         macro would be:
+
+         -> (_d_e_f_m_a_c_r_o _p_u_s_h (_v_a_l_u_e _s_t_a_c_k)
+           (_l_i_s_t '_s_e_t_q ,_s_t_a_c_k (_l_i_s_t '_c_o_n_s ,_v_a_l_u_e ,_s_t_a_c_k)))
+         push
+
+         Defmacro allows you to name the  arguments  of  the
+         macro  call,  and  makes  the macro definition look
+         more like a function definition.
+
+
+
+
+9
+
+9                                   Printed: January 31, 1984
+
+
+
+
+
+
+
+Functions, Fclosures, and Macros                         8-5
+
+
+      8.3.3.  the backquote character macro
+
+              The default syntax for  FRANZ  LISP  has  four
+         characters  with  associated character macros.  One
+         is semicolon for  comments.   Two  others  are  the
+         backquote and comma which are used by the backquote
+         character macro.  The  fourth  is  the  sharp  sign
+         macro described in the next section.
+
+              The backquote macro is used  to  create  lists
+         where many of the elements are fixed (quoted). This
+         makes it very useful  for  creating  macro  defini-
+         tions.  In the simplest case, a backquote acts just
+         like a single quote:
+
+         ->`(_a _b _c _d _e)
+         (a b c d e)
+
+         If a comma precedes an element of a backquoted list
+         then that element is evaluated and its value is put
+         in the list.
+
+         ->(_s_e_t_q _d '(_x _y _z))
+         (x y z)
+         ->`(_a _b _c ,_d _e)
+         (a b c (x y z) e)
+
+         If a comma followed by an at sign precedes an  ele-
+         ment  in  a  backquoted  list, then that element is
+         evaluated and spliced into the list with _a_p_p_e_n_d.
+
+         ->`(_a _b _c ,@_d _e)
+         (a b c x y z e)
+
+         Once a list begins with a backquote, the commas may
+         appear anywhere in the list as this example shows:
+
+         ->`(_a _b (_c _d ,(_c_d_r _d)) (_e _f (_g _h ,@(_c_d_d_r _d) ,@_d)))
+         (a b (c d (y z)) (e f (g h z x y z)))
+
+         It is also possible and sometimes  even  useful  to
+         use  the backquote macro within itself.  As a final
+         demonstration of  the  backquote  macro,  we  shall
+         define  the  first  and  push  macros using all the
+         power at our disposal: defmacro and  the  backquote
+         macro.
+
+         ->(_d_e_f_m_a_c_r_o _f_i_r_s_t (_l_i_s_t) `(_c_a_r ,_l_i_s_t))
+         first
+         ->(_d_e_f_m_a_c_r_o _p_u_s_h (_v_a_l_u_e _s_t_a_c_k) `(_s_e_t_q ,_s_t_a_c_k (_c_o_n_s ,_v_a_l_u_e ,_s_t_a_c_k)))
+         stack
+
+9
+
+9                                   Printed: January 31, 1984
+
+
+
+
+
+
+
+Functions, Fclosures, and Macros                         8-6
+
+
+      8.3.4.  sharp sign character macro
+
+              The sharp sign macro can perform a  number  of
+         different  functions   at read time.  The character
+         directly following the sharp sign determines  which
+         function  will  be  done,  and  following  Lisp  s-
+         expressions may serve as arguments.
+
+
+
+         8.3.4.1.  conditional inclusion
+
+            If you plan to run one source file in more  than
+            one environment then you may want to some pieces
+            of code to be included  or not included  depend-
+            ing  on  the  environment.  The  C language uses
+            "#ifdef" and "#ifndef"  for  this  purpose,  and
+            Lisp  uses  "#+" and "#-".  The environment that
+            the   sharp   sign   macro   checks    is    the
+            (_s_t_a_t_u_s _f_e_a_t_u_r_e_s) list which is initialized when
+            the Lisp system  is  built   and  which  may  be
+            altered     by     (_s_s_t_a_t_u_s _f_e_a_t_u_r_e _f_o_o)     and
+            (_s_s_t_a_t_u_s _n_o_f_e_a_t_u_r_e _b_a_r) The form  of conditional
+            inclusion is
+                        _#_+_w_h_e_n _w_h_a_t
+   

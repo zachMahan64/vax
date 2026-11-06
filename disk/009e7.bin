@@ -1,0 +1,2226 @@
+s in `Hartley Rogers, Jr.'
+or `Mary-Claire van Leunen'.
+In these cases a concealed space (\e\0) should be used, as in
+`Hartley Rogers,\e\0Jr.'.
+.PP
+\fIbib\fP knows very little about \fItroff\fP usage or syntax.  This
+can sometimes be useful.  For example, to cause an entry to appear in a
+reference list without having it explicitly cited in the text the citation
+can be placed in a \fItroff\fP comment.
+.QS
+.nr
+.sp
+ .\e" [\&.imprecise citation.]
+.sp
+.QE
+.PP
+It is also possible to embed \fItroff\fP commands within a reference definition.
+See `abbreviations' in the section `Reference Format Designer's
+Guide' for an example.
+.PP
+In some styles (superscripts) periods and commas should precede the
+citation while spaces follow.
+In other styles (brackets) these rules are reversed.  If
+a period, comma or space immediately precedes a citation, it will be moved to the
+appropriate location for the particular reference style being used.
+This movement is not done for citations given in the alternative style.
+.PP
+The followin):
+.DS I 1i
+:\|\fBwrite
+.R
+.DE
+Edit will copy the contents of the buffer to a disk file.
+If the file does not yet exist,
+a new file will be created automatically
+and the presence of a ``[New file]'' will be noted.
+The newly-created file will be given the name specified when
+you entered the editor, in this case ``text''.
+To confirm that the disk file has been successfully written,
+edit will repeat the filename and give
+the number of lines and the total
+number of characters in the file.
+The buffer remains unchanged by the ``write'' command.
+All of the lines that were written to disk will still be
+in the buffer,
+should you want to modify or add to them.
+.PP
+Edit must have a name for the file to be written.
+If you forgot to indicate the name of the file
+when you began to edit,
+edit will print in response to your write command:
+.DS I 1i
+No current filename
+.DE
+If this happens, you can specify the filename in a new write command:
+.DS I 1i
+:\|\fBwrite text
+.R
+.DE
+After the ``write'' (or ``w''), type a space and then the name of the file.
+.SH
+Signing off
+.PP
+We have done enough for this first lesson on using the
+\s-2UNIX\s0 text editor, and are ready to quit the session with edit.
+To do this we type ``quit'' (or ``q'') and press \s-2RETURN\s+2:
+.DS I 1i
+:\|\fBwrite
+.R
+"text" [New file]  3 lines, 90 characters
+:\|\fBquit\fR
+%
+.DE
+The % is from \s-2UNIX\s0 to tell you that your session with edit is
+over and you may command \s-2UNIX\s0 further.
+Since we want
+to end the entire session at the terminal, we also need to
+exit from \s-2UNIX\s0.
+In response to the \s-2UNIX\s0 prompt of ``\|%\|''
+type the command
+.DS I 1i
+%\|\fBlogout\fR
+.DE
+This will end your session with \s-2UNIX\s0, and will ready the
+terminal for the next user.
+It is always important to type \fBlogout\fR at the end of a session
+to make absolutely sure no one
+could accidentally stumble into your abandoned 
+session and thus gain access to your files,
+tempting even the most honest of souls.
+.sp 1
+.PP
+This is the end of the first session on \s-2UNIX\s0 text editing.
+.bp
+.TL
+Session 2
+.sp
+.PP
+Login with \s-2UNIX\s0 as in the first session:
+.DS I 1i
+login: \fBsusan\fP  \fI(carriage return)\fR
+Password:       \fI(give password and carriage return)\fR
+.if t .sp .2v
+.if n .sp 1
+\&... A Message of General Interest ...
+% 
+.DE
+When you indicate you want to edit,
+you can specify the name of the file you worked on last time.
+This will
+start edit working, and it will fetch the contents of the
+file into the buffer, so that you can resume editing the same file.
+When edit has copied the file into the buffer, it
+will repeat its name and tell
+you the number of lines and characters it contains.
+Thus,
+.DS I 1i
+.B
+% edit text
+.R
+"text" 3 lines, 90 characters
+:
+.DE
+means you asked edit to fetch
+the file named ``text'' for editing,
+causing it to copy the
+90 characters of text into the buffer.
+Edit awaits
+your further instructions,
+and indicates this by its prompt character, the colon (:).
+In this session, we will append more text to our file,
+print the contents of the buffer, and learn to change the text of a line.
+.SH
+Adding more text to the file
+.PP
+If you want to add more to the end of your
+text you may do so by using the append command to enter text input mode.
+When ``append'' is the first command
+of your editing session,
+the lines you enter
+are placed at the end of the buffer.
+Here we'll use the abbreviation for the append command, ``a'':
+.DS I 1i
+:\|\fBa
+This is text added in Session 2.
+It doesn't mean much here, but
+it does illustrate the editor.
+\|\fB\s+2\&.\s-2
+.R
+.DE
+You may recall that once you enter append mode
+using the ``a'' (or ``append'') command,
+you need to type a line containing only a period (.)
+to exit append mode.
+.SH
+Interrupt
+.PP
+Should you press the \s-2RUB\s+2 key (sometimes labelled \s-2DELETE\s+2)
+while working with edit,
+it will send this message to you:
+.DS I 1i
+Interrupt
+:
+.DE
+Any command that edit might be executing
+is terminated by rub or delete,
+causing edit to prompt you for a new command.
+If you are appending text at the time,
+you will exit from append mode
+and be expected to give another command.
+The line of text you were typing
+when the append command was interrupted
+will not be entered into the buffer.
+.SH
+Making corrections
+.PP
+If while typing the line you hit an incorrect key,
+recall that
+you may delete the incorrect character
+or cancel the entire line of input by erasing in the usual way.
+Refer either
+to the last few pages of Session 1
+if you need to review
+the procedures for making a correction.
+The most important idea to remember is that
+erasing a character or cancelling a line must be done
+before you press the \s-2RETURN\s+2 key.
+.SH
+Listing what's in the buffer (p)
+.PP
+Having appended text to what you wrote in Session 1,
+you might want to see all the lines in the buffer.
+To print the contents of the buffer, type the command:
+.DS I 1i
+:\|\fB1,$p
+.R
+.DE
+The ``1''\(dg
+.FS
+\(dgThe numeral ``one'' is the top left-most key,
+and should not be confused with the letter ``el''.
+.FE
+stands for line 1 of the buffer,
+the ``$'' is a special symbol designating the last line
+of the buffer,
+and ``p'' (or \fBprint\fR) is the command to print from line 1
+to the end of the buffer.
+The command ``1,$p'' gives you:
+.DS I 1i
+This is some sample text.
+And thiss is some more text.
+Text editing is strange, but nice.
+This is text added in Session 2.
+It doesn't mean much here, but
+it does illustrate the editor.
+.DE
+Occasionally, you may accidentally
+type a character that can't be printed,
+which can be done by striking a key
+while the \s-2CTRL\s0 key is pressed.
+In printing lines, edit uses a special notation to
+show the existence of non-printing characters.
+Suppose you had introduced the non-printing character ``control-A''
+into the word ``illustrate''
+by accidently pressing the \s-2CTRL\s0 key while
+typing ``a''.
+This can happen on many terminals
+because the \s-2CTRL\s+2 key and the ``A'' key
+are beside each other.
+If your finger presses between the two keys,
+control-A results.
+When asked to print the contents of the buffer,
+edit would display
+.DS I 1i
+it does illustr^Ate the editor.
+.DE
+To represent the control-A, edit shows ``^A''.
+The sequence ``^'' followed by a capital
+letter stands for the one character
+entered by holding down the \s-2CTRL\s0 key and typing the letter
+which appears after the ``^''.
+We'll soon discuss the commands that can be used
+to correct this typing error.
+.PP
+In looking over the text we see that
+``this'' is typed as ``thiss'' in the second line,
+a deliberate error so we can learn to make corrections.
+Let's correct the spelling.
+.SH
+Finding things in the buffer
+.PP
+In order to change something in the buffer we first need to
+find it.
+We can find ``thiss'' in the text we have
+entered by looking at a listing
+of the lines.
+Physically speaking, we search the lines
+of text looking for ``thiss'' and stop searching when
+we have found it.
+The way to tell edit to search for something
+is to type it inside slash marks:
+.DS I 1i
+:\|\fB/thiss/
+.R
+.DE
+By typing
+.B /thiss/
+and pressing \s-1RETURN\s0,
+you instruct edit to search for ``thiss''.
+If you ask edit to look for a pattern of characters
+which it cannot find in the buffer,
+it will respond ``Pattern not found''.
+When edit finds
+the characters ``thiss'', it will print the line of text
+for your inspection:
+.DS I 1i
+And thiss is some more text.
+.DE
+Edit is now positioned in the buffer at the
+line it just printed,
+ready to make a change in the line.
+.bp
+.SH
+The current line
+.PP
+Edit keeps track of the line in the buffer where it is located
+at all times during an editing session.
+In general, the line that has been most recently
+printed, entered, or changed
+is the current location in the buffer.
+The editor is prepared to make changes
+at the current location in the buffer,
+unless you direct it to another location.
+.PP
+In particular,
+when you bring a file into the buffer,
+you will be located at the last line in the file,
+where the editor left off copying the lines
+from the file to the buffer.
+If your first editing command is ``append'',
+the lines you enter are added
+to the end of the file,
+after the current line \(em
+the last line in g is a complete list of options for \fIbib\fP:
+.IP \-aa 8m
+reduce author's first names to abbreviations.
+.IP \-ar\fInum\fP
+reverse the first \fInum\fP author's names.
+If \fInum\fP is omitted all names are reversed.
+.IP \-ax
+print authors last names in Caps-Small Caps style.  For example Budd becomes
+B\s-2UDD\s+2.
+.IP \-c\fIstr\fP
+build citations according to the template \fIstr\fP.  See the reference
+format designer's guide for more information on templates.
+.IP \-ea
+abbreviate editors' names
+.IP \-ex
+places editors' names in Caps-Small Caps style.  (see \-x )
+.IP \-er\fInum\fP
+reverse the first \fInum\fP editors' names.  If \fInum\fP is omitted all editors'
+names are reversed.
+.IP \-f
+instead of dumping references following the call on \&.[], dump each
+reference immediately following the line on which the citation is placed
+(used for footnoted references).
+.IP \-h
+hyphenate runs of three or more contiguous references in the citation string.
+(eg 2,3,4,5 becomes 2-5).  This is most useful for numeric citation styles,
+but works generally.
+The \-h option implies the \-o option.
+.IP "\-i file"
+.ns
+.IP "\-ifile"
+include and process the indicated file.
+This is useful for including a private file of string definitions.
+.IP \-n\fIstr\fP
+turn off the indicated options.  \fIstr\fP must be composed of the
+characters \fIafhorx\fP.
+.IP \-o
+sort contiguous citations according to the order given by the reference
+list.  (This option defaults on).
+.IP "\-p \fIfile\fP"
+.ns
+.IP  \-p\fIfile\fP
+instead of searching the file INDEX,
+search the indicated reference file(s) before searching the system file.
+Multiple files are separated by commas.
+.IP \-s\fIstr\fP
+sort references according to the template \fIstr\fP.
+.IP "\-t \fItype\fP"
+.ns
+.IP \-t\fItype\fP
+use the standard macros and switch settings to generate citations and references
+in the indicated style.
+.de Ex
+.sp
+.QS
+.nf
+.ta 3m
+..
+.sp 1.0i
+.ce 
+\fBReference File Formats\fP
+.sp
+.PP
+A reference file is a file containing any number of reference
+items.  Reference items are separated by one or more blank lines.
+There are no restrictions placed on the order of items in a file,
+although imposing some order (such as sorting
+items alphabetically) simplifies updates.
+.PP
+A reference item is a collection of field tags and values.
+A field tag is a percent sign followed by a single letter.
+Currently, the following field tags are recognized:
+.Ex
+.ta 0.5i
+A	Author's name
+B	Title of book containing item
+C	City of publication
+D	Date
+E	Editor(s) of book containing item
+F	Caption
+G	Government (NTIS) ordering number
+I	Issuer (publisher)
+J	Journal name
+K	Keys for searching
+N	Issue number
+O	Other information
+P	Page(s) of article
+R	Technical report number
+S	Series title
+T	Title
+V	Volume number
+W	Where the item can be found locally
+X	Annotations (not in all macro styles)
+.QE
+.PP
+Author and editor fields can be repeated, as necessary, but all other fields
+can occur at most once
+in any reference.  The field information is as long as necessary,
+and can extend onto new lines.
+Lines that do not begin with a percent sign or a period
+are treated as continuations of the previous line.
+The order of fields is irrelevant, except that authors and editors
+are listed in the order of occurrence.
+.PP
+Generally a reference falls into one of several basic categories.
+An example of each and a brief comment is given below.  With less
+standard references (Archival Sources, Correspondence, Government
+Documents, Newspapers) generally some experimentation is necessary.
+.SH
+Books
+.PP
+A book is something with a publisher that isn't a journal article or
+a technical report.  Generally, books also have authors and titles
+and dates of publication (although some don't).  For books not published
+by a major publishing house it is also helpful to give a city for the
+publisher.  Some government documents also qualify as books, so a book
+may have a government ordering number.
+.PP
+It is conventional that the authors names appear in the reference in
+the same form as on the title page of the book.  Note also that
+string definitions are provided for most of the major publishing houses
+(PRHALL for Prentice-Hall, for example).
+The string definition may include the city as part of the definition,
+depending on the database in use.
+.Ex
+%A	R. E. Griswold
+%A	J. F. Poage
+%A	I. P. Polonsky
+%T	The SNOBOL4 Programming Language
+%I	PRHALL
+%D	second edition 1971
+.QE
+.PP
+Sometimes a book (particularly old books) will have no listed publisher.
+The reference entry must still have an I field.
+.Ex
+%A	R. Colt Hoare
+%T	A Tour through the Island of Elba
+%I	(no listed publisher)
+%C	London
+%D	1814
+.QE
+.PP
+If a reference database contains entries from many people (such
+as a departmental-wide database), the W field can be used to indicate
+where the referenced item can be found; using the initials of the owner,
+for example.
+Any entry style can take a W field, since this field is not used in
+formatting the reference.
+.PP
+The K field is used to define general subject categories for an entry.
+This is useful in locating all entries pertaining to a specific subject
+area.
+Note the use of the backslash, to indicate the last name is Van Tassel,
+and not simply Tassel.
+.Ex
+%A	Dennie Van\e\0Tassel
+%T	Program Style, Design, Efficiency,
+Debugging and Testing
+%I	PRHALL
+%D	1978
+%W	tab
+%K	testing debugging
+.QE
+.SH
+Journal article
+.PP
+The only requirement for a journal article is that it have a
+journal name and a volume number.
+Usually journal articles also have authors, titles, page
+numbers, and a date of publication.  They may also have numbers, and,
+less frequently, a publisher.  (Generally, publishers are only listed for
+obscure journals).
+.PP
+Note that string names (such as CACM for \fICommunications of the ACM\fP)
+are defined for most major journals.
+There are also string names for the months of the year, so that months
+can be abbreviated to the first three letters.
+Note also in this example the use of the K field to define a short
+name (hru) that can be used in searching for the reference.
+.Ex
+%A	M. A. Harrison
+%A	W. L. Ruzzo
+%A	J. D. Ullman
+%T	Protection in Operating Systems
+%J	CACM
+%V	19
+%N	8
+%P	461-471
+%D	AUG 1976
+%K	hru
+.QE
+.SH
+Article in conference proceedings
+.PP
+An article from a conference is printed as though it were a journal
+article and the journal name was the name of the conference.
+Note that string names (SOSP) are also defined for the major
+conferences (Symposium on Operating System Principles).
+.Ex
+%A	M. Bishop
+%A	L. Snyder
+%T	The Transfer of Information and Authority
+in a Protection System
+%J	Proceedings of the 7th SOSP
+%P	45-54
+%D	1979
+.QE
+.SH
+Article in book
+.PP
+An article in a book has two titles, the title of the article and the title
+of the book.  The first goes into the T field and the second into the B
+field.  Similarly the author of the article goes into the A field and the
+editor of the book goes into the E field.
+.Ex
+%A	John B. Goodenough
+%T	A Survey of Program Testing Issues
+%B	Research Directions in Software Technology
+%E	Peter Wegner
+%I	MIT Press
+%P	316-340
+%D	1979
+.QE
+.PP
+If a work as more than one editor, they each get their own %E field.
+.Ex
+%A	R. J. Lipton
+%A	L. Snyder
+%T	On Synchronization and Security
+%E	Richard A. DeMillo
+%E	David P. Dobkin
+%E	Anita K. Jones
+%E	Richard J. Lipton
+%B	Foundations of Secure Computation
+%P	367-388
+%I	ACPRESS
+%D	1978
+.QE
+.PP
+Sometimes the book is part of a multi-volume series, and hence may
+contain a volume field and/or a series name.
+.Ex
+%A	C.A.R. Hoare
+%T	Procedures and parameters: An axiomatic approach
+%B	Symposium on semantics of algorithmic languages
+%E	E. Engeler
+%P	102-116
+%S	Lecture Notes in Mathematics
+%V	188
+%I	Springer-Verlag
+%C	Berlin-Heidelberg-New York
+%D	1971
+.QE
+.PP
+In any reference format, the O field can be used to give additional information.
+This is frequently used, for example, for secondary references.
+.Ex
+%A	A. Girard
+%A	J-C Rault
+%T	A Programming Technique for Software Reliability
+%B	Symposium on Software Reliability
+%I	IEEE
+%C	Montvale, New Jersey
+%D	1977
+%O	(Discussed in Glib [32])
+.QE
+.SH
+Compilations
+.PP
+A compilation is the work of several authors gathered together by an editor
+into a book.  The reference formathe file.
+.PP
+You can refer to your current location in the buffer by the
+symbol
+period (.) usually known by the name ``dot''.
+If you type ``.'' and carriage
+return you will be instructing edit to print the current line:
+.DS I 1i
+:\|\fB\s+2\&.\s-2
+.R
+And thiss is some more text.
+.DE
+.PP
+If you want to know the number of the current line,
+you can type
+.B \&.=
+and press \s-2RETURN\s+2,
+and edit will respond with the line number:
+.DS I 1i
+:\|\fB\s+2.\s-2=
+.R
+2
+.DE
+If you type the number of any line and press \s-2RETURN\s+2,
+edit will position you at that line and
+print its contents:
+.DS I 1i
+:\|\fB2
+.R
+And thiss is some more text.
+.DE
+You should experiment with these commands
+to gain experience in using them to make changes.
+.SH
+Numbering lines (nu)
+.PP
+The
+.B
+number (nu)
+.R
+command is similar to print,
+giving both the number and the text of each printed line.
+To see the number and the text of the current line type
+.DS I 1i
+:\|\fBnu
+.R
+\0\0\0\0\02\0\0And thiss is some more text.
+.DE
+Note that the shortest abbreviation for the number command is
+``nu'' (and not ``n'', which is used for a different command).
+You may specify a range of lines
+to be listed by the number command in the same way that lines
+are specified for print.
+For example, \f31,$nu\f1 lists all lines in the buffer with their
+corresponding line numbers.
+.SH
+Substitute command (s)
+.PP
+Now that you have found the misspelled word, 
+you can change it from ``thiss'' to ``this''.
+As far as edit is concerned,
+changing things is a matter of
+substituting one thing for another.
+As
+.I a
+stood for
+.I append,
+so
+.I s
+stands for
+.I substitute.
+We will use the abbreviation ``s'' to reduce the chance
+of mistyping the substitute command.
+This command will instruct edit to make the change:
+.DS I 1i
+\f32s/thiss/this/\f1
+.DE
+We first indicate the line to be changed, line 2,
+and then
+type an ``s'' to indicate we want
+edit to make a substitution.
+Inside the first set of slashes
+are the characters that we want to change,
+followed by the characters to replace them,
+and then a closing slash mark.
+To summarize:
+.DS I 1i
+2s/ \fIwhat is to be changed\fR / \fIwhat to change it to \fR/
+.DE
+If edit finds an exact match of the characters to be
+changed it will make the change
+.B only
+in the first occurrence of the characters.
+If it does not find the characters
+to be changed, it will respond:
+.DS I 1i
+Substitute pattern match failed
+.DE
+indicating that your instructions could not be carried out.
+When edit does find the characters that you want to change,
+it will make the substitution and automatically print
+the changed line, so that you can check that the correct substitution
+was made.
+In the example,
+.DS I 1i
+:\|\fB2s/thiss/this/
+.R
+And this is some more text.
+.DE
+line 2 (and line 2 only) will be searched for the characters
+``thiss'', and when the first exact match is found, ``thiss''
+will be changed to ``this''.
+Strictly speaking, it was not necessary above to
+specify  the number of the line to be changed.
+In
+.DS I 1i
+:\|\fBs/thiss/this/
+.R
+.DE
+edit will assume that we mean to change
+the line where we are currently located (``.'').
+In this case,
+the command without a line number would have produced the same result
+because we were already located
+at the line we wished to change.
+.PP
+For another illustration of the substitute command,
+let us choose the line:
+.DS I 1i
+Text editing is strange, but nice.
+.DE
+You can make this line a bit more positive
+by taking out the characters ``strange, but\ '' so the line 
+reads:
+.DS I 1i
+Text editing is nice.
+.DE
+A command that will first position edit at the desired line
+and then make the substitution is:
+.DS I 1i
+:\|\fB/strange/s/strange, but //
+.R
+.DE
+.LP
+What we have done here is combine our search with
+our substitution.
+Such combinations are perfectly legal,
+and speed up editing quite a bit
+once you get used to them.
+That is, you do not necessarily have to use
+line numbers to identify a line to edit.
+Instead, you may identify the line you want to change
+by asking edit to search for a specified pattern of letters
+that occurs in that line.
+The parts of the above command are:
+.TS
+.in +1i
+.nr 35 \n(.u
+.nf
+.ds #d .d
+.if \(ts\n(.z\(ts\(ts .ds #d nl
+.nr 80 0
+.nr 38 \w\f3/strange/\fP
+.if \n(80<\n(38 .nr 80 \n(38
+.nr 38 \w\f3s\fP
+.if \n(80<\n(38 .nr 80 \n(38
+.nr 38 \w\f3/strange, but //\fP
+.if \n(80<\n(38 .nr 80 \n(38
+.nr 81 0
+.nr 38 \wtells edit to find the characters ``strange'' in the text
+.if \n(81<\n(38 .nr 81 \n(38
+.nr 38 \wtells edit to make a substitution
+.if \n(81<\n(38 .nr 81 \n(38
+.nr 38 \wsubstitutes nothing at all for the characters ``strange, but ''
+.if \n(81<\n(38 .nr 81 \n(38
+.nr 38 1n
+.nr 79 0
+.nr 40 \n(79+(0*\n(38)
+.nr 80 +\n(40
+.nr 41 \n(80+(3*\n(38)
+.nr 81 +\n(41
+.nr TW \n(81
+.if t .if (\n(TW+\n(.o)>7.75i .tm Table at line 307 file ed2.tbl is too wide - \n(TW units
+.fc  
+.nr #T 0
+.eo
+.de T#
+.ds #d .d
+.if \(ts\n(.z\(ts\(ts .ds #d nl
+.mk ##
+.nr ## -1v
+..
+.ec
+.ta \n(80u \n(81u 
+\&\h'|\n(40u'\f3/strange/\fP\h'|\n(41u'tells edit to find the characters ``strange'' in the text
+.ta \n(80u \n(81u 
+\&\h'|\n(40u'\f3s\fP\h'|\n(41u'tells edit to make a substitution
+.ta \n(80u \n(81u 
+\&\h'|\n(40u'\f3/strange, but //\fP\h'|\n(41u'substitutes nothing at all for the characters ``strange, but ''
+.fc
+.nr T. 1
+.T# 1
+.if \n(35>0 .fi
+.in -1i
+.TE
+.PP
+You should note the space after ``but'' in ``/strange, but /''. 
+If you do not indicate that the space is to be taken out,
+your line will read:
+.DS I 1i
+.if t Text editing is   nice.
+.if n Text editing is  nice.
+.DE
+which looks a little funny   
+because of the extra space between ``is'' and ``nice''.
+Again, we realize from this that a blank space
+is a real character to a computer, and in editing text
+we need to be aware of spaces
+within a line just as we would be aware of an ``a'' or 
+a ``4''.
+.SH
+Another way to list what's in the buffer (z)
+.PP
+Although the print command is useful for looking at specific lines
+in the buffer,
+other commands may be more convenient for
+viewing large sections of text.
+You can ask to see a screen full of text at a time
+by using the command
+.B z.
+If you type
+.DS I 1i
+:\|\fB1z
+.R
+.DE
+edit will start with line 1 and continue printing lines,
+stopping either when the screen of
+your terminal is full
+or when the last line in the buffer has been printed.
+If you want to read the next segment of text, type the command
+.DS I 1i
+:\|\fBz
+.DE
+If no starting line number is given for the z command,
+printing will start at the ``current'' line, in this case the
+last line printed.
+Viewing lines in the buffer one screen full at a time
+is known as \fIpaging\fR.
+Paging can also be used to print
+a section of text on a hard-copy terminal.
+.SH
+Saving the modified text
+.PP
+This seems to be a good place to pause in our work,
+and so we should end the second session.
+If you (in haste) type ``q'' to quit the session
+your dialogue with edit will be:
+.DS I 1i
+:\|\fBq
+.R
+No write since last change (:quit! overrides)
+:
+.DE
+This is edit's warning that you have not written
+the modified contents of the buffer to disk.
+You run the risk of losing the work you did
+during the editing session since you typed the latest write
+command.
+Because in this lesson we have not written
+to disk at all, everything we have done
+would have been lost
+if edit had obeyed the \fBq\fR command.
+If you did not want to save the work done during
+this editing session, you would have to type ``q!''
+or (``quit!'')
+to confirm that you indeed wanted to end the session
+immediately,
+leaving the file as it was
+after the most recent ``write'' command.
+However,
+since you want to save what
+you have edited, you need to type:
+.DS I 1i
+:\|\fBw
+.R
+"text" 6 lines, 171 characters
+.DE
+and then follow with the commands to quit and logout:
+.DS I 1i
+:\|\fBq
+% \fBlogout\fR
+.DE
+and hang up the phone or turn off the terminal when
+\s-2UNIX\s0 asks for a name.
+Terminals connected to the port selector
+will stop after the logout command,
+and pressing keys on the keyboard will do nothing.
+.sp 1
+.PP
+This is the end of the second session on \s-2UNIX\s0 text editing.
+.bp
+.TL
+Session 3
+.SH
+Bringing text into the buffer (e)
+.PP
+Login to \s-2UNIX\s0 and make contact with et is the same as for a book, with
+the editor(s) taking the place of the author.
+.Ex
+%E	R. A. DeMillo
+%E	D. P. Dobkin
+%E	A. K. Jones
+%E	R. J. Lipton
+%T	Foundations of Secure Computation
+%I	ACPRESS
+%D	1978
+.QE
+.SH
+Technical Reports
+.PP
+A technical report must have a report number.  They usually have authors,
+titles, dates and an issuing institution (the I field is used for this).
+They may also have a city and a government issue number.  Again string
+values (UATR for `University of Arizona Technical Report') will
+frequently simplify typing references.
+.Ex
+%A	T. A. Budd
+%T	An APL Complier
+%R	UATR 81-17
+%C	Tucson, Arizona
+%D	1981
+.QE
+.PP
+If the institution name is not part of the technical report number, then
+the institution should be given separately.
+.Ex
+%A	Douglas Baldwin
+%A	Frederick Sayward
+%T	Heuristics for Determining Equivalence of Program Mutations
+%R	Technical Report Number 161
+%I	Yale University
+%D	1979
+.QE
+.SH
+PhD Thesis
+.PP
+A PhD thesis is listed as if it were a book, and the institution granting
+the degree the publisher.
+.Ex
+%A	Martin Brooks
+%T	Automatic Generation of Test Data for
+Recursive Programs Having Simple Errors
+%I	PhD Thesis, Stanford University
+%D	1980
+.QE
+.PP
+Some authors prefer to treat Master's and Bachelor theses similarly, although
+most references on style instruct say to treat a Master's degree as an
+article or as a report.
+.Ex
+%A	A. Snyder
+%T	A Portable Compiler for the Language C
+%R	Master's Thesis
+%I	M.I.T.
+%D	1974
+.QE
+.SH
+Miscellaneous
+.PP
+A miscellaneous object is something that does not fit into any other form.
+It can have any of the the following fields; an author, a title, a date,
+page numbers, and, most generally, other information (the O field).
+.PP
+Any reference item can contain an F field, and the corresponding text
+will override whatever citation would otherwise be constructed.
+.Ex
+%F	BHS--
+%A	Timothy A. Budd
+%A	Robert Hess
+%A	Frederick G. Sayward
+%T	User's Guide for the EXPER Mutation Analysis system
+%O	(Yale university, memo)
+.QE
+.sp 1.0i
+.ce
+\fBReference Format Designer's Guide\fP
+.sp
+.PP
+This section need only be read by those users
+who wish to write their own formatting macro packages.
+.PP
+The information necessary for generating citations and references of a
+particular style is contained in a \fIformat file\fP.  A format file
+consists of two parts; a sequence of format commands, which are read and
+interpreted by \fIbib\fP, and a sequence of text lines (usually \fItroff\fP macro
+definitions) which are merely copied to output.
+The format file name is always prefixed with the string bib.
+Thus the format file for a standard document type, such as stdn, is found
+in a file called bib.stdn in the standard library area.
+.PP
+When \fIbib\fP encounters a \-t switch, the user's directory is first searched for
+a format file matching the given name, before the system area is examined.
+Thus the user can create individual style database files.
+.PP
+Each formatting command is distinguished by a single
+letter, which must be the first character on a line.
+The formatting commands in a database file are similar to the command line options
+for \fIbib\fP.  The legal commands,
+and their arguments, are as follows:
+.sp
+# text
+.PP
+A line beginning with a sharp sign is a comment, and all remaining text on the
+line is ignored.
+.sp
+A
+.PP
+The A command controls how authors' names are to be formatted.  It can be
+followed by the following character sequences:
+.QS
+.IP A 8m
+Authors' names are to be abbreviated.  (see \*(oqabbreviations\*(cq, below).
+.IP R\fInum\fP
+The first \fInum\fP authors' names are to be reversed.  If \fInum\fP is
+omitted, all authors' names are reversed.
+.IP X
+Authors' names are to be printed in Caps-Small Caps style.
+.QE
+.sp
+E
+.PP
+The E command is equivalent to the A command, except that it controls the
+formatting of editors' names.
+.sp
+F
+.PP
+The F command indicates that references are to be dumped immediately after
+a line containing a citation, such as when the references are to be placed
+in footnotes.
+.sp
+S \fItemplate\fP
+.PP
+The S command indicates references are to be sorted before being dumped.
+The comparison used in sorting is based on the \fItemplate\fP.  See
+the discussion on sorting (below) for an explanation of templates.
+.sp
+C \fItemplate\fP
+.PP
+The \fItemplate\fP is used as a model in constructing citations.
+See the discussion below.
+.sp
+D \fI\0word \0definition\fP
+.PP
+The word-definition pair is placed into a table.
+Before each reference is dumped it is examined for the
+occurrence of these words.  Any occurrence of a word from this table is replaced
+by the definition, which is then rescanned for other words.
+Words are limited to alphanumeric characters, ampersand and underscore.
+.PP
+Definitions can extend over multiple lines by ending lines with a backslash
+(\e).  The backslash will be removed, and the definition, including the newline
+and the next line,
+will be entered into the table.  This is useful for including several
+fields as part of a single definition (city names can be included as part
+of a definition for a publishing house, for example).
+.sp
+I \fIfilename\fP
+.PP
+The indicated file is included at the current point.  The included file may
+contain other formatting commands.
+.sp
+H
+.PP
+Three or more contiguous citations that refer to adjacent items in the
+reference list are replaced by a hyphenated string.  For example, the
+citation 2,3,4,5 would be replaced by 2-5.  This is most useful with
+numeric citations.  The H option implies the O option.
+.sp
+O
+.PP
+Contiguous citations are sorted according to the order given by the reference
+list.
+.sp
+R \fInumber\fP
+.PP
+The first \fInumber\fP author's names are reversed on output (i.e. T. A. Budd
+becomes Budd, T. A.).
+If number is omitted all names are reversed.
+.sp
+T \fIstr\fP
+.PP
+The \fIstr\fP is a list of field names.  Each time a definition string for
+a named field is produced, a second string containing just the last character
+will also be generated.  See `Trailing characters', below.
+.sp
+X
+.PP
+Authors' last names are to be printed in Caps/Small Caps
+format (i.e., Budd becomes B\s-2UDD\s+2).
+.sp 2
+.PP
+The first line in the format file that does not match a format command
+causes that line, and all subsequent lines, to be immediately copied to
+the output.
+.SH
+File Naming Conventions
+.PP
+Standard database format files are kept in a standard library area.
+The string BMACLIB in bib.h points to this directory (/usr/new/lib/bmac in
+the distribution).  In addition, this name is always defined when
+reading format files.
+There are three types of files:
+.IP bib.xxx 10m
+These files contain bib commands to format documents in the xxx style.
+.IP bibinc.xxx
+These files contain information (such as definitions) used by more than one
+style database.
+.IP bmac.xxx
+These files are the \fItroff\fP macros to actually implement a style.
+They are generally not examined by \fIbib\fP at all, but are processed
+by troff in response to a .so command.
+.PP
+The first command output by \fIbib\fP defines the string l] to be the
+standard macro database directory.  This allows macro files to be
+independent of where they are actually stored.
+.SH
+Naming Conventions
+.PP
+There is a simple naming convention for strings, registers and macros used
+by \fIbib\fP.  All strings, registers and macros are denoted by two character
+names containing either a left or right brace.  The following are general rules:
+.IP [x
+If x is alphanumeric, the string contains the value of a reference field.
+If x is nonalphanumeric, this is a formatting string preceding a citation.
+.IP ]x
+If x is alphanumeric, this is the final character from a reference field.
+If x is nonalphanumeric, the string is formatting information within a citation.
+.IP x[
+Strings in this format, where x is can be any character, are defined by the
+specific macro package in use and are not specified by \fIbib\fP.
+.IP x]
+If x is nonalphanumeric these strings represent formatting commands following
+citations (the inverse of [x commands).  Other strings represent
+miscellaneous formatting commands,
+such as the space between leading letters in abbreviated names.
+.SH
+Sorting
+.PP
+The sort template is used in comparing two references to generadit.  
+You should try to login without
+looking at the notes, but if you must
+then by all means do.
+.PP
+Did you remember to give the name of the file
+you wanted to edit?
+That is, did you type
+.DS I 1i
+% \fBedit text\fR
+.DE
+or simply
+.DS I 1i
+% \fBedit\fR
+.DE
+Both ways get you in contact with edit, but the first way
+will bring a copy of the file named ``text'' into
+the buffer.  
+If you did forget to tell edit the name of your file,
+you can get it into the buffer by
+typing:
+.DS I 1i
+:\|\fBe text
+.R
+"text" 6 lines, 171 characters
+.DE
+The command
+.B edit,
+which may be abbreviated \fBe\fR,
+tells edit that you want
+to erase anything that might already be in 
+the buffer and bring a copy of the file ``text'' into the buffer
+for editing.
+You may also use the edit (e) command to change files in
+the middle of an editing session,
+or to give edit the name of a new file that you want to create.
+Because the edit command clears the buffer,
+you will receive a warning if you try to edit a new file without
+having saved a copy of the old file.
+This gives you a chance to write the contents of the buffer to disk
+before editing the next file.
+.SH
+Moving text in the buffer (m)
+.PP
+Edit allows you to move lines of text
+from one location in the buffer to another
+by means of the
+.B move
+(\fBm\fR) command.
+The first two examples are for illustration only,
+though after you have read this Session
+you are welcome to return to them for practice.
+The command
+.DS I 1i
+:\|\fB2,4m$
+.R
+.DE
+directs edit to move lines 2, 3, and 4
+to the end of the buffer ($).  
+The format for the move command is that you specify
+the first line to be moved, the last line to be moved,
+the move command ``m'', and the line after which
+the moved text is to be placed.
+So,
+.DS I 1i
+:\|\fB1,3m6
+.R
+.DE
+would instruct edit to move lines 1 through 3 (inclusive) 
+to a location after line 6 in the buffer.
+To move only one line, say, line 4,
+to a location in the buffer after line 5, 
+the command would be ``4m5''.
+.PP
+Let's move some text using the command:
+.DS I 1i
+:\|\fB5,$m1
+.R
+2 lines moved
+it does illustrate the editor.
+.DE
+After executing a command that moves more than one line of the buffer,
+edit tells how many lines were affected by the move
+and prints the last moved line for your inspection.
+If you want to see more than just the last line,
+you can then
+use the print (p), z, or number (nu) command to view more text.
+The buffer should now contain:
+.DS I 1i
+This is some sample text.
+It doesn't mean much here, but
+it does illustrate the editor.
+And this is some more text.
+Text editing is nice.
+This is text added in Session 2.
+.DE
+You can restore the original order by typing:
+.DS I 1i
+:\|\fB4,$m1
+.R
+.DE
+or, combining context searching and the move command:
+.DS I 1i
+:\|\fB/And this is some/,/This is text/m/This is some sample/
+.R
+.DE
+(Do not type both examples here!)
+The problem with combining context searching
+with the move command 
+is that your chance of making a typing error
+in such a long command is greater than
+if you type line numbers.
+.SH
+Copying lines (copy)
+.PP
+The
+.B copy
+command
+is used to make a second copy of specified lines,
+leaving the original lines where they were.
+Copy
+has the same format as the move command, for example:
+.DS I 1i
+:\|\fB2,5copy $
+.R
+.DE
+makes a copy of lines 2 through 5,
+placing the added lines after the buffer's end ($).
+Experiment with the copy command
+so that you can become familiar with how it works.
+Note that the shortest abbreviation for copy is
+\f3co\f1 (and
+not the letter ``c'', which has another meaning).
+.SH
+Deleting lines (d)
+.PP
+Suppose you want to delete 
+the line
+.DS I 1i
+This is text added in Session 2.
+.DE
+from the buffer.
+If you know the number of the line to be deleted,
+you can type
+that number followed by
+\fBdelete\fR or \fBd\fR.
+This example deletes line 4,
+which is ``This is text added in Session 2.''
+if you typed the commands
+suggested so far.
+.DS I 1i
+:\|\fB4d
+.R
+It doesn't mean much here, but
+.DE
+Here ``4'' is the number of the line to be deleted,
+and ``delete'' or ``d'' is the command to delete the line.
+After executing the delete command,
+edit prints the line that has become the current line (``.'').
+.PP
+If you do not happen to know the line number
+you can search for the line and then delete it using this
+sequence of commands:
+.DS I 1i
+:\|\fB/added in Session 2./
+.R
+This is text added in Session 2.
+:\|\fBd
+.R
+It doesn't mean much here, but
+.DE
+The ``/added in Session 2./''
+asks edit to locate and print
+the line containing the indicated text,
+starting its search at the current line
+and moving line by line
+until it finds the text.
+Once you are sure that you have correctly specified the line
+you want to delete,
+you can enter the delete (d) command.
+In this case it is not necessary to
+specify a line number before the ``d''.
+If no line number is given,
+edit deletes the current line (``.''),
+that is, the line found by our search.
+After the deletion, your buffer should contain:
+.DS I 1i
+This is some sample text.
+And this is some more text.
+Text editing is nice.
+It doesn't mean much here, but
+it does illustrate the editor.
+And this is some more text.
+Text editing is nice.
+This is text added in Session 2.
+It doesn't mean much here, but
+.DE
+To delete both lines 2 and 3:
+.DS I 1i
+And this is some more text.
+Text editing is nice.
+.DE
+you type
+.DS I 1i
+:\|\f32,3d\f1
+2 lines deleted
+.DE
+which specifies the range of lines from 2 to 3,
+and the operation on those lines \(em ``d'' for delete.
+If you delete more than one line
+you will receive a message
+telling you the number of lines deleted,
+as indicated in the example above.
+.PP
+The previous example assumes that you know the line numbers for
+the lines to be deleted.
+If you do not you might combine the search command
+with the delete command:
+.DS I 1i
+:\|\fB/And this is some/,/Text editing is nice./d
+.R
+.DE
+.SH
+A word or two of caution
+.PP
+In using the search function to locate lines to
+be deleted you should be
+.B
+absolutely sure
+.R
+the characters you give as the basis for the search
+will take edit to the line you want deleted.
+Edit will search for the first
+occurrence of the characters starting from where
+you last edited \-
+that is, from the line you see printed if you type dot (.).
+.PP
+A search based on too few
+characters may result in the wrong lines being deleted,
+which edit will do as easily as if you had meant it.
+For this reason, it is usually safer
+to specify the search and then delete in two separate steps,
+at least until you become familiar enough with using the editor
+that you understand how best to specify searches.
+For a beginner it is not a bad idea to double-check
+each command before pressing \s-2RETURN\s+2 to send the command on its way.
+.SH
+Undo (u) to the rescue
+.PP
+The
+.B
+undo (u)
+.R
+command has the ability to
+reverse the effects of the last command that changed the buffer.
+To undo the previous command, type
+``u'' or ``undo''.
+Undo can rescue
+the contents of the buffer from many an unfortunate mistake.
+However, its powers are not unlimited,
+so it is still wise to be reasonably
+careful about the commands you give.
+.PP
+It is possible to undo only commands which
+have the power to change the buffer \(em for example,
+delete, append, move, copy, substitute, and even undo itself.
+The commands write (w) and edit (e), which interact with disk files,
+cannot be undone, nor can commands that do not change
+the buffer, such as print.
+Most importantly,
+the
+.B only
+command that can be reversed by undo
+is the
+last ``undo-able'' command you typed.
+You can use control-H and @ to change
+commands while you are typing them,
+and undo to reverse the effect of the commands
+after you have typed them and pressed \s-2RETURN\s+2.
+.PP
+To illustrate,
+let's issue an undo command.
+Recall that the last buffer-changing command we gave deleted
+the lines formerly numbered 2 and 3.
+Typing undo at this moment will reverse the effects
+of the deletion, causing those two lines to be
+replaced in the buffer.
+.DS I 1i
+:\|\fBu
+.R
+2 more lines in file after undo
+And this is some more text.
+.DE
+Here again, edit informs you if the command affects more
+than one line,
+and prints
+the text of the line which is now ``dot'' (the current line).
+.SH
+te
+the sorted reference list.  The sort template is a sequence of
+sort objects.  Each sort object consists of an optional negative sign, followed
+by a field character, followed by an optional signed size.  The leading negative
+sign, if present, specifies the sort is to be in decreasing order, rather than
+increasing.  The field character indicates which field in the reference
+is to be compared.  The entire field is used, except in the case of the `A'
+field, in which case only the senior author's last name is used.
+A positive number following the field character indicates that only the first
+n characters are to be examined in the comparison.  The negative value indicates
+only the last \fIn\fP characters.  Thus, for example, the template AD\-2 indicates
+that sorting is to be done by the senior author followed by the last two
+characters of the date.
+.PP
+The sort algorithm is stable, so that two documents which compare equally
+will be listed in citation order.
+.PP
+Note that in sorting, citation construction, and elsewhere, if an author
+field is not present the senior editor will be used.  If neither author nor
+editor fields are present the institution name will be used.
+.SH
+Citations
+.PP
+A citation template is similar to a sort template, with the following
+exceptions:  The field name `1' refers to the number which
+represents the position of the reference in the reference list (after sorting).
+The field name `2' generates a three character sequence; If the
+paper being referenced has only one author, this is the first three characters
+of the author's last name.  For two author papers, this is the first two
+characters of the senior author, followed by the first character of the second
+author.  For papers with three or more authors the first letter of the first
+three authors is used.
+The field name `3' is used to specify a format consisting of the authors'
+last names, or the senior author followed by the text `et al' if more than
+four authors are listed.  The fields `4' through `9' are reserved to be
+used to specify formats that cannot be produced using templates.  These
+will be implemented either as local modifications to \fIbib\fP or in future
+releases.
+.PP
+In order to postpone the inevitable clash of local changes versus new releases, it is
+suggested that local formatting styles use numbers starting at 9 and working
+downward.
+.PP
+Each object can be followed by either of the letters `u' or
+`l' and the field will be printed in all upper or all lower case,
+respectively.
+.PP
+If necessary for disambiguating, the character `@' can be used as
+a separator between objects in the citation template.  Any text which should
+be inserted into the citation uninterpreted should be surrounded by either
+{} or <> pairs.
+.SH
+Citation Formatting
+.PP
+In the output, each citation is surrounded by the strings \e*([[ and \e*(]]
+(\e*([{ and \e*(}] in the alternative style).
+Multiple citations are separated by the string \e*(],.
+The text portion of a format file should contain \fItroff\fP definitions for
+these strings to achieve the appropriate typographic effect.
+.PP
+Citations that are preceded by a period, comma, space or other puncuation
+are surrounded by string values for formatting the puncuation in the
+approprate location.
+Again, \fItroff\fP commands should be given to insure the appropriate values are
+produced.
+.KS
+.PP
+The following table summarizes the string values that must be defined
+to handle citations.
+.TS
+center;
+l l l.
+[[	]]	Standard citation beginning and ending
+{[	}]	Alternate citation beginning and ending
+[\&.	.]	Period before and after citation
+[,	,]	Comma before and after citation
+[?	?]	Question mark before and after citation
+[!	!]	Exclaimation Point before and after citation
+[:	:]	Colon before and after citation
+[;	;]	Semi-Colon before and after citation
+["	"]	Double Quote before and after citation
+['	']	Single Quote before and after citation
+[<	>]	Space before and after citation
+],		Multiple citation separator
+]-		Separator for a range of citations
+.TE
+.KE
+.SH
+Name Formatting
+.PP
+Authors' (and editors') names can be abbreviated, reversed, and/or printed
+in Caps-small Caps format.  In producing the string values for an author,
+formatting strings are inserted to give the macro writer greater flexibility
+in producing the final output.  Currently the following strings are used:
+.TS
+center;
+l l.
+a]	gap between sucessive initials
+b]	comma between last name and initial in reversed text
+c]	comma between authors
+n]	\fIand\fP between two authors
+m]	\fIand\fP between last two authors
+p]	period following initial
+.TE
+.PP
+For example, suppose the name `William E. Howden' is abbreviated
+and reversed.  It will come out looking like
+.ce
+Howden\\*(b]W\\*(p]\\*(a]E\\*(p]
+.SH
+Reference Formatting
+.PP
+The particular style used in printing references is decided by macros
+passed to \fItroff\fP.  Basically, for each reference,
+\fIbib\fP generates a sequence of string definitions, one for each field in the
+reference, followed by a call on the formatting macro.  For example an
+entry which in the reference file looks like:
+.KS
+.nf
+.ta 3m
+.sp
+%A	M. A. Harrison
+%A	W. L. Ruzzo
+%A	J. D. Ullman
+%T	Protection in Operating Systems
+%J	CACM
+%V	19
+%N	8
+%P	461-471
+%D	1976
+%K	hru
+.sp
+.KE
+.LP
+is converted into the following sequence of commands
+.KS
+.nf
+.sp
+ .[\-
+ .ds [F 1
+ .ds [A M. A. Harrison
+ .as [A \e*(c]W. L. Ruzzo
+ .as [A \e*(m]J. D. Ullman
+ .ds [T Protection in Operating Systems
+ .ds [J Communications of the ACM
+ .ds [V 19
+ .ds [N 8
+ .nr [P 1
+ .ds [P 461-471
+ .ds [D 1976
+ .][
+.sp
+.KE
+.PP
+Note that the commands are preceded by a call on the macro `.[\-'.
+This can be used by the macro routines for initialization, for example to
+delete old string values.  The string [F is the citation value used
+in the document.
+Note that the string CACM has been expanded.
+.PP
+The strings c], n] and m] are used to separate authors.  c] separates
+the initial authors in multi-author documents (it is usually a comma
+with some space before and after), n] separates authors in two author
+documents (usually `\ and\ '), and m] separates the last two authors
+in multi-author documents (either `\ and\ ' or `,\ and\ ').
+.PP
+If abbreviation is specified, the string a] is used to separate initials
+in the author's first name.
+.PP
+The \fIbib\fP system provides minimal assistance in
+deciding format types.  For example note that the number register [P has
+been set of 1, to indicate that the article is on more than one page.
+Similarly, in documents with editors, the register [E is set to the number
+of editors.
+.SH
+Trailing Characters
+.PP
+There is a problem with fields that end with punctuation characters causing
+multiple occurrences of those characters to be printed.  For example, suppose
+author fields are terminated with a period, as in T. A. Budd.  If names
+are reversed, this could be printed as Budd, T. A..  Even if names are not
+reversed, abbreviations, such as in Jr. can cause problems.
+.PP
+To avoid this problem \fIbib\fP, if instructed, generates the last
+character from a particular field as a separate string.  The string name
+is a right brace  followed by the field character.  Macro packages should
+test this value before generating punctuation.
+.SH
+Abbreviations
+.PP
+The algorithm used to generate abbreviations from first names is fairly
+simple: Each word in the first name field that begins with a capital
+is reduced to that capital letter followed by a period.
+In some cases, this may not be sufficient.  For example, suppose
+Ole-Johan Dahl should be abbreviated `O\-J. Dahl'.  The only
+way to achieve this (short of editing the output) is to include \fItroff\fP commands
+in the reference file that alter the strings produced by \fIbib\fP, as in the following
+.QS
+.sp
+ ...
+ %A Ole-Johan Dahl
+ .ds [A O\-J. Dahl
+ ...
+.sp
+.QE
+.PP
+In fact, any \fItroff\fP commands can be entered in the middle of a reference
+entry, and the commands are copied uninterpreted to the output.
+For example, the user may wish to have a switch indicating whether the name
+is to be abbreviated or not:
+.QS
+.sp
+ ...
+ %A Ole-Johan Dahl
+ .if \en(i[ .ds [A O\-J. Dahl
+ ...
+.sp
+.QE
+.SH
+An Example
+.PP
+Figure 1 shows the format file for the standard alphabetic More about the dot (.) and buffer end ($)
+.PP
+The function assumed by the symbol dot depends on its context.
+It can be used:
+.IP
+1.  to exit from append mode; we type dot (and only a dot) on
+a line and press \s-2RETURN\s+2;
+.IP
+2.  to refer to the line we are at in the buffer.
+.LP
+Dot can also be combined with the equal sign to get
+the number of the line currently being edited:
+.DS I 1i
+:\|\fB\&.=
+.R
+.DE
+If we type ``\fB.\fR='' we are asking for the number of the line,
+and if we type ``\fB.\fR'' we are asking for the text of the line.
+.PP
+In this editing session and the last, we used the dollar
+sign to indicate the end of the buffer
+in commands such as print, copy, and move.
+The dollar sign as a command asks edit to print the last
+line in the buffer.
+If the dollar sign is combined with the equal sign (\f3$=\f1)
+edit will print the line number corresponding to the
+last line in the buffer.
+.PP
+``\fB.\fR'' and ``$'', then, represent line numbers.
+Whenever appropriate, these symbols can be used in
+place of line numbers in commands.
+For example
+.DS I 1i
+:\|\fB\s+2.\s-2,$d
+.R
+.DE
+instructs edit to delete all lines from the current line (\fB.\fR)
+to the end of the buffer.
+.SH
+Moving around in the buffer  (+ and \-)
+.PP
+When you are editing
+you often want
+to go back and re-read a previous line.
+You could specify a context search for a line you want to
+read if you remember some of its text,
+but if you simply want to see what was written a few, say 3, lines
+ago, you can type
+.DS I 1i
+\-3p
+.DE
+This tells edit to move back to a position 3 lines
+before the current line (.)
+and print that line.
+You can move forward in the buffer similarly:
+.DS I 1i
++2p
+.DE
+instructs edit to print the line that is 2
+ahead of your current position.
+.PP
+You may use ``+'' and ``\-'' in any command where edit
+accepts line numbers.
+Line numbers specified with ``+'' or ``\-''
+can be combined to print a range of lines.
+The command
+.DS I 1i
+:\|\fB\-1,+2copy$
+.R
+.DE
+makes a copy of 4 lines:  the current line, the line before it,
+and the two after it.
+The copied lines will be placed after the last line
+in the buffer ($),
+and the original lines referred to by ``\-1'' and ``+2''
+remain where they are.
+.PP
+Try typing only ``\-''; you will move back one line just as
+if you had typed ``\-1p''.
+Typing the command ``+'' works similarly.
+You might also try typing a few plus or minus signs in a row
+(such as ``+++'') to see edit's response.
+Typing \s-2RETURN\s+2 alone on a line is the equivalent
+of typing ``+1p''; it will move you one line ahead in the buffer
+and print that line.
+.PP
+If you are at the last line of the buffer and try
+to move further ahead, perhaps by typing a ``+'' or
+a carriage return alone on the line,
+edit will remind you that you are at the end of the buffer:
+.sp
+.nf
+.ti 1i
+At end-of-file
+.br
+or
+.ti 1i
+Not that many lines in buffer
+.fi
+.LP
+Similarly, if you try to move to a position before the first line,
+edit will print one of these messages:
+.sp
+.nf
+.ti 1i
+Nonzero address required on this command
+.br
+or
+.ti 1i
+Negative address \- first buffer line is 1
+.fi
+.LP
+The number associated with a buffer line is the line's ``address'',
+in that it can be used to locate the line.
+.SH
+Changing lines (c)
+.PP
+You can also delete certain lines and
+insert new text in their place.
+This can be accomplished easily with the
+.B "change (c)"
+command.
+The change command instructs edit to delete specified lines
+and then switch to text input mode to
+accept the text that will replace them.
+Let's say you want to change the first two lines in the buffer:
+.DS I 1i
+This is some sample text.
+And this is some more text.
+.DE
+to read
+.DS I 1i
+This text was created with the \s-2UNIX\s0 text editor.
+.DE
+To do so, you type:
+.DS I 1i
+:\|\fB1,2c
+.R
+2 lines changed
+.B
+This text was created with the \s-2UNIX\s0 text editor.
+\s+2\&.\s-2
+.R
+:
+.DE
+In the command
+.B 1,2c
+we specify that we want to change
+the range of lines beginning with 1 and ending with 2
+by giving line numbers as with the print command.
+These lines will be deleted.
+After you type \s-2RETURN\s+2 to end the change command,
+edit notifies you if more than one line will be changed
+and places you in text input mode.
+Any text typed on the following lines will be inserted into
+the position where lines were deleted by the change command.
+.B
+You will remain in text input mode until you exit in the usual way,
+by typing a period alone on a line.
+.R
+Note that the number of lines added to the buffer need not be
+the same as the number of lines deleted.
+.sp 1
+.PP
+This is the end of the third session on text editing with \s-2UNIX\s0.
+.bp
+.SH
+.ce 1
+\s+2Session 4\s0
+.sp
+.PP
+This lesson covers several topics, starting with
+commands that apply throughout the buffer,
+characters with special meanings,
+and how to issue \s-2UNIX\s0 commands while in the editor.
+The next topics deal with files:
+more on reading and writing,
+and methods of recovering files lost in a crash.
+The final section suggests sources of further information.
+.SH
+Making commands global (g)
+.PP
+One disadvantage to the commands we have used for
+searching or substituting is that if you
+have a number of instances of a word to change 
+it appears that you have to type the command 
+repeatedly, once for
+each time the change needs to be made.
+Edit, however, provides a way to make commands
+apply to the entire contents of the buffer \-
+the
+.B
+global (g)
+.R
+command.
+.PP
+To print all lines
+containing a certain sequence of characters
+(say, ``text'')
+the command is:
+.DS I 1i
+:\|\fBg/text/p
+.R
+.DE
+The ``g'' instructs edit to
+make a global search for all lines
+in the buffer containing the characters  ``text''.
+The ``p'' prints the lines found.
+.PP
+To issue a global command, start by typing a ``g'' and then a search
+pattern identifying
+the lines to be affected.
+Then, on the same line, type the command to be
+executed for the identified lines.
+Global substitutions are frequently useful.
+For example,
+to change all instances of the word ``text'' to the word ``material''
+the command would be a combination of the global search and the
+substitute command:
+.DS I 1i
+:\|\fBg/text/s/text/material/g
+.R
+.DE
+Note the ``g'' at the end of the global command,
+which instructs edit to change
+each and every instance of ``text'' to ``material''.
+If you do not type the ``g'' at the end of the command
+only the
+.I first
+instance of ``text'' \fIin each line\fR will be changed
+(the normal result of the substitute command).
+The ``g'' at the end of the command is independent of the ``g''
+at the beginning.
+You may give a command such as:
+.DS I 1i
+:\|\fB5s/text/material/g
+.R
+.DE
+to change every instance of ``text'' in line 5 alone.
+Further, neither command will change ``text'' to ``material''
+if ``Text'' begins with a capital rather than a lower-case
+.I t.
+.PP
+Edit does not automatically print the lines modified by a
+global command.
+If you want the lines to be printed, type a ``p''
+at the end of the global command:
+.DS I 1i
+:\|\fBg/text/s/text/material/gp
+.R
+.DE
+You should be careful
+about using the global command in combination with any other \-
+in essence, be sure of what you are telling edit to do
+to the entire buffer.
+For example,
+.DS I 1i
+:\|\fBg/ /d
+.R
+72 less lines in file after global
+.DE
+will delete every line containing a blank anywhere in it.
+This could adversely affect
+your document, since most lines have spaces between words
+and thus would be deleted.
+After executing the global command,
+edit will print a warning if the command added or deleted more than one line.
+Fortunately, the undo command can reverse
+the effects of a global command.
+You should experiment with the global command
+on a small file of text to see what it can do for you.
+.SH
+More about searching and substituting
+.PP
+In using slashes to identify a character string
+that we want to search for or change,
+we have always specified the exact characters.
+There is a less tedious way to
+repeat the same string of characters.
+To change ``text'' to ``texts'' we may type either
+.DS I 1i
+:\|\fB/text/s/text/texts/
+.R
+.DE
+as we have done in the past,
+or a somewhat abbreviated command:
+.DS I 1i
+:\|\fB/text/s//texts/
+.R
+.DE
+In this example, the characters to be changed
+are not specififormat.
+The sort command indicates that sorting is to be done by senior author,
+followed by the last two digits of the date.  The citation template
+indicates that citations will be the three character sequence described
+in the section of citations
+followed by the last two characters of the date (i.e. AHU79, for
+example).
+.KS
+.nf
+.sp
+#  standard alphabetic format
+SAD\-2
+C2D\-2
+I BMACLIB/bibinc.fullnames
+I BMACLIB/bibinc.std
+.sp
+.ce
+\fBFigure 1\fP
+.sp
+.KE
+.PP
+The two I commands include two files.  The first is a file of definitions
+for common strings, such as dates and journal names.  A portion of this
+file is shown in figure 2.
+Note that a no-op has been inserted into the definition string for
+BIT in order to avoid further expansion when the
+definition is rescanned.
+.PP
+The second file is a sequence of \fItroff\fP macros
+for formatting the references.  The beginning of this file is shown in figure 3.
+.PP
+On the basis of some simple rules (the presence or absence of certain fields)
+the document is identified as one of five different types, and a call made
+on a different macro for each type.  This is shown in figure 4.
+.PP
+Finally figure 5 shows the macro for one of those different types, in this
+case the book formatting macro.
+.KS
+.nf
+.sp
+# full journal names, and other names
+#
+# journals
+D ACTA Acta Informatica
+D BIT B\e&IT
+D CACM Communications of the ACM
+ ...
+# months
+D JAN January
+ ...
+D DEC December
+.sp
+.ce
+\fBFigure 2\fP
+.sp
+.KE
+.KS
+.nf
+.sp
+ #  standard end macros
+ #
+ .ds [ [
+ .ds ] ]
+ .ds , ,
+ .ds >. .
+ .ds >, ,
+ .ds c] , \e&
+ .ds n] "" and \&
+ .ds m] , and \&
+   ...
+ .de p[   \e" produce reference beginning
+ .IP [\e\e$1]\0\0
+ ..
+ .de []   \e" start displaying collected references
+ .SH
+ References
+ .LP
+ ..
+.sp
+.ce
+\fBFigure 3\fP
+.sp
+.KE
+.KS
+.nf
+.sp
+ .de ][   \e" choose format
+ .ie !"\e\e*([J"" \e{\e
+ .    ie !"\e\e*([V"" .nr t[ 1    \e" journal
+ .    el            .nr t[ 5    \e" conference paper
+ .\e}
+ .el .ie !"\e\e*([B"" .nr t[ 3    \e" article in book
+ .el .ie !"\e\e*([R"" .nr t[ 4    \e" technical report
+ .el .ie !"\e\e*([I"" .nr t[ 2    \e" book
+ .el                .nr t[ 0    \e" other
+ .\e\en(t[[
+ ..
+.sp
+.ce
+\fBFigure 4\fP
+.sp
+.KE
+.KS
+.nf
+.sp
+   ...
+ .de 2[ \e" book
+ .if !"\e\e*([F"" .p[ \e\e*([F
+ .if !"\e\e*([A"" \e\e*([A,
+ .if !"\e\e*([T"" \e\ef2\e\e*([T,\e\ef1
+ \e\e*([I\ec
+ .if !"\e\e*([C"" , \e\e*([C\ec
+ .if !"\e\e*([D"" \e& (\e\e*([D)\ec
+ \e&.
+ .if !"\e\e*([G"" Gov't. ordering no. \e\e*([G.
+ .if !"\e\e*([O"" \e\e*([O
+ .]\-
+ ..
+.sp
+.ce
+\fBFigure 5\fP
+.sp
+.KE
+.SH
+Acknowledgements
+.PP
+\fIbib\fP was inspired by \fIrefer\fP, written by M. Lesk.
+.[]
+.rs
+.bp
+.SH
+APPENDIX 1
+.nr PS 9
+.nr VS 11
+.sp
+Standard Names
+.PP
+The following list gives the standard names recognized in most
+citation styles.  Various different forms for the output are used
+by the different styles.
+In the longer reference style,
+the conference proceedings will also refer
+to the date (%D), city(%C),
+and when the proceedings are published as a journal,
+the journal name (%J), volumn (%V) and number (%N).
+.sp
+.TS
+expand;
+l s
+l l.
+\fBJournal Names\fP
+ACTA	Acta Informatica
+BIT	B\&IT
+BSTJ	Bell System Technical Journal
+CACM	Communications of the ACM
+COMP	IEEE Computer
+COMPJOUR	The Computer Journal
+COMPLANG	Journal of Computer Languages
+COMPSUR	ACM Computing Surveys
+I&C	Information and Control
+IBMJRD	IBM Journal of Research and Development
+IBMSJ	IBM Systems Journal
+IEEETC	IEEE Transactions on Computers
+IEEETSE	IEEE Transactions on Software Engineering
+IJCIS	International Journal of Computer and Information Sciences
+IPL	Information Processing Letters
+JACM	Journal of the ACM
+JCSS	Journal of Computer and System Sciences
+MATHST	Mathematics Systems Theory
+NMATH	Numerical Mathematics
+SIAMJC	Siam Journal on Computing
+SIAMJNA	Siam Journal on Numerical Analysis
+SIGACT	S\&IGACT News
+SIGPLAN	SI\&GPLAN Notices
+SIGSOFT	Software Engineering Notes
+SP&E	Software\(emPractice & Experience
+SPE	Software\(emPractice & Experience
+TOCS	ACM Transactions on Computer Systems
+TODS	ACM Transactions on Database Systems
+TOMS	ACM Transactions on Mathematical Software
+TOPLAS	ACM Transactions on Programming Languages and Systems
+.TE
+.sp
+.TS
+expand;
+l s
+l l.
+\fBConferences\fP
+ADA80	PROC of the ACM-SI\&GPLAN Symposium on the Ada Programming Language, SIGPLAN
+ASPLOS82	PROC of the SYMP on Architectural Support for Programming Languages and Operating Systems, SIGPLAN
+CCC79	PROC of the SI\&GPLAN 1979 SYMP on Compiler Construction, SIGPLAN
+CCC82	PROC of the SI\&GPLAN 1982 SYMP on Compiler Construction, SIGPLAN
+CCC84	PROC of the SI\&GPLAN 1984 SYMP on Compiler Construction, SIGPLAN
+CONF	Conference
+FJCC	Fall Joint Computer Conference
+FOCS	Annual SYMP on Foundations of Computer Science
+HICSS	Hawaii International CONF on System Science
+ICSE	International CONF on Software Engineering
+JER3	PROC Third Jerusalem CONF on Information Technology
+JICAI	Joint International CONF on Artificial Intelligence
+PLISS83	PROC SI\&GPLAN 1983 SYMP on Programming Language Issues in Software Systems, SIGPLAN
+POPL	ACM SYMP on Principles of Programming Languages
+POPL5	Conference Record of the Fifth POPL
+POPL6	Conference Record of the Sixth POPL
+POPL7	Conference Record of the Seventh POPL
+POPL8	Conference Record of the Eighth POPL
+POPL9	Conference Record of the Ninth POPL
+POPL10	Conference Record of the Tenth POPL
+POPL11	Conference Record of the Eleventh POPL
+PROC	Proceedings
+SOSP	SYMP on Operating System Principles
+STOC	Annual ACM SYMP on Theory of Computing
+SYMP	Symposium
+WJCC	PROC Western Joint Computer CONF
+.TE
+.sp
+.TS
+expand;
+l s
+l l.
+\fBLonger place names\fP
+BTLHO	Bell Laboratories
+BTLMH	Bell Laboratories
+CMU	Carnegie-Mellon University
+CMUCS	Computer Science Department, Carnegie-Mellon University
+DG	Data General
+MITAI	MIT Artificial Intelligence Laboratory
+MITLCS	MIT Laboratory for Computer Science
+SUCS	Computer Science Department, Stanford University
+SUCSL	Computer Systems Lab., Stanford Electronics Lab., Dept. of Electrical Engineering and Computer Science
+SUEE	Department of Electrical Engineering, Stanford University
+TUM	Technische Universit\*:at M\*:unchen
+UCB	University of California, Berkeley
+UCBCS	Computer Science Division, EECS, UCB
+UCBERL	ERL, EECS, UCB
+.TE
+.2C
+.TS
+l s
+l l.
+\fBShort place names\fP
+CORP	Corporation
+CSD	Computer Science Department
+DCS	Department of Computer Science
+DEPT	Department
+DISS	Dissertation
+TR	Technical Report
+UATR	University of Arizona Technical Report
+UNIV	University
+ERL	Electronics Research Laboratory
+.TE
+.sp
+.TS
+l s
+l l.
+\fBMonths of the year\fP
+JAN	January
+FEB	February
+MAR	March
+APR	April
+MAY	May
+JUN	June
+JUL	July
+AUG	August
+SEP	September
+OCT	October
+NOV	November
+DEC	December
+.TE
+.sp
+.TS
+l s
+l l.
+\fBPublishers\fP
+ACADEMIC	Academic Press
+ACPRESS	Academic Press
+ADDISON	Addison Wesley
+ANSI	American National Standards Institute
+CSPRESS	Computer Science Press
+DIGITAL	Digital Press
+ELSEVIER	American Elsevier
+FREEMAN	W. H. Freeman and Company
+GPO	U. S. Government Printing Office
+HOLT	Holt, Rinehart, and Winston
+IEEEP	IEEE Press
+MCGRAW	McGraw-Hill
+MGHILL	McGraw-Hill
+MITP	MIT Press
+NHOLL	North-Holland
+NYC	New York, N\&Y
+PRENTICE	Prentice Hall
+PRHALL	Prentice Hall
+SPRINGER	Springer Verlag
+SRA	Scienc

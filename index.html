@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Nancy: VAX-11/780</title>
+    <link rel="stylesheet" href="vendor/xterm.css">
+    <style>
+        :root {
+            --bg: #15161a;
+            --panel: #1d1f24;
+            --border: #2c2f36;
+            --text: #d9dbe0;
+            --muted: #8b909a;
+            --accent: #e8a33d;
+            --ok: #6cc28a;
+            --bad: #e06c6c;
+            --screen: #0b0c0a;
+            --phosphor: #e4ead9;
+            --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--text);
+            font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+        }
+
+        main {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 24px 16px 48px;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 22px;
+            font-weight: 600;
+            letter-spacing: 0.01em;
+        }
+
+        header p {
+            margin: 4px 0 20px;
+            color: var(--muted);
+        }
+
+        .console {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 14px;
+        }
+
+        #tabs {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 10px;
+        }
+
+        #tabs button {
+            border-color: transparent;
+            color: var(--muted);
+            position: relative;
+        }
+
+        #tabs button[aria-selected="true"] {
+            color: var(--text);
+            border-color: var(--border);
+            background: var(--bg);
+        }
+
+        #tabs button.unread::after {
+            content: "";
+            position: absolute;
+            top: 5px;
+            right: 4px;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--accent);
+        }
+
+        #screen {
+            background: var(--screen);
+            border-radius: 6px;
+            padding: 10px;
+            overflow-x: auto;
+            min-height: 120px;
+        }
+
+        .bar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px;
+            margin-top: 12px;
+            font-size: 13px;
+        }
+
+        #status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--muted);
+            flex: 1;
+            min-width: 220px;
+        }
+
+        #status::before {
+            content: "";
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--muted);
+        }
+
+        #status[data-state="running"]::before {
+            background: var(--ok);
+        }
+
+        #status[data-state="loading"]::before {
+            background: var(--accent);
+        }
+
+        #status[data-state="stopped"]::before {
+            background: var(--bad);
+        }
+
+        #disk {
+            color: var(--muted);
+            font-family: var(--mono);
+            font-size: 12px;
+        }
+
+        button {
+            font: inherit;
+            color: var(--text);
+            background: transparent;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 5px 12px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            border-color: var(--muted);
+        }
+
+        button.primary {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .notes {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 24px;
+            margin-top: 28px;
+        }
+
+        .history {
+            margin-top: 32px;
+            max-width: 68ch;
+        }
+
+        .history p {
+            margin: 0 0 10px;
+        }
+
+        .notes h2,
+        .history h2 {
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--muted);
+            margin: 0 0 8px;
+        }
+
+        .notes p,
+        .notes ul {
+            margin: 0 0 8px;
+        }
+
+        .notes ul {
+            padding-left: 18px;
+        }
+
+        code,
+        kbd {
+            font-family: var(--mono);
+            font-size: 0.92em;
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 0 4px;
+        }
+
+        a {
+            color: var(--accent);
+        }
+
+        footer {
+            margin-top: 32px;
+            color: var(--muted);
+            font-size: 13px;
+        }
+    </style>
+</head>
+
+<body>
+    <main>
+        <header>
+            <h1>Nancy: DEC VAX-11/780</h1>
+            <p>A 1979 minicomputer running 4.3BSD (Berkeley, 1986), emulated in your browser!</p>
+        </header>
+
+        <section class="console">
+            <div id="tabs" role="tablist" aria-label="Terminals"></div>
+            <div id="screen"></div>
+            <div class="bar">
+                <span id="status" data-state="loading">Starting</span>
+                <span id="disk"></span>
+                <button id="restart" type="button">Restart</button>
+                <button id="reset" type="button">Reset disk</button>
+            </div>
+        </section>
+
+        <section class="notes">
+            <div>
+                <h2>Using it</h2>
+                <ul>
+                    <li>Click the screen, then log in as <code>root</code> (no password).</li>
+                    <li>Run <code>setenv TERM vt100</code> before <code>vi</code> or <code>more</code>.</li>
+                    <li>Try <code>ls /usr/games</code>, <code>/usr/games/adventure</code>,
+                        <code>/usr/games/rogue</code>, <code>man ls</code>.
+                    </li>
+                    <li>Arrow keys don't recall commands. Use <code>history</code> instead.</li>
+                    <li><kbd>Ctrl-E</kbd> pauses the machine and opens the <code>sim&gt;</code> prompt. Type
+                        <code>c</code> to resume.
+                    </li>
+                </ul>
+                <p>The <b>tty00</b> and <b>tty01</b> tabs are more terminals on the same machine. Log in on two of them
+                    and try <code>who</code>, or <code>write root tty00</code> to message another user.</p>
+            </div>
+            <div>
+                <h2>Your disk</h2>
+                <p>Files you create are saved in this browser and are there next time. Before leaving, <code>sync</code>
+                    makes sure they've reached the disk.</p>
+                <p><b>Reset disk</b> throws your changes away and goes back to a fresh install.</p>
+            </div>
+            <div>
+                <h2>The VAX-11/780</h2>
+                <p>The 780 was the first of DEC's VAX computers. It has a 200-nanosecond clock cycle, an 8 KB memory
+                    cache, and a 128-entry translation cache. It runs at about one MIPS, and became the standard that
+                    other computers' speeds were measured against.</p>
+                <p>This emulation has 8 MB of memory and one 456 MB RA81 disk.</p>
+            </div>
+        </section>
+
+        <section class="history">
+            <h2>Nancy's history</h2>
+            <p>Nancy was the Brown CS department's first general-purpose computer and the first VAX sold in Rhode
+                Island. It was ordered in the spring of 1978 and installed on January 8, 1979, in a borrowed room in
+                Prince Engineering Laboratory. In May 1979 it moved to the basement of Kassar House. It stayed there,
+                though it was repositioned three times during construction of Gould Laboratory, until it was taken
+                out of service at 10:27am on June 17, 1988.</p>
+            <p>Nancy was the department's only time-sharing machine until Sluggo, another VAX-11/780, joined it on
+                October 6, 1982. It was used for research and departmental administration throughout its life, and
+                for teaching in 1980 and 1981. It first ran DEC's VMS operating system. UNIX was installed in June
+                1979.</p>
+            <p>It started with 256 KB of memory and a single 67 MB disk drive. When it was retired, it had 10 MB of
+                memory and almost 2 GB of disk storage.</p>
+        </section>
+
+        <footer>
+            Emulated by <a href="https://opensimh.org/">Open SIMH</a> compiled to WebAssembly.
+            4.3BSD from <a href="https://www.tuhs.org/">The Unix Heritage Society</a>.
+            Terminal by <a href="https://xtermjs.org/">xterm.js</a>.
+        </footer>
+    </main>
+    <script src="vendor/xterm.js"></script>
+    <script src="main.js"></script>
+</body>
+
+</html>

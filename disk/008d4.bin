@@ -1,0 +1,1170 @@
+f, u_short *));
+				resid = ntohs(*(dmcdataaddr(dh, off+2, u_short *)));
+				if (off + resid > len)
+					goto setup;		/* sanity */
+				len = off + resid;
+			} else
+				off = 0;
+			if (len == 0)
+				goto setup;
+
+			/*
+			 * Pull packet off interface.  Off is nonzero if
+			 * packet has trailing header; dmc_get will then
+			 * force this header information to be at the front,
+			 * but we still have to drop the type and length
+			 * which are at the front of any trailer data.
+			 */
+			m = if_ubaget(&sc->sc_ifuba, ifrw, len, off, ifp);
+			if (m == 0)
+				goto setup;
+			if (off) {
+				ifp = *(mtod(m, struct ifnet **));
+				m->m_off += 2 * sizeof (u_short);
+				m->m_len -= 2 * sizeof (u_short);
+				*(mtod(m, struct ifnet **)) = ifp;
+			}
+			switch (dh->dmc_type) {
+
+#ifdef INET
+			case DMC_IPTYPE:
+				schednetisr(NETISR_IP);
+				inq = &ipintrq;
+				break;
+#endif
+			default:
+				m_freem(m);
+				goto setup;
+			}
+
+			s = splimp();
+			if (IF_QFULL(inq)) {
+				IF_DROP(inq);
+				m_freem(m);
+			} else
+				IF_ENQUEUE(inq,i->ui_alive == 0) {
+		printf("hdh%d: not alive\n", unit);
+		return(0);
+	}
+	sc = &hdh_softc[unit];
+
+	if (sc->hdh_flags & HDH_STARTED)
+		return(1);
+
+	/*
+	 * Alloc uba resources
+	 */
+	for(i=0;i<NHDHCH;i++) {
+		if (if_ubainit(&sc->hdh_ifuba[i], ui->ui_ubanum, 0,
+		    (int)btoc(IMPMTU)) == 0) {
+			printf("hdh%d: cannot get chan %d uba resources\n",
+				unit, i);
+			ui->ui_alive = 0;
+			return(0);
+		}
+	}
+
+	sc->hdh_if->if_flags |= IFF_RUNNING;
+	sc->hdh_flags = HDH_STARTED;
+
+	/*
+	 * hang a supervisor read (for line status)
+	 */
+	hdh_iorq(unit, HDHSUPR, IMPMTU, HDHRDB);
+
+	/*
+	 * hang a data read
+	 */
+	hdh_iorq(unit, HDHDATR, IMPMTU, HDHRDB+HDHSTR);
+
+	/*
+	 * bring up line to IMP
+	 */
+
+	snd_supr(unit, init_blk, sizeof(init_blk));
+
+	return(1);
+}
+
+/*
+ * Start an output operation on an mbuf.
+ */
+hdhstart(dev)
+dev_t dev;
+{
+	int unit = HDHUNIT(dev);
+	register struct hdh_softc *sc = &hdh_softc[unit];
+	register struct mbuf *m;
+        int len;
+
+	/*
+	 * If output isn't active, attempt to
+	 * start sending a new packet.
+	 */
+
+	if (sc->hdh_ic->ic_oactive) {
+		printf("hdh%d: start on active unit\n", unit);
+		return;
+	}
+
+	if ((sc->hdh_flags & HDH_UP) == 0) {
+		sc->hdh_ic->ic_oactive = 0;	/* Link not up, can't xmit */
+		return;
+	}
+
+	IF_DEQUEUE(&sc->hdh_if->if_snd, m);
+	if (m == 0) {
+		sc->hdh_ic->ic_oactive = 0;
+		return;
+	}
+
+	len = if_wubaput(&sc->hdh_ifuba[DATA], m);	/* copy data to mapped mem */
+	sc->hdh_ic->ic_oactive = 1;
+
+	hdh_iorq(unit, HDHDATW, len, HDHWRT+HDHEOS);
+}
+
+/*
+ * Start i/o operation on a UMC logical channel
+ */
+hdh_iorq(unit, lcn, len, func)
+int unit, lcn, len, func;
+{
+	register struct hdh_softc *sc = &hdh_softc[unit];
+	register struct hdh_chan *hc = &sc->hdh_chan[lcn];
+	register int info, s;
+
+	/*
+	 * If channel is busy (shouldn't be), drop.
+	 */
+	if  (hc->hc_flags & HCBUSY) {
+		printf("hdh%d: channel busy lcn=%d\n", unit, lcn);
+		return;
+	}
+
+ 	/* get appropriate UNIBUS mapping info */
+
+	if (lcn & 1)		/* read or write? */
+		info = sc->hdh_ifuba[lcn>>1].ifu_w.ifrw_info;
+	else
+		info = sc->hdh_ifuba[lcn>>1].ifu_r.ifrw_info;
+
+	/* set channel info */
+
+	hc->hc_flags |= HCBUSY;
+	hc->hc_chan = lcn;
+	hc->hc_adx = (char)((info & 0x30000) >> 12);
+	hc->hc_addr = (unsigned short)(info & 0xffff);
+	hc->hc_cnt = len;
+	hc->hc_func = (char)func;
+	hc->hc_sbfc = 0;
+
+	s = splimp();
+	/*
+	 * If UMC comm regs busy, queue start i/o for later.
+	 */
+	if (sc->hdh_sioq.sioq_head) {
+		(sc->hdh_sioq.sioq_tail)->hc_next = hc;
+		sc->hdh_sioq.sioq_tail = hc;
+		hc->hc_next = 0;
+		splx(s);
+		return;
+	}
+
+	/* start i/o on channel now */
+
+	sc->hdh_sioq.sioq_head = hc;
+	sc->hdh_sioq.sioq_tail = hc;
+	hc->hc_next = 0;
+	start_chn(unit);
+	splx(s);
+}
+
+start_chn(unit)
+int unit;
+{
+	register struct hdh_softc *sc = &hdh_softc[unit];
+	register struct hdh_chan *hc = sc->hdh_sioq.sioq_head;
+	register struct hdhregs *addr = (struct hdhregs *)hdhinfo[unit]->ui_addr;
+
+	/*
+	 * Set up comm regs.
+	 */
+	addr->iochn = hc->hc_chan;
+	addr->ioadx = hc->hc_adx;
+	addr->ioadl = hc->hc_addr;
+	addr->iocnt = hc->hc_cnt;
+	addr->iofcn = hc->hc_func;
+	addr->iosbf = hc->hc_sbfc;
+	addr->ioini = 1;
+
+	/* signal UMC if necessary */
+
+	if (!(addr->ionmi)) {
+		addr->ionmi = 1;
+		addr->csr = HDH_DMA|HDH_WRT|HDH_IEN|HDH_NMI;
+	}
+}
+
+/*
+ * IF-11/HDH interrupt handler
+ */
+hdhintr(unit)
+int unit;
+{
+	register struct hdh_softc *sc = &hdh_softc[unit];
+	register struct hdh_chan *hc;
+	register struct hdhregs *addr = (struct hdhregs *)hdhinfo[unit]->ui_addr;
+	int lcn, type, cc, cnt;
+
+	/*
+	 * Check for hardware errors.
+	 */
+	if (addr->csr & HDH_UER) {
+		printf("hdh%d: hard error csr=%b\n", unit, addr->csr, HDH_BITS);
+		addr->csr = 0;		/* disable i/f */
+		return;
+	}
+	/*
+	 * Get logical channel info.
+	 */
+	if ((lcn = addr->stachn) >= (NHDHCH*2)) {
+		printf("hdh%d: unknown channel lcn=%d\n", unit, lcn);
+		return;
+	}
+
+	hc = &sc->hdh_chan[lcn];
+
+	type = addr->statyp;
+	cc = addr->stacc;
+	cnt = hc->hc_cnt - addr->stacnt;
+
+	/* Figure out what kind of interrupt it was */
+
+	switch(type) {
+
+	case HDHSACK:		/* start i/o accepted */
+		if (hc != sc->hdh_sioq.sioq_head) {
+			printf("hdh%d: STARTIO error lcn=%d hc=%x sq=%x\n",
+				unit, lcn, hc, sc->hdh_sioq.sioq_head);
+			return;
+		}
+
+		/* try to start any queued i/o request */
+
+		if (sc->hdh_sioq.sioq_head = sc->hdh_sioq.sioq_head->hc_next) {
+			start_chn(unit);
+		}
+		break;
+
+	case HDHDONE:		/* i/o completion */
+		switch (cc) {
+
+		case HDHIOCABT:
+			printf("hdh%d: I/O abort ", unit);
+			goto daterr;
+
+		case HDHIOCERR:
+			printf("hdh%d: program error ", unit);
+			goto daterr;
+
+		case HDHIOCOVR:
+			printf("hdh%d: overrun error ", unit);
+			goto daterr;
+
+		case HDHIOCUBE:
+			printf("hdh%d: NXM timeout or UB parity error ", unit);
+		
+		daterr:
+			printf("lcn=%d func=%x\n", lcn, hc->hc_func);
+			if (hc->hc_func & HDHRDB)
+				sc->hdh_if->if_ierrors++;
+			else
+				sc->hdh_if->if_oerrors++;
+		}
+
+		hc->hc_flags &= ~HCBUSY;
+
+		/* was it supervisor or data traffic? */
+
+		if (lcn > HDHSUPW)
+			hdh_data(unit, lcn, cc, cnt);
+		else
+			hdh_supr(unit, lcn, cc);
+
+	}
+
+	/*
+	 * Ack the interrupt
+	 */
+	addr->staack = 1;
+	if (!(addr->ionmi)) {
+		addr->ionmi = 1;
+		addr->csr = HDH_DMA|HDH_WRT|HDH_IEN|HDH_NMI;
+	}	
+}
+
+/*
+ * data channel interrupt completion handler
+ */
+hdh_data(unit, lcn, cc, rcnt)
+int unit, lcn, cc, rcnt;
+{
+	register struct hdh_softc *sc = &hdh_softc[unit];
+	register struct hdh_chan *hc = &sc->hdh_chan[lcn];
+	register struct mbuf *m;
+
+
+	/* was it read or write? */
+
+	if (hc->hc_func & HDHRDB) {
+		if (cc == HDHIOCOK) {
+			/*
+			 * Queue good packet for input 
+			 */
+			sc->hdh_if->if_ipackets++;
+			m = if_rubaget(&sc->hdh_ifuba[lcn>>1], rcnt, 0,
+				sc->hdh_if);
+			impinput(unit, m);
+		}
+
+		/* hang a new data read */
+
+		hdh_iorq(unit, lcn, IMPMTU, HDHRDB+HDHSTR);
+
+	} else {
+		/*
+		 * fire up next output
+		 */
+		sc->hdh_if->if_opackets++;
+		sc->hdh_ic->ic_oactive = 0;
+		hdhstart(unit);		
+	}
+}
+
+/*
+ * supervisor channel interrupt completion handler
+ */
+hdh_supr(unit, lcn, cc)
+int unit, lcn, cc;
+{
+	register struct hdh_softc *sc = &hdh_softc[unit];
+	register struct hdh_chan *hc = &sc->hdh_chan[lcn];
+	short *p;
+	
+
+	/* was it read or write? */
+
+	if (hc->hc_func & HDHRDB) {	
+		if (cc == HDHIOCOK) {
+			p = (short *)(sc->hdh_ifuba[lcn>>1].ifu_r.ifrw_addr);
+
+			/* figure out what kind of supervisor message */
+
+			switch (*p) {
+
+			case HDHIACK:
+			case HDHLNACK:
+				break;
+	
+			case HDHLNUP:
+				printf("hdh%d: LINE UP\n", unit);
+				sc->hdh_flags |= HDH_UP;
+				hdhstart(unit);
+				break;
+	
+			case HDHLNDN:
+				if (sc->hdh_flags & HDH_UP)
+					printf("hdh%d: LINE DOWN\n", unit);
+				sc->hdh_flags &= ~HDH_UP;
+				break;
+	
+			case HDHLOOP:
+				break;
+	
+			case HDHSQERR:
+				printf("hdh%d: HOST SEQUENCE ERROR\n", unit);
+				break;
+	
+			case HDHSQRCV:
+				printf("hdh%d: IMP SEQUENCE ERROR\n", unit);
+				break;
+	
+			case HDHDTERR:
+				printf("hdh%d: HOST DATA ERROR\n", unit);
+				break;
+	
+			case HDHTIMO:
+				printf("hdh%d: TIMEOUT\n", unit);
+				break;
+	
+			default:
+				printf("hdh%d: supervisor error, code=%x\n",
+					unit, *p);
+			}
+		}
+
+		/* hang a new supr read */
+
+		hdh_iorq(unit, HDHSUPR, IMPMTU, HDHRDB+HDHSTR);
+	} 
+}
+
+snd_supr(unit, msg, len)
+int unit, len;
+char *msg;
+{
+	register struct hdh_softc *sc = &hdh_softc[unit];
+	register struct mbuf *m;
+	register char *p;
+	register int cnt;
+
+	if ((m = m_get(M_DONTWAIT, MT_DATA)) == NULL) {
+		printf("hdh%d: cannot get supervisor cmnd buffer\n", unit);
+			return;
+	}
+
+	cnt = len;
+	m->m_len = len;
+	p = mtod(m, char *);
+
+	while(cnt--) *p++ = *msg++;
+
+	cnt = if_wubaput(&sc->hdh_ifuba[SUPR], m);
+
+	hdh_iorq(unit, HDHSUPW, cnt, HDHWRT+HDHEOS);
+}
+#endif NHDH
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           m);
+			splx(s);
+
+	setup:
+			/* is this needed? */
+			rp->ubinfo = ifrw->ifrw_info & 0x3ffff;
+
+			dmcload(sc, DMC_READ, rp->ubinfo, 
+			    ((rp->ubinfo >> 2) & DMC_XMEM) | rp->cc);
+			break;
+
+		case DMC_OUX:
+			/*
+			 * A write has completed, start another
+			 * transfer if there is more data to send.
+			 */
+			ifp->if_opackets++;
+			/* find associated dmcbuf structure */
+			ifxp = &sc->sc_ifw[0];
+			for (rp = &sc->sc_xbufs[0]; rp < &sc->sc_xbufs[NXMT]; rp++) {
+				if(rp->ubinfo == pkaddr)
+					break;
+				ifxp++;
+			}
+			if (rp >= &sc->sc_xbufs[NXMT]) {
+				printf("dmc%d: bad packet address 0x%x\n",
+				    unit, pkaddr);
+				break;
+			}
+			if ((rp->flags & DBUF_DMCS) == 0)
+				printf("dmc%d: unallocated packet 0x%x\n",
+				    unit, pkaddr);
+			/* mark buffer free */
+			if (ifxp->ifw_xtofree) {
+				(void)m_freem(ifxp->ifw_xtofree);
+				ifxp->ifw_xtofree = 0;
+			}
+			rp->flags &= ~DBUF_DMCS;
+			sc->sc_oused--;
+			sc->sc_nticks = 0;
+			sc->sc_flag |= DMC_ACTIVE;
+			break;
+
+		case DMC_CNTLO:
+			arg &= DMC_CNTMASK;
+			if (arg & DMC_FATAL) {
+				log(LOG_ERR, "dmc%d: fatal error, flags=%b\n",
+				    unit, arg, CNTLO_BITS);
+				dmcrestart(unit);
+				break;
+			}
+			/* ACCUMULATE STATISTICS */
+			switch(arg) {
+			case DMC_NOBUFS:
+				ifp->if_ierrors++;
+				if ((sc->sc_nobuf++ % DMC_RPNBFS) == 0)
+					goto report;
+				break;
+			case DMC_DISCONN:
+				if ((sc->sc_disc++ % DMC_RPDSC) == 0)
+					goto report;
+				break;
+			case DMC_TIMEOUT:
+				if ((sc->sc_timeo++ % DMC_RPTMO) == 0)
+					goto report;
+				break;
+			case DMC_DATACK:
+				ifp->if_oerrors++;
+				if ((sc->sc_datck++ % DMC_RPDCK) == 0)
+					goto report;
+				break;
+			default:
+				goto report;
+			}
+			break;
+		report:
+			printd("dmc%d: soft error, flags=%b\n", unit,
+			    arg, CNTLO_BITS);
+			if ((sc->sc_flag & DMC_RESTART) == 0) {
+				/*
+				 * kill off the dmc to get things
+				 * going again by generating a
+				 * procedure error
+				 */
+				sc->sc_flag |= DMC_RESTART;
+				arg = sc->sc_ubinfo & 0x3ffff;
+				dmcload(sc, DMC_BASEI, arg, (arg>>2)&DMC_XMEM);
+			}
+			break;
+
+		default:
+			printf("dmc%d: bad control %o\n", unit, cmd);
+			break;
+		}
+	}
+	dmcstart(unit);
+	return;
+}
+
+/*
+ * DMC output routine.
+ * Encapsulate a packet of type family for the dmc.
+ * Use trailer local net encapsulation if enough data in first
+ * packet leaves a multiple of 512 bytes of data in remainder.
+ */
+dmcoutput(ifp, m0, dst)
+	register struct ifnet *ifp;
+	register struct mbuf *m0;
+	struct sockaddr *dst;
+{
+	int type, error, s;
+	register struct mbuf *m = m0;
+	register struct dmc_header *dh;
+	register int off;
+
+	switch (dst->sa_family) {
+#ifdef	INET
+	case AF_INET:
+		off = ntohs((u_short)mtod(m, struct ip *)->ip_len) - m->m_len;
+		if ((ifp->if_flags & IFF_NOTRAILERS) == 0)
+		if (off > 0 && (off & 0x1ff) == 0 &&
+		    m->m_off >= MMINOFF + 2 * sizeof (u_short)) {
+			type = DMC_TRAILER + (off>>9);
+			m->m_off -= 2 * sizeof (u_short);
+			m->m_len += 2 * sizeof (u_short);
+			*mtod(m, u_short *) = htons((u_short)DMC_IPTYPE);
+			*(mtod(m, u_short *) + 1) = htons((u_short)m->m_len);
+			goto gottrailertype;
+		}
+		type = DMC_IPTYPE;
+		off = 0;
+		goto gottype;
+#endif
+
+	case AF_UNSPEC:
+		dh = (struct dmc_header *)dst->sa_data;
+		type = dh->dmc_type;
+		goto gottype;
+
+	default:
+		printf("dmc%d: can't handle af%d\n", ifp->if_unit,
+			dst->sa_family);
+		error = EAFNOSUPPORT;
+		goto bad;
+	}
+
+gottrailertype:
+	/*
+	 * Packet to be sent as a trailer; move first packet
+	 * (control information) to end of chain.
+	 */
+	while (m->m_next)
+		m = m->m_next;
+	m->m_next = m0;
+	m = m0->m_next;
+	m0->m_next = 0;
+	m0 = m;
+
+gottype:
+	/*
+	 * Add local network header
+	 * (there is space for a uba on a vax to step on)
+	 */
+	if (m->m_off > MMAXOFF ||
+	    MMINOFF + sizeof(struct dmc_header) > m->m_off) {
+		m = m_get(M_DONTWAIT, MT_HEADER);
+		if (m == 0) {
+			error = ENOBUFS;
+			goto bad;
+		}
+		m->m_next = m0;
+		m->m_off = MMINOFF;
+		m->m_len = sizeof (struct dmc_header);
+	} else {
+		m->m_off -= sizeof (struct dmc_header);
+		m->m_len += sizeof (struct dmc_header);
+	}
+	dh = mtod(m, struct dmc_header *);
+	dh->dmc_type = htons((u_short)type);
+
+	/*
+	 * Queue message on interface, and start output if interface
+	 * not yet active.
+	 */
+	s = splimp();
+	if (IF_QFULL(&ifp->if_snd)) {
+		IF_DROP(&ifp->if_snd);
+		m_freem(m);
+		splx(s);
+		return (ENOBUFS);
+	}
+	IF_ENQUEUE(&ifp->if_snd, m);
+	dmcstart(ifp->if_unit);
+	splx(s);
+	return (0);
+
+bad:
+	m_freem(m0);
+	return (error);
+}
+
+
+/*
+ * Process an ioctl request.
+ */
+/* ARGSUSED */
+dmcioctl(ifp, cmd, data)
+	register struct ifnet *ifp;
+	int cmd;
+	caddr_t data;
+{
+	int s = splimp(), error = 0;
+	register struct dmc_softc *sc = &dmc_softc[ifp->if_unit];
+
+	switch (cmd) {
+
+	case SIOCSIFADDR:
+		ifp->if_flags |= IFF_UP;
+		if ((ifp->if_flags & IFF_RUNNING) == 0)
+			dmcinit(ifp->if_unit); 
+		break;
+
+	case SIOCSIFDSTADDR:
+		if ((ifp->if_flags & IFF_RUNNING) == 0)
+			dmcinit(ifp->if_unit); 
+		break;
+		
+	case SIOCSIFFLAGS:
+		if ((ifp->if_flags & IFF_UP) == 0 &&
+		    sc->sc_flag & DMC_RUNNING) {
+			((struct dmcdevice *)
+			   (dmcinfo[ifp->if_unit]->ui_addr))->bsel1 = DMC_MCLR;
+			sc->sc_flag &= ~DMC_RUNNING;
+		} else if (ifp->if_flags & IFF_UP &&
+		    (sc->sc_flag & DMC_RUNNING) == 0)
+			dmcrestart(ifp->if_unit);
+		break;
+
+	default:
+		error = EINVAL;
+	}
+	splx(s);
+	return (error);
+}
+
+/*
+ * Restart after a fatal error.
+ * Clear device and reinitialize.
+ */
+dmcrestart(unit)
+	int unit;
+{
+	register struct dmc_softc *sc = &dmc_softc[unit];
+	register struct uba_device *ui = dmcinfo[unit];
+	register struct dmcdevice *addr;
+	register struct ifxmt *ifxp;
+	register int i;
+	
+	addr = (struct dmcdevice *)ui->ui_addr;
+#ifdef DEBUG
+	/* dump base table */
+	printf("dmc%d base table:\n", unit);
+	for (i = 0; i < sizeof (struct dmc_base); i++)
+		printf("%o\n" ,dmc_base[unit].d_base[i]);
+#endif
+	/*
+	 * Let the DMR finish the MCLR.	 At 1 Mbit, it should do so
+	 * in about a max of 6.4 milliseconds with diagnostics enabled.
+	 */
+	addr->bsel1 = DMC_MCLR;
+	for (i = 100000; i && (addr->bsel1 & DMC_RUN) == 0; i--)
+		;
+	/* Did the timer expire or did the DMR finish? */
+	if ((addr->bsel1 & DMC_RUN) == 0) {
+		log(LOG_ERR, "dmc%d: M820 Test Failed\n", unit);
+		return;
+	}
+
+	for (ifxp = sc->sc_ifw; ifxp < &sc->sc_ifw[NXMT]; ifxp++) {
+		if (ifxp->ifw_xtofree) {
+			(void) m_freem(ifxp->ifw_xtofree);
+			ifxp->ifw_xtofree = 0;
+		}
+	}
+
+	/* restart DMC */
+	dmcinit(unit);
+	sc->sc_flag &= ~DMC_RESTART;
+	sc->sc_if.if_collisions++;	/* why not? */
+}
+
+/*
+ * Check to see that transmitted packets don't
+ * lose interrupts.  The device has to be active.
+ */
+dmcwatch()
+{
+	register struct uba_device *ui;
+	register struct dmc_softc *sc;
+	struct dmcdevice *addr;
+	register int i;
+
+	for (i = 0; i < NDMC; i++) {
+		sc = &dmc_softc[i];
+		if ((sc->sc_flag & DMC_ACTIVE) == 0)
+			continue;
+		if ((ui = dmcinfo[i]) == 0 || ui->ui_alive == 0)
+			continue;
+		if (sc->sc_oused) {
+			sc->sc_nticks++;
+			if (sc->sc_nticks > dmc_timeout) {
+				sc->sc_nticks = 0;
+				addr = (struct dmcdevice *)ui->ui_addr;
+				log(LOG_ERR, "dmc%d hung: bsel0=%b bsel2=%b\n",
+				    i, addr->bsel0 & 0xff, DMC0BITS,
+				    addr->bsel2 & 0xff, DMC2BITS);
+				dmcrestart(i);
+			}
+		}
+	}
+	timeout(dmcwatch, (caddr_t) 0, hz);
+}
+#endif
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   /*
+ * Copyright (c) 1982, 1986 Regents of the University of California.
+ * All rights reserved.  The Berkeley software License Agreement
+ * specifies the terms and conditions for redistribution.
+ *
+ *	@(#)if_ec.c	7.1 (Berkeley) 6/5/86
+ */
+
+#include "ec.h"
+#if NEC > 0
+
+/*
+ * 3Com Ethernet Controller interface
+ */
+#include "../machine/pte.h"
+
+#include "param.h"
+#include "systm.h"
+#include "mbuf.h"
+#include "buf.h"
+#include "protosw.h"
+#include "socket.h"
+#include "syslog.h"
+#include "vmmac.h"
+#include "ioctl.h"
+#include "errno.h"
+
+#include "../net/if.h"
+#include "../net/netisr.h"
+#include "../net/route.h"
+
+#ifdef INET
+#include "../netinet/in.h"
+#include "../netinet/in_systm.h"
+#include "../netinet/in_var.h"
+#include "../netinet/ip.h"
+#include "../netinet/if_ether.h"
+#endif
+
+#ifdef NS
+#include "../netns/ns.h"
+#include "../netns/ns_if.h"
+#endif
+
+#include "../vax/cpu.h"
+#include "../vax/mtpr.h"
+#include "if_ecreg.h"
+#include "if_uba.h"
+#include "../vaxuba/ubareg.h"
+#include "../vaxuba/ubavar.h"
+
+#if CLSIZE == 2
+#define ECBUFSIZE	32		/* on-board memory, clusters */
+#endif
+
+int	ecubamem(), ecprobe(), ecattach(), ecrint(), ecxint(), eccollide();
+struct	uba_device *ecinfo[NEC];
+u_short ecstd[] = { 0 };
+struct	uba_driver ecdriver =
+	{ ecprobe, 0, ecattach, 0, ecstd, "ec", ecinfo, 0, 0, 0, ecubamem };
+
+int	ecinit(),ecioctl(),ecoutput(),ecreset();
+struct	mbuf *ecget();
+
+extern struct ifnet loif;
+
+/*
+ * Ethernet software status per interface.
+ *
+ * Each interface is referenced by a network interface structure,
+ * es_if, which the routing code uses to locate the interface.
+ * This structure contains the output queue for the interface, its address, ...
+ * We also have, for each interface, a UBA interface structure, which
+ * contains information about the UNIBUS resources held by the interface:
+ * map registers, buffered data paths, etc.  Information is cached in this
+ * structure for use by the if_uba.c routines in running the interface
+ * efficiently.
+ */
+struct	ec_softc {
+	struct	arpcom es_ac;		/* common Ethernet structures */
+#define	es_if	es_ac.ac_if		/* network-visible interface */
+#define	es_addr	es_ac.ac_enaddr		/* hardware Ethernet address */
+	struct	ifuba es_ifuba;		/* UNIBUS resources */
+	short	es_mask;		/* mask for current output delay */
+	short	es_oactive;		/* is output active? */
+	u_char	*es_buf[16];		/* virtual addresses of buffers */
+} ec_softc[NEC];
+
+/*
+ * Configure on-board memory for an interface.
+ * Called from autoconfig and after a uba reset.
+ * The address of the memory on the uba is supplied in the device flags.
+ */
+ecubamem(ui, uban)
+	register struct uba_device *ui;
+{
+	register caddr_t ecbuf = (caddr_t) &umem[uban][ui->ui_flags];
+	register struct ecdevice *addr = (struct ecdevice *)ui->ui_addr;
+
+	/*
+	 * Make sure csr is there (we run before ecprobe).
+	 */
+	if (badaddr((caddr_t)addr, 2))
+		return (-1);
+#if VAX780
+	if (cpu == VAX_780 && uba_hd[uban].uh_uba->uba_sr) {
+		uba_hd[uban].uh_uba->uba_sr = uba_hd[uban].uh_uba->uba_sr;
+		return (-1);
+	}
+#endif
+	/*
+	 * Make sure memory is turned on
+	 */
+	addr->ec_rcr = EC_AROM;
+	/*
+	 * Tell the system that the board has memory here, so it won't
+	 * attempt to allocate the addresses later.
+	 */
+	if (ubamem(uban, ui->ui_flags, ECBUFSIZE*CLSIZE, 1) == 0) {
+		printf("ec%d: cannot reserve uba addresses\n", ui->ui_unit);
+		addr->ec_rcr = EC_MDISAB;	/* disable memory */
+		return (-1);
+	}
+	/*
+	 * Check for existence of buffers on Unibus.
+	 */
+	if (badaddr((caddr_t)ecbuf, 2)) {
+bad:
+		printf("ec%d: buffer mem not found\n", ui->ui_unit);
+		(void) ubamem(uban, ui->ui_flags, ECBUFSIZE*2, 0);
+		addr->ec_rcr = EC_MDISAB;	/* disable memory */
+		return (-1);
+	}
+#if VAX780
+	if (cpu == VAX_780 && uba_hd[uban].uh_uba->uba_sr) {
+		uba_hd[uban].uh_uba->uba_sr = uba_hd[uban].uh_uba->uba_sr;
+		goto bad;
+	}
+#endif
+	if (ui->ui_alive == 0)		/* Only printf from autoconfig */
+		printf("ec%d: mem %x-%x\n", ui->ui_unit,
+			ui->ui_flags, ui->ui_flags + ECBUFSIZE*CLBYTES - 1);
+	ui->ui_type = 1;		/* Memory on, allocated */
+	return (0);
+}
+
+/*
+ * Do output DMA to determine interface presence and
+ * interrupt vector.  DMA is too short to disturb other hosts.
+ */
+ecprobe(reg, ui)
+	caddr_t reg;
+	struct uba_device *ui;
+{
+	register int br, cvec;		/* r11, r10 value-result */
+	register struct ecdevice *addr = (struct ecdevice *)reg;
+	register caddr_t ecbuf = (caddr_t) &umem[ui->ui_ubanum][ui->ui_flags];
+
+#ifdef lint
+	br = 0; cvec = br; br = cvec;
+	ecrint(0); ecxint(0); eccollide(0);
+#endif
+
+	/*
+	 * Check that buffer memory was found and enabled.
+	 */
+	if (ui->ui_type == 0)
+		return(0);
+	/*
+	 * Make a one byte packet in what should be buffer #0.
+	 * Submit it for sending.  This should cause an xmit interrupt.
+	 * The xmit interrupt vector is 8 bytes after the receive vector,
+	 * so adjust for this before returning.
+	 */
+	*(u_short *)ecbuf = (u_short) 03777;
+	ecbuf[03777] = '\0';
+	addr->ec_xcr = EC_XINTEN|EC_XWBN;
+	DELAY(100000);
+	addr->ec_xcr = EC_XCLR;
+	if (cvec > 0 && cvec != 0x200) {
+		if (cvec & 04) {	/* collision interrupt */
+			cvec -= 04;
+			br += 1;		/* rcv is collision + 1 */
+		} else {		/* xmit interrupt */
+			cvec -= 010;
+			br += 2;		/* rcv is xmit + 2 */
+		}
+	}
+	return (1);
+}
+
+/*
+ * Interface exists: make available by filling in network interface
+ * record.  System will initialize the interface when it is ready
+ * to accept packets.
+ */
+ecattach(ui)
+	struct uba_device *ui;
+{
+	struct ec_softc *es = &ec_softc[ui->ui_unit];
+	register struct ifnet *ifp = &es->es_if;
+	register struct ecdevice *addr = (struct ecdevice *)ui->ui_addr;
+	int i, j;
+	u_char *cp;
+
+	ifp->if_unit = ui->ui_unit;
+	ifp->if_name = "ec";
+	ifp->if_mtu = ETHERMTU;
+
+	/*
+	 * Read the ethernet address off the board, one nibble at a time.
+	 */
+	addr->ec_xcr = EC_UECLR; /* zero address pointer */
+	addr->ec_rcr = EC_AROM;
+	cp = es->es_addr;
+#define	NEXTBIT	addr->ec_rcr = EC_AROM|EC_ASTEP; addr->ec_rcr = EC_AROM
+	for (i=0; i < sizeof (es->es_addr); i++) {
+		*cp = 0;
+		for (j=0; j<=4; j+=4) {
+			*cp |= ((addr->ec_rcr >> 8) & 0xf) << j;
+			NEXTBIT; NEXTBIT; NEXTBIT; NEXTBIT;
+		}
+		cp++;
+	}
+	printf("ec%d: hardware address %s\n", ui->ui_unit,
+		ether_sprintf(es->es_addr));
+	ifp->if_init = ecinit;
+	ifp->if_ioctl = ecioctl;
+	ifp->if_output = ecoutput;
+	ifp->if_reset = ecreset;
+	ifp->if_flags = IFF_BROADCAST;
+	for (i=0; i<16; i++)
+		es->es_buf[i] 
+		    = (u_char *)&umem[ui->ui_ubanum][ui->ui_flags + 2048*i];
+	if_attach(ifp);
+}
+
+/*
+ * Reset of interface after UNIBUS reset.
+ * If interface is on specified uba, reset its state.
+ */
+ecreset(unit, uban)
+	int unit, uban;
+{
+	register struct uba_device *ui;
+
+	if (unit >= NEC || (ui = ecinfo[unit]) == 0 || ui->ui_alive == 0 ||
+	    ui->ui_ubanum != uban)
+		return;
+	printf(" ec%d", unit);
+	ec_softc[unit].es_if.if_flags &= ~IFF_RUNNING;
+	ecinit(unit);
+}
+
+/*
+ * Initialization of interface; clear recorded pending
+ * operations, and reinitialize UNIBUS usage.
+ */
+ecinit(unit)
+	int unit;
+{
+	struct ec_softc *es = &ec_softc[unit];
+	struct ecdevice *addr;
+	register struct ifnet *ifp = &es->es_if;
+	int i, s;
+
+	/* not yet, if address still unknown */
+	if (ifp->if_addrlist == (struct ifaddr *)0)
+		return;
+
+	/*
+	 * Hang receive buffers and start any pending writes.
+	 * Writing into the rcr also makes sure the memory
+	 * is turned on.
+	 */
+	if ((ifp->if_flags & IFF_RUNNING) == 0) {
+		addr = (struct ecdevice *)ecinfo[unit]->ui_addr;
+		s = splimp();
+		/*
+		 * write our ethernet address into the address recognition ROM 
+		 * so we can always use the same EC_READ bits (referencing ROM),
+		 * in case we change the address sometime.
+		 * Note that this is safe here as the receiver is NOT armed.
+		 */
+		ec_setaddr(es->es_addr, unit);
+		/*
+		 * Arm the receiver
+		 */
+		for (i = ECRHBF; i >= ECRLBF; i--)
+			addr->ec_rcr = EC_READ | i;
+		es->es_oactive = 0;
+		es->es_mask = ~0;
+		es->es_if.if_flags |= IFF_RUNNING;
+		if (es->es_if.if_snd.ifq_head)
+			ecstart(unit);
+		splx(s);
+	}
+}
+
+/*
+ * Start output on interface.  Get another datagram to send
+ * off of the interface queue, and copy it to the interface
+ * before starting the output.
+ */
+ecstart(unit)
+{
+	register struct ec_softc *es = &ec_softc[unit];
+	struct ecdevice *addr;
+	struct mbuf *m;
+
+	if ((es->es                         ˇˇˇH–Ø	9 X              
+      <    ‡ˇˇ ¸ˇˇ   
+                   ˛ˇˇ	      @                                          3      ô        P     ®C  ¸œ                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       	  - : 1 . 8 / < 6 ` Z d ^ [ b \ i Ü ç á ë ã à è â ∂ ≥ ∫ ¥ æ ∏ µ º È „ ‡ Á · Î Â ‚ ?9C=:A;EˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇT                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    L–Ø     P  
+   ?  £           \                                             &   -   ,   -   ,   -   -   ,   -   -   ,   -   ,                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         ˇˇˇˇˇˇˇˇˇˇˇ                                                                                                                                                                                                                                                    U	                                                                                                                                 ˛ ˇ ˇ ˇ ˇ ˇ ˇ ˇ ˇ ˇ ˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇ                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              ˝A   
+        H–Ø    \.Ê    H–Ø    ®ë                                                                                    $Å   
+ \      H–Ø    ›(Ê    H–Ø    ¿ë –ë ‡ë                                                     0                       $Å   
+ Ü=      H–Ø    ø)Ê    H–Ø    »ë ÿë                                                                                 $Å   
+ ≠      H–Ø    OÂ    H–Ø    ©ë                                                                                    $Å   
+ è$      H–Ø    \(Ê    H–Ø    ∞ë ´ë                                                                                $Å   
+ u      H–Ø    OÂ    H–Ø    ≠ë                                                                                    $Å   
+ ¡[      H–Ø    )Ê    H–Ø    Ëë  ì ì                                                     .                       $Å   
+ ∆
+      H–Ø    FOÂ    H–Ø    ∏ë                                                                                    $Å   
+ %$      H–Ø    ∫*Ê    H–Ø    †ë ªë                                                                                $Å   
+ ÆL      H–Ø    <*Ê    H–Ø    ì ì (ì                                                     (                       $Å   
+ w$      H–Ø    §OÂ    H–Ø     ì Ωë                                                                                $Å   
+       H–Ø    fOÂ    H–Ø    ,ì                                                                                    Ì°   
+        H–Ø    H–Ø    H–Ø    øë                                                                                    $Å   
+ !∂      H–Ø    í(Ê    H–Ø    0ì @ì Pì `ì pì Äì                                         \                       $Å   
+ Ï      H–Ø    +Ê    H–Ø    .ì                                                                                    $Å   
+ ä      H–Ø    ’OÂ    H–Ø    8ì                                                             
+                       $Å   
+ Y      H–Ø    PÂ    H–Ø    Hì                                                                                    $Å   
+ ÿ	      H–Ø    OÂ    H–Ø    =ì                                                                                    $Å   
+ ﬁí      H–Ø    *Ê    H–Ø    Xì hì xì àì òì                                             J                       $Å   
+ ·Q      H–Ø    ≥(Ê    H–Ø    êì †ì ∞ì                                                     *                       $Å   
+ ˝C      H–Ø    g)Ê    H–Ø    ®ì ∏ì ì                                                     "                       $Å   
+ ÿ      H–Ø    µOÂ    H–Ø    ¿ì                                                                                    $Å   
+ î      H–Ø    √OÂ    H–Ø    »ì                                                                                    $Å   
+ ˙      H–Ø    !PÂ    H–Ø    Lì                                                                                    $Å   
+ £      H–Ø    =OÂ    H–Ø    –ì                                                                                    $Å   
+ y	      H–Ø    „OÂ    H–Ø    ùì                                                                                    $Å   
+ b      H–Ø    NOÂ    H–Ø    µì                                                                                    $Å   
+ ±'      H–Ø    ÄOÂ    H–Ø    ÿì Üì                                                                                $Å   
+       H–Ø    %OÂ    H–Ø     ì                                                             
+                       $Å   
+ a      H–Ø    ¨)Ê    H–Ø    ‡ì ì  î «ì                                                 2                       $Å   
+ °,      H–Ø    n(Ê    H–Ø    Ëì ¯ì                                                                                $Å   
+ D      H–Ø    -OÂ    H–Ø    î                                                             
+                       $Å   
+ ,0      H–Ø    a*Ê    H–Ø    î  î                                                                                $Å   
+       H–Ø    ZOÂ    H–Ø    œì                                                                                    $Å   
+       H–Ø    èOÂ    H–Ø    ¸ì                                                                                    $Å   
+ ¿f      H–Ø    +Ê    H–Ø    î (î 8î î                                                 4                       $Å   
+ ⁄m      H–Ø    Ñ*Ê    H–Ø    0î @î Pî `î                                                 8                       $Å   
+ `      H–Ø    ˇOÂ    H–Ø    Hî                                                                                    ˝A   
+        H–Ø    è¥    H–Ø    ◊ì                                                                                    $Å   
+ D     H–Ø    î¥    H–Ø    Xî hî xî àî òî ®î ∏î »î ÿî                             é                       $Å   
+ î      H–Ø    §˜™    H–Ø    î                                                                                    ˝A   
+        I–Ø    >…    I–Ø    ﬂî                                                                                    $Å   
+ m	      I–Ø    T–√    I–Ø    %î                                                                                    Ì°   
+        I–Ø    I–Ø    I–Ø    Nî                                                                                    $Å   
+ D      I–Ø    áŒ»    I–Ø    dî                                                                                    ˝A   
+        I–Ø    É~≠    I–Ø    Oî                                                                                    $Å   
+ ·      I–Ø    fŸ    I–Ø    fî                                                                                    $Å   
+ Ì      I–Ø    kŸ    I–Ø    gî                                                                                    $Å   
+ Ç      I–Ø    pŸ    I–Ø    pî                                                                                    $Å   
+ !L      I–Ø    xŸ    I–Ø    Äî êî sî                                                     (                       $Å   
+ -/      I–Ø    Ÿ    I–Ø    †î ∞î                                                                                $Å   
+ _Q      I–Ø    ÜŸ    I–Ø    ¿î –î ‡î                                                     *                       $Å   
+ •.      I–Ø    çŸ    I–Ø    Ëî ¥î                                                                                $Å   
+ Ù       I–Ø    ëŸ    I–Ø    wî                                                                                    $Å   
+ ß      I–Ø    óŸ    I–Ø    Âî                                                                                    $Å   
+ ñ      I–Ø    úŸ    I–Ø    Êî                                                                                    $Å   
+ ﬁ	      I–Ø    °Ÿ    I–Ø    î                                                                                    $Å   
+ À      I–Ø    ©Ÿ    I–Ø    Ûî                                                                                    $Å   
+ ã      I–Ø    ÆŸ    I–Ø    Áî                                                                                    $Å   
+ !      I–Ø    ≤Ÿ    I–Ø    ıî                                                                                    $Å   
+ º      I–Ø    ∑Ÿ    I–Ø    ¯î                                                                                    $Å   
+ h      I–Ø    ªŸ    I–Ø    ˙î                                                                                    $Å   
+ Õ      I–Ø    œŸ    I–Ø    ˝î                                                                                    $Å   
+ Õ9      I–Ø    ≈Ÿ    I–Ø     ï ï                                                                                $Å   
+ ;      I–Ø    ÀŸ    I–Ø    ˜î                                                                                    $Å   
+ ‹<      I–Ø    ‘Ÿ    I–Ø    ï ï                                                                                 $Å   
+ ¶6      I–Ø    €Ÿ    I–Ø     ï 0ï                                                                                $Å   
+ ù      I–Ø    ‡Ÿ    I–Ø    (ï                                                                                    $Å   
+ 2      I–Ø    ‰Ÿ    I–Ø    ˇî                                                                                    ˝A   
+        I–Ø    b‘‹    I–Ø    ï                                                                                    $Å   
+ ì      I–Ø    u÷›    I–Ø    8ï Hï Xï hï xï                                             J                       $Å   
+ d      I–Ø    '«œ    I–Ø    6ï                                                                                    ˝A   
+        I–Ø    †‘‹    I–Ø    7ï                                                                                    $Å   
+ ƒ      I–Ø    bÚ‹    I–Ø    }ï                                                                                    $Å   
+ ø      I–Ø    cÚ‹    I–Ø    ~ï                                                                                    $Å   
+ í      I–Ø    ó’    I–Ø    ï                                                                                    $Å   
+ ¬      I–Ø    dÚ‹    I–Ø    ,ï                                                                                    $Å   
+ §3      I–Ø    ◊±‰    I–Ø    @ï Pï                                                                                $Å   
+ ©      I–Ø     Ú‹    I–Ø    -ï                                                                                    $Å   
+       I–Ø    )‹‹    I–Ø    .ï                                                                                    ˝A   
+        J–Ø    Xäõ    J–Ø    /ï                                                                                    $Å   
+ C      J–Ø    Yäõ    J–Ø    `ï                                                                                    $Å   
+ L      J–Ø    ;0    J–Ø    fï                                                                                    $Å   
+ í      J–Ø    ?0    J–Ø    Uï                                                                                    $Å   
+ ª      J–Ø    E0    J–Ø    pï                                                                                    $Å   
+ ˚      J–Ø    K0    J–Ø    Vï                                                                                    ÌA ˇ
+        K–Ø    '’Ê    K–Ø    tï                                                                                    ÌÅ   
+        K–Ø    ’Ê    K–Ø    Äï                                                                                    ÌÅ   
+  ,      K–Ø    #’Ê    K–Ø    àï uï                                                                                ÌÅ   
+ Ú      K–Ø    '’Ê    K–Ø    êï                                                                                    §Å ˇ
+ îu     K–Ø    úÄË    K–Ø    òï ®ï ∏ï »ï ÿï Ëï ¯ï ñ ñ (ñ 8ñ íï                 º                       ˇA   
+        L–Ø    Î\è    L–Ø    áï                                                                                    ÌA          L–Ø    †Wn    L–Ø    †ï                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    

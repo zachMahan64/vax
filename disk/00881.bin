@@ -1,0 +1,2474 @@
+ messages.
+MH,
+therefore, consists of a relatively small amount of new code; it
+makes extensive use of other UNIX software to provide the
+capabilities found in other message systems.
+.+c OVERVIEW
+.pp
+There are three main aspects of \fIMH\fR\0:  the  way  messages  are
+stored (the message database), the user's profile (which directs
+how certain actions of the message handler take place), and the
+commands for dealing with messages.
+.pp
+Under \fIMH\fR, each message is stored as a separate file.
+A user
+can take any action with a message that he could with an ordinary
+file in UNIX.
+A UNIX directory in which messages are stored is
+called a folder.
+Each folder contains some standard entries to support
+the message-handling functions.
+The messages in a folder have numerical
+names.
+These folders (directories)
+are entries in a particular directory path, described in
+the user profile, through which \fIMH\fR can find message folders.
+Using the UNIX \*(lqlink\*(rq facility, it is possible for one copy of a
+message to be \*i) lw(2i).
+\fBwhile (\|.\|.\|.\|) {	do {	for (\|.\|.\|.\|) {\fR
+     \fIstatement ;	     statement ;	     statement ;\fR
+     \fBcontin: ;	     contin: ;	     contin: ;
+}	} while (...);	}\fR
+.TE
+.DE
+.LP
+a
+.B
+continue
+.R
+is equivalent to
+.B
+goto\ contin\fR.
+.R
+(Following the
+.B
+contin:
+.R
+is a null statement, see ``Null Statement''.)
+.NH 2 
+Return Statement
+.PP
+A function returns to its caller by means of
+the
+.B
+return
+.R
+statement which has one of the
+forms
+.DS 
+\fBreturn ;
+return \fIexpression \fR;
+.DE
+.PP
+In the first case, the returned value is undefined.
+In the second case, the value of the expression
+is returned to the caller
+of the function.
+If required, the expression is converted,
+as if by assignment, to the type of
+function in which it appears.
+Flowing off the end of a function is
+equivalent to a return with no returned value.
+The expression may be parenthesized.
+.NH 2 
+Goto Statement
+.PP
+Control may be transferred unconditionally by means of
+the statement
+.DS 
+\fBgoto \fIidentifier \fR;
+.DE
+.PP
+The identifier must be a label
+(see ``Labeled Statement'')
+located in the current function.
+.NH 2 
+Labeled Statement
+.PP
+Any statement may be preceded by
+label prefixes of the form
+.DS 
+\fIidentifier \fR:
+.DE
+.LP
+which serve to declare the identifier
+as a label.
+The only use of a label is as a target of a
+.B
+goto\fR.
+.R
+The scope of a label is the current function,
+excluding any subblocks in which the same identifier has been redeclared.
+See ``SCOPE RULES.''
+.NH 2 
+Null Statement
+.PP
+The null statement has the form
+.DS
+	\fB;\fR
+.DE
+.PP
+A null statement is useful to carry a label just before the
+.B
+}
+.R
+of a compound statement or to supply a null
+body to a looping statement such as
+.B
+while\fR.
+.R
+.NH 1 
+External Definitions
+.PP
+A C program consists of a sequence of external definitions.
+An external definition declares an identifier to
+have storage class
+.B
+extern
+.R
+(by default)
+or perhaps
+\fBstatic\fR,
+and
+a specified type.
+The type-specifier (see ``Type Specifiers'' in
+``DECLARATIONS'') may also be empty, in which
+case the type is taken to be
+.B
+int\fR.
+.R
+The scope of external definitions persists to the end
+of the file in which they are declared just as the effect
+of declarations persists to the end of a block.
+The syntax of external definitions is the same
+as that of all declarations except that
+only at this level may the code for functions be given.
+.NH 2 
+External Function Definitions
+.PP
+Function definitions have the form
+.DS
+\fIfunction-definition:
+        decl-specifiers\v'0.5'\s-2opt\s0\v'-0.5' function-declarator function-body\fR
+.DE
+.PP
+The only sc-specifiers
+allowed
+among the decl-specifiers
+are
+.B
+extern
+.R
+or
+\fBstatic\fR;
+see ``Scope of Externals'' in 
+``SCOPE RULES'' for the distinction between them.
+A function declarator is similar to a declarator
+for a ``function returning .\|.\|.\|'' except that
+it lists the formal parameters of
+the function being defined.
+.DS 
+\fIfunction-declarator:
+        declarator ( parameter-list\v'0.5'\s-2opt\s0\v'-0.5' )
+.DE
+.DS 
+\fIparameter-list:
+        identifier
+        identifier , parameter-list\fR
+.DE
+.PP
+The function-body
+has the form
+.DS 
+\fIfunction-body:
+        declaration-list\v'0.5'\s-2opt\s0\v'-0.5' compound-statement\fR
+.DE
+.PP
+The identifiers in the parameter list, and only those identifiers,
+may be declared in the declaration list.
+Any identifiers whose type is not given are taken to be
+.B
+int\fR.
+.R
+The only storage class which may be specified is
+\fBregister\fR;
+if it is specified, the corresponding actual parameter
+will be copied, if possible, into a register
+at the outset of the function.
+.PP
+A simple example of a complete function definition is
+.DS 
+\fBint max(a, b, c)
+        int a, b, c;
+{
+        int m;
+.sp
+        m = (a > b) ? a : b;
+        return((m > c) ? m : c);
+}\fR
+.DE
+.PP
+Here
+.B
+int
+.R
+is the type-specifier;
+.B
+max(a,\ b,\ c)
+.R
+is the function-declarator;
+.B
+int\ a,\ b,\ c;
+.R
+is the declaration-list for
+the formal
+parameters;
+\fB{\ ...\ }\fR
+is the
+block giving the code for the statement.
+.PP
+The C program converts all
+.B
+float
+.R
+actual parameters
+to
+\fBdouble\fR,
+so formal parameters declared
+.B
+float
+.R
+have their declaration adjusted to read
+.B
+double\fR.
+.R
+All \fBchar\fR and \fBshort\fR formal parameter
+declarations are similarly adjusted
+to read \fBint\fR.
+Also, since a reference to an array in any context
+(in particular as an actual parameter)
+is taken to mean
+a pointer to the first element of the array,
+declarations of formal parameters declared ``array of .\|.\|.\|''
+are adjusted to read ``pointer to .\|.\|.\|.''
+.NH 2 
+External Data Definitions
+.PP
+An external data definition has the form
+.DS 
+\fIdata-definition:
+        declaration\fR
+.DE
+.PP
+The storage class of such data may be
+.B
+extern
+.R
+(which is the default)
+or
+.B
+static 
+.R
+but not
+.B
+auto
+.R
+or
+\fBregister\fR.
+.NH 1 
+Scope Rules
+.PP
+A C program need not all
+be compiled at the same time. The source text of the
+program
+may be kept in several files, and precompiled
+routines may be loaded from
+libraries.
+Communication among the functions of a program
+may be carried out both through explicit calls
+and through manipulation of external data.
+.PP
+Therefore, there are two kinds of scopes to consider:
+first, what may be called the
+.UL lexical
+.UL scope
+of an identifier, which is essentially the
+region of a program during which it may
+be used without drawing ``undefined identifier''
+diagnostics;
+and second, the scope
+associated with external identifiers,
+which is characterized by the rule
+that references to the same external
+identifier are references to the same object.
+.NH 2 
+Lexical Scope
+.PP
+The lexical scope of identifiers declared in external definitions
+persists from the definition through
+the end of the source file
+in which they appear.
+The lexical scope of identifiers which are formal parameters
+persists through the function with which they are
+associated.
+The lexical scope of identifiers declared at the head of a block
+persists until the end of the block.
+The lexical scope of labels is the whole of the
+function in which they appear.
+.PP
+In all cases, however,
+if an identifier is explicitly declared at the head of a block,
+including the block constituting a function,
+any declaration of that identifier outside the block
+is suspended until the end of the block.
+.PP
+Remember also (see ``Structure, Union, and Enumeration Declarations'' in
+``DECLARATIONS'') that tags, identifiers associated with
+ordinary variables,
+and identities associated with structure and union members
+form three disjoint classes
+which do not conflict.
+Members and tags follow the same scope rules
+as other identifiers.
+The \fBenum\fR constants are in the same
+class as ordinary variables and follow the same scope rules.
+The
+.B
+typedef
+.R
+names are in the same class as ordinary identifiers.
+They may be redeclared in inner blocks, but an explicit
+type must be given in the inner declaration:
+.DS 
+\fBtypedef float distance;
+\&...
+{
+     auto int distance;
+     ...\fR
+}
+.DE
+.PP
+The
+.B
+int
+.R
+must be present in the second declaration,
+or it would be taken to be
+a declaration with no declarators and type
+.B
+distance\fR.
+.R
+.NH 2 
+Scope of Externals
+.PP
+If a function refers to an identifier declared to be
+\fBextern\fR,
+then somewhere among the files or libraries
+constituting the complete program
+there must be at least one external definition
+for the identifier.
+All functions in a given program which refer to the same
+external identifier refer to the same object,
+so care must be taken that the type and size
+specified in the definition
+are compatible with those specified
+by each function which references the data.
+.PP
+It is illegal to explicitly initialize any external
+identifier more than once in the set of files and libraries
+comprising a multi-file program.
+It is legal to have more than one data definition
+for any external non-function identifier;
+explicit use of \fBextern\fR does not
+change the meaning of an external declaration.
+.PP
+In restricted environments, the use of the \fBextern\fR
+storage class takes on an additional meaning.
+In these environments, the explicit appearance of the
+\fBextern\fR keyword in external data de(lqfiled\*(rq in more than one folder, providing a
+message index facility.
+Also, using the UNIX tree-structured
+file system, it is possible to have a folder within a folder,
+nested arbitrarily deep,
+and have the full power of the \fIMH\fR commands available.
+.pp
+Each user of \fIMH\fR has a user profile, a file in
+his \fB$HOME\fR (initial login) directory called \fI\&.mh\(ruprofile\fR.
+This profile contains several
+pieces of information used by the \fIMH\fR commands:
+a path name to the directory that contains the message folders
+and parameters that tailor \fIMH\fR commands
+to the individual user's requirements.
+There is also another file,
+called the user context,
+which contains information concerning which folder the user last referenced
+(the \*(lqcurrent\*(rq folder).
+It also contains
+most of the necessary state information concerning how
+the user is dealing with his messages, enabling \fIMH\fR to be
+implemented as a set of individual UNIX commands, in contrast to the
+usual approach of a monolithic subsystem.
+.pp
+In \fIMH\fR, incoming mail is appended
+to the end of a file in a system spooling area for the user.
+This area is called the mail drop directory,
+and the file is called the user's mail drop.
+Normally when the user logins in,
+s/he is informed of new mail
+(or the \fIMH\fR program \fImsgchk\fR may be run).
+The user adds the new messages to his/her collection of \fIMH\fR messages
+by invoking the command
+\fIinc\fR.
+The \fIinc\fR (incorporate) command adds the new
+messages to a folder called \*(lqinbox\*(rq, assigning them names which
+are consecutive integers starting with the next highest integer
+available in inbox.
+\fIinc\fR also produces a
+\fIscan\fR summary of
+the messages thus incorporated.
+A folder can be compacted into a single file,
+for easy storage,
+by using the \fIpackf\fR command.
+Also,
+messages within a folder can be sorted by date and time with the \fIsortm\fR
+command.
+
+.pp
+There are four commands for examining the messages in a
+folder:
+\fIshow\fR,
+\fIprev\fR,
+\fInext\fR,
+and
+\fIscan\fR.
+The \fIshow\fR command displays a message in a folder,
+\fIprev\fR displays the message preceding the current message, and
+\fInext\fR displays the message following the current message.
+\fIMH\fR lets the user choose the program that displays individual messages.
+A special program, \fImhl\fR, can be used to display messages according
+to the user's preferences.
+The \fIscan\fR command summarizes the messages in a folder,
+normally producing one line per message, showing who the message is from,
+the date, the subject, etc.
+.pp
+The user may move a message from one folder to another with
+the command
+\fIrefile\fR.
+Messages may be removed from a folder
+by means of the command
+\fIrmm\fR.
+In addition, a user may query
+what the current folder is and may specify that a new folder
+become the current folder, through the command
+\fIfolder\fR.
+All folders may be summarized with the \fIfolders\fR command.
+A message folder (or subfolder) may be removed by means of
+the command
+\fIrmf\fR.
+.pp
+A set of messages based on content may be selected by
+use of the command \fIpick\fR.
+This command searches through
+messages in a folder and selects those that match a given
+set of criteria.
+These messages are then bound to a \*(lqsequence\*(rq name for use with other
+\fIMH\fR commands.
+The \fImark\fR command manipulates these sequences.
+.pp
+There are five commands enabling the user to create new
+messages and send them:
+\fIcomp\fR,
+\fIdist\fR,
+\fIforw\fR,
+\fIrepl\fR,
+and
+\fIsend\fR.
+The \fIcomp\fR command
+provides the facility for the user to compose a
+new message;
+\fIdist\fR redistributes mail to additional addressees;
+\fIforw\fR enables the user to forward messages; and
+\fIrepl\fR facilitates the generation of a reply to an incoming message.
+The last three commands may optionally annotate the original message.
+Messages may be arbitrarily annotated with the \fIanno\fR command.
+Once a draft has been constructed by one of the four above composition
+programs,
+a user\-specifiable program is run to query the user as to the disposition of
+the draft prior to sending.
+\fIMH\fR provides the simple \fIwhatnow\fR program to start users off.
+If
+a message is not sent directly by one of these commands, it may
+be sent at a later time using the command
+\fIsend\fR.
+\fIMH\fR allows the use of any UNIX editor when composing a message.
+For rapid entry, a special editor, \fIprompter\fR, is provided.
+For programs, a special mail-sending program, \fImhmail\fR, is provided.
+.pp
+\fIMH\fR supports a personal aliasing facility which gives users the
+capability to considerably shorten address typein
+and use meaningful names for addresses.
+The \fIali\fR program can be used to query \fIMH\fR as to the expansion of a
+list of aliases.
+After composing a message, but prior to sending, the \fIwhom\fR command
+can be used to determine exactly who a message would go to.
+.pp
+\fIMH\fR provides a natural interface for telling the user's shell the names
+of \fIMH\fR messages and folders.
+The \fImhpath\fR program achieves this capability.
+.pp
+The \fIburst\fR command can be used to \*(lqshred\*(rq digests of messages
+into individual messages.
+.pp
+All of the elements summarized above
+are described in more detail in the following sections.
+Many of the
+normal facilities of UNIX provide additional capabilities for
+dealing with messages in various ways.
+For example, it is
+possible to print messages
+on the line-printer without requiring any additional code within
+\fIMH\fR\0.
+Using standard UNIX facilities, any terminal output can be
+redirected to a file for repeated or future viewing.
+In general,
+the flexibility and capabilities of the UNIX interface with the
+user are preserved as a result of the integration of \fIMH\fR into the UNIX
+structure.
+.+c TUTORIAL
+.pp
+This tutorial provides a brief introduction to the \fIMH\fR commands.
+It should be sufficient
+to allow the user to read his mail, do some simple manipulations of
+it, and create and send messages.
+.pp
+A message has two major pieces:  the
+header and the body.
+The body consists of the text of the message
+(whatever you care to type in).
+It follows the header and is separated from
+it by an empty line.
+(When you compose a message, the form that appears
+on your terminal shows a line of dashes after the header.
+This is for
+convenience and is replaced by an empty line when the message is
+sent.)  The header is composed of several components, including the
+subject of the message and the person to whom it is addressed.
+Each component starts with a name
+and a colon; components must not start with a blank.
+The text of the
+component may take more than one line, but each continuation line must
+start with a blank.
+Messages typically have \*(lqTo:\*(rq, \*(lqcc:\*(rq, and
+\*(lqSubject:\*(rq components.
+When composing a message, you should include
+the \*(lqTo:\*(rq and \*(lqSubject:\*(rq components;
+the \*(lqcc:\*(rq (for people you want to send copies to) is not necessary.
+.pp
+The basic \fIMH\fR commands are
+\fIinc\fR,
+\fIscan\fR,
+\fIshow\fR,
+\fInext\fR,
+\fIprev\fR,
+\fIrmm\fR,
+\fIcomp\fR,
+and
+\fIrepl\fR.
+These are described below.
+
+\fIinc\fR
+.pp
+When you get the message \*(lqYou have mail\*(rq, type the command \fIinc\fR.
+You will get a \*(lqscan listing\*(rq such as:
+
+.nf
+.in +.5i
+.ta \w'7+  'u +\w'11/26  'u +\w'To:norm  'u
+7+	\07/13	Cas	revival of measurement work
+8	10/\09	Norm	NBS people and publications
+9	11/26	To:norm	question \*(<<Are there any functions
+.re
+.in -.5i
+.fi
+.pp
+This shows the messages you received since the last time you
+executed this command (\fIinc\fR adds these new messages to your inbox folder).
+You can see this list again, plus a list of any
+other messages you have, by using the
+\fIscan\fR command.
+
+\fIscan\fR
+.pp
+The scan listing shows the message number, followed by the
+date and the sender.
+(If you are the sender, the addressee in the \*(lqTo:\*(rq
+component is displayed.
+You may send yourself a message by including
+your name among the \*(lqTo:\*(rq or \*(lqcc:\*(rq addressees.)
+It also shows the message's subject; if
+the subject is short, the first part of the body of the message is
+included after the characters \*(<<.
+
+.ne 5
+\fIshow\fR
+.pp
+This command shclarations of
+identities without initialization indicates that
+the storage for the identifiers is allocated elsewhere,
+either in this file or another file.
+It is required that there be exactly one definition of
+each external identifier (without \fBextern\fR)
+in the set of files and libraries
+comprising a mult-file program.
+.PP
+Identifiers declared
+.B
+static
+.R
+at the top level in external definitions
+are not visible in other files.
+Functions may be declared
+.B
+static\fR.
+.R
+.nr Hu 1
+.NH 1 
+Compiler Control Lines
+.PP
+The C compiler contains a preprocessor capable
+of macro substitution, conditional compilation,
+and inclusion of named files.
+Lines beginning with
+.B
+#
+.R
+communicate
+with this preprocessor.
+There may be any number of blanks and horizontal tabs
+between the \fB#\fR and the directive.
+These lines have syntax independent of the rest of the language;
+they may appear anywhere and have effect which lasts (independent of
+scope) until the end of the source program file.
+.nr Hu 1
+.NH 2 
+Token Replacement
+.PP
+A compiler-control line of the form
+.DS 
+\fB#define \fIidentifier token-string\v'0.5'\s-2opt\s0\v'-0.5'\fR
+.DE
+.LP
+causes the preprocessor to replace subsequent instances
+of the identifier with the given string of tokens.
+Semicolons in or at the end of the token-string are part of that string.
+A line of the form
+.DS
+\fB#define \fIidentifier(identifier, ... )token-string\v'0.5'\s-2opt\s0\v'-0.5'\fR
+.DE
+.LP
+where there is no space between the first identifier
+and the
+\fB(\fR,
+is a macro definition with arguments.
+There may be zero or more formal parameters.
+Subsequent instances of the first identifier followed
+by a
+\fB(\fR,
+a sequence of tokens delimited by commas, and a
+\fB)\fR
+are replaced
+by the token string in the definition.
+Each occurrence of an identifier mentioned in the formal parameter list
+of the definition is replaced by the corresponding token string from the call.
+The actual arguments in the call are token strings separated by commas;
+however, commas in quoted strings or protected by
+parentheses do not separate arguments.
+The number of formal and actual parameters must be the same.
+Strings and character constants in the token-string are scanned
+for formal parameters, but
+strings and character constants in the rest of the program are
+not scanned for defined identifiers
+to replacement.
+.PP
+In both forms the replacement string is rescanned for more
+defined identifiers.
+In both forms
+a long definition may be continued on another line
+by writing
+.B
+\e
+.R
+at the end of the line to be continued.
+.PP
+This facility is most valuable for definition of ``manifest constants,''
+as in
+.DS 
+\fB#define TABSIZE 100
+.sp
+int table\|[\|TABSIZE\|]\|;\fR
+.DE
+.PP
+A control line of the form
+.DS 
+\fB#undef \fIidentifier\fR
+.DE
+.LP
+causes the
+identifier's preprocessor definition (if any) to be forgotten.
+.PP
+If a \fB#define\fRd identifier is the subject of a subsequent
+\fB#define\fR with no intervening \fB#undef\fR, then
+the two token-strings are compared textually.
+If the two token-strings are not identical
+(all white space is considered as equivalent), then
+the identifier is considered to be redefined.
+.nr Hu 1
+.NH 2 
+File Inclusion
+.PP
+A compiler control line of
+the form
+.DS 
+\fB#include\fI "filename\|\fR"
+.DE
+.LP
+causes the replacement of that
+line by the entire contents of the file
+.I
+filename\fR.
+.R
+The named file is searched for first in the directory
+of the file containing the \fB#include\fR,
+and then in a sequence of specified or standard places.
+Alternatively, a control line of the form
+.DS 
+\fB#include\fI <filename\|\fR>
+.DE
+.LP
+searches only the specified or standard places
+and not the directory of the \fB#include\fR.
+(How the places are specified is not part of the language.)
+.PP
+\fB#include\fRs
+may be nested.
+.nr Hu 1
+.NH 2 
+Conditional Compilation
+.PP
+A compiler control line of the form
+.DS 
+\fB#if \fIrestricted-constant-expression\fR
+.DE
+.LP
+checks whether the restricted-constant expression evaluates to nonzero.
+(Constant expressions are discussed in ``CONSTANT EXPRESSIONS'';
+the following additional restrictions apply here:
+the constant expression may not contain
+.B
+sizeof
+.R
+casts, or an enumeration constant.)
+.PP
+A restricted constant expression may also contain the
+additional unary expression
+.PP
+\fBdefined \fIidentifier\fR
+.LP
+or
+.PP
+\fBdefined( \fIidentifier )\fR
+.LP
+which evaluates to one if the identifier is currently
+defined in the preprocessor and zero if it is not.
+.PP
+All currently defined identifiers in restricted-constant-expressions
+are replaced by their token-strings (except those identifiers
+modified by \fBdefined\fR) just as in normal text.
+The restricted constant expression will be evaluated only
+after all expressions have finished.
+During this evaluation, all undefined (to the procedure)
+identifiers evaluate to zero.
+.PP
+A control line of the form
+.DS 
+\fB#ifdef \fIidentifier\fR
+.DE
+.LP
+checks whether the identifier is currently defined
+in the preprocessor; i.e., whether it has been the
+subject of a
+.B
+#define
+.R
+control line.
+It is equivalent to \fB#ifdef(\fIidentifier\fB)\fR.
+A control line of the form
+.DS 
+\fB#ifndef \fIidentifier\fR
+.DE
+.LP
+checks whether the identifier is currently undefined
+in the preprocessor.
+It is equivalent to
+.DS
+\fB#if	!\|defined(\fIidentifier\fB)\fR.
+.DE
+.PP
+All three forms are followed by an arbitrary number of lines,
+possibly containing a control line
+.DS 
+\fB#else\fR
+.DE
+.LP
+and then by a control line
+.DS 
+\fB#endif\fR
+.DE
+.PP
+If the checked condition is true,
+then any lines
+between
+.B
+#else
+.R
+and
+.B
+#endif
+.R
+are ignored.
+If the checked condition is false, then any lines between
+the test and a
+.B
+#else
+.R
+or, lacking a
+\fB#else\fR,
+the
+.B
+#endif 
+.R
+are ignored.
+.PP
+These constructions may be nested.
+.nr Hu 1
+.NH 2 
+Line Control
+.PP
+For the benefit of other preprocessors which generate C programs,
+a line of the form
+.DS 
+\fB#line \fIconstant "filename\fR"
+.DE
+.LP
+causes the compiler to believe, for purposes of error
+diagnostics,
+that the line number of the next source line is given by the constant and the current input
+file is named by "\fIfilename\fR".
+If "\fIfilename\fR" is absent, the remembered file name does not change.
+.nr Hu 1
+.NH 1 
+Implicit Declarations
+.PP
+It is not always necessary to specify
+both the storage class and the type
+of identifiers in a declaration.
+The storage class is supplied by
+the context in external definitions
+and in declarations of formal parameters
+and structure members.
+In a declaration inside a function,
+if a storage class but no type
+is given, the identifier is assumed
+to be
+\fBint\fR;
+if a type but no storage class is indicated,
+the identifier is assumed to
+be
+.B
+auto\fR.
+.R
+An exception to the latter rule is made for
+functions because
+.B
+auto
+.R
+functions do not exist.
+If the type of an identifier is ``function returning .\|.\|.\|,''
+it is implicitly declared to be
+.B
+extern\fR.
+.R
+.PP
+In an expression, an identifier
+followed by
+.B
+(
+.R
+and not already declared
+is contextually
+declared to be ``function returning
+.B
+int\fR.''
+.nr Hu 1
+.NH 1 
+Types Revisited
+.PP
+This part summarizes the operations
+which can be performed on objects of certain types.
+.nr Hu 1
+.NH 2 
+Structures and Unions
+.PP
+Structures and unions may be assigned, passed as arguments to functions,
+and returned by functions.
+Other plausible operators, such as equality comparison
+and structure casts,
+are not implemented.
+.PP
+In a reference
+to a structure or union member, the
+name on the right
+of the \fB->\fR or the \fB.\fR
+must specify a member of the aggregate
+named or pointed to by the expression
+on the left.
+In general, a member of a union may not be inspected
+unless the value of the union has been assigned using that same member.
+However, one special guarantee is made by the language in order
+to simplify the use of unions:
+if a union contains several structures that share a common initial sequence
+and if the union currently contains one of these structures,
+it is permitted to inspect the common initial part of any of
+the contained structures.
+For example, the following is a legal fragment:
+.DS 
+\fBunion 
+{
+        struct 
+        {
+                int        type;
+        } n;ows the current message, that is,
+the first one of the new messages after an
+\fIinc\fR.
+If the message is not
+specified by name (number), it is
+generally the last message referred to by an \fIMH\fR command.
+For example,
+
+
+.ta \w'\fIshow\fR\0|\0\fIlpr\fR  'u
+.ti .5i
+^\fIshow\fP\05~^will show message 5.
+.re
+
+.pp
+You can use the show command to copy a message or print a
+message.
+
+.(b L
+.in .5i
+.ta \w'\fIshow\fR\0|\0\fIlpr\fR  'u
+^\fIshow\fR\0>\0\fIx\fR~^will copy the message to file x.
+.br
+^\fIshow\fR\0|\0\fIlpr\fR~^will print the message, using the \fIlpr\fR command.
+.br
+^\fInext\fR~^will show the message that follows the current message.
+.br
+^\fIprev\fR~^will show the message previous to the current message.
+.br
+^\fIrmm\fR~^will remove the current message.
+.br
+^\fIrmm\03\fR~^will remove message 3.
+.)b
+
+.ne 5
+\fIcomp\fR
+.pp
+The
+\fIcomp\fR command puts you in the editor to write or edit a message.
+Fill in or
+delete the \*(lqTo:\*(rq, \*(lqcc:\*(rq, and \*(lqSubject:\*(rq fields,
+as appropriate, and type the body of the message.
+Then
+exit normally from the editor.
+You will be asked
+\*(lqWhat now?\*(rq.
+Type a carriage return to see the options.
+Typing \fBsend\fR
+will cause the message to be sent; typing \fBquit\fR will cause an exit
+from
+\fIcomp\fR,
+with the message draft saved.
+.pp
+If you quit without sending the message, it will be saved in a file
+called <name>/Mail/draft (where <name> is your \fB$HOME\fR directory).
+You can resume editing the message later with \*(lqcomp\0\-use\*(rq;
+or you can send the message later, using the \fIsend\fR command.
+
+.ne 4
+\fIcomp\0\-editor\0prompter\fR
+.pp
+This command uses a different editor and is useful for preparing
+\*(lqquick and dirty\*(rq messages.
+It prompts you for each component of the
+header.
+Type the information for that component, or type a carriage
+return to omit the component.
+After that, type the body of the
+message.
+Backspacing is the only form of editing allowed with this editor.
+When the body is complete, type a carriage return followed by <EOT>
+(usually <CTRL-D>).
+This completes the initial preparation of the message; from then on, use
+the same procedures as with
+\fIcomp\fR (above).
+
+.ne 5
+\fIrepl\fR
+.br
+\fIrepl\fR\0n 
+.pp
+This command makes up an initial message form with a header
+that is appropriate for
+replying to an existing message.
+The message being answered is the
+current message if no message number is mentioned, or n if a number
+is specified.
+After the header is completed, you can finish the message as in
+\fIcomp\fR (above).
+.pp
+This is enough information to get you going using \fIMH\fR.
+There are more commands,
+and the commands described here have more features.
+Subsequent sections
+explain \fIMH\fR in complete detail.
+The system is quite powerful if you
+want to use its sophisticated features, but the foregoing commands
+suffice for sending and receiving messages.
+.pp
+There are numerous additional capabilities you may wish to explore.
+For example, the
+\fIpick\fR command will select a subset of messages
+based on specified criteria such as sender and/or subject.
+Groups of
+messages may be designated, as described in Sec. IV,
+under \fBMessage Naming\fR.
+The file \fI\&.mh\(ruprofile\fR can be used to tailor your use of
+the message system to your needs and preferences, as described in Sec. IV,
+under \fBThe User Profile\fR.
+In general, you may
+learn additional features of the system selectively, according to your
+requirements,
+by studying the relevant sections of this manual.
+There is no need to
+learn all the details of the system at once.
+.+c "DETAILED DESCRIPTION"
+.pp
+This section describes the \fIMH\fR system in detail, including the components
+of the user profile, the conventions for message naming, and some of
+the other \fIMH\fR conventions.
+Readers who are
+generally familiar with computer systems will be able to follow
+the principal ideas, although some details may be meaningful only to
+those familiar with UNIX.
+.uh "THE USER PROFILE"
+.pp
+The first time an \fIMH\fR command is issued by a new user, the system
+prompts for a \*(lqPath\*(rq and creates an \fIMH\fR \*(lqprofile\*(rq.
+.pp
+Each \fIMH\fR user has a profile which contains tailoring
+information for each individual program.
+Other profile entries control the \fIMH\fR path (where folders and
+special files are kept), folder and message protections, editor
+selection, and default arguments for each \fIMH\fR program.
+Each user of \fIMH\fR also has a context file which contains
+current state information for the \fIMH\fR package
+(the location of the context file is kept in the user's \fIMH\fR directory,
+or may be named in the user profile).
+When a folder becomes
+the current folder, it is recorded in the user's context.
+(Other state information is kept in the context file,
+see the manual entry for \fImh\-profile\0\fR(5) for more details.)
+In general,
+the term \*(lqprofile entry\*(rq refer to entries in either the profile or
+context file.
+Users of \fIMH\fR needn't worry about the distinction,
+\fIMH\fR handles these things automatically.
+.pp
+The \fIMH\fR profile is stored in the file \fI\&.mh\(ruprofile\fR in the
+user's \fB$HOME\fR directory\**.
+.(f
+\** By defining the environment variable \fB$MH\fR,
+you can specify an alternate profile to be used by \fIMH\fR commands.
+.)f
+It has the format of a message without
+any body.
+That is, each profile entry is on one line, with a
+keyword followed by a colon (:) followed by text particular to
+the keyword.
+.br
+\(rh\ \ \&
+\fIThis file must not have blank lines.\fR
+.br
+The keywords
+may have any combination of upper and lower case.
+(See the information of \fImh\-mail\fR later on in this manual
+for a description of message formats.)
+.pp
+For the average \fIMH\fR user, the only profile entry of
+importance is \*(lqPath\*(rq.
+Path specifies a directory in which \fIMH\fR
+folders and certain files such as \*(lqdraft\*(rq are found.
+The
+argument to this keyword must be a legal UNIX path that names an
+existing directory.
+If this path is not absolute
+(i.e., does not begin with a \fB/\fR\0),
+it will be presumed to start from the user's \fB$HOME\fR directory.
+All folder and message references within
+\fIMH\fR will relate to this path unless full path names are used.
+.pp
+Message protection defaults to 644, and folder protection to
+711.
+These may be changed by profile entries \*(lqMsg-Protect\*(rq
+and \*(lqFolder-Protect\*(rq, respectively.
+The argument to these
+keywords is an octal number which is used as the UNIX file mode\**.
+.(f
+\** See \fIchmod\fR\0(1) in the \fIUNIX Programmer's Manual\fR\0[5].
+.)f
+.pp
+When an \fIMH\fR program starts running, it looks through the
+user's profile for an entry with a keyword matching the program's
+name.
+For example, when
+\fIcomp\fR is run, it looks for a \*(lqcomp\*(rq
+profile entry.
+If one is found, the text of the profile entry is
+used as the default switch setting until all defaults are overridden
+by explicit switches passed to the program as arguments.
+Thus the profile
+entry \*(lqcomp:\0\-form\0standard.list\*(rq would direct
+\fIcomp\fR to use the
+file \*(lqstandard.list\*(rq as the message skeleton.
+If an explicit
+form switch is given to the
+\fIcomp\fR command, it will override the
+switch obtained from the profile.
+.pp
+In UNIX, a program may exist under several names,
+either by linking or aliasing.
+The actual invocation name is used by an \fIMH\fR
+program when scanning for its profile defaults\**.
+.(f
+\** Unfortunately,
+the shell does not preserve aliasing information when calling a program,
+hence if a program is invoked by an alias different than its name,
+the program will examine the profile entry for its name,
+not the alias that the user invoked it as.
+The correct solution is to create a (soft) link in your \fI$HOME/bin\fR
+directory to the \fIMH\fR program of your choice.
+By giving this link a different name,
+you can use an alternate set of defaults for the command.
+.)f
+Thus, each \fIMH\fR program
+may have several names by which it can be invoked, and each name
+may have a different set of default switches.
+For example, if
+\fIcomp\fR is invoked by the name
+\fIicomp\fR,
+the profile entry
+\*(lqicomp\*(rq will control the default switches for this invocation of
+the
+\fIcom
+        struct 
+        {
+                int        type;
+                int        intnode;
+        } ni;
+        struct 
+        {
+                int        type;
+                float      floatnode;
+        } nf;
+} u;
+\&...
+u.nf.type = FLOAT;
+u.nf.floatnode = 3.14;
+\&...
+if (u.n.type == FLOAT)
+        ... sin(u.nf.floatnode) ...\fR
+.DE
+.PP
+.nr Hu 1
+.NH 2 
+Functions
+.PP
+There are only two things that
+can be done with a function \fBm\fR,
+call it or take its address.
+If the name of a function appears in an
+expression not in the function-name position of a call,
+a pointer to the function is generated.
+Thus, to pass one function to another, one
+might say
+.DS 
+\fBint f();
+\&...
+g(f);\fR
+.DE
+.PP
+.ne 8
+Then the definition of
+.B
+g
+.R
+might read
+.DS 
+\fBg(funcp)
+        int (\(**funcp)();
+{
+        ...
+        (\(**funcp)();
+        ...
+}\fR
+.DE
+.PP
+Notice that
+.B
+f
+.R
+must be declared
+explicitly in the calling routine since its appearance
+in
+.B
+g(f)
+.R
+was not followed by
+.B
+(.
+.R
+.nr Hu 1
+.NH 2 
+Arrays, Pointers, and Subscripting
+.PP
+Every time an identifier of array type appears
+in an expression, it is converted into a pointer
+to the first member of the array.
+Because of this conversion, arrays are not
+lvalues.
+By definition, the subscript operator
+.B
+[]
+.R
+is interpreted
+in such a way that
+.B
+E1[E2]
+.R
+is identical to
+.B
+\(**((E1)\(plE2))\fR.
+.R
+Because of the conversion rules
+which apply to
+\fB\(pl\fR,
+if
+.B
+E1
+.R
+is an array and
+.B
+E2
+.R
+an integer,
+then
+.B
+E1[E2]
+.R
+refers to the
+.B
+E2-th
+.R
+member of
+.B
+E1\fR.
+.R
+Therefore,
+despite its asymmetric
+appearance, subscripting is a commutative operation.
+.PP
+A consistent rule is followed in the case of
+multidimensional arrays.
+If
+.B
+E
+.R
+is an
+\fIn\fR-dimensional
+array
+of rank
+i\(muj\(mu...\(muk,
+then
+.B
+E
+.R
+appearing in an expression is converted to
+a pointer to an (n-1)-dimensional
+array with rank
+j\(mu...\(muk.
+If the
+.B
+\(**
+.R
+operator, either explicitly
+or implicitly as a result of subscripting,
+is applied to this pointer,
+the result is the pointed-to (n-1)-dimensional array,
+which itself is immediately converted into a pointer.
+.PP
+For example, consider
+.DS 
+\fBint x[3][5];\fR
+.DE
+.PP
+Here
+.B
+x
+.R
+is a 3\(mu5 array of integers.
+When
+.B
+x
+.R
+appears in an expression, it is converted
+to a pointer to (the first of three) 5-membered arrays of integers.
+In the expression
+\fBx[i]\fR,
+which is equivalent to
+\fB\(**(x\(pli)\fR,
+.B
+x
+.R
+is first converted to a pointer as described;
+then
+.B
+i
+.R
+is converted to the type of
+\fBx\fR,
+which involves multiplying
+.B
+i
+.R
+by the
+length the object to which the pointer points,
+namely 5-integer objects.
+The results are added and indirection applied to
+yield an array (of five integers) which in turn is converted to
+a pointer to the first of the integers.
+If there is another subscript, the same argument applies
+again; this time the result is an integer.
+.PP
+Arrays in C are stored
+row-wise (last subscript varies fastest)
+and the first subscript in the declaration helps determine
+the amount of storage consumed by an array.
+Arrays play no other part in subscript calculations.
+.nr Hu 1
+.NH 2 
+Explicit Pointer Conversions
+.PP
+Certain conversions involving pointers are permitted
+but have implementation-dependent aspects.
+They are all specified by means of an explicit type-conversion
+operator, see ``Unary Operators'' under``EXPRESSIONS'' and
+``Type Names''under ``DECLARATIONS.''
+.PP
+A pointer may be converted to any of the integral types large
+enough to hold it.
+Whether an
+.B
+int
+.R
+or
+.B
+long
+.R
+is required is machine dependent.
+The mapping function is also machine dependent but is intended
+to be unsurprising to those who know the addressing structure
+of the machine.
+Details for some particular machines are given below.
+.PP
+An object of integral type may be explicitly converted to a pointer.
+The mapping always carries an integer converted from a pointer back to the same pointer
+but is otherwise machine dependent.
+.PP
+A pointer to one type may be converted to a pointer to another type.
+The resulting pointer may cause addressing exceptions
+upon use if
+the subject pointer does not refer to an object suitably aligned in storage.
+It is guaranteed that
+a pointer to an object of a given size may be converted to a pointer to an object
+of a smaller size
+and back again without change.
+.PP
+For example,
+a storage-allocation routine
+might accept a size (in bytes)
+of an object to allocate, and return a
+.B
+char
+.R
+pointer;
+it might be used in this way.
+.DS 
+\fBextern char \(**malloc();
+double \(**dp;
+.sp
+dp = (double \(**) malloc(sizeof(double));
+\(**dp = 22.0 / 7.0;\fR
+.DE
+.PP
+The
+.B
+alloc
+.R
+must ensure (in a machine-dependent way)
+that its return value is suitable for conversion to a pointer to
+\fBdouble\fR;
+then the
+.I
+use
+.R
+of the function is portable.
+.PP
+The pointer
+representation on the
+PDP-11
+corresponds to a 16-bit integer and
+measures bytes.
+The
+.B
+char\fR's
+have no alignment requirements; everything else must have an even address.
+.PP
+On the
+VAX-11,
+pointers are 32 bits long and measure bytes.
+Elementary objects are aligned on a boundary equal to their
+length, except that
+.B
+double
+.R
+quantities need be aligned only on even 4-byte boundaries.
+Aggregates are aligned on the strictest boundary required by
+any of their constituents.
+.PP
+The 3B 20 computer has 24-bit pointers placed into 32-bit quantities.
+Most objects are
+aligned on 4-byte boundaries. \fBShort\fRs are aligned in all cases on
+2-byte boundaries. Arrays of characters, all structures,
+\fBint\fR\^s, \fBlong\fR\^s, \fBfloat\fR\^s, and \fBdouble\fR\^s are aligned on 4-byte
+boundries; but structure members may be packed tighter.
+.nr Hu 1
+.NH 2
+CONSTANT EXPRESSIONS
+.PP
+In several places C requires expressions that evaluate to
+a constant:
+after
+\fBcase\fR,
+as array bounds, and in initializers.
+In the first two cases, the expression can
+involve only integer constants, character constants,
+casts to integral types,
+enumeration constants,
+and
+.B
+sizeof
+.R
+expressions, possibly
+connected by the binary operators
+.ne 10
+.DS 
+\(pl \(mi \(** / % & | ^ << >> == != < > <= >= && ||
+.DE
+.LP
+or by the unary operators
+.DS 
+\(mi  \s+2~\s0
+.DE
+.LP
+or by the ternary operator
+.DS 
+?:
+.DE
+.PP
+Parentheses can be used for grouping
+but not for function calls.
+.PP
+More latitude is permitted for initializers;
+besides constant expressions as discussed above,
+one can also use floating constants
+and arbitrary casts and
+can also apply the unary
+.B
+&
+.R
+operator to external or static objects
+and to external or static arrays subscripted
+with a constant expression.
+The unary
+.B
+&
+.R
+can also
+be applied implicitly
+by appearance of unsubscripted arrays and functions.
+The basic rule is that initializers must
+evaluate either to a constant or to the address
+of a previously declared external or static object plus or minus a constant.
+.nr Hu 1
+.NH 1 
+Portability Considerations
+.PP
+Certain parts of C are inherently machine dependent.
+The following list of potential trouble spots
+is not meant to be all-inclusive
+but to point out the main ones.
+.PP
+Purely hardware issues like
+word size and the properties of floating point arithmetic and integer division
+have proven in practice to be not much of a problem.
+Other facets of the hardware are reflected
+in differing implementations.
+Some of these,
+particularly sign extension
+(converting a negative character into a negative integer)
+and the order in which bytes are placed in a word,
+are nuisances that must be carefully watched.
+Most of the others are only minor problems.
+.PP
+The number of
+.B
+register
+.R
+variables that can actually be placed in registers
+varies from machine to machine
+as does the set of valid types.
+Nonetheless, the compilers all do things properly for their own machine;
+excess or invalid
+.B
+register
+.R
+declarations are ignored.
+.PP
+Some difficulties arise only when
+dubious coding practices are used.
+It is exceedingly unwise to write programs
+that depend
+on any of these properties.
+.PP
+The order of evaluation of function arguments
+is not specified by the language.
+The order in which side effects take place
+is also unspecified.
+.PP
+Since character constants are really objects of type
+\fBp\fR program.
+This provides a powerful
+definitional facility for commonly used switch settings.
+.pp
+The default editor
+for editing within
+\fIcomp\fR,
+\fIrepl\fR,
+\fIforw\fR,
+and
+\fIdist\fR,
+is usually \fIprompter\fR,
+but might be something else at your site,
+such as \fI/usr/ucb/ex\fR or \fI/bin/e\fR.
+A different editor may be used by specifying
+the profile entry
+\*(lqEditor: \*(rq.
+The argument to \*(lqEditor\*(rq is the name of an
+executable program or shell command file which can be found via
+the user's $PATH defined search path, excluding the current
+directory.
+The \*(lqEditor:\*(rq profile specification
+may in turn be overridden by a `\-editor\0<editor>'
+profile switch associated with
+\fIcomp\fR,
+\fIrepl\fR,
+\fIforw\fR,
+or
+\fIdist\fR.
+Finally, an explicit editor switch specified with any
+of these four commands will have ultimate precedence.
+.pp
+During message composition, more than one editor may be
+used.
+For example, one editor (such as \fIprompter\fR\0)
+may be used
+initially, and a second editor may be invoked later to revise
+the message being composed
+(see the discussion of
+\fIcomp\fR in Section 5 for details).
+A profile entry \*(lq<lasteditor>\-next:\0<editor>\*(rq specifies the name of
+the editor to be used after a particular editor.
+Thus \*(lqcomp:\0\-e\0prompter\*(rq
+causes the initial text to be collected by
+\fIprompter\fR,
+and the profile entry \*(lqprompter\-next:\0ed\*(rq names ed as the
+editor to be invoked for the next round of editing.
+.pp
+Some of the \fIMH\fR commands, such as
+\fIshow\fR,
+can be used on
+message folders owned by others, if those folders are readable.
+However,
+you cannot write in someone else's folder.
+All the \fIMH\fR command
+actions not requiring write permission may be used with
+a \*(lqread-only\*(rq folder.
+.pp
+Table 1 lists examples of some of the currently defined profile
+entries, typical arguments, and the programs that reference the
+entries.
+.bp
+.in .9i
+.ll -.9i
+.ta \w'<program>:\0default switches  'u
+.sp 30p
+.ce
+Table 1
+.sp 8p
+.ce
+P\s-2ROFILE\s0 C\s-2OMPONENTS\s0
+.hl             \" ~12p preceding + 1v (12p) after
+.nf
+^^\fIMH\fR Programs that
+^Keyword and Argument~^\ use Component\h'|\n(.lu-.9i'\v'4p'\l'|0'\v'-4p'  \" \l'..' does underlining
+.sp
+^Path:\0Mail~^All
+^Current-Folder:\0inbox~^Most
+^Editor:\0/usr/ucb/ex~^\fIcomp, dist, forw, repl\fR
+^Msg\-Protect:\0644~^\fIinc\fR
+^Folder\-Protect:\0711~^\fIinc, pick, refile\fR
+^<program>:\0default switches~^All
+^prompter\-next:\0ed~^\fIcomp, dist, forw, repl\fR
+.hl
+.ll +.9i
+.in 0
+.fi
+.pp
+Path
+.u should
+be present.
+Current\-Folder is maintained
+automatically by many \fIMH\fR commands (see the \fBContext\fR sections of
+the individual commands in Sec. IV).
+All other entries are optional,
+defaulting to the values described above.
+.uh "MESSAGE NAMING"
+.pp
+Messages may be referred to explicitly or implicitly when
+using \fIMH\fR commands.
+A formal syntax of message names is given in Appendix B, but the
+following description should be sufficient for most \fIMH\fR users.
+Some details of message naming that apply only to certain
+commands are included in the description of those
+commands.
+.pp
+Most of the \fIMH\fR commands accept arguments specifying one or
+more folders, and one or more messages to operate on.
+The use of
+the word \*(lqmsg\*(rq as an argument to a command means that exactly one
+message name may be specified.
+A message name may be a number,
+such as 1, 33, or 234, or it may be
+one of the \*(lqreserved\*(rq message names:
+first, last, prev, next, and cur.
+(As a shorthand, a
+period (\&.) is equivalent to cur.)
+The meanings of these names are straightforward:
+\*(lqfirst\*(rq is the first message in the folder;
+\*(lqlast\*(rq is the last message in the folder;
+\*(lqprev\*(rq is the message numerically previous to the current message;
+\*(lqnext\*(rq is the message numerically following the current message;
+\*(lqcur\*(rq (or \*(lq\&.\*(rq) is the current message in the folder.
+In addition,
+\fIMH\fR supports user\-defined\-sequences;
+see the description of the \fImark\fR command for more information.
+.pp
+The default in commands that take a \*(lqmsg\*(rq argument is
+always \*(lqcur\*(rq.
+.pp
+The word \*(lqmsgs\*(rq indicates that several messages may be
+specified.
+Such a specification consists of several message
+designations separated by spaces.
+A message designation is
+either a message name or a message range.
+A message range is a
+specification of the form name1\-name2 or name1:n, where name1 and
+name2 are message names and n is an integer.
+The first form
+designates all the messages from name1 to name2 inclusive; this
+must be a non-empty range.
+The second form specifies up to n
+messages, starting with name1 if name1 is a number, or first,
+cur, or next, and ending with name1 if name1 is last or
+prev.
+This interpretation of n is overridden if n is preceded
+by a plus sign or a minus sign;
++n always means up to n messages starting with
+name1, and \-n always means up to n messages ending with name1.
+Repeated specifications of the same message have the same effect
+as a single specification of
+the message.
+Examples of
+specifications are:
+
+.(b
+1 5 7\-11 22
+first 6 8 next
+first\-10
+last:5
+.)b
+.pp
+The message name \*(lqall\*(rq is a shorthand for \*(lqfirst\-last\*(rq,
+indicating all of the messages in the folder.
+.pp
+In commands that accept \*(lqmsgs\*(rq arguments, the default is
+either cur or all, depending on which makes more sense.
+.pp
+In all of the \fIMH\fR commands, a plus sign preceding an argument
+indicates a folder name.
+Thus, \*(lq+inbox\*(rq is the name of the
+user's standard inbox.
+If an explicit folder argument is given
+to an \fIMH\fR command, it will become the current folder (that is,
+the \*(lqCurrent-Folder:\*(rq entry
+in the user's profile will be changed to this folder).
+In the case of the
+\fIrefile\fR command, which
+can have multiple output folders, a new source folder (other than
+the default current folder) is specified by `\-src\0+folder'.
+.uh "OTHER MH CONVENTIONS"
+.pp
+One very powerful feature of \fIMH\fR is that the \fIMH\fR commands may
+be issued from any current directory, and the proper path to
+the appropriate folder(s) will be taken from the user's profile.
+If the \fIMH\fR path is not appropriate for a specific folder or file,
+the automatic prepending of the \fIMH\fR path can be avoided by
+beginning a folder or file name with \fB/\fR,
+or with \fB\&./\fR or \fB\&.\&./\fR component.
+Thus any specific absolute path may be specified along with any path
+relative to the current working directory.
+.pp
+Arguments to the various programs may be given in any order,
+with the exception of a few switches whose arguments must follow
+immediately, such as `\-src\0+folder' for \fIrefile\fR.
+.pp
+Whenever an \fIMH\fR command prompts the user, the valid options
+will be listed in response to a <RETURN>.
+(The first of the
+listed options is the default if end-of-file is encountered,
+such as from a command file.)
+A valid response is any \fIunique\fR abbreviation of one of the listed options.
+.pp
+Standard UNIX documentation conventions are used in this report
+to describe \fIMH\fR command syntax.
+Arguments enclosed in brackets
+([ ]) are optional; exactly one of the arguments enclosed
+within braces ({ }) must be specified, and all other
+arguments are required.
+The use of ellipsis dots (...) indicates
+zero or more repetitions of the previous item.
+For example,
+\*(lq+folder ...\*(rq would indicate that one or more \*(lq+folder\*(rq
+arguments is required
+and \*(lq[+folder ...]\*(rq indicates that 0 or more
+\*(lq+folder\*(rq arguments may be given.
+.pp
+\fIMH\fR departs from UNIX standards by using switches that consist of
+more than one character, e.g. `\-header'.
+To minimize typing,
+only a unique abbreviation of a switch need be typed; thus, for
+`\-header', `\-hea' is probably sufficient, depending on the
+other switches the command accepts.
+Each \fIMH\fR program
+accepts the switch `\-help' (which \fBmust\fR be spelled out fully)
+and produces a syntax description and a list of switches.
+In the
+list of switches, parentheses indicate required characters.
+For example, all `\-help' switches will appear as \*(lq\-(help)\*(rq,
+indicating that no abbreviation is accepted.
+Furtint\fR,
+multicharacter character constants may be permitted.
+The specific implementation
+is very machine dependent
+because the order in which characters
+are assigned to a word
+varies from one machine to another.
+.PP
+Fields are assigned to words and characters to integers right to left
+on some machines
+and left to right on other machines.
+These differences are invisible to isolated programs
+that do not indulge in type punning (e.g.,
+by converting an
+.B
+int
+.R
+pointer to a
+.B
+char
+.R
+pointer and inspecting the pointed-to storage)
+but must be accounted for when conforming to externally-imposed
+storage layouts.
+.nr Hu 1
+.NH 1 
+Syntax Summary
+.PP
+This summary of C syntax is intended more for aiding comprehension
+than as an exact statement of the language.
+.nr Hu 1
+.ne 18
+.NH 2 
+Expressions
+.PP
+The basic expressions are:
+.tr ~~
+.DS 
+     \fIexpression:
+             primary
+             \(** expression\fR
+             &\fIlvalue
+             \(mi expression
+             ! expression
+             \s+2~\s0 expression
+             \(pl\(pl lvalue
+             \(mi\(milvalue
+             lvalue \(pl\(pl
+             lvalue \(mi\(mi
+             \fBsizeof\fI expression
+             \fBsizeof (\fItype-name\fB)\fI
+             ( type-name ) expression
+             expression binop expression
+             expression ? expression : expression
+             lvalue asgnop expression
+             expression , expression
+.DE
+.DS 
+     \fIprimary:
+             identifier
+             constant
+             string
+             ( expression )
+             primary ( expression-list\v'0.5'\s-2opt\s0\v'-0.5' )
+             primary [ expression ]
+             primary . identifier
+             primary \(mi identifier
+.DE
+.DS 
+     \fIlvalue:
+             identifier
+             primary [ expression ]
+             lvalue . identifier
+             primary \(mi identifier
+             \(** expression
+             ( lvalue )\fR
+.DE
+.PP
+.PP
+The primary-expression operators
+.DS 
+     ()  []  .  \(mi
+.tr ~~
+.DE
+.LP
+have highest priority and group left to right.
+The unary operators
+.DS 
+     \(**  &  \(mi  !  \s+2~\s0  \(pl\(pl \(mi\(mi \fBsizeof\fI   ( type-name \fR)
+.DE
+.LP
+have priority below the primary operators
+but higher than any binary operator
+and group right to left.
+Binary operators
+group left to right; they have priority
+decreasing
+as indicated below.
+.DS 
+     \fIbinop:\fR
+             \(**    /    %
+             \(pl    \(mi
+             >>   <<
+             <    >    <=    >=
+             ==   !=
+             &
+             ^
+             |
+             &&
+             ||
+.DE
+The conditional operator groups right to left.
+.PP
+Assignment operators all have the same
+priority and all group right to left.
+.DS 
+     \fIasgnop:\fR
+             =  \(pl=  \(mi=  \(**=  /=  %=  >>=  <<=  &=  ^=  |=
+.DE
+.PP
+The comma operator has the lowest priority and groups left to right.
+.nr Hu 1
+.NH 2 
+Declarations
+.PP
+.DS 
+     \fIdeclaration:
+             decl-specifiers init-declarator-list\v'0.5'\s-2opt\s0\v'-0.5' ;
+.DE
+.DS 
+     \fIdecl-specifiers:
+             type-specifier decl-specifiers\v'0.5'\s-2opt\s0\v'-0.5'
+             sc-specifier decl-specifiers\v'0.5'\s-2opt\s0\v'-0.5'
+.DE
+.DS 
+     \fIsc-specifier:\fB
+             auto
+             static
+             extern
+             register
+             typedef
+.DE
+.DS 
+     \fItype-specifier:
+             struct-or-union-specifier
+             typedef-name
+             enum-specifier
+     basic-type-specifier:
+             basic-type
+             basic-type basic-type-specifiers
+     basic-type:\fB
+             char
+             short
+             int
+             long
+             unsigned
+             float
+             double
+             void\fR
+.DE
+.DS 
+\fIenum-specifier:\fB
+             enum\fI { enum-list }\fB
+             enum \fIidentifier { enum-list }\fB
+             enum \fIidentifier
+.DE
+.DS 
+     \fIenum-list:
+             enumerator
+             enum-list , enumerator
+.DE
+.DS 
+     \fIenumerator:
+             identifier
+             identifier = constant-expression
+.DE
+.DS 
+     \fIinit-declarator-list:
+             init-declarator
+             init-declarator , init-declarator-list
+.DE
+.DS 
+     \fIinit-declarator:
+             declarator initializer\v'0.5'\s-2opt\s0\v'-0.5'
+.DE
+.DS 
+     \fIdeclarator:
+             identifier
+             ( declarator )
+             \(** declarator
+             declarator ()
+             declarator [ constant-expression\v'0.5'\s-2opt\s0\v'-0.5' ]
+.DE
+.DS 
+     \fIstruct-or-union-specifier:\fB
+             struct\fI { struct-decl-list }\fB
+             struct \fIidentifier { struct-decl-list }\fB
+             struct \fIidentifier\fB
+             union { \fIstruct-decl-list }\fB
+             union \fIidentifier { struct-decl-list }\fB
+             union \fIidentifier
+.DE
+.DS 
+     \fIstruct-decl-list:
+             struct-declaration
+             struct-declaration struct-decl-list
+.DE
+.DS 
+     \fIstruct-declaration:
+             type-specifier struct-declarator-list ;
+.DE
+.DS 
+     \fIstruct-declarator-list:
+             struct-declarator
+             struct-declarator , struct-declarator-list
+.DE
+.DS 
+     \fIstruct-declarator:
+             declarator
+             declarator : constant-expression
+             : constant-expression
+.DE
+.DS 
+     \fIinitializer:
+             = expression
+             = { initializer-list }
+             = { initializer-list , }
+.DE
+.DS 
+     \fIinitializer-list:
+             expression
+             initializer-list , initializer-list
+             { initializer-list }
+             { initializer-list , }
+.DE
+.DS 
+     \fItype-name:
+             type-specifier abstract-declarator
+.DE
+.DS 
+     \fIabstract-declarator:
+             empty
+             ( abstract-declarator )
+             \(** abstract-declarator
+             abstract-declarator ()
+             abstract-declarator [ constant-expression\v'0.5'\s-2opt\s0\v'-0.5' ]
+.DE
+.DS 
+     \fItypedef-name:
+             identifier
+.nr Hu 1
+.DE
+.NH 2 
+Statements
+.PP
+.DS 
+     \fIcompound-statement:
+             { declaration-list\v'0.5'\s-2opt\s0\v'-0.5' statement-list\v'0.5'\s-2opt\s0\v'-0.5' }
+.DE
+.DS 
+     \fIdeclaration-list:
+             declaration
+             declaration declaration-list
+.DE
+.DS 
+     \fIstatement-list:
+             statement
+             statement statement-list
+.DE
+.DS  
+     \fIstatement:
+             compound-statement
+             expression ;
+             \fBif\fI ( expression ) statement
+             \fBif\fI ( expression ) statement  \fBelse\fI statement
+             \fBwhile\fI ( expression ) statement
+             \fBdo\fI statement  \fBwhile\fI ( expression ) ;
+             \fBfor\fI (exp\v'0.3'\s-2opt\s0\v'-0.3'\fB;\fIexp\v'0.3'\s-2opt\s0\v'-0.3'\fB;\fIexp\v'0.3'\s-2opt\s0\v'-0.3'\fI) statement
+             \fBswitch\fI ( expression ) statement
+             \fBcase\fI constant-expression :  statement
+             \fBdefault\fI : statement
+             \fBbreak ;
+             continue ;
+             return ;
+             return\fI expression ;
+             \fBgoto\fI identifier ;
+             identifier : statement
+             ;\fR
+.nr Hu 1
+.DE
+.NH 2 
+External definitions
+.PP
+.DS
+     \fIprogram:
+             external-definition
+             external-definition program
+.DE
+.DS
+     \fIexternal-definition:
+             function-definition
+             data-definition
+.DE
+.DS
+     \fIfunction-definition:
+             decl-specifier\v'0.5'\s-2opt\s0\v'-0.5' function-declarator function-body
+.DE
+.DS
+     \fIfunction-declarator:
+             declarator ( parameter-list\v'0.5'\s-2opt\s0\v'-0.5' )
+.DE
+.DS
+     \fIparameter-list:
+             identifier
+             identifier , parameter-list
+.DE
+.DS
+     \fIfunction-body:
+             declaration-list\v'0.5'\s-2opt\s0\v'-0.5' compound-statement
+.DE
+.DS
+     \fIdata-definition:
+             \fBextern\fI declaration\fB ;
+             \fBstatic\fI declaration\fB ;
+.DE
+.NH 
+Preprocessor
+.DS
+             \fB#define\fI identifier token-string\v'0.3'\s-2opt\s0\v'-0.3'\fB
+             \fB#define\fI identifier\fB(\fIidentifier\fB,...)\fItoken-string\v'0.5'\s-2opt\s0\v'-0.5'\fB
+             \fB#undef\fI identifier\fB
+         hermore,
+the `\-help' switch tells the version of the \fIMH\fR program you invoked.
+.pp
+Many \fIMH\fR switches have both on and off forms, such as
+`\-format' and `\-noformat'.
+In many of the descriptions which follow,
+only one form is defined; the other form, often used to
+nullify profile switch settings, is assumed to be the opposite.
+.br
+.bp
+.uh "MH COMMANDS"
+.pp
+The \fIMH\fR package comprises several programs:
+.\"    I pity the fool who tampers with the next line...
+.ds ZZ -me
+.so mh.me
+.pp
+These programs are described below.
+The form of the descriptions
+conforms to the standard
+form for the description of UNIX commands.
+.if t \{
+.ll 6.5i
+.lt 6.5i
+\}
+.fo '[mh.6]'MH'UCI/UCB version'
+.de SC
+\".he '\\$1(\\$2)'-%-'\\$1(\\$2)'
+.oh 'USD:8-%'The Rand MH Message Handling System'\\$1(\\$2)'
+.eh '\\$1(\\$2)'The Rand MH Message Handling System'USD:8-%'
+.bp
+.(x
+.ti .8i
+\\$1
+.)x
+..
+.de NA
+.b \\s-2NAME\\s0
+.ti .5i
+..
+.de SY
+.sp
+.b \\s-2SYNOPSIS\\s0
+.in 1i
+.ti .5i
+.na
+..
+.de DE
+.ad
+.sp
+.in 0
+.b  \\s-2DESCRIPTION\\s0
+.sp
+.fi
+.in .5i
+..
+.de Hh
+.ad
+.sp
+.in 0
+.b "\\s-2Helpful Hints\\s0"
+.sp
+.fi
+.in .5i
+..
+.de Fi
+.(b L
+.ti 0
+.b \\s-2Files\\s0
+.ta \w'/usr/new/lib/mh/ExtraBigFileName  'u
+..
+.de Pr
+.)b
+.(b L F
+.ta \w'ExtraBigProfileName  'u
+.ti 0
+.b "\\s-2Profile Components\\s0"
+.ti .5i
+..
+.de Ps
+.ti .5i
+..
+.de Sa
+.)b
+.(b L F
+.ti 0
+.b "\\s-2See Also\\s0"
+.br
+..
+.de De
+.)b
+.(b L
+.in .5i
+.ti 0
+.b \\s-2Defaults\\s0
+..
+.de Ds
+..
+.de Co
+.)b
+.(b L F
+.ti 0
+.b \\s-2Context\\s0
+.br
+..
+.de Hi
+.)b
+.(b L F
+.ti 0
+.b \\s-2History\\s0
+.br
+..
+.de Bu
+.)b
+.(b L F
+.ti 0
+.b \\s-2Bugs\\s0
+.br
+..
+.de En
+.)b
+.in 0
+..
+\".po -.50i
+.so ali.me
+.so anno.me
+.so burst.me
+.so comp.me
+.so dist.me
+.so folder.me
+.so forw.me
+.so inc.me
+.so mark.me
+.so mhl.me
+.so mhmail.me
+.so mhook.me
+.so mhpath.me
+.so msgchk.me
+.so msh.me
+.so next.me
+.so packf.me
+.so pick.me
+.so prev.me
+.so prompter.me
+.so rcvstore.me
+.so refile.me
+.so repl.me
+.so rmf.me
+.so rmm.me
+.so scan.me
+.so send.me
+.so show.me
+.so sortm.me
+.so vmh.me
+.so whatnow.me
+.so whom.me
+\".po +.50i
+\".he ''-%-''
+.oh 'USD:8-%''The Rand MH Message Handling System'
+.eh 'The Rand MH Message Handling System''USD:8-%'
+.fo ''''
+.br
+.if t \{
+\".ll 32P
+\".lt 32P
+.ll 6.5i
+.lt 6.5i
+\}
+.bp
+.uh "MORE DETAILS"
+.pp
+This section describes some of the more intense points of the \fIMH\fR system,
+by expanding on topics previously discussed.
+The format presented conforms to the standard form for the description of UNIX
+documentation.
+.if t \{
+.ll 6.5i
+.lt 6.5i
+\}
+.fo '[mh.6]'MH'UCI/UCB version'
+\".po -.50i
+.so mh-alias.me
+.so mh-format.me
+.so mh-mail.me
+.so mh-profile.me
+.so ap.me
+.so conflict.me
+.so dp.me
+.so install-mh.me
+.so post.me
+\".po +.50i
+\".he ''-%-''
+.oh 'USD:8-%''The Rand MH Message Handling System'
+.eh 'The Rand MH Message Handling System''USD:8-%'
+.fo ''''
+.br
+.if t \{
+\".ll 32P
+\".lt 32P
+.ll 6.5i
+.lt 6.5i
+\}
+.+c "REPORTING PROBLEMS"
+.pp
+If problems are encountered with an \fIMH\fR program,
+the problems should be reported to the local maintainers of \fIMH\fR.
+When doing this,
+the name of the program should be reported,
+along with the version information for the program.
+To find out what version of an \fIMH\fR program is being run,
+invoke the program with the `\-help' switch.
+In addition to listing the syntax of the command,
+the program will list information pertaining to its version.
+This information includes the version of \fIMH\fR,
+the host it was generated on,
+and the date the program was loaded.
+A second line of information,
+found on versions of \fIMH\fR after #5.380 include \fIMH\fR configuration
+options.
+For example,
+
+.in +.5i
+version: MH 6.1 #1[UCI] (nrtc-gremlin) of Wed Nov  6 01:13:53 PST 1985
+.br
+options: [BSD42] [MHE] [NETWORK] [SENDMTS] [MMDFII] [SMTP] [POP]
+.in -.5i
+
+The `6.1 #1[UCI]' indicates that the program is from the UCI \fImh.6\fR
+version of \fIMH\fR.
+The program was generated on the host `nrtc-gremlin' on
+`Wed Nov  6 01:13:53 PST 1985'.
+It's usually a good idea to send the output of the `\-help' switch along
+with your report.
+
+If there is no local \fIMH\fR maintainer,
+try the address \fBBug-MH\fR.
+If that fails, use the Internet mailbox \fBBug-MH@UCI.EDU\fR.
+
+.+c "ADVANCED FEATURES"
+.de UH
+.lp
+.b "\\$1"
+.pp
+.(x
+.ti .8i
+\\$1
+.)x
+..
+.pp
+This section describes some features of \fIMH\fR that were included strictly
+for advanced \fIMH\fR users.
+These capabilities permit \fIMH\fR to exhibit more powerful behavior for the
+seasoned \fIMH\fR users.
+.uh "USER\-DEFINED SEQUENCES"
+.pp
+User\-defined sequences allow the \fIMH\fR user a tremendous amount of power
+in dealing with groups of messages in the same folder
+by allowing the user to bind a group of messages to a meaningful symbolic
+name.
+The user may choose any name for a message sequence,
+as long as it consists of alphanumeric characters and does not conflict with
+the standard \fIMH\fR reserved message names
+(e.g., \*(lqfirst\*(rq, etc).
+After defining a sequence,
+it can be used wherever an \fIMH\fR command expects a `msg' or `msgs'
+argument.
+Although all \fIMH\fR commands expand user\-defined sequences as appropriate,
+there are two commands that allow the user to define and manipulate them:
+\fIpick\fR and \fImark\fR.
+.UH "Pick and User\-Defined Sequences"
+.pp
+Most users of \fIMH\fR will use user\-defined sequences only with
+the \fIpick\fR command.
+By giving the `\-sequence\ name' switch to \fIpick\fR
+(which can occur more than once on the command line),
+each sequence named is defined as those messages which \fIpick\fR matched
+according the the selection criteria it was given.
+Hence,
+
+.ti +.5i
+pick\0\-from\0frated\0\-seq\0fred
+
+finds all those messages in the current folder which were from
+\*(lqfrated\*(rq,
+creates a sequence called \*(lqfred\*(rq,
+and then adds them to the sequence.
+The user could then invoke
+
+.ti +.5i
+scan\0fred
+
+to get a \fIscan\fR listing of those messages.
+Note that by default,
+\fIpick\fR creates the named sequences
+before it adds the selected messages to the sequence.
+Hence, if the named sequence already existed,
+the sequence is destroyed prior to being re\-defined
+(nothing happens to the messages that were a part of this sequence,
+they simply cease to be members of that sequence).
+By using the `\-nozero' switch, this behavior can be inhibited,
+as in
+
+.in +.5i
+pick\0\-from\0frated\0\-seq\0sgroup
+.br
+pick\0\-from\0fear\0\-seq\0sgroup\0\-nozero
+.br
+pick\0\-from\0freida\0\-seq\0sgroup\0\-nozero
+.in -.5i
+
+finds all those messages in the current folder which were from
+\*(lqfrated\*(rq, \*(lqfear\*(rq, or \*(lqfreida\*(rq,
+and defines the sequence called \*(lqsgroup\*(rq as exactly those messages.
+These operations amounted to an \*(lqinclusive\-or\*(rq of three selection
+criteria,
+using \fIpick\fR,
+one can also generate the \*(lqand\*(rq of some selection criteria as well:
+
+.in +.5i
+pick\0\-from\0frated\0\-seq\0fred
+.br
+pick\0\-before\0friday\0\-seq\0fred\0fred
+.in -.5i
+
+This example defines the sequence called \*(lqfred\*(rq as exactly those
+messages from \*(lqfrated\*(rq that were dated prior to \*(lqfriday\*(rq.\**
+.(f
+\** Of course,
+it is much easier to simply use the built\-in boolean operation of
+\fIpick\fR to get the desired results:
+
+.ti +.5i
+pick\0\-from\0

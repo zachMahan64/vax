@@ -1,0 +1,1764 @@
+ed on adult training manuals rather than
+school book text, this formula is probably the best
+one to apply to technical documents.
+.PP
+The Automated Readability Index (ARI), based on text from
+grades 0 to 7, was derived to be easy to automate.
+The formula is:
+.EQ
+Reading_Grade = 4.71 * let_per_wd + .5 * wds_per_sent - 21.43
+.EN
+.br
+ARI tends to produce scores that are higher than Kincaid and
+Coleman-Liau but are usually slightly lower than Flesch.
+.PP
+The Coleman-Liau Formula, based on text ranging in
+difficulty from .4 to 16.3, is:
+.EQ
+Reading_Grade = 5.89 * let_per_wd - .3 * sent_per_100_wds - 15.8
+.EN
+.br
+Of the four formulae this one usually gives the lowest
+grade when applied to technical documents.
+.PP
+The last formula, the Flesch Reading Ease Score, is based
+on grade school text covering grades 3 to 12.
+The formula, given by:
+.EQ
+Reading_Score = 206.835 - 84.6 * syl_per_wd - 1.015 * wds_per_sent
+.EN
+.br
+is usually reported in the range 0 (very difficult) to 100 (very easy).
+The score reported by STYLE iH 2
+Marking and returning
+.PP
+The command \fB\(ga\(ga\fR returned to the previous place
+after a motion of the cursor by a command such as \fB/\fR, \fB?\fR or
+\fBG\fR.  You can also mark lines in the file with single letter tags
+and return to these marks later by naming the tags.  Try marking the
+current line with the command \fBm\fR\fIx\fR, where you should pick some
+letter for \fIx\fR, say `a'.  Then move the cursor to a different line
+(any way you like) and hit \fB\(gaa\fR.  The cursor will return to the
+place which you marked.
+Marks last only until you edit another file.
+.PP
+When using operators such as
+.B d
+and referring to marked lines, it is often desirable to delete whole lines
+rather than deleting to the exact position in the line marked by \fBm\fR.
+In this case you can use the form \fB\(aa\fR\fIx\fR rather than
+\fB\(ga\fR\fIx\fR.  Used without an operator, \fB\(aa\fR\fIx\fR will move to
+the first non-white character of the marked line; similarly \fB\(aa\(aa\fR
+moves to the first non-white character of the line containing the previous
+context mark \fB\(ga\(ga\fR.
+.NH 2
+Adjusting the screen
+.PP
+If the screen image is messed up because of a transmission error to your
+terminal, or because some program other than the editor wrote output
+to your terminal, you can hit a \fB^L\fR, the \s-2ASCII\s0 form-feed
+character, to cause the screen to be refreshed.
+.PP
+On a dumb terminal, if there are @ lines in the middle of the screen
+as a result of line deletion, you may get rid of these lines by typing
+\fB^R\fR to cause the editor to retype the screen, closing up these holes.
+.PP
+Finally, if you wish to place a certain line on the screen at the top
+middle or bottom of the screen, you can position the cursor to that line,
+and then give a \fBz\fR command.
+You should follow the \fBz\fR command with a \s-2RETURN\s0 if you want
+the line to appear at the top of the window, a \fB.\fR if you want it
+at the center, or a \fB\-\fR if you want it at the bottom.
+.NH 1
+Special topics
+.NH 2
+Editing on slow terminals
+.PP
+When you are on a slow terminal, it is important to limit the amount
+of output which is generated to your screen so that you will not suffer
+long delays, waiting for the screen to be refreshed.  We have already
+pointed out how the editor optimizes the updating of the screen during
+insertions on dumb terminals to limit the delays, and how the editor erases
+lines to @ when they are deleted on dumb terminals.
+.PP
+The use of the slow terminal insertion mode is controlled by the
+.I slowopen
+option.  You can force the editor to use this mode even on faster terminals
+by giving the command \fB:se slow\fR\s-2CR\s0.  If your system is sluggish
+this helps lessen the amount of output coming to your terminal.
+You can disable this option by \fB:se noslow\fR\s-2CR\s0.
+.PP
+The editor can simulate an intelligent terminal on a dumb one.  Try
+giving the command \fB:se redraw\fR\s-2CR\s0.  This simulation generates
+a great deal of output and is generally tolerable only on lightly loaded
+systems and fast terminals.  You can disable this by giving the command
+ \fB:se noredraw\fR\s-2CR\s0.
+.PP
+The editor also makes editing more pleasant at low speed by starting
+editing in a small window, and letting the window expand as you edit.
+This works particularly well on intelligent terminals.  The editor can
+expand the window easily when you insert in the middle of the screen
+on these terminals.  If possible, try the editor on an intelligent terminal
+to see how this works.
+.PP
+You can control the size of the window which is redrawn each time the
+screen is cleared by giving window sizes as argument to the commands
+which cause large screen motions:
+.DS
+.B ":  /  ?  [[  ]]  \(ga  \(aa"
+.DE
+Thus if you are searching for a particular instance of a common string
+in a file you can precede the first search command by a small number,
+say 3, and the editor will draw three line windows around each instance
+of the string which it locates.
+.PP
+You can easily expand or contract the window, placing the current line
+as you choose, by giving a number on a \fBz\fR command, after the \fBz\fR
+and before the following \s-2RETURN\s0, \fB.\fR or \fB\-\fR.  Thus the
+command \fBz5.\fR redraws the screen with the current line in the center
+of a five line window.\*(dg
+.FS
+\*(dg Note that the command \fB5z.\fR has an entirely different effect,
+placing line 5 in the center of a new window.
+.FE
+.PP
+If the editor is redrawing or otherwise updating large portions of the
+display, you can interrupt this updating by hitting a \s-2DEL\s0 or \s-2RUB\s0
+as usual.  If you do this you may partially confuse the editor about
+what is displayed on the screen.  You can still edit the text on
+the screen if you wish; clear up the confusion
+by hitting a \fB^L\fR; or move or search again, ignoring the
+current state of the display.
+.PP
+See section 7.8 on \fIopen\fR mode for another way to use the
+.I vi
+command set on slow terminals.
+.NH 2
+Options, set, and editor startup files
+.PP
+The editor has a set of options, some of which have been mentioned above.
+The most useful options are given in the following table.
+.KF
+.TS
+lb lb lb lb
+l l l a.
+Name	Default	Description
+_
+autoindent	noai	Supply indentation automatically
+autowrite	noaw	Automatic write before \fB:n\fR, \fB:ta\fR, \fB^\(ua\fR, \fB!\fR
+ignorecase	noic	Ignore case in searching
+lisp	nolisp	\fB( { ) }\fR commands deal with S-expressions
+list	nolist	Tabs print as ^I; end of lines marked with $
+magic	nomagic	The characters . [ and * are special in scans
+number	nonu	Lines are displayed prefixed with line numbers
+paragraphs	para=IPLPPPQPbpP LI	Macro names which start paragraphs
+redraw	nore	Simulate a smart terminal on a dumb one
+sections	sect=NHSHH HU	Macro names which start new sections
+shiftwidth	sw=8	Shift distance for <, > and input \fB^D\fP and \fB^T\fR
+showmatch	nosm	Show matching \fB(\fP or \fB{\fP as \fB)\fP or \fB}\fR is typed
+slowopen	slow	Postpone display updates during inserts
+term	dumb	The kind of terminal you are using.
+.TE
+.KE
+.PP
+The options are of three kinds:  numeric options, string options, and
+toggle options.  You can set numeric and string options by a statement
+of the form
+.DS
+\fBset\fR \fIopt\fR\fB=\fR\fIval\fR
+.DE
+and toggle options can be set or unset by statements of one of the forms
+.DS
+\fBset\fR \fIopt\fR
+\fBset\fR \fBno\fR\fIopt\fR
+.DE
+These statements can be placed in your EXINIT in your environment,
+or given while you are running
+.I vi
+by preceding them with a \fB:\fR and following them with a \s-2CR\s0.
+.PP
+You can get a list of all options which you have changed by the
+command \fB:set\fR\s-2CR\s0, or the value of a single option by the
+command \fB:set\fR \fIopt\fR\fB?\fR\s-2CR\s0.
+A list of all possible options and their values is generated by
+\fB:set all\fP\s-2CR\s0.
+Set can be abbreviated \fBse\fP.
+Multiple options can be placed on one line, e.g.
+\fB:se ai aw nu\fP\s-2CR\s0.
+.PP
+Options set by the \fBset\fP command only last
+while you stay in the editor.
+It is common to want to have certain options set whenever you
+use the editor.
+This can be accomplished by creating a list of \fIex\fP commands\*(dg
+.FS
+\*(dg
+All commands which start with
+.B :
+are \fIex\fP commands.
+.FE
+which are to be run every time you start up \fIex\fP, \fIedit\fP,
+or \fIvi\fP.
+A typical list includes a \fBset\fP command, and possibly a few
+\fBmap\fP commands.
+Since it is advisable to get these commands on one line, they can
+be separated with the | character, for example:
+.DS
+\fBset\fP ai aw terse|\fBmap\fP @ dd|\fBmap\fP # x
+.DE
+which sets the options \fIautoindent\fP, \fIautowrite\fP, \fIterse\fP,
+(the
+.B set
+command),
+makes @ delete a line,
+(the first
+.B map ),
+and makes # delete a character,
+(the second
+.B map ).
+(See section 6.9 for a description of the \fBmap\fP command)
+This string should be placed in the variable EXINIT in your environment.
+If you use the shell \fIcsh\fP,
+put this line in the file
+.I .login
+in your home directory:
+.DS
+setenv EXINIT \(aa\fBset\fP ai aw terse|\fBmap\fP @ dd|\fBmap\fP # x\(aa
+.DE
+If you use the standard shell \fIsh\fP,
+put these lines in the file
+.I .profile
+in your home directory:
+.DS
+EXINIT=\(aa\fBset\fP ai aw terse|\fBmap\fP @s scaled to be comparable to
+the other formulas,
+except that the maximum grade level reported is set to 17.
+The Flesch score is usually the highest of the 4 scores
+on technical documents.
+.PP
+Coke [8] found that the Kincaid Formula is probably the best predictor for
+technical documents;
+both ARI and Flesch tend to overestimate
+the difficulty; Coleman-Liau tend to underestimate.
+On text in the range of grades 7 to 9
+the four formulas tend to be about the same.
+On easy text the Coleman-Liau formula is probably
+preferred since it is reasonably accurate at the lower
+grades and it is safer to present text that is a little too
+easy than a little too hard.
+.PP
+If a document has particularly difficult technical content, especially if
+it includes a lot of mathematics,
+it is probably best to make the text very easy to read, i.e. a lower
+readability index by shortening the sentences and words.
+This will allow the reader to concentrate on the technical
+content and not the long sentences.
+The user should remember that these indices are estimators;
+they should not be taken as absolute numbers.
+STYLE called with ``\-r number'' will print all sentences with
+an Automated Readability Index equal to or greater than ``number''.
+.NH 2
+Sentence length and structure
+.PP
+The next two sections of STYLE output deal with sentence length and structure.
+Almost all books on writing style or effective writing emphasize
+the importance of variety in sentence length and structure for good writing.
+Ewing's first rule in discussing style in the book
+.I
+Writing for Results
+.R
+[9] is:
+.DS
+``Vary the sentence structure and length of your sentences.''
+.DE
+Leggett, Mead and Charvat break this rule into 3 in
+.I
+Prentice-Hall Handbook for Writers
+.R
+[10] as follows:
+.DS
+``34a. Avoid the overuse of short simple sentences.''
+``34b. Avoid the overuse of long compound sentences.''
+``34c. Use various sentence structures to avoid monotony and increase effectiveness.''
+.DE
+Although experts agree that these rules are important, not all writers
+follow them.
+Sample technical documents have been found with almost no
+sentence length or type variability.
+One document had 90% of its sentences about the same
+length as the average;
+another was made up almost entirely of simple sentences (80%).
+.PP
+The output sections labeled ``sentence info'' and ``sentence types'' give
+both length and structure measures.
+STYLE reports on the number and average length of both
+sentences and words,
+and number of questions and imperative sentences (those ending in ``/.'').
+The measures of non-function words are an attempt to look at the content
+words in the document.
+In English
+non-function words are nouns, adjectives, adverbs, and non-auxiliary verbs;
+function words are prepositions, conjunctions, articles, and auxiliary
+verbs.
+Since most function words are short, they tend to lower the average
+word length.
+The average length of non-function words may be a more useful measure for comparing
+word choice of different writers than the total average word length.
+The percentages of short and long sentences measure sentence
+length variability.
+Short sentences are those at least 5 words less than the
+average; long sentences are those at least 10 words longer than the average.
+Last in the sentence information section is the
+length and location of the longest and shortest sentences.
+If the flag ``\-l number'' is used, STYLE will print all sentences
+longer than ``number''.
+.PP
+Because of the difficulties in dealing with the many uses of commas and conjunctions
+in English, sentence type definitions
+vary slightly from those of standard textbooks, but still measure
+the same constructional activity.
+.IP 1.
+A simple sentence has one verb and no dependent clause.
+.IP 2.
+A complex sentence has one independent
+clause and one dependent clause, each with one verb.
+Complex sentences are found by identifying sentences that contain either
+a subordinate conjunction or a clause beginning with words like ``that''
+or ``who''.
+The preceding sentence has such a clause.
+.IP 3.
+A compound sentence has more than one verb and no dependent
+clause.
+Sentences joined by ``;'' are also counted as compound.
+.IP 4.
+A compound-complex sentence has either several dependent clauses
+or one dependent clause and a compound verb in either
+the dependent or independent clause.
+.PP
+Even using these broader definitions, simple
+sentences dominate many of the technical documents that
+have been tested,
+but the example in Figure 1 shows variety in both sentence structure and
+sentence length.
+.NH 2
+Word Usage
+.PP
+The word usage measures are an attempt to identify
+some other constructional features of writing style.
+There are many different ways in English to
+say the same thing.
+The constructions differ from one another
+in the form of the words used.
+The following sentences all convey approximately the
+same meaning but differ in word usage:
+.DS
+The cxio program is used to perform all communication between the systems.
+The cxio program performs all communications between the systems.
+The cxio program is used to communicate between the systems.
+The cxio program communicates between the systems.
+All communication between the systems is performed by the cxio program.
+.DE
+The  distribution of the parts of speech and verb constructions
+helps identify overuse of particular constructions.
+Although the measures used by STYLE are crude, they do point out
+problem areas.
+For each category, STYLE reports a percentage and a raw count.
+In addition to looking at the percentage, the user
+may find it useful to compare the raw count with the number of sentences.
+If, for example, the number of infinitives is almost equal to the number
+of sentences, then many of the sentences in the document are constructed
+like the first and third in the preceding example.
+The user may want to transform some of these sentences into another form.
+Some of the implications of the word usage measures are discussed below.
+.IP "\fIVerbs\fR "
+are measured in several different ways to
+try to determine what types of verb constructions are
+most frequent in the document.
+Technical writing tends to contain many
+passive verb constructions and other usage of the verb ``to be''.
+The category of verbs labeled ``tobe'' measures both passives and sentences of
+the form:
+.DS
+.I
+subject tobe predicate
+.R
+.DE
+In counting verbs, whole verb phrases are counted as one verb.
+Verb phrases containing auxiliary verbs are counted in the category
+``aux''.
+The verb phrases counted here are those whose tense is not
+simple present or simple past.
+It might eventually be useful to do more detailed measures
+of verb tense or mood.
+Infinitives are listed as ``inf''.
+The percentages reported for these three categories are based on
+the total number of verb phrases found.
+These categories are not mutually exclusive;
+they cannot be added, since, for example,
+``to be going'' counts as both ``tobe'' and ``inf''.
+Use of these three types of verb constructions varies significantly among authors.
+.sp 2
+STYLE reports passive verbs as a percentage of the finite verbs in the
+document.
+Most style books warn against the overuse of passive verbs.
+Coleman [11] has shown that sentences with
+active verbs are easier to learn than those
+with passive verbs.
+Although the inverted object-subject order of the passive
+voice seems to emphasize the object, Coleman's experiments
+showed that there is little difference in retention
+by word position. He also showed that the direct object of an active verb
+is retained better than the subject of a passive verb.
+These experiments support the advice of the style books suggesting
+that writers should try to use active verbs wherever possible.
+The flag ``\-p'' causes STYLE to print all sentences containing passive verbs.
+.PP
+.IP "\fIPronouns\fR "
+add cohesiveness and connectivity to a document
+by providing back-reference.
+They are often a short-hand notation for something
+previously mentioned, and therefore connect the sentence containing the pronoun with the
+word to which the pronoun refers.
+Although there are other mechanisms for such connections, documents
+with no pronouns tend to be wordy and to have little connectivity.
+.IP "\ dd|\fBmap\fP # x\(aa
+export EXINIT
+.DE
+Of course, the particulars of the line would depend on which options
+you wanted to set.
+.NH 2
+Recovering lost lines
+.PP
+You might have a serious problem if you delete a number of lines and then
+regret that they were deleted.  Despair not, the editor saves the last
+9 deleted blocks of text in a set of numbered registers 1\-9.
+You can get the \fIn\fR'th previous deleted text back in your file by
+the command
+"\fR\fIn\fR\|\fBp\fR.
+The "\fR here says that a buffer name is to follow,
+\fIn\fR is the number of the buffer you wish to try
+(use the number 1 for now),
+and
+.B p
+is the put command, which puts text in the buffer after the cursor.
+If this doesn't bring back the text you wanted, hit
+.B u
+to undo this and then
+\fB\&.\fR
+(period)
+to repeat the put command.
+In general the
+\fB\&.\fR
+command will repeat the last change you made.
+As a special case, when the last command refers to a numbered text buffer,
+the \fB.\fR command increments the number of the buffer before repeating
+the command.  Thus a sequence of the form
+.DS
+\fB"1pu.u.u.\fR
+.DE
+will, if repeated long enough, show you all the deleted text which has
+been saved for you.
+You can omit the
+.B u
+commands here to gather up all this text in the buffer, or stop after any
+\fB\&.\fR command to keep just the then recovered text.
+The command
+.B P
+can also be used rather than
+.B p
+to put the recovered text before rather than after the cursor.
+.NH 2
+Recovering lost files
+.PP
+If the system crashes, you can recover the work you were doing
+to within a few changes.  You will normally receive mail when you next
+login giving you the name of the file which has been saved for you. 
+You should then change to the directory where you were when the system
+crashed and give a command of the form:
+.DS
+% \fBvi \-r\fR \fIname\fR
+.DE
+replacing \fIname\fR with the name of the file which you were editing.
+This will recover your work to a point near where you left off.\*(dg
+.FS
+\*(dg In rare cases, some of the lines of the file may be lost.  The
+editor will give you the numbers of these lines and the text of the lines
+will be replaced by the string `LOST'.  These lines will almost always
+be among the last few which you changed.  You can either choose to discard
+the changes which you made (if they are easy to remake) or to replace
+the few lost lines by hand.
+.FE
+.PP
+You can get a listing of the files which are saved for you by giving
+the command:
+.DS
+% \fBvi \-r\fR
+.DE
+If there is more than one instance of a particular file saved, the editor
+gives you the newest instance each time you recover it.  You can thus
+get an older saved copy back by first recovering the newer copies.
+.PP
+For this feature to work,
+.I vi
+must be correctly installed by a super user on your system,
+and the
+.I mail
+program must exist to receive mail.
+The invocation ``\fIvi -r\fP'' will not always list all saved files,
+but they can be recovered even if they are not listed.
+.NH 2
+Continuous text input
+.PP
+When you are typing in large amounts of text it is convenient to have
+lines broken near the right margin automatically.  You can cause this
+to happen by giving the command
+\fB:se wm=10\fR\s-2CR\s0.
+This causes all lines to be broken at a space at least 10 columns
+from the right hand edge of the screen.
+.PP
+If the editor breaks an input line and you wish to put it back together
+you can tell it to join the lines with \fBJ\fR.  You can give \fBJ\fR
+a count of the number of lines to be joined as in \fB3J\fR to join 3
+lines.  The editor supplies white space, if appropriate,
+at the juncture of the joined
+lines, and leaves the cursor at this white space.
+You can kill the white space with \fBx\fR if you don't want it.
+.NH 2
+Features for editing programs
+.PP
+The editor has a number of commands for editing programs.
+The thing that most distinguishes editing of programs from editing of text
+is the desirability of maintaining an indented structure to the body of
+the program.  The editor has a
+.I autoindent
+facility for helping you generate correctly indented programs.
+.PP
+To enable this facility you can give the command \fB:se ai\fR\s-2CR\s0.
+Now try opening a new line with \fBo\fR and type some characters on the
+line after a few tabs.  If you now start another line, notice that the
+editor supplies white space at the beginning of the line to line it up
+with the previous line.  You cannot backspace over this indentation,
+but you can use \fB^D\fR key to backtab over the supplied indentation.
+.PP
+Each time you type \fB^D\fR you back up one position, normally to an
+8 column boundary.  This amount is settable; the editor has an option
+called
+.I shiftwidth
+which you can set to change this value.
+Try giving the command \fB:se sw=4\fR\s-2CR\s0
+and then experimenting with autoindent again.
+.PP
+For shifting lines in the program left and right, there are operators
+.B <
+and
+.B >.
+These shift the lines you specify right or left by one
+.I shiftwidth.
+Try
+.B <<
+and
+.B >>
+which shift one line left or right, and
+.B <L
+and
+.B >L
+shifting the rest of the display left and right.
+.PP
+If you have a complicated expression and wish to see how the parentheses
+match, put the cursor at a left or right parenthesis and hit \fB%\fR.
+This will show you the matching parenthesis.
+This works also for braces { and }, and brackets [ and ].
+.PP
+If you are editing C programs, you can use the \fB[[\fR and \fB]]\fR keys
+to advance or retreat to a line starting with a \fB{\fR, i.e. a function
+declaration at a time.  When \fB]]\fR is used with an operator it stops
+after a line which starts with \fB}\fR; this is sometimes useful with
+\fBy]]\fR.
+.NH 2
+Filtering portions of the buffer
+.PP
+You can run system commands over portions of the buffer using the operator
+\fB!\fR.
+You can use this to sort lines in the buffer, or to reformat portions
+of the buffer with a pretty-printer.
+Try typing in a list of random words, one per line and ending them
+with a blank line.  Back up to the beginning of the list, and then give
+the command \fB!}sort\fR\s-2CR\s0.  This says to sort the next paragraph
+of material, and the blank line ends a paragraph.
+.NH 2
+Commands for editing \s-2LISP\s0
+.PP
+If you are editing a \s-2LISP\s0 program you should set the option
+.I lisp
+by doing
+\fB:se\ lisp\fR\s-2CR\s0.
+This changes the \fB(\fR and \fB)\fR commands to move backward and forward
+over s-expressions.
+The \fB{\fR and \fB}\fR commands are like \fB(\fR and \fB)\fR but don't
+stop at atoms.  These can be used to skip to the next list, or through
+a comment quickly.
+.PP
+The
+.I autoindent
+option works differently for \s-2LISP\s0, supplying indent to align at
+the first argument to the last open list.  If there is no such argument
+then the indent is two spaces more than the last level.
+.PP
+There is another option which is useful for typing in \s-2LISP\s0, the
+.I showmatch
+option.
+Try setting it with
+\fB:se sm\fR\s-2CR\s0
+and then try typing a `(' some words and then a `)'.  Notice that the
+cursor shows the position of the `(' which matches the `)' briefly. 
+This happens only if the matching `(' is on the screen, and the cursor
+stays there for at most one second.
+.PP
+The editor also has an operator to realign existing lines as though they
+had been typed in with
+.I lisp
+and
+.I autoindent
+set.  This is the \fB=\fR operator.
+Try the command \fB=%\fR at the beginning of a function.  This will realign
+all the lines of the function declaration.
+.PP
+When you are editing \s-2LISP\s0,, the \fB[[\fR and \fR]]\fR advance
+and retreat to lines beginning with a \fB(\fR, and are useful for dealing
+with entire function definitions.
+.NH 2
+Macros
+.PP
+.I Vi
+has a parameterless macro facility, which lets you set it up so that
+when you hit a single keystroke, the editor will act as though
+you had hit some longer sequence of keys.  You can set this up if
+you find yourself typing the same sequence of commands repeatedly.
+.PP
+Briefly, there are two flavors of macros:
+.IP a)
+Ones where you put the macro body in a buffer register, say \fIx\fR.
+You can then type \fB@x\fR to invoke the macro.  The \fB@\fR may be followed
+by another \fB@\fR to repeat the last macro.
+.IP b)
+You can use the
+.I map
+command from
+.I vi
+(typically in fIAdverbs\fR "
+can provide transition between sentences and order
+in time and space.
+In performing these functions, adverbs, like pronouns, provide
+connectivity and cohesiveness.
+.IP "\fIConjunctions\fR "
+provide parallelism in a document by connecting two or more
+equal units.
+These units may be whole sentences, verb phrases, nouns, adjectives, or
+prepositional phrases.
+The compound and compound-complex sentences reported under
+sentence type are parallel structures.
+Other uses of parallel structures are indicated by the degree that the
+number of conjunctions reported under word usage exceeds the
+compound sentence measures.
+.IP "\fINouns and Adjectives.\fR "
+A ratio of nouns to adjectives near unity may indicate the over-use of modifiers.
+Some technical writers qualify every noun with one or more
+adjectives.
+Qualifiers in phrases like ``simple linear single-link network model''
+often lend more obscurity than precision to a text.
+.IP "\fINominalizations\fR "
+are verbs that are changed to nouns by adding one of the suffixes
+``ment'', ``ance'', ``ence'', or ``ion''.
+Examples are accomplishment, admittance, adherence, and abbreviation.
+When a writer transforms a nominalized sentence to a non-nominalized
+sentence, she/he increases the effectiveness of the sentence in
+several ways.
+The noun becomes an active verb and frequently one complicated clause
+becomes two shorter clauses.
+For example,
+.DS
+Their inclusion of this provision is admission of the importance of the system.
+When they included this provision, they admitted the importance of the system.
+.DE
+Coleman found that the transformed sentences were easier to
+learn, even when the transformation produced sentences that were
+slightly longer, provided the transformation broke one clause into two.
+Writers who find their document contains many
+nominalizations may want to transform some of the sentences 
+to use active verbs.
+.NH 2
+Sentence openers
+.PP
+Another agreed upon principle of style is variety in sentence openers.
+Because STYLE determines the type of sentence opener by
+looking at the part of speech of the first word in the sentence,
+the sentences counted under the heading ``subject opener'' may not
+all really begin with the subject.
+However, a large percentage of sentences in this category
+still indicates lack of variety in sentence openers.
+Other sentence opener measures help the user determine
+if there are transitions between sentences and where
+the subordination occurs.
+Adverbs and conjunctions at the beginning of sentences are mechanisms for
+transition between sentences.
+A pronoun at the beginning shows a link to something previously mentioned
+and indicates connectivity.
+.PP
+The location of subordination can be determined by comparing
+the number of sentences that begin with a subordinator with
+the number of sentences with complex clauses.
+If few sentences start with subordinate conjunctions then
+the subordination is embedded or at the end of the complex sentences.
+For variety the writer may want to transform some sentences
+to have leading subordination.
+.PP
+The last category of openers, expletives, is commonly
+overworked in technical writing.
+Expletives are the words ``it'' and ``there'', usually with the verb ``to be'',
+in constructions where the subject follows the verb.
+For example,
+.DS
+There are three streets used by the traffic.
+There are too many users on this system.
+.DE
+This construction tends to emphasize the object rather than the
+subject of the sentence.
+The flag ``\-e'' will cause STYLE to print all
+sentences that begin with an expletive.
+.NH 1
+DICTION
+.PP
+The program DICTION prints all sentences in a document containing
+phrases that are either frequently misused or indicate wordiness.
+The program, an extension of Aho's FGREP [12] string
+matching program,
+takes as input a file of phrases or patterns to be matched and a file
+of text to be searched.
+A data base of about 450 phrases has been compiled as a default
+pattern file for DICTION.
+Before attempting to locate phrases, the program maps
+upper case letters to lower case and substitutes blanks for
+punctuation.
+Sentence boundaries were deemed less critical in DICTION than
+in STYLE, so abbreviations and other uses of the character
+``.'' are not treated specially.
+DICTION brackets all pattern matches in a sentence with the characters
+``['' ``]'' .
+Although many of the phrases in the default data base are correct
+in some contexts, in others they indicate wordiness.
+Some examples of the phrases and suggested alternatives are:
+.DS
+.TS
+cc
+ll.
+Phrase	Alternative
+a large number of	many
+arrive at a decision	decide
+collect together	collect
+for this reason	so
+pertaining to	about
+through the use of	by or with
+utilize	use
+with the exception of	except
+.TE
+.DE
+Appendix 2 contains a complete list of the default file.
+Some of the entries are short forms of problem phrases.
+For example, the phrase ``the fact'' is found in all of the following
+and is sufficient to point out the wordiness to the user:
+.DS
+.TS
+cc
+ll.
+Phrase	Alternative
+accounted for by the fact that	caused by
+an example of this is the fact that	thus
+based on the fact that	because
+despite the fact that	although
+due to the fact that	because
+in light of the fact that	because
+in view of the fact that	since
+notwithstanding the fact that	although
+.TE
+.DE
+Entries in Appendix 2 preceded by ``~'' are not matched.
+See Section 7 for details on the use of ``~''.
+.PP
+The user may supply her/his own pattern file with the flag ``\-f patfile''.
+In this case the default file will be loaded first, followed by the user file.
+This mechanism allows users to suppress
+patterns contained in the default file or to include their own pet peeves that are not in the default file.
+The flag ``\-n'' will exclude the default file altogether.
+In constructing a pattern file, blanks should be used before and after each
+phrase to avoid matching substrings in words.
+For example, to find all occurrences of the word ``the'', the pattern
+`` the '' should be used.
+The blanks cause only the word ``the'' to be matched and not the
+string ``the'' in words like there, other, and therefore.
+One side effect of surrounding the words with blanks is that
+when two phrases occur without intervening words, only the
+first will be matched.
+.NH 1
+EXPLAIN
+.PP
+The last program, EXPLAIN, is an interactive thesaurus for
+phrases found by DICTION.
+The user types one of the phrases bracketed by DICTION
+and EXPLAIN responds with suggested substitutions for the phrase
+that will improve the diction of the document.
+.KF
+.DS C
+Table 1
+Text Statistics on 20 Technical Documents
+.TS
+cccccc
+llnnnn.
+	variable	minimum	maximum	mean	standard deviation
+_
+Readability	Kincaid	9.5	16.9	13.3	2.2
+	automated	9.0	17.4	13.3	2.5
+	Cole-Liau	10.0	16.0	12.7	1.8
+	Flesch	8.9	17.0	14.4	2.2
+_
+sentence info.	av sent length	15.5	30.3	21.6	4.0
+	av word length	4.61	5.63	5.08	.29
+	av nonfunction length	5.72	7.30	6.52	.45
+	short sent	23%	46%	33%	5.9
+	long sent	7%	20%	14%	2.9
+_
+sentence types	simple	31%	71%	49%	11.4
+	complex	19%	50%	33%	8.3
+	compound	2%	14%	7%	3.3
+	compound-complex	2%	19%	10%	4.8
+_
+verb types	tobe	26%	64%	44.7%	10.3
+	auxiliary	10%	40%	21%	8.7
+	infinitives	8%	24%	15.1%	4.8
+	passives	12%	50%	29%	9.3
+_
+word usage	prepositions	10.1%	15.0%	12.3%	1.6
+	conjunction	1.8%	4.8%	3.4%	.9
+	adverbs	1.2%	5.0%	3.4%	1.0
+	nouns	23.6%	31.6%	27.8%	1.7
+	adjectives	15.4%	27.1%	21.1%	3.4
+	pronouns	1.2%	8.4%	2.5%	1.1
+	nominalizations	2%	5%	3.3%	.8
+_
+sentence openers	prepositions	6%	19%	12%	3.4
+	adverbs	0%	20%	9%	4.6
+	subject	56%	85%	70%	8.0
+	verbs	0%	4%	1%	1.0
+	subordinating conj	1%	12%	5%	2.7
+	conjunctions	0%	4%	0%	1.5
+	expletives	0%	6%	2%	1.7
+.TE
+.DE
+.KE
+.NH 1
+Results
+.NH 2
+STYLE
+.PP
+To get baseline statistics and check the program's accuracy,
+we ran STYLE on 20 technical documents.
+There were a total of 3287 sentences in the sample.
+The shortest document was 67 sentences long; the longest 339 sentences.
+The documents covered a wide range of subject matter, including
+theoretical computing, physics, psychology, engineering, and
+affirmative action.
+Table 1 gives the range, median, and standard deviation of the various style measures.
+As you will note most of the measurements have a fayour
+.I EXINIT )
+with a command of the form:
+.DS
+:map \fIlhs\fR \fIrhs\fR\s-2CR\f0
+.DE
+mapping
+.I lhs
+into
+.I rhs.
+There are restrictions:
+.I lhs
+should be one keystroke (either 1 character or one function key)
+since it must be entered within one second
+(unless
+.I notimeout
+is set, in which case you can type it as slowly as you wish,
+and
+.I vi
+will wait for you to finish it before it echoes anything).
+The
+.I lhs
+can be no longer than 10 characters, the
+.I rhs
+no longer than 100.
+To get a space, tab or newline into
+.I lhs
+or
+.I rhs
+you should escape them with a \fB^V\fR.
+(It may be necessary to double the \fB^V\fR if the map
+command is given inside
+.I vi,
+rather than in
+.I ex.)
+Spaces and tabs inside the
+.I rhs
+need not be escaped.
+.PP
+Thus to make the \fBq\fR key write and exit the editor, you can give
+the command
+.DS
+:map q :wq\fB^V^V\fP\s-2CR CR\s0
+.DE
+which means that whenever you type \fBq\fR, it will be as though you
+had typed the four characters \fB:wq\fR\s-2CR\s0.
+A \fB^V\fR's is needed because without it the \s-2CR\s0 would end the
+\fB:\fR command, rather than becoming part of the
+.I map
+definition.
+There are two
+.B ^V 's
+because from within
+.I vi ,
+two
+.B ^V 's
+must be typed to get one.
+The first \s-2CR\s0 is part of the
+.I rhs ,
+the second terminates the : command.
+.PP
+Macros can be deleted with
+.DS
+unmap lhs
+.DE
+.PP
+If the
+.I lhs
+of a macro is ``#0'' through ``#9'', this maps the particular function key
+instead of the 2 character ``#'' sequence.  So that terminals without
+function keys can access such definitions, the form ``#x'' will mean function
+key
+.I x
+on all terminals (and need not be typed within one second.)
+The character ``#'' can be changed by using a macro in the usual way:
+.DS
+:map \fB^V^V^I\fP #
+.DE
+to use tab, for example.  (This won't affect the
+.I map
+command, which still uses
+.B #,
+but just the invocation from visual mode.
+.PP
+The undo command reverses an entire macro call as a unit,
+if it made any changes.
+.PP
+Placing a `!' after the word
+.B map
+causes the mapping to apply
+to input mode, rather than command mode.
+Thus, to arrange for \fB^T\fP to be the same as 4 spaces in input mode,
+you can type:
+.DS
+:map \fB^T\fP \fB^V\fP\o'b/'\o'b/'\o'b/'\o'b/'
+.DE
+where
+.B \o'b/'
+is a blank.
+The \fB^V\fP is necessary to prevent the blanks from being taken as
+white space between the
+.I lhs
+and
+.I rhs .
+.NH
+Word Abbreviations
+.PP
+A feature similar to macros in input mode is word abbreviation.
+This allows you to type a short word and have it expanded into
+a longer word or words.
+The commands are
+.B :abbreviate
+and
+.B :unabbreviate
+(\fB:ab\fP
+and
+.B :una )
+and have the same syntax as
+.B :map .
+For example:
+.DS
+:ab eecs Electrical Engineering and Computer Sciences
+.DE
+causes the word `eecs' to always be changed into the
+phrase `Electrical Engineering and Computer Sciences'.
+Word abbreviation is different from macros in that
+only whole words are affected.
+If `eecs' were typed as part of a larger word, it would
+be left alone.
+Also, the partial word is echoed as it is typed.
+There is no need for an abbreviation to be a single keystroke,
+as it should be with a macro.
+.NH 2
+Abbreviations
+.PP
+The editor has a number of short
+commands which abbreviate longer commands which we
+have introduced here.  You can find these commands easily
+on the quick reference card.
+They often save a bit of typing and you can learn them as convenient.
+.NH 1
+Nitty-gritty details
+.NH 2
+Line representation in the display
+.PP
+The editor folds long logical lines onto many physical lines in the display.
+Commands which advance lines advance logical lines and will skip
+over all the segments of a line in one motion.  The command \fB|\fR moves
+the cursor to a specific column, and may be useful for getting near the
+middle of a long line to split it in half.  Try \fB80|\fR on a line which
+is more than 80 columns long.\*(dg
+.FS
+\*(dg You can make long lines very easily by using \fBJ\fR to join together
+short lines.
+.FE
+.PP
+The editor only puts full lines on the display; if there is not enough
+room on the display to fit a logical line, the editor leaves the physical
+line empty, placing only an @ on the line as a place holder.  When you
+delete lines on a dumb terminal, the editor will often just clear the
+lines to @ to save time (rather than rewriting the rest of the screen.)
+You can always maximize the information on the screen by giving the \fB^R\fR
+command.
+.PP
+If you wish, you can have the editor place line numbers before each line
+on the display.  Give the command \fB:se nu\fR\s-2CR\s0 to enable
+this, and the command \fB:se nonu\fR\s-2CR\s0 to turn it off.
+You can have tabs represented as \fB^I\fR and the ends of lines indicated
+with `$' by giving the command \fB:se list\fR\s-2CR\s0;
+\fB:se nolist\fR\s-2CR\s0 turns this off.
+.PP
+Finally, lines consisting of only the character `~' are displayed when
+the last line in the file is in the middle of the screen.  These represent
+physical lines which are past the logical end of file.
+.NH 2
+Counts
+.PP
+Most
+.I vi
+commands will use a preceding count to affect their behavior in some way.
+The following table gives the common ways in which the counts are used:
+.DS
+.TS
+l lb.
+new window size	:  /  ?  [[  ]]  \`  \'
+scroll amount	^D  ^U
+line/column number	z  G  |
+repeat effect	\fRmost of the rest\fP
+.TE
+.DE
+.PP
+The editor maintains a notion of the current default window size.
+On terminals which run at speeds greater than 1200 baud
+the editor uses the full terminal screen.
+On terminals which are slower than 1200 baud
+(most dialup lines are in this group)
+the editor uses 8 lines as the default window size.
+At 1200 baud the default is 16 lines.
+.PP
+This size is the size used when the editor clears and refills the screen
+after a search or other motion moves far from the edge of the current window.
+The commands which take a new window size as count all often cause the
+screen to be redrawn.  If you anticipate this, but do not need as large
+a window as you are currently using, you may wish to change the screen
+size by specifying the new size before these commands.
+In any case, the number of lines used on the screen will expand if you
+move off the top with a \fB\-\fR or similar command or off the bottom
+with a command such as \s-2RETURN\s0 or \fB^D\fR.
+The window will revert to the last specified size the next time it is
+cleared and refilled.\*(dg
+.FS
+\*(dg But not by a \fB^L\fR which just redraws the screen as it is.
+.FE
+.PP
+The scroll commands \fB^D\fR and \fB^U\fR likewise remember the amount
+of scroll last specified, using half the basic window size initially.
+The simple insert commands use a count to specify a repetition of the
+inserted text.  Thus \fB10a+\-\-\-\-\fR\s-2ESC\s0 will insert a grid-like
+string of text.
+A few commands also use a preceding count as a line or column number.
+.PP
+Except for a few commands which ignore any counts (such as \fB^R\fR),
+the rest of the editor commands use a count to indicate a simple repetition
+of their effect.  Thus \fB5w\fR advances five words on the current line,
+while \fB5\fR\s-2RETURN\s0 advances five lines.  A very useful instance
+of a count as a repetition is a count given to the \fB.\fR command, which
+repeats the last changing command.  If you do \fBdw\fR and then \fB3.\fR,
+you will delete first one and then three words.  You can then delete
+two more words with \fB2.\fR.
+.NH 2
+More file manipulation commands
+.PP
+The following table lists the file manipulation commands which you can
+use when you are in
+.I vi.
+.KF
+.DS
+.TS
+lb l.
+:w	write back changes
+:wq	write and quit
+:x	write (if necessary) and quit (same as ZZ).
+:e \fIname\fP	edit file \fIname\fR
+:e!	reedit, discarding changes
+:e + \fIname\fP	edit, starting at end
+:e +\fIn\fP	edit, starting at line \fIn\fP
+:e #	edit alternate file
+:w \fIname\fP	write file \fIname\fP
+:w! \fIname\fP	overwrite file \fIname\fP
+:\fIx,y\fPw \fIname\fP	write lines \fIx\fP through \fIy\fP to \fIname\fP
+:r \fIname\fP	read file \fIname\fP into buffer
+:r !\fIcmd\fP	read output of \fIcmd\fP into buffer
+:n	edit next file in argument list
+:n!	edit next file, discarding changes to current
+:n \fIargs\fP	specify new argument list
+:ta \fItag\fP	edit file containing tag \fIirly wide range of values
+across the sample documents.
+.PP
+As a comparison, Table 2 gives the median results
+for two different technical authors, a sample of instructional material, and a sample of the
+Federalist Papers.
+The two authors show similar styles, although author 2
+uses somewhat shorter sentences and longer words than author 1.
+Author 1 uses all types of sentences, while author 2 prefers
+simple and complex sentences, using few compound or compound-complex sentences.
+The other major difference in the styles of these authors is the location
+of subordination.
+Author 1 seems to prefer embedded or trailing subordination, while
+author 2 begins many sentences with the subordinate clause.
+The documents tested for both authors 1 and 2 were technical documents,
+written for a technical audience.
+The instructional documents, which are written for craftspeople,
+vary surprisingly little from the two technical samples.
+The sentences and words are a little longer,
+and they contain many passive and auxiliary verbs, few adverbs, and almost
+no pronouns.
+The instructional documents contain many imperative sentences, so there are
+many sentence with verb openers.
+The sample of Federalist Papers contrasts with the other
+samples in almost every way.
+.KF
+.DS C
+Table 2
+Text Statistics on Single Authors
+.TS
+cccccc
+llnnnn.
+	variable	author 1	author 2	inst.	FED
+_
+readability	Kincaid	11.0	10.3	10.8	16.3
+	automated	11.0	10.3	11.9	17.8
+	Coleman-Liau	9.3	10.1	10.2	12.3
+	Flesch	10.3	10.7	10.1	15.0
+_
+sentence info	av sent length	22.64	19.61	22.78	31.85
+	av word length	4.47	4.66	4.65	4.95
+	av nonfunction length	5.64	5.92	6.04	6.87
+	short sent	35%	43%	35%	40%
+	long sent	18%	15%	16%	21%
+_
+sentence types	simple	36%	43%	40%	31%
+	complex	34%	41%	37%	34%
+	compound	13%	7%	4%	10%
+	compound-complex	16%	8%	14%	25%
+_
+verb type	tobe	42%	43%	45%	37%
+	auxiliary	17%	19%	32%	32%
+	infinitives	17%	15%	12%	21%
+	passives	20%	19%	36%	20%
+_
+word usage	prepositions	10.0%	10.8%	12.3%	15.9%
+	conjunctions	3.2%	2.4%	3.9%	3.4%
+	adverbs	5.05%	4.6%	3.5%	3.7%
+	nouns	27.7%	26.5%	29.1%	24.9%
+	adjectives	17.0%	19.0%	15.4%	12.4%
+	pronouns	5.3%	4.3%	2.1%	6.5%
+	nominalizations	1%	2%	2%	3%
+_
+sentence openers	prepositions	11%	14%	6%	5%
+	adverbs	9%	9%	6%	4%
+	subject	65%	59%	54%	66%
+	verb	3%	2%	14%	2%
+	subordinating conj	8%	14%	11%	3%
+	conjunction	1%	0%	0%	3%
+	expletives	3%	3%	0%	3%
+.TE
+.DE
+.KE
+.NH 2
+DICTION
+.PP
+In the few weeks that DICTION has been available
+to users
+about 35,000 sentences have been run with about
+5,000 string matches.
+The authors using the program seem to make
+the suggested changes about 50-75% of the time.
+To date, almost 200 of the 450 strings in the default
+file have been matched.
+Although most of these phrases are valid and correct
+in some contexts, the 50-75% change rate seems to
+show that the phrases are used much more often than
+concise diction warrants.
+.NH 1
+Accuracy
+.NH 2
+Sentence Identification
+.PP
+The correctness of the STYLE output on the 20 document sample was checked
+in detail.
+STYLE misidentified
+129 sentence fragments as sentences
+and incorrectly joined two or more sentences 75 times
+in the 3287 sentence sample.
+The problems were usually because of nonstandard formatting
+commands, unknown abbreviations, or lists of non-sentences.
+An impossibly long sentence found as the longest sentence in
+the document usually is the result of a long list
+of non-sentences.
+.NH 2
+Sentence Types
+.PP
+Style correctly identified sentence type on 86.5% of
+the sentences in the sample.
+The type distribution of the sentences was
+52.5% simple, 29.9% complex, 8.5% compound and
+9% compound-complex.
+The program reported 49.5% simple, 31.9% complex,
+8% compound and 10.4% compound-complex.
+Looking at the errors on the individual
+documents, the number of simple sentences was
+under-reported by about 4% and the complex and compound-complex
+were over-reported by 3% and 2%, respectively.
+The following matrix shows the programs output
+vs. the actual sentence type.
+.DS C
+.TS
+csssss
+cccccc
+clnnnn.
+Program Results
+		simple	complex	compound	comp-complex
+Actual	simple	1566	132	49	17
+Sentence	complex	47	892	6	65
+Type	compound	40	6	207	23
+	comp-complex	0	52	5	249
+.TE
+.DE
+.PP
+The system's inability to find imperative sentences seems to
+have little effect on most of the style statistics.
+A document with half of its sentences imperative was run, with and
+without the imperative end marker.
+The results were identical except for the expected errors of not finding
+verbs as sentence openers, not counting the imperative sentences,
+and a slight difference (1%) in the number of nouns
+and adjectives reported.
+.NH 2
+Word Usage
+.PP
+The accuracy of identifying word types reflects
+that of PARTS, which is about 95% correct.
+The largest source of confusion is between nouns and
+adjectives.
+The verb counts were checked on about 20 sentences from each
+document and found to be about 98% correct.
+.NH 1
+Technical Details
+.NH 2
+Finding Sentences
+.PP
+The formatting commands embedded in the text increase the difficulty
+of finding sentences.
+Not all text in a document is in sentence form; there are headings,
+tables, equations and lists, for example.
+Headings like ``Finding Sentences'' above should be discarded, not
+attached to the next sentence.
+However, since many of the documents are formatted to be phototypeset,
+and contain font changes, which usually operate on the
+most important words in the document,
+discarding all formatting commands is not correct.
+To improve the programs' ability to find sentence boundaries, the deformatting program, DEROFF [13],
+has been given some knowledge of the formatting packages used on the
+.UX
+operating system.
+DEROFF will now do the following:
+.IP 1.
+Suppress all formatting macros that
+are used for titles, headings, author's name, etc.
+.IP 2.
+Suppress the arguments to the macros for titles, headings, author's name, etc.
+.IP 3.
+Suppress displays, tables, footnotes and text that is centered or in no-fill mode.
+.IP 4.
+Substitute a place holder for equations and check
+for hidden end markers.
+The place holder is necessary because many typists and authors use
+the equation setter to change fonts on important words.
+For this reason, header files containing the definition of
+the EQN delimiters must also be included as input to STYLE.
+End markers are often hidden when an equation ends a sentence
+and the period is typed
+inside the EQN delimiters.
+.IP 5.
+Add a "." after lists.
+If the flag \-ml is also used, all lists are suppressed.
+This is a separate flag because of the variety of ways the
+list macros are used.
+Often, lists are sentences that should be included in the analysis.
+The user must determine how lists are used in the document to be analyzed.
+.PP
+Both STYLE and DICTION call DEROFF before they look at the text.
+The user should supply the \-ml flag if the document contains
+many lists of non-sentences that should be skipped.
+.NH 2
+Details of DICTION
+.PP
+The program DICTION is based on the string matching program FGREP.
+FGREP takes as input a file of patterns to be matched and a file
+to be searched and outputs each line that contains
+any of the patterns
+with no indication of which pattern was matched.
+The following changes have been added to FGREP:
+.IP 1.
+The basic unit that DICTION operates on is a sentence rather than a line.
+Each sentence that contains one of the patterns is output.
+.IP 2.
+Upper case letters are mapped to lower case.
+.IP 3.
+Punctuation is replaced by blanks.
+.IP 4
+All pattern matches in the sentence are found and surrounded with
+``['' ``]'' .
+.IP 5.
+A method for suppressing a string match has been added.
+Any pattern that begins with ``~'' will not be matched.
+Because the matching algorithm finds the longest
+substring, the suppression of a match allows words in some
+correct contexts not to be matched while allowing
+the word in another context to be found.
+For example, the word ``which'' is often incorrectly used
+instead of ``that'' in restrictive clauses.
+However, ``which'' is usually correct when preceded by a preposition
+or ``,''.
+The default pattern file suppresses the match
+of the common prepositions or a double
+blank followed by ``which'' and therefore matches only
+the suspect uses.
+Thtag\fP, at \fItag\fP
+.TE
+.DE
+.KE
+All of these commands are followed by a \s-2CR\s0 or \s-2ESC\s0.
+The most basic commands are \fB:w\fR and \fB:e\fR.
+A normal editing session on a single file will end with a \fBZZ\fR command.
+If you are editing for a long period of time you can give \fB:w\fR commands
+occasionally after major amounts of editing, and then finish
+with a \fBZZ\fR.   When you edit more than one file, you can finish
+with one with a \fB:w\fR and start editing a new file by giving a \fB:e\fR
+command,
+or set
+.I autowrite
+and use \fB:n\fP <file>.
+.PP
+If you make changes to the editor's copy of a file, but do not wish to
+write them back, then you must give an \fB!\fR after the command you
+would otherwise use; this forces the editor to discard any changes
+you have made.  Use this carefully.
+.PP
+The \fB:e\fR command can be given a \fB+\fR argument to start at the
+end of the file, or a \fB+\fR\fIn\fR argument to start at line \fIn\fR\^.
+In actuality, \fIn\fR may be any editor command not containing a space,
+usefully a scan like \fB+/\fIpat\fR or \fB+?\fIpat\fR.
+In forming new names to the \fBe\fR command, you can use the character
+\fB%\fR which is replaced by the current file name, or the character
+\fB#\fR which is replaced by the alternate file name.
+The alternate file name is generally the last name you typed other than
+the current file.  Thus if you try to do a \fB:e\fR and get a diagnostic
+that you haven't written the file, you can give a \fB:w\fR command and
+then a \fB:e #\fR command to redo the previous \fB:e\fR.
+.PP
+You can write part of the buffer to a file by finding out the lines
+that bound the range to be written using \fB^G\fR, and giving these
+numbers after the \fB:\fR
+and before the \fBw\fP, separated by \fB,\fR's.
+You can also mark these lines with \fBm\fR and
+then use an address of the form \fB\(aa\fR\fIx\fR\fB,\fB\(aa\fR\fIy\fR
+on the \fBw\fR command here.
+.PP
+You can read another file into the buffer after the current line by using
+the \fB:r\fR command.
+You can similarly read in the output from a command, just use \fB!\fR\fIcmd\fR
+instead of a file name.
+.PP
+If you wish to edit a set of files in succession, you can give all the
+names on the command line, and then edit each one in turn using the command
+\fB:n\fR.  It is also possible to respecify the list of files to be edited
+by giving the \fB:n\fR command a list of file names, or a pattern to
+be expanded as you would have given it on the initial
+.I vi
+command.
+.PP
+If you are editing large programs, you will find the \fB:ta\fR command
+very useful.  It utilizes a data base of function names and their locations,
+which can be created by programs such as
+.I ctags,
+to quickly find a function whose name you give.
+If the \fB:ta\fR command will require the editor to switch files, then
+you must \fB:w\fR or abandon any changes before switching.  You can repeat
+the \fB:ta\fR command without any arguments to look for the same tag
+again.
+.NH 2
+More about searching for strings
+.PP
+When you are searching for strings in the file with \fB/\fR and \fB?\fR,
+the editor normally places you at the next or previous occurrence
+of the string.  If you are using an operator such as \fBd\fR,
+\fBc\fR or \fBy\fR, then you may well wish to affect lines up to the
+line before the line containing the pattern.  You can give a search of
+the form \fB/\fR\fIpat\fR\fB/\-\fR\fIn\fR to refer to the \fIn\fR'th line
+before the next line containing \fIpat\fR, or you can use \fB\+\fR instead
+of \fB\-\fR to refer to the lines after the one containing \fIpat\fR.
+If you don't give a line offset, then the editor will affect characters
+up to the match place, rather than whole lines; thus use ``+0'' to affect
+to the line which matches.
+.PP
+You can have the editor ignore the case of words in the searches it does
+by giving the command \fB:se ic\fR\s-2CR\s0.
+The command \fB:se noic\fR\s-2CR\s0 turns this off.
+.PP
+Strings given to searches may actually be regular expressions.
+If you do not want or need this facility, you should
+.DS
+set nomagic
+.DE
+in your EXINIT.
+In this case, 
+only the characters \fB\(ua\fR and \fB$\fR are special in patterns.
+The character \fB\e\fR is also then special (as it is most everywhere in
+the system), and may be used to get at the
+an extended pattern matching facility.
+It is also necessary to use a \e before a
+\fB/\fR in a forward scan or a \fB?\fR in a backward scan, in any case.
+The following table gives the extended forms when \fBmagic\fR is set.
+.DS
+.TS
+bl l.
+\(ua	at beginning of pattern, matches beginning of line
+$	at end of pattern, matches end of line
+\fB\&.\fR	matches any character
+\e<	matches the beginning of a word
+\e>	matches the end of a word
+[\fIstr\fP]	matches any single character in \fIstr\fP
+[\(ua\fIstr\fP]	matches any single character not in \fIstr\fP
+[\fIx\fP\-\fIy\fP]	matches any character between \fIx\fP and \fIy\fP
+*	matches any number of the preceding pattern
+.TE
+.DE
+If you use \fBnomagic\fR mode, then
+the \fB. [\fR and \fB*\fR primitives are given with a preceding
+\e.
+.NH 2
+More about input mode
+.PP
+There are a number of characters which you can use to make corrections
+during input mode.  These are summarized in the following table.
+.DS
+.TS
+lb l.
+^H	deletes the last input character
+^W	deletes the last input word, defined as by \fBb\fR
+erase	your erase character, same as \fB^H\fP
+kill	your kill character, deletes the input on this line
+\e	escapes a following \fB^H\fP and your erase and kill
+\s-2ESC\s0	ends an insertion
+\s-2DEL\s0	interrupts an insertion, terminating it abnormally
+\s-2CR\s0	starts a new line
+^D	backtabs over \fIautoindent\fP
+0^D	kills all the \fIautoindent\fP
+\(ua^D	same as \fB0^D\fP, but restores indent next line
+^V	quotes the next non-printing character into the file
+.TE
+.DE
+.PP
+The most usual way of making corrections to input is by typing \fB^H\fR
+to correct a single character, or by typing one or more \fB^W\fR's to
+back over incorrect words.  If you use \fB#\fR as your erase character
+in the normal system, it will work like \fB^H\fR.
+.PP
+Your system kill character, normally \fB@\fR, \fB^X\fP or \fB^U\fR,
+will erase all
+the input you have given on the current line.
+In general, you can neither
+erase input back around a line boundary nor can you erase characters
+which you did not insert with this insertion command.  To make corrections
+on the previous line after a new line has been started you can hit \s-2ESC\s0
+to end the insertion, move over and make the correction, and then return
+to where you were to continue.  The command \fBA\fR which appends at the
+end of the current line is often useful for continuing.
+.PP
+If you wish to type in your erase or kill character (say # or @) then
+you must precede it with a \fB\e\fR, just as you would do at the normal
+system command level.  A more general way of typing non-printing characters
+into the file is to precede them with a \fB^V\fR.  The \fB^V\fR echoes
+as a \fB\(ua\fR character on which the cursor rests.  This indicates that
+the editor expects you to type a control character.  In fact you may
+type any character and it will be inserted into the file at that point.*
+.FS
+* This is not quite true.  The implementation of the editor does
+not allow the \s-2NULL\s0 (\fB^@\fR) character to appear in files.  Also
+the \s-2LF\s0 (linefeed or \fB^J\fR) character is used by the editor
+to separate lines in the file, so it cannot appear in the middle of a
+line.  You can insert any other character, however, if you wait for the
+editor to echo the \fB\(ua\fR before you type the character.  In fact,
+the editor will treat a following letter as a request for the corresponding
+control character.  This is the only way to type \fB^S\fR or \fB^Q\fP,
+since the system normally uses them to suspend and resume output
+and never gives them to the editor to process.
+.FE
+.PP
+If you are using \fIautoindent\fR you can backtab over the indent which
+it supplies by typing a \fB^D\fR.  This backs up to a \fIshiftwidth\fR
+boundary.
+This only works immediately after the supplied \fIautoindent\fR.
+.PP
+When you are using \fIautoindent\fR you may wish to place a label at
+the left margin of a line.  The way to do this easily is to type \fB\(ua\fR
+and the.\"	@(#)rm2	6.1 (Berkeley) 5/22/86
+.\"
+.bp
+.SH
+References
+.LP
+.IP 1.
+L. L. Cherry,
+``PARTS - A System for Assigning Word Classes to English Text,''
+submitted
+.I
+Communications of the ACM.
+.R
+.IP 2.
+B. W. Kernighan and J. R. Mashey,
+``The UNIX Programming Environment,''
+.I
+Software \- Practice & Experience
+.R
+, \fB9\fR, 1-15 (1979).
+.IP 3.
+G. R. Klare,
+``Assessing Readability,''
+.I
+Reading Research Quarterly,
+.R
+1974-1975,
+.B
+10
+.R
+, 62-102.
+.IP 4.
+E. A. Smith and P. Kincaid,
+``Derivation and validation of the automated readability index
+for use with technical materials,''
+.I
+Human Factors,
+.R
+1970, 12, 457-464.
+.IP 5.
+J. P. Kincaid, R. P. Fishburne, R. L. Rogers, and B. S. Chissom,
+``Derivation of new readability formulas (Automated Readability Index,
+Fog count, and Flesch Reading Ease Formula)
+for Navy enlisted personnel,''
+Navy Training Command Research Branch Report 8-75, Feb., 1975.
+.IP 6.
+M. Coleman and T. L. Liau,
+``A Computer Readability Formula Designed for Machine Scoring,''
+.I
+Journal of Applied Psychology,
+.R
+1975, 60, 283-284.
+.IP 7.
+R. Flesch,
+``A New Readability Yardstick,''
+.I
+Journal of Applied Psychology,
+.R
+1948, 32, 221-233.
+.IP 8.
+E. U. Coke,
+private communication.
+.IP 9.
+D. W. Ewing,
+.I
+Writing for Results,
+.R
+John Wiley & Sons, Inc., New York, N. Y. (1974).
+.IP 10.
+G. Leggett, C. D. Mead and W. Charvat,
+.I
+Prentice-Hall Handbook for Writers,
+.R
+Seventh Edition, Prentice-Hall Inc., Englewood Cliffs, N. J. (1978).
+.IP 11.
+E. B. Coleman,
+``Learning of Prose Written in Four Grammatical Transformations,''
+.I
+Journal of Applied Psychology,
+.R
+1965, vol. 49, no. 5, pp. 332-341.
+.IP 12
+A. V. Aho and M. J. Corasick,
+``Efficient String Matching: an aid to Bibliographic Search,''
+.I
+Communications of the ACM,
+.R
+\fB18\fR, (6), 333-340, June 1975.
+.IP 13.
+Bell Laboratories,
+.I
+``UNIX TIME-SHARING SYSTEM: UNIX PROGRAMMER'S MANUAL,'' 
+.R
+Seventh Edition, Vol. 1 (January 1979).
+                                                                                                                                  #
+# Copyright (c) 1986 Regents of the University of California.
+# All rights reserved.  The Berkeley software License Agreement
+# specifies the terms and conditions for redistribution.
+#
+#	@(#)Makefile	6.2 (Berkeley) 5/4/86
+#
+SRCS=	porttour1.ms porttour2.ms
+MACROS=	-msU
+PRINTER=Pdp
+REFER=	refer -p /usr/doc/run/Ind
+TBL=	dtbl -${PRINTER}
+TROFF=	ditroff -${PRINTER}
+
+paper:	paper.${PRINTER}
+	lpr -${PRINTER} -n paper.${PRINTER}
+
+paper.${PRINTER}: ${SRCS}
+	${REFER} -e ${SRCS} | ${TBL} | \
+	${TROFF} ${MACROS} -t > paper.${PRINTER}
+
+clean:
+	rm -f paper.[PT]* *.spell errs Errs make.out
+
+spell:	${SRCS}
+	@for i in ${SRCS}; do \
+		echo $$i; spell $$i | sort | comm -23 - spell.ok > $$i.spell; \
+	done
+                                                                                                                                                                                                                                                                                                                                       cision
+and double precision types.
+The precision of a constant is determined from context;
+if a floating constant appears in an arithmetic expression
+with a single precision value,
+the constant is treated as having single precision type
+and the arithmetic expression is computed
+using single precision arithmetic.
+.PP
+Remarkably little code in the compiler
+needed to be changed to implement the single/double compiler.
+In many cases the changes overlapped with
+special cases which are used for the Fortran-style
+pass 2 (\fI/lib/f1\fP).
+Most of the single precision changes were implemented by Sam Leffler.
+.PP
+.I "Preprocessor extensions."
+The portable C compiler is normally distributed
+with a macro preprocessor written by J. F. Reiser.
+This preprocessor implements the features described
+in Ritchie's reference manual;
+it removes comments, expands macro definitions
+and removes or inserts code based on conditional compilation directives.
+Two interesting extensions are provided by this version of the preprocessor:
+.IP \(bu
+When comments are removed, no white space is necessarily substituted;
+this has the effect of \fIre-tokenizing\fP code,
+since the PCC will reanalyze the input.
+Macros can thus create new tokens by clever use of comments.
+For example, the macro definition ``#define foo(a,b) a/**/b''
+creates a macro \fIfoo\fP which
+concatenates its two arguments, forming a new token.
+.IP \(bu
+Macro bodies are analyzed for macro arguments
+without regard to the boundaries of string or character constants.
+The definition ``#define bar(a) "a\en"'' creates a macro
+which returns the literal form of its argument embedded
+in a string with a newline appended.
+.PP
+These extensions are not portable to
+a number of other C preprocessors.
+They may be replaced in the future by corresponding ANSI C features,
+when the ANSI C standard has been formalized.
+.SH
+Summary and Conclusion
+.PP
+The portable compiler has been a useful tool for providing C
+capability on a large number of diverse machines,
+and for testing a number of theoretical
+constructs in a practical setting.
+It has many blemishes, both in style and functionality.
+It has been applied to many more machines than first
+anticipated, of a much wider range than originally dreamed of.
+Its use has also spread much faster than expected, leaving parts of
+the compiler still somewhat raw in shape.
+.PP
+On the theoretical side, there is some hope that the
+skeleton of the
+.I sucomp
+routine could be generated for many machines directly from the
+templates; this would give a considerable boost
+to the portability and correctness of the compiler,
+but might affect tunability and code quality.
+There is also room for more optimization, both within
+.I optim
+and in the form of a portable ``peephole'' optimizer.
+.PP
+On the practical, development side,
+the compiler could probably be sped up and made smaller
+without doing too much violence to its basic structure.
+Parts of the compiler deserve to be rewritten;
+the initialization code, register allocation, and
+parser are prime candidates.
+It might be that doing some or all of the parsing
+with a recursive descent parser might
+save enough space and time to be worthwhile;
+it would certainly ease the problem of moving the
+compiler to an environment where
+.I Yacc
+is not already present.
+.SH
+Acknowledgements
+.PP
+I would like to thank the many people who have
+sympathetically, and even enthusiastically, helped me grapple
+with what has been a frustrating program to write, test, and install.
+D. M. Ritchie and E. N. Pinson provided needed early
+encouragement and philosophical guidance;
+M. E. Lesk,
+R. Muha, T. G. Peterson,
+G. Riddle, L. Rosler,
+R. W. Mitze,
+B. R. Rowland,
+S. I. Feldman,
+and
+T. B. London
+have all contributed ideas, gripes, and all, at one time or another,
+climbed ``into the pits'' with me to help debug.
+Without their help this effort would have not been possible;
+with it, it was often kind of fun.
+\*-S. C. Johnson
+.sp
+.PP
+Many people have contributed fixes and improvements
+to the current Berkeley version of the compiler.
+A number of really valuable fixes were contrib

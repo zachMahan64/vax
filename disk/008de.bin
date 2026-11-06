@@ -1,0 +1,1963 @@
+rnet address for unit
+ */
+qe_setaddr(physaddr, unit)
+	u_char *physaddr;
+	int unit;
+{
+	register struct qe_softc *sc = &qe_softc[unit];
+	register int i;
+
+	for (i = 0; i < 6; i++)
+		sc->setup_pkt[i][1] = sc->is_addr[i] = physaddr[i];
+	sc->qe_flags |= QEF_SETADDR;
+	if (sc->is_if.if_flags & IFF_RUNNING)
+		qesetup(sc);
+	qeinit(unit);
+}
+ 
+ 
+/*
+ * Initialize a ring descriptor with mbuf allocation side effects
+ */
+qeinitdesc(rp, addr, len)
+	register struct qe_ring *rp;
+	caddr_t addr; 			/* mapped address */
+	int len;
+{
+	/*
+	 * clear the entire descriptor
+	 */
+	bzero((caddr_t)rp, sizeof(struct qe_ring));
+ 
+	if( len ) {
+		rp->qe_buf_len = -(len/2);
+		rp->qe_addr_lo = (short)addr;
+		rp->qe_addr_hi = (short)((int)addr >> 16);
+	}
+}
+/*
+ * Build a setup packet - the physical address will already be present
+ * in first column.
+ */
+qesetup( sc )
+struct qe_softc *sc;
+{
+	register i, j;
+ 
+	/*
+	 * Copy the target address to the rest of the entries in this row.
+	 */
+	 for ( j = 0; j < 6 ; j++ )
+		for ( i = 2 ; i < 8 ; i++ )
+			sc->.\" Copyright (c) 1980 Regents of the University of California.
+.\" All rights reserved.  The Berkeley software License Agreement
+.\" specifies the terms and conditions for redistribution.
+.\"
+.\"	@(#)f77.ms	5.4 (Berkeley) 4/28/86
+.\"
+.rm CM
+.hw name-list
+.de XX
+.ne 3
+.sp .3
+.ti -0.8i
+.ta 0.8i
+\\$1	\c
+..
+.\"
+.\"	Nh macro - same as NH but also saves heading for table of contents
+.\"	Nh usage: Nh level string, e.g.:  .Nh 2 "Short Integers"
+.de Nh
+.NH \\$1
+\\$2
+.XS
+.if '2'\\$1' .ti .25i
+.if '3'\\$1' .ti .5i
+\\*(SN \\$2
+.XE
+.IP
+..
+.EQ
+delim $$
+.EN
+.ND ""
+.\".RP
+.TL
+A Portable Fortran 77 Compiler
+.AU
+S. I. Feldman
+.AU
+P. J. Weinberger
+.AI
+Bell Laboratories
+Murray Hill, New Jersey 07974
+.AU
+J. Berkman
+.AI
+University of California
+Berkeley, CA 94720
+.AB
+The Fortran language has been revised.
+The new language, known as\p
+Fortran 77,
+became an official American National Standard on April 3, 1978.
+We report here on a compiler and run-time system for the new extended language.
+It is believed to be the first complete Fortran 77 system to be implemented.
+This compiler is designed to be portable,
+to be correct and complete,
+and to generate code compatible with calling sequences produced by C compilers.
+In particular, this Fortran is quite usable on
+.UX
+systems.
+In this paper, we describe the language compiled,
+interfaces between procedures,
+and file formats assumed by the \s-1I/O\s0 system.
+Appendix A describes the Fortran 77 language extensions.
+.PP
+This is a standard Bell Laboratories
+document reproduced with minor modifications
+to the text.
+The Bell Laboratory's appendix
+on ``Differences Between Fortran 66 and Fortran 77''
+has been changed to Appendix A,
+and a local appendix has been added.
+Appendix B contains
+a list of Fortran 77 references
+(some from the original Bell document
+and some added at Berkeley).
+.sp 2
+.LP
+Revised September, 1985
+.AE
+.LP
+.CS 9 10 19 0 0 8
+.\" the Table of Contents uses pages 2 and 3,
+.\" hence the document begins at page 4.
+.pn 4
+.EH 'PS1:2-%''A Portable Fortran 77 Compiler'
+.OH 'A Portable Fortran 77 Compiler''PS1:2-%'
+.bp
+.NH 0
+INTRODUCTION
+.XS
+\*(SN Introduction
+.XE
+.LP
+The Fortran language has been revised.
+The new language, known as Fortran 77,
+became an official American National Standard [1] on April 3, 1978.
+Fortran 77 supplants 1966 Standard Fortran [2].
+We report here on a compiler and run-time system for the new extended language.
+The compiler and computation library were written by S.I.F., the \s-1I/O\s0 system by P.J.W.
+We believe ours to be the first complete Fortran 77 system to be implemented.
+This compiler is designed to be portable to a number of different machines,
+to be correct and complete,
+and to generate code compatible with calling sequences produced
+by compilers for the C language [3].
+In particular,
+it is in use on
+\s-1UNIX\s0
+systems.
+Two families of C compilers are in use at Bell Laboratories,
+those based on D. M. Ritchie's \s-1PDP-11\s0 compiler [4]
+and those based on S. C. Johnson's portable C compiler [5].
+This Fortran compiler can drive the second passes of either family.
+In this paper, we describe the language compiled,
+interfaces between procedures,
+and file formats assumed by the \s-1I/O\s0 system.
+We will describe implementation details in companion papers.
+.Nh 2 Usage
+At present, versions of the compiler run on and compile
+for the \s-1PDP-11\s0,
+the \s-1VAX-11/780\s0,
+and the Interdata 8/32
+\s-1UNIX\s0
+systems.
+The command to run the compiler is
+.DS
+f\|77  \fIflags  file . . .\fR
+.DE
+.B f\|77
+is a general-purpose command for compiling and loading Fortran and Fortran-related files.
+\s-1EFL\s0 [6] and Ratfor [7] source files will be preprocessed before being presented to the Fortran compiler.
+C and assembler source files will be compiled by the appropriate programs.
+Object files will be loaded.
+(The
+.B f\|77
+and
+.B cc
+commands cause slightly different loading sequences to be generated,
+since Fortran programs need a few extra libraries and a different startup routine
+than do C programs.)
+The following file name suffixes are understood:
+.DS 
+ \f3.f\f1	Fortran source file
+ \f3.F\f1	Fortran source file
+ \f3.e\f1	\s-1EFL\s0 source file
+ \f3.r\f1	Ratfor source file
+ \f3.c\f1	C source file
+ \f3.s\f1	Assembler source file
+ \f3.o\f1	Object file
+.DE
+.IP
+Arguments whose names end with \f3.f\f1 are taken to be
+Fortran 77 source programs;
+they are compiled, and
+each object program is left on the file in the current directory
+whose name is that of the source with \f3.o\f1 substituted
+for \f3.f\f1.
+.IP
+Arguments whose names end with \f3.F\f1
+are also taken to be Fortran 77 source programs; these are first
+processed by the C preprocessor before being compiled by \fBf77\fP.
+.IP
+Arguments whose names end with \f3.r\f1 or \f3.e\f1
+are taken to be Ratfor or \s-1EFL\s0
+source programs, respectively; these are first transformed by the
+appropriate preprocessor, then compiled by \fBf77\fP.
+.IP
+In the same way,
+arguments whose names end 
+with \f3.c\f1 or \f3.s\f1
+are taken to be C or assembly source programs
+and are compiled or assembled, producing a \f3.o\f1 file.
+.IP
+The following flags are understood:
+.in +0.8i
+.XX \(mi\f3c\f1
+Compile but do not load.
+Output for
+.B x.f ,
+.B x.F ,
+.B x.e ,
+.B x.r ,
+.B x.c ,
+or
+.B x.s
+is put on file
+.B x.o .
+.XX \(mi\f3d\f1
+Used in debugging the compiler.
+.XX \(mi\f3g\f1
+Have the compiler produce additional
+symbol table information for \fIdbx(1)\fR.
+This flag is incompatible with \(mi\f3O\f1.
+See section 1.4 for more details.
+.XX \(mi\f3i2\f1
+On machines which support short integers,
+make the default integer constants and variables short
+(see section 2.14).
+(\fB\(mii4\fR is the standard value of this option).  
+All logical quantities will be short.
+.XX \(mi\f3m\f1
+Apply the M4 macro preprocessor
+to each \s-1EFL\s0 or Ratfor source file
+before using the appropriate compiler.
+.XX "\(mi\f3o\f1 \fIfile\fR"
+Put executable module on file
+.I file .
+(Default is \fBa.out\fR).
+.ne 6
+.XX \(mi\f3onetrip\f1\ or\ \(mi\f31\f1
+.br
+Compile code that performs every
+.B do
+loop at least once
+(see section 2.12).
+.XX \(mi\f3p\f1
+Generate code to produce usage profiles.
+.XX \(mi\f3pg\f1
+Generate code in the manner of \fB\(mip\fR, but invoke a run-time
+recording mechanism that keeps more extensive statistics.
+See
+.I gprof (1).
+.XX \(mi\f3q\f1
+Suppress printing of file names and program unit names during compilation.
+.XX \(mi\f3r8\f1
+Treat all floating point variables,
+constants, functions and intrinsics
+as double precision and all complex
+quantities as double complex.  See section 2.17.
+.XX \(mi\f3u\f1
+Make the default type of a variable
+.B undefined
+(see section 2.3).
+.XX \(mi\f3v\f1
+Print the version number of the compiler and the name of each pass.
+.XX \(mi\f3w\f1
+Suppress all warning messages.
+.XX \(mi\f3w66\f1
+Suppress warnings about Fortran 66 features used.
+.XX \(mi\f3C\f1
+Compile code that checks that subscripts are within array bounds.
+For multi-dimensional arrays, only the equivalent linear subscript is
+checked.
+.XX \(mi\fBD\fP\fIname=def\fR
+.XX \(mi\fBD\fP\fIname\fR
+Define the
+.I name
+to the C preprocessor, as if by `#define'. If no definition is given, the name
+is defined as "1". (\fB.F\fR files only).
+.XX \(mi\f3E\f1\fIstr\fR
+Use the string \fIstr\fR as an
+\s-1EFL\s0 option in processing \f3.e\f1 files.
+.XX \(mi\f3F\f1
+Ratfor, \s-1EFL\s0, and \f3.F\f1 source files
+are pre-processed into \f3.f\f1 files,
+and those \f3.f\f1 files are left on the disk without being compiled.
+.XX \(mi\fBI\fP\fIdir\fR
+`#include' files whose names do not begin with `/' are always sought
+first in the directory of the \fIfile\fR
+argument, then in directories named in \fB\(miI\fR
+options, then in directories on a standard list. (\fB.F\fR files only).
+.XX \(mi\f3N\f1[\fBqxscn\fR]\fInnn\f1
+.br
+Make static tables in the compiler bigger. The compiler will complain
+if it overflows its tables and suggest you apply one or more of these
+flags. These flags have the following meanings:
+.RS
+.IP \fBq\fP
+Maximum number of equivalenced variables. Default is 150.
+.IP \fBx\fP
+Maximum number of external names (common block names, subroutine and
+function names). Default is 200.
+.IP \fBs\fP
+Maximum number of statement numbers. Defasetup_pkt[j][i] = sc->setup_pkt[j][1];
+	/*
+	 * Duplicate the first half.
+	 */
+	bcopy((caddr_t)sc->setup_pkt[0], (caddr_t)sc->setup_pkt[8], 64);
+	/*
+	 * Fill in the broadcast address.
+	 */
+	for ( i = 0; i < 6 ; i++ )
+		sc->setup_pkt[i][2] = 0xff;
+	sc->setupqueued++;
+}
+
+/*
+ * Pass a packet to the higher levels.
+ * We deal with the trailer protocol here.
+ */
+qeread(sc, ifrw, len)
+	register struct qe_softc *sc;
+	struct ifrw *ifrw;
+	int len;
+{
+	struct ether_header *eh;
+    	struct mbuf *m;
+	int off, resid;
+	struct ifqueue *inq;
+ 
+	/*
+	 * Deal with trailer protocol: if type is INET trailer
+	 * get true type from first 16-bit word past data.
+	 * Remember that type was trailer by setting off.
+	 */
+ 
+	eh = (struct ether_header *)ifrw->ifrw_addr;
+	eh->ether_type = ntohs((u_short)eh->ether_type);
+#define	qedataaddr(eh, off, type)	((type)(((caddr_t)((eh)+1)+(off))))
+	if (eh->ether_type >= ETHERTYPE_TRAIL &&
+	    eh->ether_type < ETHERTYPE_TRAIL+ETHERTYPE_NTRAILER) {
+		off = (eh->ether_type - ETHERTYPE_TRAIL) * 512;
+		if (off >= ETHERMTU)
+			return;		/* sanity */
+		eh->ether_type = ntohs(*qedataaddr(eh,off, u_short *));
+		resid = ntohs(*(qedataaddr(eh, off+2, u_short *)));
+		if (off + resid > len)
+		     return;		/* sanity */
+		len = off + resid;
+	} else
+		off = 0;
+	if (len == 0)
+		return;
+ 
+	/*
+	 * Pull packet off interface.  Off is nonzero if packet
+	 * has trailing header; qeget will then force this header
+	 * information to be at the front, but we still have to drop
+	 * the type and length which are at the front of any trailer data.
+	 */
+	m = if_ubaget(&sc->qe_uba, ifrw, len, off, &sc->is_if);
+ 
+	if (m == 0)
+		return;
+ 
+	if (off) {
+		struct ifnet *ifp;
+
+		ifp = *(mtod(m, struct ifnet **));
+		m->m_off += 2 * sizeof (u_short);
+		m->m_len -= 2 * sizeof (u_short);
+		*(mtod(m, struct ifnet **)) = ifp;
+	}
+	switch (eh->ether_type) {
+
+#ifdef INET
+	case ETHERTYPE_IP:
+		schednetisr(NETISR_IP);
+		inq = &ipintrq;
+		break;
+
+	case ETHERTYPE_ARP:
+		arpinput(&sc->is_ac, m);
+		return;
+#endif
+#ifdef NS
+	case ETHERTYPE_NS:
+		schednetisr(NETISR_NS);
+		inq = &nsintrq;
+		break;
+
+#endif
+ 
+	default:
+		m_freem(m);
+		return;
+	}
+ 
+	if (IF_QFULL(inq)) {
+		IF_DROP(inq);
+		m_freem(m);
+		return;
+	}
+	IF_ENQUEUE(inq, m);
+}
+
+/*
+ * Watchdog timer routine. There is a condition in the hardware that
+ * causes the board to lock up under heavy load. This routine detects
+ * the hang up and restarts the device.
+ */
+qewatch()
+{
+	register struct qe_softc *sc;
+	register int i;
+	int inprogress=0;
+ 
+	for (i = 0; i < NQE; i++) {
+		sc = &qe_softc[i];
+		if (sc->timeout) 
+			if (++sc->timeout > 3 ) {
+				log(LOG_ERR,
+				     "qerestart: restarted qe%d %d\n",
+				     i, ++sc->qe_restarts);
+				qerestart(sc);
+			} else
+				inprogress++;
+	}
+	if (inprogress) {
+		timeout(qewatch, (caddr_t)0, QE_TIMEO);
+		qewatchrun++;
+	} else
+		qewatchrun=0;
+}
+/*
+ * Restart for board lockup problem.
+ */
+qerestart(sc)
+	register struct qe_softc *sc;
+{
+	register struct ifnet *ifp = &sc->is_if;
+	register struct qedevice *addr = sc->addr;
+	register struct qe_ring *rp;
+	register i;
+ 
+	addr->qe_csr = QE_RESET;
+	sc->timeout = 0;
+	qesetup( sc );
+	for (i = 0, rp = sc->tring; i < NXMT; rp++, i++) {
+		rp->qe_flag = rp->qe_status1 = QE_NOTYET;
+		rp->qe_valid = 0;
+	}
+	sc->nxmit = sc->otindex = sc->tindex = sc->rindex = 0;
+	addr->qe_csr = QE_RCV_ENABLE | QE_INT_ENABLE | QE_XMIT_INT |
+	    QE_RCV_INT | QE_ILOOP;
+	addr->qe_rcvlist_lo = (short)sc->rringaddr;
+	addr->qe_rcvlist_hi = (short)((int)sc->rringaddr >> 16);
+	sc->qe_flags |= QEF_RUNNING;
+	qestart(ifp->if_unit);
+}
+#endif
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      .\" Copyright (c) 1986 Regents of the University of California.
+.\" All rights reserved.  The Berkeley software License Agreement
+.\" specifies the terms and conditions for redistribution.
+.\"
+.\"	@(#)Title	6.1 (Berkeley) 5/14/86
+.\"
+.ps 18
+.vs 22
+.sp 2.75i
+.ft B
+.ce 3
+UNIX Programmer's Supplementary Documents
+Volume 2
+(PS2)
+.ps 14
+.vs 16
+.sp |4i
+.ce 2
+4.3 Berkeley Software Distribution
+Virtual VAX\-11 Version
+.sp |5.75i
+.ft R
+.pt 12
+.vs 16
+.ce
+April, 1986
+.sp |8.2i
+.ce 5
+Computer Systems Research Group
+Computer Science Division
+Department of Electrical Engineering and Computer Science
+University of California
+Berkeley, California  94720
+.bp
+.ll 5.3i
+.in 1.25i
+.hy 0
+.ps 10
+.vs 12p
+.sp |3.25i
+Copyright 1979, 1980, 1983, 1986 Regents of the University of California.
+Permission to copy these documents or any portion thereof as necessary
+for licensed use of the software is granted to licensees of this
+software, provided this copyright notice and statement of permission
+are included.
+.sp 2
+Documents PS2:1, 2, 3, 4, 5, 6, and 8
+are copyright 1979, AT&T Bell Laboratories, Incorporated.
+Holders of \x'-1p'UNIX\v'-4p'\s-3TM\s0\v'4p'/32V,
+System III, or System V software licenses are
+permitted to copy these documents, or any portion of them,
+as necessary for licensed use of the software,
+provided this copyright notice and statement of permission
+are included.
+.sp 2
+This manual reflects system enhancements made at Berkeley and sponsored
+in part by the Defense Advanced Research Projects Agency
+(DoD), Arpa Order No. 4871 monitored by the Naval Electronics Systems
+Command under contract No. N00039-84-C-0089.
+The views and conclusions contained in these documents are those of the
+authors and should not be interpreted as representing official policies,
+either expressed or implied, of the Defense Research Projects Agency
+or of the US Government.
+                                                                                                                                                                                            .\"	@(#)0.long	6.1 (Berkeley) 5/26/86
+.\"
+.ls 1
+.sp |1.5i
+.ce
+Report No. UIUCDCS-R-82-1081
+.ce999
+
+.sp |3.75i
+.ft B
+NOTESFILE REFERENCE MANUAL
+.ft P
+
+
+by
+
+Raymond B. Essick IV
+Rob Kolstad
+
+
+.sp |6.5i
+February 14, 1983
+(Revised: October 20, 1985)
+(Printed: \*(DA)
+.sp |7.25i
+.ls 1
+DEPARTMENT OF COMPUTER SCIENCE
+UNIVERSITY OF ILLINOIS AT URBANA-CHAMPAIGN
+1304 W. SPRINGFIELD AVENUE
+URBANA, ILLINOIS 61801-2987
+.ls
+.ce 0
+.sp |9i
+Supported in part by NASA Project NAS-1-138
+.pn 1
+.bp
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               .\"	@(#)0.short	6.1 (Berkeley) 5/26/86
+.\"
+.ls 1
+.sp |1.5i
+.ce
+Report No. UIUCDCS-R-82-1081
+.ce999
+
+.sp |3.75i
+.ft B
+NOTESFILE REFERENCE MANUAL
+.ft P
+(abridged)
+
+
+by
+
+Raymond B. Essick IV
+Rob Kolstad
+
+
+.sp |6.5i
+February 14, 1983
+(Revised: October 20, 1985)
+(Printed: \*(DA)
+.sp |7.25i
+.ls 1
+DEPARTMENT OF COMPUTER SCIENCE
+UNIVERSITY OF ILLINOIS AT URBANA-CHAMPAIGN
+1304 W. SPRINGFIELD AVENUE
+URBANA, ILLINOIS 61801-2987
+.ls
+.ce 0
+.sp |9i
+Supported in part by NASA Project NAS-1-138
+.pn 1
+.bp
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   ult is 401.
+.IP \fBc\fP
+Maximum depth of nesting for control statements (e.g. DO loops). Default is
+20.
+.IP \fBn\fP
+Maximum number of identifiers. Default is 1009.
+.RE
+.XX \(mi\f3O\f1
+Invoke the object code optimizer.
+Incompatible with \(mi\f3g\f1.
+.XX \(mi\f3R\f1\fIstr\fR
+Use the string \fIstr\fR as a Ratfor option
+in processing \f3.r\f1 files.
+.XX \(mi\f3U\f1
+Do not convert upper case letters to lower case.
+The default is to convert Fortran programs to lower case
+except within character string constants.
+.XX \(mi\f3S\f1
+Generate assembler output for each source file, but do not assemble it.
+Assembler output for a source file
+.B x.f ,
+.B x.F ,
+.B x.e ,
+.B x.r ,
+or
+.B x.c
+is put on file
+.B x.s .
+.in -0.8i
+.IP
+Other flags,
+all library names (arguments beginning \fB\(mil\fR),
+and any names not ending with one of the understood suffixes are passed
+to the loader.
+.Nh 2 Documentation\ Conventions
+In running text, we write Fortran keywords and other literal strings in boldface lower case.
+Examples will be presented in lightface lower case.
+Names representing a class of values will be printed in italics.
+.Nh 2 Implementation\ Strategy
+The compiler and library are written entirely in C.
+The compiler  generates C compiler intermediate code.
+Since there are C compilers running on a variety of machines,
+relatively small changes will make this Fortran compiler generate code for any of them.
+Furthermore, this approach guarantees that the resulting programs are compatible with C usage.
+The runtime computational library is complete.
+The runtime \s-1I/O\s0 library makes use of D. M. Ritchie's Standard C \s-1I/O\s0 package [8]
+for transferring data.
+With the few exceptions described below, only documented calls are used,
+so it should be relatively easy to modify to run on other operating
+systems.
+.Nh 2 Debugging\ Aids
+A memory image is sometimes
+written to a file \fBcore\fP in the current directory
+upon abnormal termination for errors caught by the \fBf77\fP libraries,
+user calls to \fBabort\fP, and certain signals (see \fBsigvec\fP\|(2)
+in the \fI\s-1UNIX\s0 Programmer's Manual\fP).
+\fBCore\fP is normally created only if
+the \fB\(mig\fP flag was specified to \fBf77\fP during loading.\(dg
+.FS
+\(dgSpecify \fB\(mig\fP when loading with \fBcc\fP or \fBf77\fP;
+specify \fB\(milg\fP as a library
+when using \fBld\fP directly.
+.FE
+The source-level debugger
+.I dbx (1)
+may be used with the executable and the
+.B core
+file to examine the image and
+determine what went wrong.
+.IP
+In the event that it is necessary to override this default behavior,
+the user may set the environment variable \fBf77_dump_flag\fP.
+If \fBf77_dump_flag\fP is set to a value beginning
+with \fBn\fP, a \fBcore\fP file is not produced regardless of whether
+\fB\(mig\fP was specified at compile time,
+and if the value begins with \fBy\fP,
+dumps are produced even if \fB\(mig\fP was not specified.
+.NH 1
+LANGUAGE EXTENSIONS
+.XS
+\*(SN Language Extensions
+.XE
+.LP
+Fortran 77 includes almost all of Fortran 66 as a subset.
+We describe the differences briefly in Appendix A.
+The most important additions are a character string data type,
+file-oriented input/output statements, and random access \s-1I/O\s0.
+Also, the language has been cleaned up considerably.
+.LP
+In addition to implementing the language specified in the new Standard,
+our compiler implements a few extensions described in this section.
+Most are useful additions to the language.
+The remainder are extensions
+to make it easier to communicate with C procedures
+or to permit compilation of
+old (1966 Standard) programs.
+.Nh 2 Double\ Complex\ Data\ Type
+The new type
+.B "double complex"
+is defined.
+Each datum is represented by a pair of double precision real values.
+The statements
+.DS
+z1 = ( 0.1d0, 0.2d0 )
+z2 = dcmplx( dx, dy )
+.DE
+assign double complex values to \fBz1\fP and \fBz2\fP.
+The double precision values which constitute the double complex
+value may be isolated by using \fBdreal\fP or \fBdble\fP for the
+real part and \fBimag\fP or \fBdimag\fP for the
+imaginary part.
+To compute the double complex conjugate of a double complex value,
+use \fBconjg\fP or \fBdconjg\fP.
+The other \fBdouble complex\fP intrinsic functions may be
+accessed using their generic names or specific names.
+The generic names are: \fBabs\fP, \fBsqrt\fP, \fBexp\fP,
+\fBlog\fP, \fBsin\fP, and \fBcos\fP.
+The specific names are the same as the generic names preceded by
+either \fBcd\fP or \fBz\fP, e.g. you may code \fBsqrt\fP,
+\fBzsqrt\fP or \fBcdsqrt\fP to compute the square root of a double
+complex value.
+.Nh 2 Internal\ Files
+The Fortran 77 standard introduces ``internal files'' (memory arrays), but
+restricts their use to formatted sequential \s-1I/O\s0 statements.
+Our \s-1I/O\s0 system also permits internal files to be used
+in formatted direct reads and writes and list directed sequential read and
+writes.
+.Nh 2 Implicit\ Undefined\ Statement
+Fortran 66 has a fixed rule that the type of a variable that does not appear in a type statement
+is
+.B integer
+if its first letter is
+\fBi, j, k, l, m\fR or \fBn\fR,
+and
+.B real
+otherwise.
+Fortran 77 has an
+.B implicit
+statement for overriding this rule.
+As an aid to good programming practice, we permit an additional type,
+.B undefined.
+The statement
+.DS
+implicit undefined(a-z)
+.DE
+turns off the automatic data typing mechanism,
+and the compiler will issue a diagnostic for each variable that is used but does
+not appear in a type statement.
+Specifying the
+.B \(miu
+compiler flag is equivalent to beginning each procedure with this statement.
+.Nh 2 Recursion
+Procedures may call themselves,
+directly or through a chain of other procedures.
+Since Fortran variables are by default
+.B static ,
+it is often necessary to use the
+.B automatic
+storage extension to prevent unexpected results
+from recursive functions.
+.Nh 2 Automatic\ Storage
+Two new keywords are recognized,
+.B static
+and
+.B automatic.
+These keywords may appear as ``types'' in type statements and in
+.B implicit
+statements.
+Local variables are static by default;
+there is only one instance of the variable.
+For variables declared
+.B automatic,
+there is a separate instance of the variable for each
+invocation of the procedure.
+Automatic variables may not appear in
+.B equivalence,
+.B data,
+or
+.B save
+statements.
+Neither type of variable is guaranteed to retain its value between
+calls to a subprogram (see the \fBsave\fP statement in Appendix A).
+.Nh 2 Source\ Input\ Format
+The Standard expects input to the compiler to be in 72-column format:
+except in comment lines,
+the first five characters are the statement number, the next is the continuation character,
+and the next 66 are the body of the line.
+(If there are fewer than 72 characters on a line, the compiler pads it with blanks;
+characters after the seventy-second are ignored.)
+.IP
+In order to make it easier to type Fortran programs,
+our compiler also accepts input in variable length lines.
+An ampersand ``&'' in the first position of a line indicates a continuation
+line; the remaining characters form the body of the line.
+A tab character in one of the first six positions of a line signals the
+end of the statement number and continuation part of the line;
+the remaining characters form the body of the line.
+A tab elsewhere on the line is treated as another kind of blank by the
+compiler.
+.IP
+In the Standard, there are only 26 letters \(em Fortran is a one-case language.
+Consistent with ordinary
+\s-1UNIX\s0
+system usage, our compiler expects lower case input.
+By default, the compiler converts all upper case characters to lower case except those inside character constants.
+However, if the
+.B \(miU
+compiler flag is specified, upper case letters are not transformed.
+In this mode, it is possible to specify external names with upper case letters in them,
+and to have distinct variables differing only in case.
+If \(mi\f3U\f1 is specified, 
+keywords will only be recognized in lower case.
+.Nh 2 Include\ Statement
+The statement
+.DS
+include \(fmstuff\|\(fm
+.DE
+is replaced by the contents of the file
+.B stuff ;
+.B include
+statements may be nested to a reasonable depth, currently ten.
+.Nh 2 Binary\ Initialization\ Constants
+A variable may be initialized in a
+.B data
+s.\"	@(#)1	6.1 (Berkeley) 5/26/86
+.\"
+.sp |.5i
+.ls 1
+.ch "Introduction"
+.wh 0 hh
+
+	Notesfiles support computer managed discussion
+forums.  Discussions can have many different purposes and scopes: the
+notesfile system has been designed to be flexible enough to handle differing
+requirements.
+
+	Each notesfile discusses a single
+topic.
+The depth of discussion within a notesfile is ideally held constant.
+While some users may require a general discussion of personal workstations,
+a different group may desire detailed discussions about the I/O bus
+structure of the WICAT 68000 (a particular workstation).  These discussions
+might well be separated into two different notesfiles.
+
+	Each notesfile contains a list of logically
+independent notes (called base notes).
+A note is a block of text with a comment or question intended to be seen by members
+of the notesfile community.  The note display shows the text,
+its creation time, its title, the notesfile's title,
+the author's name (some notesfiles allow anonymous notes), the number of ``responses'',
+and optionally a ``director message''.
+Each base note can have a number of ``responses'': replies, retorts, further
+comments, criticism, or related questions concerning the base note.
+Thus, a notesfile contains an ordered list of ordered lists.  This arrangement
+has historically been more convenient than other proposals (e.g., trees
+were studied on the PLATO (trademark of Control Data Corporation) system).
+
+	The concept of a notesfile was originally implemented at
+the University of Illinois, Urbana-Champaign,
+on the PLATO system.
+The UNIX (trademark of Bell Laboratoris) 
+notesfile system
+includes these ideas with
+adaptations
+and enhancements
+made possible by the UNIX environment.
+
+	The UNIX notesfile system was
+designed and
+implemented by Ray Essick at the University of Illinois, Urbana-Champaign.
+It provides users with the abilities to
+read notes and responses, write notes and responses, forward note text to
+other users (via mail) or other notesfiles, save note text in their own files,
+and sequence through a set of notesfiles seeing just new text.
+Each notesfile has a set of ``directors'' who manage the notesfile:
+they delete old notes, compress the file when needed, grant and restrict
+access to the notesfile, and set different notesfile parameters (e.g.,
+title, ``director message'', policy note, whether notes' authors can be
+anonymous).
+Some notesfiles contain correspondence from other computers.
+Like the UNIX ``USENET'', notes and responses are exchanged (often over phone lines)
+with remote machines.
+The notesfile system provides automatic exchange and updating of notes in an
+arbitrarily connected network.
+
+	This document details the use of notesfiles from invocation through
+intersystem notes exchanges.  The last chapter summarizes the entire set of
+commands for easy reference.
+An appendix contains detailed checklists for the
+installation of a notesfile system.
+                                                                                                                              simple letter.
+
+	To use a specific mail program, set the environment variable
+MAILER. If this is not set, a standard mail program is used.
+
+.ss "Forwarding Text To Other Notesfiles"
+
+	There are several methods for forwarding text from one notesfile
+to another.
+Single notes or responses can be copied with the ``c'' or ``C'' command
+while entire note strings can be forwarded with the ``f'' and ``F''
+commands.
+
+	The ``f'' (``forward'') command is given when a base note
+is displayed on the screen.
+When given, the ``f'' command causes the base note and all of its
+responses to be copied to another notesfile.
+The user is prompted for the destination notesfile.
+The copied note and all of the copied responses contain header
+information detailing their origin.
+Where ``f'' copies the note string without change, the ``F''
+command allows the user to edit the text of the note and each
+response before inserting it into the target notesfile.
+
+	The ``c'' (``copy'') command prompts for a destination notesfile
+then
+copies the currently displayed note or response to the target notesfile.
+The user is allowed to choose between forwarding the note as a response
+or as a new base note.
+The ``c'' command does not give the user a chance to edit the text
+before inserting it in the new notesfile.
+The extended copying command ``C''
+allows editing of the note text before it is copied to the other notesfile.
+
+	Both the ``c'' and ``C'' commands provide for
+the forwarded text to be entered as either a new note or as a response
+to an existing note.
+In the latter case, an index page is given to the user for
+choosing the appropriate note to which to respond.
+
+.ss "Saving Text in Local Files"
+
+	The ``s'' (``save'') command appends the current displayed text to a
+file of your choice (which is created if not present).
+Notesfiles prompts for the file name;
+typing only a carriage return aborts the command -- no text is saved.
+Capital ``S'' appends
+the base note and all its responses. The number of lines saved and the name
+of the file written are printed when the command completes.
+
+.ss "Deletion"
+
+	Capital ``D'' (``delete'') deletes a note or response if it is yours and
+has no subsequent responses.  Notes already sent to the network can not be
+deleted by non-directors.
+Directors can delete any note or response with the ``Z'' (``zap'') command.
+
+
+.ss "Online Communication"
+
+	Typing ``t'' (``talk'') attempts to page the author of the current displayed
+text.  The Unix ``write'' command to him/her is issued
+if the author is local and non-anonymous. If the environment variable WRITE 
+is defined, the program it specifies is used to write to the author.
+
+.ss "Editing Note Titles"
+
+	While reading a base note, type ``e'' (``edit'') to
+change the note's title
+(provided you are the author of the note or a notesfile director).
+
+.ss "Editing Notes/Responses"
+
+	``E'' allows editing of the text of a note or response.
+It is not permitted to edit an article if it has subsequent responses or
+if it has been sent to the network.
+If the ``later responses'' are deleted, it is possible to edit the
+original text.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               .\"	@(#)4.0	6.1 (Berkeley) 5/26/86
+.\"
+.ls 1
+.ch "Other Notesfile Utilities"
+
+	The notesfile distribution includes utility programs to
+provide hard copy output,
+additional interfaces to user programs,
+and
+statistics.
+They are described below.
+
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            tatement
+by a binary constant, denoted by a letter followed by a quoted string.
+If the letter is \fBb\fR, the string is binary, and only zeroes and ones are permitted.
+If the letter is \fBo\fR, the string is octal, with digits \fB0\(mi7\fR.
+If the letter is \fBz\fR or \fBx\fR, the string is hexadecimal, with digits \fB0\(mi9\fR, \fBa\(mif\fR.
+Thus, the statements
+.DS
+integer a(3)
+data a / b\(fm1010\|\(fm, o\(fm12\|\(fm, z\(fma\|\(fm /
+.DE
+initialize all three elements of
+.B a
+to ten.
+.Nh 2 Character\ Strings
+For compatibility with C usage, the following backslash escapes are recognized:
+.DS
+\f3\en\f1	newline
+\f3\et\f1	tab
+\f3\eb\f1	backspace
+\f3\ef\f1	form feed
+\f3\e0\f1	null
+\f3\e\(fm\f1	apostrophe (does not terminate a string)
+\f3\e"\f1	quotation mark (does not terminate a string)
+\f3\e\e\f1	\e
+\f3\e\fP\fIx\fR	\fIx\fR,  where \fIx\fR is any other character
+.DE
+Fortran 77 only has one quoting character, the apostrophe.
+Our compiler and \s-1I/O\s0 system recognize
+both the apostrophe `` \(fm '' and the double-quote `` " ''.
+If a string begins with one variety of quote mark, the other may be embedded within it
+without using the repeated quote or backslash escapes.
+.IP
+Each character string constant appearing outside a
+.B data
+statement is followed by a
+null character to ease communication with C routines.
+.Nh 2 Hollerith
+Fortran 77 does not have the old Hollerith ``\fIn\fP\|\fBh\fR''
+notation,
+though the new Standard recommends implementing the old Hollerith feature
+in order to improve compatibility with old programs.
+In our compiler, Hollerith data may be used in place of character string constants,
+and may also be used to initialize non-character variables in
+.B data
+statements.
+.Nh 2 Equivalence\ Statements
+As a very special and peculiar case,
+Fortran 66 permits an element of a multiply-dimensioned array to be represented by
+a singly-subscripted reference in
+.B equivalence
+statements.
+Fortran 77 does not permit this usage, since
+subscript lower bounds may now be different from 1.
+Our compiler permits single subscripts in
+.B equivalence
+statements,
+under the interpretation that all missing subscripts are equal to 1.
+A warning message is printed for each such incomplete subscript.
+.Nh 2 One-Trip\ \s-1DO\s0\ Loops
+The Fortran 77 Standard requires that the range of a
+.B do
+loop not be performed
+if the initial value is already past the limit value,
+as in
+.DS
+do 10 i = 2, 1
+.DE
+The 1966 Standard stated that the effect of such a statement was undefined,
+but it was common practice that the range of a
+.B do
+loop would be performed
+at least once.
+In order to accommodate old programs, though they were in violation of the 1966 Standard,
+the
+.B \(mionetrip
+or
+.B \(mi1
+compiler flags causes non-standard loops to be generated.
+.Nh 2 Commas\ in\ Formatted\ Input
+The \s-1I/O\s0 system attempts to be more lenient than the
+Standard when it seems worthwhile.
+When doing a formatted read of non-character variables,
+commas may be used as value separators in the input record,
+overriding the field lengths given in the format statement.
+Thus,
+the format
+.DS
+(i10, f20.10, i4)
+.DE
+will read the record
+.DS
+\(mi345,.05e\(mi3,12
+.DE
+correctly.
+.Nh 2 Short\ Integers
+On machines that support halfword integers,
+the compiler accepts declarations of type
+.B integer\(**2.
+(Ordinary integers follow the Fortran rules about occupying the same
+space as a real variable; they are assumed to be of C type
+.B "long int" ;
+halfword integers are of C type
+.B "short int" .)
+An expression involving only objects of type
+.B integer\(**2
+is of that type.
+Generic functions return short or long integers depending on the actual types of their arguments.
+If a procedure is compiled using the
+.B \(mii2
+flag, all small integer constants will be
+of type
+.B integer\(**2.
+If the precision of an integer-valued intrinsic function is not determined by the generic function rules,
+one will be chosen that returns the prevailing length
+(\fBinteger\(**2\fR when the \fB\(mii2\fR command flag is in effect).
+When the
+.B \(mii2
+option is in effect, all quantities of type
+.B logical
+will be short.
+Note that these short integer and logical quantities do not obey the standard rules for storage association.
+.Nh 2 Additional\ Intrinsic\ Functions
+This compiler supports all of the
+intrinsic functions specified in the Fortran 77 Standard.
+In addition, there are built-in functions
+for performing bitwise logical and boolean operations on
+integer and logical values
+(\fBor\fR, \fBand\fR, \fBxor\fR, \fBnot\fR, \fBlshift\fP, and \fBrshift\fP),
+and intrinsic functions for \fBdouble complex\fP values (see section 2.1).
+The \fBf77\fP library contains many other functions, such as accessing
+the \s-1UNIX\s0 command arguments (\fBgetarg\fR and \fBiargc\fR)
+and environment (\fBgetenv\fR).
+See \fBintro\fP(3f) and \fBbit\fP(3f) in the \fI\s-1UNIX\s0
+Programmer's Manual\fP
+for more information.
+.Nh 2 Namelist\ \s-1I/O\s0
+Namelist \s-1I/O\s0 provides an easy way to input and output information without
+formats.
+Although not part of the standard, namelist \s-1I/O\s0 was part of many
+Fortran 66 systems and is a common extension to Fortran 77 systems.
+.IP
+Variables and arrays to be used in namelist \s-1I/O\s0 are declared as part of
+a namelist in a \fBnamelist\fP statement, e.g.:
+.DS
+	character str\(**12
+	logical flags(20)
+	complex c(2)
+	real arr1(2,3), arr2(0:3,4)
+	namelist /basic/  arr1, arr2, key, str, c /flglst/ key, flags
+.DE
+This defines two namelists: list \fBbasic\fP consists of variables
+\fBkey\fP and \fBstr\fP and arrays \fBarr1\fP, \fBarr2\fP,
+and \fBc\fP; list \fBflglst\fP consists of variable \fBkey\fP and
+array \fBflags\fP.
+A namelist can include variables and arrays of any type, and
+a variable or array may be in several different namelists.
+However dummy arguments and array elements may not be in a namelist.
+A namelist name may be used in external sequential \fBread\fP, \fBwrite\fP
+and \fBprint\fP statements wherever a format could be used.
+.IP
+In a namelist \fBread\fP, column one of each data record is ignored.
+The data begins with an ampersand in column 2 followed by
+the namelist name and a blank.
+Then there is a sequence of value assignments separated by commas
+and finally an ``&end''.
+A simple example of input data corresponding to namelist \fBbasic\fP is:
+.DS
+\ &basic key=5, str=\(fmhi there\(fm &end
+.DE
+.EQ
+delim off
+.EN
+For compatibility with other systems, dollar signs
+may be used instead of the ampersands:
+.DS
+\ $basic key=5, str=\(fmhi there\(fm $end
+.DE
+.IP
+.EQ
+delim $$
+.EN
+A value assignment in the data record must be one of three forms.
+The simplest is a variable name followed by an equal sign
+followed by a data value which is assigned to that variable,
+e.g. ``key=5''.
+The second form consists of an array name followed by ``=''
+followed by one or more values to be assigned to the array,
+e.g.:
+.DS
+c=(1.1,\-2.9),(\-1.8e+10,14.0e\-3)
+.DE
+assigns values to c(1) and c(2) in the complex array c.
+.IP
+As in other \fBread\fP statements, values are assigned in the order of the
+array in memory, i.e. column-major order for two dimensional arrays.
+Multiple copies of a value may be represented by a repetition count
+followed by an asterisk followed by the value; e.g. ``3*55.4'' is the
+same as ``55.4, 55.4, 55.4''.
+It is an error to specify more values than the array can hold;
+if less are specified, only that number of elements of the array
+are changed.
+The third form of a value assignment is a subscripted variable
+name followed by ``='' followed by a value or values,
+e.g.: ``arr2(0,4)=15.2''.
+Only integer constant subscripts may be used.
+The correct number of subscripts must be used and the subscripts
+must be legal.
+This form is the same as the form with an array name except the
+array is filled starting at the named element.
+.IP
+In all three forms, the variable or array name must be declared
+in the namelist.  The form of the data values is the same as in
+list directed input except that in namelist \s-1I/O\s0,
+character strings in the data must be enclosed in apostrophes or
+double quotes, and
+repetition counts must be followed by data values.
+.IP
+One use of namelist input is to read in a list of options or flags.
+For exampl.\"	@(#)2.1	6.1 (Berkeley) 5/26/86
+.\"
+.ls 1
+.ch "Using Notesfiles"
+
+	The notesfile system is invoked with a single command line.
+Most notesfile commands require only a single character (like the vi editor).
+Those that require more than one character are terminated by a carriage
+return.
+
+.se "Invocation"
+
+	Invoke the notesfile system with:
+
+	notes [ -sxi ] [-a subsequencer] [ -t termtype ] [ -f nfile ] [ topic1 ] [ topic2 ... ]
+
+The topic list (e.g., topic1) specifies the notesfiles to read.
+Invoking the notes system with NO arguments yields a list of some
+available topics.
+When more than one topic is specified, the user encounters each topic
+sequentially (i.e., topic2 is entered upon completion of topic1).
+
+	The -s switch activates the ``notesfile sequencer'' which is discussed
+in section 2.8.
+Specify  ``-x'' to use the extended sequencer.
+The ``-i'' flag selects yet another sequencing mode.
+The ``-a'' option specifies a particular subsequencer.
+This allows several users sharing a signon to maintain their
+own sequencing timestamp information.
+
+	The -t option directs the notesfile system to use  ``termtype'' as the user's
+terminal type, overriding the TERM shell variable.
+
+	The -f option directs the notesfile system to read the contents
+of the file ``nfile'' for a list of notesfiles to read.
+See section 2.3 (``The -f Option'')
+for more information on the format of this file.
+
+.se "Notesfile Names and Wildcards"
+
+	Notesfiles can be specified in several ways.
+The most common way is to merely give the name of the notesfile,
+such as ``general''.
+These notesfiles typically reside in the directory
+``/usr/spool/notes''.
+Notesfiles may also be specified by their complete pathname;
+thus you could also refer to ``general'' by its full
+pathname ``/usr/spool/notes/general''.
+Using complete naming, notesfiles can be placed anywhere in
+the filesystem.
+This allows ``private'' notesfiles to be
+stored in personal directories.
+
+	The notesfile system supports pattern matching for names in
+the same manner as the shell.
+By using the shell meta-characters ``*'', ``?'', ``['' and ``]'', the user
+can specify a number of notesfiles with a single entry.
+To read all the notesfiles that pertain to
+unix, enter the following
+line (the quotes are required to protect the metacharacters from interpretation
+by the shell):
+
+	notes ``*unix*''
+
+There are several ways to read the notesfiles
+test1, test2, test3 and test4:
+
+	notes test1 test2 test3 test4
+.br
+	notes ``test?''
+.br
+	notes ``test[1234]''
+
+	Entries can also be eliminated from the list of notesfiles to
+look at.
+By prefixing a notesfile name (possibly containing wildcard characters)
+with a `!', the notesfiles are excluded from the list 
+to be examined.
+If one wished to look at all of the ``test'' notesfiles except
+test3, one could specify:
+
+	notes ``test?'' !test3
+
+If you use the c shell, you will have to escape the `!', the history character:
+
+	notes ``test?'' \\!test3
+
+	These features are available from
+the normal entry (notes) and
+the automatic sequencer entry (see section 2.8).
+Most notesfile programs recognize this format. Among those
+which do not are programs which must receive exactly one
+notesfile name.
+
+.se "The -f Option"
+
+	The ``-f'' option of the notesfile system
+specifies a file of notesfile names to read.
+The file consists of lines containing notesfile names:
+
+.ne 4
+.nf
+	nfgripes
+	net.unix-wizards
+	net.general
+	fa.telecom
+.fi
+
+The names start at the left margin; they are indented here
+for readability.
+Wildcard characters (``*'', ``?'', ``['', and ``]'')
+are acceptable in this context.
+Full names such as ``/usr/spool/notes/general'' 
+are also accepted.
+Notesfiles can be eliminated through the ``!'' feature
+as described in section 2.2.
+The sequencer mode can be changed (see section 2.8)
+by inserting a line of the form:
+
+	-s
+
+	Again, this starts at the left margin.
+The ``s'' can be any of: ``s'', ``x'', ``i'', or ``n''.
+When a line of this form is read from the file, the sequencer mode
+is set to the corresponding mode: The normal ``s''equencer,
+the e``x''tended sequencer,
+the ``i''ndex sequencer,
+and
+``n''o sequencer.
+
+	To always enter nfgripes, micronotes, and bicycle
+while only entering the networked notesfiles ``net.*'' when new notes
+are present, one might use ``notes -f myfile''
+with this ``myfile'':
+
+.ne 6
+.nf
+	-x
+	nfgripes
+	micronotes
+	bicycle
+	-s
+	net.*
+.fi
+
+.se "General"
+
+	Almost all notesfile commands consist of exactly one character
+(no carriage return).  Only commands that are longer than one character
+require a terminating carriage return (currently, choosing a note to read
+is the only non-single character command).
+
+	The commands were chosen to be easy to remember.
+Upper case forms of commands usually function
+like their lower case counterparts but with some additional
+feature or power (i.e., ``w'' writes a response, ``W'' includes the current
+displayed text in the response).
+
+	Some commands are available almost everywhere in the notesfile
+system.  These include those for help, exiting, forking a shell,
+and making a comment for the suggestion box.
+
+.ss "Help"
+
+	Typing ``?'' anywhere will list the available options in
+an abbreviated format.
+
+.ss "Exiting"
+
+	Type ``q'' (``quit'') to leave the current notesfile.
+Capital ``Q''
+leaves the current notesfile and refrains from entering your
+last entry time into the sequencer table (see section ``The Sequencer'').
+The notesfile system
+proceeds to the next topic in the invocation list.
+The ``k'' and ``K'' keys function exactly as ``q'' and ``Q''.
+
+	Use control-D (``signoff'')
+to leave the notesfile system completely (without updating
+entry time information).
+The ``z'' command (which functions only when reading notes or responses
+or when on the index page)
+behaves similarly to control-D:
+the user exits the notesfile system immediately, but unlike control-D,
+updates the
+entry time information for the current notesfile.
+
+
+.ss "Shells"
+
+	Fork a shell at any time by typing ``!''
+(just like many other Unix programs).
+
+.ss "Comments & Suggestions"
+
+	Type capital ``B'' (``suggestion Box'')
+while on the index page or reading notes
+to make a comment or suggestion about the notesfile program.
+Your suggestion will be stored in another
+notesfile reviewed frequently by the notesfile system manager.
+
+.se "The Index Page"
+
+	When the notes system is invoked without the -s option,
+the user sees an index
+of the most recent notes.
+A sample page is shown below:
+
+.KS
+.nf
+.in +10
+Workstation Discussion                     2:03 pm  Jan 4, 1982
+
+.ta .75i 3.0i 3.25i
+12/9/81	2 Stanford SUN	4	horton
+	3*WICAT 68000		kolstad
+	4 M68000	1	horton
+	5 Dolphin	3	duke!johnson
+12/10	6 CDC Standalone	1	smith
+	8 IBM Personal Computer		henry
+	9 Personal computers harmful?	8	Anonymous
+	10 Ethernet interfaces 3 mhz?	23	essick
+	11 Requirements for uiucdcs	10	botten
+1/1/82	12 Happy New Year!	5	mjk
+
+
+.TA
+.in
+.fi
+.KE
+	The upper left corner shows the notesfile's title.  In this
+example, the notesfile discusses personal workstations.
+The current time and date are displayed in the upper right corner.
+Approximately ten note titles are displayed (if available).
+More notes are displayed on longer
+screens (such as the Ann Arbor Ambassador).
+Each note is displayed
+with its date (if different from the previous date), note number,
+title, number of responses (if any), and author.  The first note above
+was written by user ``horton'' on December 9th, is entitled ``Stanford
+SUN'' and has four responses.  Note 7 has been deleted for some reason
+(by either its author or a notesfile director).  Note 5 was written
+by user ``johnson'' whose signon resides on the ``duke'' system.
+Note 9 was written by an author who preferred to remain unidentified.
+Notes with director messages (sometimes denoting importance) are displayed
+with a ``*'' next to the note number (see note 3 above).
+
+	From the index page the user may:
+
+.br
+.bx
+.ix
+Scroll the index forward or backward.
+.ix
+Read a note.
+.ix
+Write a note.
+.ix
+Go to the next unread note.
+.ix
+Search for notes or responses after a specific date/time.
+.ix
+Search for keywords within notes' titles.
+.ix
+Search for notes/responses by a specific author.
+.ix
+Go to another notesfile.
+e:
+.DS
+	logical flags(14)
+	namelist /pars/ flags, iters, xlow, xhigh, xinc
+	data flags/14*.false./
+
+10	read(5,pars,end=900)
+	print pars
+	call calc( xlow, xhigh, xinc, flags, iters )
+	go to 10
+900	continue
+	end
+.DE
+could be run with the following data (each record begins with a space):
+.DS
+\ &pars iters=10, xlow=0.0, xhigh=1.0, xinc=0.1 &end
+\ &pars xinc=0.2,
+\ \ \ flags(2)=2*.true., flags(8)=.true. &end
+\ &pars xlow=2.0, xhigh=8.0 &end
+.DE
+The program reads parameters for the run from the first data set
+and computes using them.
+Then it loops and each successive set of namelist input data
+specifies only those data items which need to be changed.
+Note the second data set sets the $2 sup nd$, $3 sup rd$,
+and $8 sup th$ elements in the array \fBflags\fP to \fB.true.\fP.
+.IP
+When a namelist name is used in a \fBwrite\fP or \fBprint\fP statement,
+all the values in the namelist are output together with their names.
+For example the \fBprint\fP in the program above prints the following:
+.DS
+\ &pars  flags=  f,  f,  f,  f,  f,  f,  f,  f,  f,  f,  f,  f,  f,  f, iters=
+\   10, xlow=  0., xhigh=   1.00000, xinc=  0.100000
+\ &end
+\ &pars  flags=  f,  t,  t,  f,  f,  f,  f,  t,  f,  f,  f,  f,  f,  f, iters=
+\   10, xlow=  0., xhigh=   1.00000, xinc=  0.200000
+\ &end
+\ &pars  flags=  f,  t,  t,  f,  f,  f,  f,  t,  f,  f,  f,  f,  f,  f, iters=
+\   10, xlow=   2.00000, xhigh=   8.00000, xinc=  0.200000
+\ &end
+.DE
+.IP
+Each line begins with a space so that namelist output can be used as input to 
+a namelist \fBread\fP.
+The default is to use ampersands in namelist \fBprint\fP and
+\fBwrite\fP.
+However, dollar signs will be used if the last preceding namelist \fBread\fP
+data set used dollar signs.
+The character to be used is stored as the first character of the common
+block \fBnamelistkey\fP.
+.Nh 2 Automatic\ Precision\ Increase
+The \(mi\fBr8\fP flag allows a user to run a program with increased
+precision without changing any of the program source,
+i.e. it allows a user to take a program coded in
+single precision and compile and execute it as if it had
+been coded in double precision.
+The option extends the precision of all single precision real
+and complex constants, variables, external functions, and intrinsic functions.
+For example, the source:
+.DS
+	implicit complex(c)
+	real last
+	intrinsic sin, csin
+	data last/0.3/
+
+	x = 0.1
+	y = sqrt(x)+sqrt(last)
+	c1 = (0.1,0.2)
+	c2 = sqrt(c1)
+	x = real(i)
+	y = aimag(c1)
+	call fun(sin,csin)
+.DE
+is compiled under this flag as if it had been written as:
+.DS
+	implicit double precision (a-b,d-h,o-z), double complex(c)
+	double precision last
+	intrinsic dsin, cdsin
+	data last/0.3d0/
+
+	x = 0.1d0
+	y = sqrt(x)+sqrt(last)
+	c1 = (0.1d0,0.2d0)
+	c2 = sqrt(c1)
+	x = dreal(i)
+	y = dimag(c1)
+	call fun(dsin,cdsin)
+.DE
+When the \(mi\fBr8\f flag is invoked,
+the calls using the generic name \fBsqrt\fP will refer to a different
+specific function since the types of the arguments have changed.
+This option extends the precision of all single precision \fBreal\fP
+and \fBcomplex\fP variables and functions,
+including those declared \fBreal\(**4\fP and \fBcomplex\(**8\fP.
+.IP
+In order to successfully use this flag to increase precision,
+the entire program including
+all the subroutines and functions it calls must be recompiled.
+Programs which use dynamic memory allocation or
+use equivalence or common statements to associate variables of different types
+may have to be changed by hand.
+Similar caveats apply to the sizes of records
+in unformatted \s-1I/O\s0.
+.Nh 2 Characters\ and\ Integers
+A character constant of integer length or less
+may be assigned to an integer variable.
+Individual bytes are packed into
+the integer in the native byte order.
+The character constant is padded with blanks
+to the width of the integer during the assignment.
+Use of this feature is deprecated;
+it is intended only as a porting aid
+for extended Fortran 66 programs.
+Note that the intrinsic
+.B ichar
+function behaves as the standard requires,
+converting only single bytes to integers.
+.NH 1
+VIOLATIONS OF THE STANDARD
+.XS
+\*(SN Violations of the Standard
+.XE
+.LP
+We know only a few ways in which our Fortran system violates the new standard:
+.Nh 2 Double\ Precision\ Alignment
+The Fortran Standards (both 1966 and 1977)
+permit
+.B common
+or
+.B equivalence
+statements to force a double precision quantity onto an odd word boundary,
+as in the following example:
+.DS I
+real a(4)
+double precision b,c
+.sp .5
+equivalence (a(1),b), (a(4),c)
+.DE
+Some machines (e.g., Honeywell 6000, \s-1IBM 360\s0) require that double precision quantities be on double word boundaries;
+other machines (e.g., \s-1IBM 370\s0), run inefficiently if this alignment rule is not observed.
+It is possible to tell which equivalenced and common variables suffer from a forced odd
+alignment, but every double precision argument would have to be assumed on a bad boundary.
+To load such a quantity on some machines,
+it would be necessary to use separate operations to move the upper and lower halves
+into the halves of an aligned temporary, then to load that double precision temporary; the reverse would be
+needed to store a result.
+We have chosen to require that all double precision real and complex quantities
+fall on even word boundaries on machines with corresponding hardware requirements,
+and to issue a diagnostic if the source code demands a violation of the rule.
+.Nh 2 Dummy\ Procedure\ Arguments
+If any argument of a procedure is of type character,
+all dummy procedure arguments of that procedure must be declared
+in an
+.B external
+statement.
+This requirement arises as a subtle corollary of the way we represent character string arguments
+and of the one-pass nature of the compiler.
+A warning is printed if a dummy procedure is not declared
+.B external.
+Code is correct if there are no
+.B character
+arguments.
+.Nh 2 T\ and\ TL\ Formats
+The implementation of the
+.B t
+(absolute tab)
+and
+.B tl
+(leftward tab)
+format codes
+is defective.
+These codes allow rereading or rewriting part of the
+record which has already been processed
+(section 6.3.2 in Appendix A).
+The implementation uses seeks,
+so if the unit is not one which allows seeks,
+such as a terminal,
+the program is in error.
+A benefit of the implementation chosen is
+that there is no upper limit on the length of
+a record,
+nor is it necessary to predeclare any record
+lengths except where specifically required
+by Fortran or the operating system.
+.Nh 2 Carriage\ Control
+The Standard leaves as implementation dependent which logical unit(s)
+are treated as ``printer'' files.
+In this implementation there is no printer file and
+thus by default, no carriage control is recognized on formatted output.
+This can be changed using \fBform=\|\(fmprint\|\(fm\fP in the
+\fBopen\fP statement
+for a unit, or by using the \fBfpr\fP(1) filter for output; see [9].
+.Nh 2 Assigned\ Goto
+The optional
+.I list
+associated with an assigned
+.B goto
+statement is not checked against the actual assigned value during execution.
+.NH 1
+INTER-PROCEDURE INTERFACE
+.XS
+\*(SN Inter-Procedure Interface
+.XE
+.LP
+To be able to write C procedures that call or are called by Fortran procedures,
+it is necessary to know the conventions for procedure names,
+data representation,
+return values,
+and argument lists that the compiled code obeys.
+.Nh 2 Procedure\ Names
+On
+\s-1UNIX\s0
+systems,
+the name of a common block or a Fortran procedure
+has an underscore appended to it by the compiler
+to distinguish it from a C procedure or external variable
+with the same user-assigned name.
+Fortran built-in procedure names have embedded underscores to avoid clashes
+with user-assigned subroutine names.
+.Nh 2 Data\ Representations
+The following is a table of
+corresponding Fortran and C declarations:
+.KS
+.TS
+center;
+l l
+l l.
+.B
+Fortran	C
+.R
+.sp .5
+integer\(**2 x	short int x;
+integer x	long int x;
+logical x	long int x;
+real x	float x;
+double precision x	double x;
+complex x	struct { float r, i; } x;
+double complex x	struct { double dr, di; } x;
+character\(**6 x	char x[6];
+.TE
+.KE
+(By the rules of Fortran,
+.B integer,
+.B logical,
+and
+.B real
+data occupy the same amount of memory.)
+.Nh 2 Arrays
+The first element of a C array always has subscript zero,
+while Fort.ix
+Consult the notesfile's archive.
+.ix
+Read the policy note.
+.ix
+Check on anonymous and networked status.
+.ix
+Register a complaint/suggestion about notesfiles.
+.ix
+Fork a shell.
+.ix
+Exit the notes program.
+.ix
+Invoke notesfile director options (if the user is a director).
+.ex
+
+.ss "Scrolling the Index Page"
+
+	Scroll the index page by:
+
+.nf
+.ls 1
+	+, <return>, <space> 	forward one page
+	*	forward to the most recent page (* is multiple +'s)
+	-	backward one page
+	=	backward all the way (= is multiple -'s)
+.br
+.ls
+.fi
+
+.ss "Choosing Notes & Responses"
+
+	While on the index page, choose a note to read by typing its number
+followed by a carriage return.
+(This is the only command that requires a carriage return after it.)
+Usually the space bar is used to scan text.
+To skip to a particular note or response, use the features below.
+
+	While reading a note, ``;'' or ``+''
+advances to the
+first response of the note.
+The next note is displayed if there are no responses.
+The number keys (``1'', ``2'', ... , ``9'') advance that many
+responses.
+If there are fewer responses, the last response is displayed.
+The return key skips the responses and goes to the next note.
+Press ``-'' or backspace to see the previous page of the current note;
+if the page currently displayed is the first, the notesfile program
+displays the first page of the previous note.
+
+	While a response is on the screen, the ``;'' and ``+'' keys
+display the next response.
+As with reading a note, if there are no further responses these
+keys advance to the next note.
+The number keys (``1'', ... , ``9'') will advance the appropriate number
+of responses.
+If there are fewer responses, the last response is displayed.
+The ``-'' or backspace keys display the previous page of the current
+response. If the current page is the first page of the response,
+these keys display the first page of the previous response.
+Enter ``='' to see the base note of the current note string.
+Press the return key to proceed to the next note.
+
+.se "Notes & Responses"
+
+.ss "Reading Notes"
+
+	After selecting a note from the index page (or entering the
+notesfile with your ``sequencer'' on), the note is displayed.  A sample
+display is shown below:
+
+.KS
+.nf
+Note 15                   Workstation Discussion                2 responses
+horton                         WICAT 150              4:03 pm  Dec 11, 1981
+
+Wicat System 150
+
+8 MHz 68000, Mem. mgmt, Multibus architecture, 256k to 1.5 Mb RAM,16/32/64Kbyte EPROM, 
+10 ms interval timer, 2 RS232 (19.6k async, 56k sync), 16 bit parallel intelligent disk controller,
+10 Mbyte winchester (5.25", 3600 rpm, access: 3 ms trk-trk, 70 avg, 150 max),
+960Kb floppy (5.25", 300 rpm, access 10 ms trk-trk, 267 avg, 583 max)
+Options: battery backed clock, graphics with touch panel, video disk control,
+High Speed Serial Network Interface
+Unix/V7 avail, Pascal, C, APL, ADA, Cobol, Fortran, Lisp, Basic, Asm
+
+.fi
+.KE
+
+	This is note number 15 in the ``Workstation Discussion'' file.
+User ``horton'' wrote this note at 4:03 pm on December 11th, 1981.  Two
+responses have been written.  The note's title is ``WICAT 150''.  If a
+director had written the note, the ``director message'' might have been
+displayed beneath the note's title.  Director's notes sometimes contain
+important information or new policies.
+
+	Since notes and responses can each be up to 3 Mbytes long, 
+the display routine breaks text into pages automatically.
+For all but the last page of a long note or response,
+the lower right corner of the display  shows the percentage of the
+note that has been shown.
+For all but the first page of long text, the message ``[Continued]''
+appears in the upper left portion of the display.
+Use the space bar to see the next page of a long note or response.
+When the last page is displayed, the space key functions as the ``;'' 
+key: it proceeds to the next response.
+The ``-'' and backspace keys back up the display to the previous page.
+Only the first 50 pages of text are managed this way;
+typing ``-'' from the fifty-second page will return to the fiftieth page.
+The ``='' key returns to the first page of the note.
+
+	While reading a note, it is possible to:
+.br
+.bx
+.ix
+Display the next, previous, or first page of the note.
+.ix
+Write a response to the displayed note.
+.ix
+Read next note or previous note.
+.ix
+Read next unread response or note.
+.ix
+Return to the index page.
+.ix
+Skip to a given response.
+.ix
+Delete the note (if you are its author or a file director).
+.ix
+Edit the note's title (if it is yours).
+.ix
+Edit the note (if it is yours and there are no responses).
+.ix
+Copy the note to another notesfile.
+.ix
+Save the note in your file space.
+.ix
+Mail the note to someone.
+.ix
+Talk (``write'') to the author of the note.
+.ix
+Search for keywords in note titles.
+.ix
+Search for notes/responses by a particular author.
+.ix
+Toggle the director message (if privileged).
+.ix
+Fork a shell.
+.ix
+Go to another notesfile.
+.ix
+Make a comment or suggestion about notesfiles.
+.ix
+Exit the notesfile program.
+.ex
+
+.ss "Reading Responses"
+
+	Response displays are similar to those of main notes with the exception that
+``Response x of y'' replaces the note's title.
+The first response to note 15 is shown below:
+
+.KS
+.nf
+Note 15                   Workstation Discussion                
+koehler                      Response 1 of 2         11:53 pm  Dec 11, 1981
+
+Does anyone have any insight about the relative speeds of the Winchester disks available 
+on these systems?  The previous disk seems to have track to track response times commensurate 
+with reasonably fast 8" floppies.  I wonder if some of the manufacturers are using disks that
+will not meet reasonable specifications for response time for these kinds of applications.
+
+On the other hand, with intelligent layout of file sectors, the I/O system
+could romp and stomp on often used files...
+                ======================================
+.fi
+.KE
+
+	The commands for manipulating the text of a long response
+are the same as those for looking at long notes.
+Typing space will move to the next page.
+Typing ``-'' or backspace will display the previous page, within the
+same limitations as for reading notes (only 50 pages are kept).
+Press ``='' to go back to the first page of the text.
+
+	The options available while reading responses include:
+.bx
+.ix
+Display the next, previous, or first page of the response.
+.ix
+Go to a different response (usually the next one).
+.ix
+Go to the next unread note/response.
+.ix
+Reread the base note.
+.ix
+Reread the previous note.
+.ix
+Return to the index page.
+.ix
+Copy the response to another notesfile.
+.ix
+Mail the response to someone.
+.ix
+Save the response in your file space.
+.ix
+Talk to the response's author.
+.ix
+Write another response to the note.
+.ix
+Search for keywords in note titles.
+.ix
+Search for notes/responses by particular authors.
+.ix
+Delete the response (if you are its author or a file director).
+.ix
+Edit the response (if it is yours and there are no later responses).
+.ix
+Fork a shell
+.ix
+Go to another notesfile.
+.ix
+Register a suggestion or complaint about the notesfile program.
+.ix
+Exit the notesfile program.
+.ex
+
+
+.ss "Writing Notes & Responses"
+
+	Wr

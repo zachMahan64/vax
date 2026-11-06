@@ -1,0 +1,1891 @@
+f any unexpected problems arise, the automatic reboot will fail and
+.B fsck
+should be run manually.  There is a document explaining the use of
+.B fsck
+and all the errors which can occur in standard UNIX systems.  Most
+errors are prohibited from happening in this version of the system
+unless there is hardware or software failure;
+.B fsck
+was designed with adversity in mind to deal with these exceptional cases
+and is very easy to use to fix up addled file systems.
+.BP getty
+Is the new name for the old \fBgetty.vm\fR.
+.BP halt
+Halts the processor cleanly when no reboot is desired, regardless
+of the setting of the auto-reboot switch on the machine.
+.BP icheck
+Is largely replaced by
+.B fsck.
+.BP init
+Now understands how to initiate an automatic reboot.  When passed appropriate
+information as parameter at boot time, it will immediately run
+.B /etc/rc
+with parameter
+.B autoboot,
+causing it to run a disk check.
+If
+.B /etc/rc
+exits with a non-zero exit status, the reboot we be considered a failure,
+and a single user sM storage modules and the Fujitsu 160M drives which are
+popular.  Other drive sizes can be added easily.
+.	\".BP ut.c
+.	\"A driver for the System Industries Model 9700 tape drive, emulating
+.	\"a DEC TU45 on the UNIBUS.
+.BP va.c
+The \fBvarian\fR printer-plotter driver has been modified so that
+it can support more than one device, probes the devices so they
+can be placed on differrent UNIBUS'es, and prints an error diagnostic
+when device errors are detected.
+.BP vaxcpu.c
+Is a new file which contains initializations of various CPU-type
+dependent structures.
+.BP vp.c
+Has been modified to handle multiple devices, and adapted to the
+auto-configuration code.
+.SH
+Configuration and UNIBUS device drivers
+.PP
+Someday this section will be a separate document.
+This section explains how to interface an existing UNIX
+device driver to the VAX system, especially to the UNIBUS
+routines and the autoconfiguration code.
+.PP
+A PDP-11, UNIX/32V or 3BSD or 4.0BSD
+driver on the VAX UNIBUS will need to be modified
+to run under 4.1BSD.  There are three reasons why such a driver
+will need to be changed:
+.IP 1)
+4.1bsd supports multiple UNIBUS adapters.
+.IP 2)
+4.1bsd supports system configuration at boot time.
+.IP 3)
+4.1bsd manages the UNIBUS resources and does not crash when
+resources are not available; the resource allocation protocol must
+be honored.  In addition, devices such as the RK07 which require
+everyone else to get off the UNIBUS when they are running
+need cooperation from other DMA devices if they are to work.
+.PP
+Each UNIBUS on a VAX has a set of resources:
+.IP *
+496 map registers which are used to convert from the 18 bit UNIBUS
+addresses into the much larger VAX address space.
+.IP *
+Some number of buffered data paths (3 on an 11/750, 15 on an 11/780)
+which are used by high speed devices to transfer
+data using fewer bus cycles.
+.LP
+There is a structure of type \fBstruct uba_hd\fR in the system per UNIBUS 
+adapter used to manage these resources.  This structure also contains
+a linked list where devices waiting for resources to complete DMA UNIBUS
+activity have requests waiting.
+.PP
+There are three central structures in the writing of drivers for UNIBUS
+controllers; devices which do not do DMA i/o can often use only two
+of these structures.  The structures are \fBstruct uba_ctlr\fR, the
+UNIBUS controller structure, \fBstruct uba_device\fR the UNIBUS
+device structure, and \fBstruct uba_driver\fR, the UNIBUS driver structure.
+The \fBuba_ctlr\fR and \fBuba_device\fR structures are in
+one-to-one correspondence with the definitions of controllers and
+devices in the system configuration.
+Each driver has a \fBstruct uba_driver\fR structure specifying an internal
+interface to the rest of the system.
+.PP
+Thus a specification
+.DS
+controller sc0 at uba0 csr 0176700 vector upintr
+.DE
+would cause a \fBstruct uba_ctlr\fR to be declared and initialized in
+the file \fBioconf.c\fR for the system configured from this description.
+Similarly specifying
+.DS
+disk up0 at sc0 drive 0
+.DE
+would declare a related \fBuba_device\fR in the same file.
+The \fBup.c\fR driver which implements this driver specifies in
+its declarations:
+.DS
+int     upprobe(), upslave(), upattach(), updgo(), upintr();
+struct  uba_ctlr *upminfo[NSC];
+struct  uba_device *updinfo[NUP];
+u_short upstd[] = { 0776700, 0774400, 0776300, 0 };
+struct  uba_driver scdriver =
+    { upprobe, upslave, upattach, updgo, upstd, "up", updinfo, "sc", upminfo };
+.DE
+initializing the \fBuba_driver\fR structure.
+The driver will support some number of controllers named \fBsc0\fR, \fBsc1\fR,
+etc, and some number of drives named \fBup0\fR, \fBup1\fR, etc. where the
+drives may be on any of the controllers (that is there is a single
+linear name space for devices, separate from the controllers.)
+.PP
+We now explain the fields in the various structures.  It may help
+to look at a copy of \fBh/ubareg.h\fR, \fBh/ubavar.h\fR and drivers
+such as \fBup.c\fR and \fBdz.c\fR while reading the descriptions of
+the various structure fields.
+.SH
+uba_driver structure
+.PP
+One of these structures exists per driver.  It is initialized in
+the driver and contains functions used by the configuration program
+and by the UNIBUS resource routines.  The fields of the structure are:
+.BP ud_probe
+A routine which is given a \fBcaddr_t\fR address as argument and
+should cause an interrupt on the device whose control-status register
+is at that address in virtual memory.  It may be the case that the
+device does not exist, so the probe routine should use delays (via
+the DELAY(n) macro which delays for \fIn\fR microseconds) rather than
+waiting for specific events to occur.  The routine must \fBnot\fR
+declare its argument as a \fBregister\fR parameter, but \fBmust\fR declare
+.DS
+\fBregister int br, cvec;\fR
+.DE
+as local variables.  At boot time the system takes special measures
+that these variables are ``value-result'' parameters.  The \fBbr\fR
+is the IPL of the device when it interrupts, and the \fBcvec\fR
+is the interrupt vector address on the UNIBUS.  These registers
+are actually filled in in the interrupt handler when an interrupt occurs.
+.IP
+As an example, here is the \fBup.c\fR
+probe routine:
+.DS
+upprobe(reg)
+        caddr_t reg;
+{
+        register int br, cvec;
+
+#ifdef lint     
+        br = 0; cvec = br; br = cvec;
+#endif
+        ((struct updevice *)reg)->upcs1 = UP_IE|UP_RDY;
+        DELAY(10);
+        ((struct updevice *)reg)->upcs1 = 0;
+        return (1);
+}
+.DE
+The definitions for \fIlint\fR serve to indicate to it that the
+\fBbr\fR and \fBcvec\fR variables are value-result.  The statements
+here interrupt enable the device and write the ready bit UP_RDY.
+The 10 microsecond delay insures that the interrupt enable will
+not be cancelled before the interrupt can be posted.  The return of
+``1'' here indicates that the probe routine is satisfied that the device
+is present.  A probe routine may use the function ``badaddr'' to see
+if certain other addresses are accessible on the UNIBUS (without generating
+a machine check), or look at the contents of locations where certain
+registers should be.  If the registers contents are not acceptable or
+the addresses don't respond, the probe routine can return 0 and the
+device will not be considered to be there.
+.IP
+One other thing to note is that the action of different VAXen when illegal
+addresses are accessed on the UNIBUS may differ.  Some of the machines
+may generate machine checks and some may cause UNIBUS errors.  Such
+considerations are handled by the configuration program and the driver
+writer need not be concerned with them.
+.IP
+It is also possible to write a very simple probe routine for a one-of-a-kind
+device if probing is difficult or impossible.  Such a routine would include
+statements of the form:
+.DS
+br = 0x15;
+cvec = 0200;
+.DE
+for instance, to declare that the device ran at UNIBUS br5 and interrupted
+through vector 0200 on the UNIBUS.  The current TS-11 driver does 
+something similar to this because the device is so difficult to force
+an interrupt on that it hardly seems worthwhile.  (Besides, TS-11's are
+usually present on small 11/750's which have only one UNIBUS, and TS-11's
+can have only exactly one transport per-controller so little probing is
+needed.)
+.BP ud_slave
+This routine is called with a \fBuba_device\fR structure (yet to
+be described) and the address of the device controller.  It should
+determine whether a particular slave device of a controller is
+present, returning 1 if it is and 0 if it is not.
+As an example here is the slave routine for \fBup.c\fR.
+.DS
+upslave(ui, reg)
+        struct uba_device *ui;
+        caddr_t reg;
+{
+        register struct updevice *upaddr = (struct updevice *)reg;
+
+        upaddr->upcs1 = 0;              /* conservative */
+        upaddr->upcs2 = ui->ui_slave;
+        if (upaddr->upcs2&UPCS2_NED) {
+                upaddr->upcs1 = UP_DCLR|UP_GO;
+                return (0);
+        }
+        return (1);
+}
+.DE
+Here the code fetches the slave (disk unit) number from the \fBui_slave\fR
+field of the \fBuba_device\fR structure, and sees if the controller
+responds that that is a non-existant driver (NED).  If the drive
+a drive clear is issued to clean the state of the controller,.\"	@(#)dbx.ms	6.4 (Berkeley) 5/10/86
+.\"
+.\" modified by mark seiden in cosmetic ways.
+.\" examples VAXinated by Kevin Dunlap
+.\" dtbl | ditroff -ms
+.OH 'Debugging with dbx''PS1:11-%'
+.EH 'PS1:11-%''Debugging with dbx'
+.de BE
+.DS
+.ft CW
+.ps -1
+..
+.de EE
+.ft P
+.ps +1
+.DE
+..
+.de UL
+\f(CW\s-1\\$1\fP\s0
+..
+.TL
+Debugging with dbx
+.AU
+Bill Tuthill
+.AI
+Sun Microsystems, Inc.
+2550 Garcia Avenue
+.AU
+Kevin J. Dunlap
+.AI
+Computer Systems Research Group
+University of California
+Berkeley, CA 94720
+.SH
+Introduction
+.PP
+This short paper discusses
+.I dbx ,
+a symbolic debugger that is vastly superior to
+.I adb .
+It may be as good as the debuggers you remember from those
+non-
+.UX 
+systems you worked on before.
+The advantage of symbolic debuggers is that they allow you
+to work with the same names (symbols) as in your source code.
+.PP
+Like
+.I adb ,
+.I dbx
+is interactive and line-oriented, but
+.I dbx
+is a source-level rather than an assembly-level debugger.
+It allows you to determine where a program crashed,
+to view the values of variables and expressions,
+to set breakpoints in the code, and to run and trace a program.
+Source code may be in C, Fortran, or Pascal.
+.PP
+Mark Linton wrote
+.I dbx
+as his master's thesis at UC Berkeley.
+Along with Eric Schmidt's Berknet,
+.I dbx
+is among the most successful master's theses done on UNIX.  Since
+.I dbx
+required changes to the symbol tables
+generated by the various compilers,
+you need to compile programs for debugging with the
+.I \-g
+flag.  For example,
+C programs should be compiled as follows:
+.DS
+% cc \-g \fIprogram\fP.c \-o \fIprogram\fP
+.DE
+Programs compiled with the
+.I \-g
+option have good symbol tables,
+while programs compiled without
+.I \-g
+have old-style symbol tables intended for
+.I adb .
+Stripped programs have no symbol tables at all.
+Invoke the debugger as follows, where
+.I program
+is the pathname of the executable file that dumped core:
+.DS
+% dbx \fIprogram\fP
+.DE
+The core image should be in the working directory;
+if it isn't, specify its pathname in the argument after the program name.
+Among the great advances of
+.I dbx
+is that it has a help facility; type the
+.I help
+request to see a list of possible requests.
+You can obtain help on any
+.I dbx
+request by giving its name as an argument to
+.I help .
+.bp
+.SH
+Examining Core Dumps
+.PP
+Much of the time, programmers use
+.I dbx
+to find out why a program dumped core.
+As an example, consider the following program
+.I dumpcore.c ,
+which dereferences a NULL pointer.
+This is a legal operation on VAX/UNIX,
+but not on VAX/VMS or on MC68000-based UNIX systems, on one of
+which this example was run:
+.BE
+#include <stdio.h> 
+.sp.5
+#define LIMIT 5
+.sp.5
+main()			/* print messages and die */
+{
+	int i;
+.sp.5
+	for (i = 1; i <= 10 ; i++) {
+		printf("Goodbye world! (%d)\en", i);
+		dumpcore(i);
+	}
+	exit(0);
+}
+.sp.5
+int *ip;
+.sp.5
+dumpcore(lim) 		/* dereference NULL pointer */
+int lim;
+{
+	if (lim >= LIMIT)
+		*ip = lim;
+} 
+.EE
+The program core dumps because of a
+segmentation violation or memory fault \(em
+on most machines it is illegal to assign to address zero.
+Once the program has produced a core dump,
+here's how you can find out why the program died:
+.DS
+%\c
+.UL " dbx dumpcore"
+dbx version 3.17 of 4/24/86 15:04 (monet.Berkeley.EDU).
+Type 'help' for help.
+reading symbolic information ...
+[using memory image in core]
+(dbx)\c
+.UL " where"
+dumpcore.dumpcore(lim = 5), line 22 in "dumpcore.c"
+main(0x1, 0x7fffe904, 0x7fffe90c), line 11 in "dumpcore.c"
+.DE
+The
+.I where
+request yields a stack trace.
+As you can see, the
+.I dumpcore()
+routine was called from line 11 of the program, with the argument
+.I lim
+equal to 5.
+You can look at the
+.I dumpcore()
+procedure by invoking the
+.I list
+request as follows:
+.DS
+(dbx)\c
+.UL " list dumpcore"
+   18   dumpcore(lim)           /* dereference NULL pointer */
+   19   int lim;
+   20   {
+   21           if (lim >= LIMIT)
+   22                   *ip = lim;
+   23   }
+.DE
+We immediately suspect that the program's failure had something to do with
+.I *ip ,
+so we use the
+.I print
+request to retrieve the value of the pointer and what it points to:
+.DS
+(dbx)\c
+.UL " print *ip"
+reference through nil pointer
+(dbx)\c
+.UL " print ip"
+(nil)
+.DE
+This tells us the program has dereferenced a null pointer.
+It is possible to run the program again from inside the debugger.
+The first line tells you name of the running program,
+and successive lines give output from the program:
+.DS
+(dbx)\c
+.UL " run"
+Goodbye world! (1)
+Goodbye world! (2)
+Goodbye world! (3)
+Goodbye world! (4)
+Goodbye world! (5)
+.sp.5
+Bus error in dumpcore.dumpcore at line 22
+   22		*ip = lim;
+(dbx)\c
+.UL " quit"
+.DE
+In this example the program dies with a Bus error at line 22. 
+This method of running the program
+does not produce a core dump, but the
+.I where
+request will still behave properly,
+because the debugger is in the same state
+as if it had just read the core file.
+.SH
+Setting Breakpoints
+.PP
+With
+.I dbx
+you can set breakpoints before each line of a program,
+not just at function and procedure boundaries, as with
+.I adb .
+The
+.I stop
+request sets a breakpoint.
+After setting a breakpoint, use the
+.I run
+request to execute the program.  The
+.I cont
+request continues execution from the current stopping point
+until the program finishes or another breakpoint is encountered.  The
+.I step
+request executes one source statement,
+following any function calls.  The
+.I next
+request executes one source statement,
+but does not stop inside any function calls.  The
+.I status
+request lists active breakpoints, while the
+.I delete
+request removes them if required.
+.PP
+The
+.I stop
+request can take a conditional expression
+to avoid needless single-stepping.
+We will use a conditional in our example to make things simpler.
+Of course you can use
+.I print
+and
+.I list
+requests at any time during statement stepping
+if you want to print the value of variables
+or list lines of source code.
+This sample session shows a mixture of requests
+as we verify that the program fails when it tries to assign to
+.I *ip :
+.DS
+(dbx)\c
+.UL " stop at 10 if (i == 5)"
+[1] if i = 5 { stop } at 10
+(dbx)\c
+.UL " run"
+Goodbye world! (1)
+Goodbye world! (2)
+Goodbye world! (3)
+Goodbye world! (4)
+[1] stopped in main at line 10
+   10                   printf("Goodbye world! (%d)\en", i);
+(dbx)\c
+.UL " next"
+Goodbye world! (5)
+stopped in main at line 11
+   11                   dumpcore(i);
+(dbx)\c
+.UL " step"
+stopped in dumpcore at line 21
+   21           if (lim >= LIMIT)
+(dbx)\c
+.UL " step"
+stopped in dumpcore at line 22
+   22                   *ip = lim;
+(dbx)\c
+.UL " step"
+Bus error in dumpcore.dumpcore at line 22
+   22		*ip = lim;
+.DE
+Running the program with breakpoints assures us
+that our intuition was correct.
+We shouldn't be assigning anything to a null pointer \(em
+.I ip
+should have been initialized to point at an object of the proper type.
+To exit from the debugger, use the
+.I quit
+request.
+.PP
+It is possible to set variables from inside
+.I dbx .
+The previous breakpoint session, for example,
+could have gone like this:
+.DS
+%\c
+.UL " dbx dumpcore"
+dbx version 3.17 of 4/24/86 15:04 (monet.Berkeley.EDU).
+Type 'help' for help.
+reading symbolic information ...
+[using memory image in core]
+(dbx)\c
+.UL " stop at 10"
+[1] stop at 10
+(dbx)\c
+.UL " run"
+Running: dumpcore 
+stopped in main at line 10
+   10                   printf("Goodbye world! (%d)\en", i);
+(dbx)\c
+.UL " assign i = 5"
+(dbx)\c
+.UL " next"
+Goodbye world! (5)
+stopped in main at line 11
+   11                   dumpcore(i);
+(dbx)\c
+.UL " next"
+Bus error in dumpcore.dumpcore at line 22
+   22		*ip = lim;
+.DE
+It is often useful to assign new values to variables
+to draw conclusions about alternative conditions.
+We can't fix the bug in this program, however,
+because there is no declared variable to which
+.I ip
+should point.
+.SH
+Conclusion
+.PP
+Expressions in
+.I dbx
+are similar to those in C,
+except that there is a distinction between
+.I /
+(floating-point division) and
+.I div
+(integer division), as in Pascal.
+The table on the following page shows
+.I dbx
+requests organized by function:
+.PP
+Like
+.I adb ,
+.I dbx
+can disassemble object code.
+It can also examine object files
+and print output in various formats and 0 is
+returned indicating that the slave is not there.  Otherwise a 1 is returned.
+.BP ud_attach
+The attach routine is called after the autoconfigure code and the driver concur
+that a peripheral exists attached to a controller.  This is the routine
+where internal driver state about the peripheral can be initialized.
+Here is the \fIattach\fR routine from the \fBup.c\fR driver:
+.ID
+.nf
+upattach(ui)
+        register struct uba_device *ui;
+{
+        register struct updevice *upaddr;
+
+        if (upwstart == 0) {
+                timeout(upwatch, (caddr_t)0, hz);
+                upwstart++;
+        }
+        if (ui->ui_dk >= 0)
+                dk_mspw[ui->ui_dk] = .0000020345;
+        upip[ui->ui_ctlr][ui->ui_slave] = ui;
+        up_softc[ui->ui_ctlr].sc_ndrive++;
+        upaddr = (struct updevice *)ui->ui_addr;
+        upaddr->upcs1 = 0;
+        upaddr->upcs2 = ui->ui_slave;
+        upaddr->uphr = UPHR_MAXTRAK;
+        if (upaddr->uphr == 9)
+                ui->ui_type = 1;                /* fujitsu hack */
+        upaddr->upcs2 = UPCS2_CLR;
+}
+.DE
+The attach routine here performs a number of functions.  The first
+time any drive is attached to the controller it starts the timeout
+routine which watches the disk drives to make sure that interrupts
+aren't lost.  It also initializes, for devices which have been assigned
+\fIiostat\fR numbers (when ui->ui_dk >= 0), the transfer rate of the
+device in the array \fBdk_mspw\fR, the fraction of a second it takes
+to transfer 16 bit word.  It then initializes an inverting pointer
+in the array \fBupip\fR which will be used later to determine, for a
+particular \fBup\fR controller and slave number, the corresponding
+\fBuba_device\fR.  It increments the count of the number of devices
+on this controller, so that search commands can later be avoided
+if the count is exactly 1.  It then uses a hardware feature of the
+EMULEX SC-21 to ask if the number of tracks on the device is 9.  If
+it is, then the driver assumes that the type is ``1'', which corresponds
+to a FUJITSU 160M drive.  The alternative is the only other currently
+supported device, a 300 Megabyte CDC or AMPEX drive, which has \fBui_type\fR
+0.  Note that if the controller is not an SC-21 then attempting to find
+out the maximum track in the device will yield an error, and a 300
+Megabyte device will be assumed.  In any case, any errors resulting from
+the attempt to type the drive are cleared by a controller clear before
+the routine returns.
+.BP ud_dgo
+Is the routine which is called by the UNIBUS resource management
+routines when an operation is ready to be started (because the required
+resources have been allocated).  The routine in \fBup.c\fR is:
+.DS
+updgo(um)
+        struct uba_ctlr *um;
+{
+        register struct updevice *upaddr = (struct updevice *)um->um_addr;
+
+        upaddr->upba = um->um_ubinfo;
+        upaddr->upcs1 = um->um_cmd|((um->um_ubinfo>>8)&0x300);
+}
+.DE
+This routine uses the field \fBum_ubinfo\fR of the \fBuba_ctlr\fR
+structure which is where the UNIBUS routines store the UNIBUS
+map allocation information.  In particluar, the low 18 bits of this
+word give the UNIBUS address assigned to the transfer.  The assignment
+to \fIupba\fR in the go routine places the low 16 bits of the UNIBUS
+address in the disk UNIBUS address register.  The next assignment
+places the disk operation command and the extended (high 2) address
+bits in the device control-status register, starting the i/o operation.
+The field \fBum_cmd\fR was initialized with the command to be stuffed
+here in the driver code itself before the call to the \fBubago\fR
+routine which eventually resulted in the call to \fBupdgo\fR.
+.BP ud_addr
+Are the conventional addresses for the device control registers in
+UNIBUS space.  This information is not used by the system in this
+release, but may be used in future releases to look for instances of
+the device supported by the driver.  In the current system, the configuration
+file specifies the control-status register addresses of all configured devices.
+.BP ud_dname
+Is the name of a \fIdevice\fR supported by this controller; thus the
+disks on a SC-21 controller are called \fBup0\fR, \fBup1\fR, etc.
+That is because this field contains \fBup\fR.
+.BP ud_dinfo
+Is an array of back pointers to the \fBuba_device\fR structures for
+each device attached to the controller.  Each driver defines a set of
+controllers and a set of devices.  The device address space is always
+one-dimensional, so that the presence of extra controllers may be
+masked away (e.g. by pattern matching) to take advantage of hardware
+redundancy.  This field is filled in by the configuration program,
+and used by the driver.
+.BP ud_mname
+The name of a controller, e.g. \fBsc\fR for the \fBup.c\fR driver.
+The first SC-21 is called \fBsc0\fR, etc.
+.BP ud_minfo
+The backpointer array to the structures for the controllers.
+.BP ud_xclu
+If non-zero specifies that the controller requires exclusive
+use of the UNIBUS when it is running.  This is non-zero currently
+only for the RK611 controller for the RK07 disks to map around a hardware
+problem.  It could also be used if 6250bpi tape drives are to be used
+on the UNIBUS to insure that they get the bandwidth that they need
+(basically the whole bus).
+.SH
+uba_ctlr structure
+.PP
+One of these structures exists per-controller.
+The fields link the controller to its UNIBUS adaptor and contain the
+state information about the devices on the controller.  The fields are:
+.BP um_driver
+A pointer to the \fBstruct uba_device\fR for this driver, which has
+fields as defined above.
+.BP um_ctlr
+The controller number for this controller, e.g. the 0 in \fBsc0\fR.
+.BP um_alive
+Set to 1 if the controller is considered alive; currently, always set
+for any structure encountered during normal operation.  That is, the
+driver will have a handle on a \fBuba_ctlr\fR structure only if the
+configuration routines set this field to a 1 and entered it into the
+driver tables.
+.BP um_intr
+The interrupt vector routines for this device.  These are generated
+by the \fIconfig\fR\|(8) program and this field is initialized in the
+\fBioconf.c\fR file.
+.BP um_hd
+A back-pointer to the UNIBUS adapter to which this controller is attached.
+.BP um_cmd
+A place for the driver to store the command which is to be given to
+the device before calling the routine \fIubago\fR with the devices
+\fBuba_device\fR structure.  This information is then retrieved when the
+device go routine is called and stuffed in the device control status register
+to start the i/o operation.
+.BP um_ubinfo
+Information about the UNIBUS resources allocated to the device.  This is
+normally only used in device driver go routine (as \fBupdgo\fR above)
+and occasionally in exceptional condition handling such as ECC correction.
+.BP um_tab
+This buffer structure is a place where the driver hangs the device structures
+which are ready to transfer.  Each driver allocates a buf structure for each
+device (e.g. \fBupdtab\fR in the \fBup.c\fR driver) for this purpose.
+You can think of this structure as a device-control-block, and the
+buf structures linked to it as the unit-control-blocks.
+The code for dealing with this structure is stylized; see the \fBrk.c\fR
+or \fBup.c\fR driver for the details.  If the \fBubago\fR routine
+is to be used, the structure attached to this \fBbuf\fR structure
+must be:
+.RS
+.IP *
+A chain of \fBbuf\fR structures for each waiting device on this controller.
+.IP *
+On each waiting \fBbuf\fR structure another \fBbuf\fR structure which is
+the one containing the parameters of the i/o operation.
+.RE
+.SH
+uba_device structure
+.PP
+One of these structure exists for each device attached to a UNIBUS
+controller.  Devices which are not attached to controllers or which
+perform no buffered data path
+DMA i/o may have only a device structure.  Thus \fBdz\fR
+and \fBdh\fR devices have only \fBuba_device\fR structures.
+The fields are:
+.BP ui_driver
+A pointer to the \fBstruct uba_driver\fR structure for this device type.
+.BP ui_unit
+The unit number of this device, e.g. 0 in \fBup0\fR, or 1 in \fBdh1\fR.
+.BP ui_ctlr
+The number of the controller on which this device is attached, or \-1
+if this device is not on a controller.
+.BP ui_ubanum
+The numb; but
+.I dbx
+requires the proper symbol tables, so
+.I adb
+is more useful to examine arbitrary binary files.
+The most important thing
+.I adb
+can do that
+.I dbx
+cannot is to patch binary files \(em
+.I dbx
+has no write option.
+Despite these shortcomings,
+.I dbx
+is much easier to use than
+.I adb ,
+so it contributes much more to individual programmer productivity.
+.SH
+Acknowledgements
+.PP
+Material presented in this document was first presented in
+``C Advisor'', \fIUnix Review 4\fP, 1, pp 78\-85.
+The Regents of the University California expresses their
+gratitude to Unix Review
+for allowing them to reprint this document.
+.PP
+This document is a good starting point for a more thorough tutorial.
+Those with the ambition to expand on this document are encouraged
+to contact the Computer Systems Research Group at ``4bsd-ideas@Berkeley.Edu.''
+.KF
+.TS
+center box;
+cf s.
+.sp.2
+\s+2Groups of \&\fIdbx\fP Requests\s-2
+.sp.2
+_
+.T&
+l lfI
+lp-1fCW l.
+	execution and tracing
+_
+run	execute object file
+cont	continue execution from where it stopped
+trace	display tracing information at specified place
+stop	stop execution at specified place
+status	display active \&\fItrace\fP and \&\fIstop\fP requests
+delete	delete specific \&\fItrace\fP or \&\fIstop\fP requests
+catch	start trapping specified signals
+ignore	stop trapping specified signals
+step	execute the next source line, stepping into functions
+next	execute the next source line, even if it's a function
+.T&
+l lfI
+lp-1fCW l.
+_
+	displaying data
+_
+print	print the value of an expression
+whatis	print the declaration of a given identifier or type
+which	print outer block associated with identifier
+whereis	print all symbols matching identifier
+assign	set the value of a variable
+.T&
+l lfI
+lp-1fCW l.
+_
+	function and procedure handling
+_
+where	display active procedures and functions on stack
+down	move down the stack towards stopping point
+up	move up the stack towards \&\fImain\fP
+call	call the named function or procedure
+dump	display names and values of all local variables
+.T&
+l lfI
+lp-1fCW l.
+_
+	accessing source files and directories
+_
+edit	invoke an editor on current source file
+file	change current source file
+func	change the current function or procedure
+list	display lines of source code
+use	set directory list to search for source files
+/.../	search down in file to match regular expression
+?...?	search up in file to match regular expression
+.T&
+l lfI
+lp-1fCW l.
+_
+	miscellaneous commands
+_
+sh	pass command line to the shell
+alias	change \&\fIdbx\fP command name
+help	explain commands
+source	read commands from external file
+quit	exit the debugger
+.TE
+.KE
+.bp
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                           Berkeley.Edu
+Berknet
+CW
+Linton
+MC68000
+PS1:11
+Tuthill
+UC
+VAX
+VMS
+cont
+dbx
+dbx''PS1:11
+dbxenv
+div
+dumpcore
+dumpcore.c
+dumpcore.dumpcore
+func
+ip
+monet.Berkeley.EDU
+pathname
+pp
+stdio.h
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          '    .   )    ..  (    m0 r)    m9 r*    m5 r+    m4 r,    m3 r-    m.mac fo.    m1 r/    m2 r0    m99 1  x Makefile   w                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    .\"	@(#)m0	6.2 (Berkeley) 4/29/86
+.\"
+.OH 'RATFOR \(em A Preprocessor for a Rational Fortran''PS2:8-%'
+.EH 'PS2:8-%''RATFOR \(em A Preprocessor for a Rational Fortran'
+.....ND "January 1, 1977"
+....TR 55
+.....TM 76-1273-10 39199 39199-11
+.TL
+RATFOR \(em A Preprocessor for a Rational Fortran
+.AU "MH 2C-518" 6021
+Brian W. Kernighan
+.AI
+.MH
+.OK
+structured programming, control flow, programming
+.AB
+.ps 10
+.nr PS 10
+.vs 12
+.nr VS 12
+.in 0
+.ll
+.PP
+Although Fortran is not a pleasant
+language to use,
+it does have the advantages of universality
+and (usually) relative efficiency.
+The
+Ratfor 
+language attempts to conceal
+the main deficiencies of Fortran
+while retaining its desirable qualities,
+by providing
+decent control flow statements:
+.IP "\ \ \ \(bu"
+statement grouping
+.IP "\ \ \ \(bu"
+.UL if-else
+and
+.UL switch
+for decision-making
+.IP "\ \ \ \(bu"
+.UL while ,
+.UL for ,
+.UL do ,
+and
+.UL repeat-until
+for looping
+.IP "\ \ \ \(bu"
+.UL break
+and
+.UL next
+for controlling loop exits
+.LP
+and some ``syntactic sugar'':
+.IP "\ \ \ \(bu"
+free form input (multiple statements/line, automatic continuation)
+.IP "\ \ \ \(bu"
+unobtrusive comment convention
+.IP "\ \ \ \(bu"
+translation of >, >=, etc., into .GT., .GE., etc.
+.IP "\ \ \ \(bu"
+.UL return (expression)
+statement for functions
+.IP "\ \ \ \(bu"
+.UL define
+statement for symbolic parameters
+.IP "\ \ \ \(bu"
+.UL include
+statement for including source files
+.LP
+Ratfor
+is implemented as a
+preprocessor which translates this language
+into Fortran.
+.PP
+Once the control flow and cosmetic deficiencies of Fortran
+are hidden,
+the resulting language is remarkably pleasant to use.
+Ratfor 
+programs are
+markedly easier to write, and to read,
+and thus easier to debug, maintain and modify
+than their Fortran equivalents.
+.PP
+It is readily possible to write 
+Ratfor 
+programs which are portable to other environments.
+Ratfor
+is written in itself
+in this way,
+so it is also portable;
+versions of 
+Ratfor 
+are now running on at least two dozen different types of computers
+at over five hundred locations.
+.PP
+This paper discusses design criteria
+for a Fortran preprocessor,
+the 
+Ratfor
+language
+and its implementation,
+and user experience.
+.AE
+.FS
+This paper is a revised and expanded version of oe published in
+.ul
+Software\(emPractice and Experience,
+October 1975.
+The Ratfor described here is the one in use on
+.UC UNIX
+and
+.UC GCOS
+at Bell Laboratories, Murray Hill, N. J.
+.FE
+.CS 12 1 13 0 0 10
+.LP
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 er of the UNIBUS on which this device is attached.
+.BP ui_slave
+The slave number of this device on the controller which it is attached to,
+or \-1 if the device is not a slave.  Thus a disk which was unit 2 on
+a SC-21 would have \fBui_slave\fR 2; it might or might not be \fBup2\fR,
+that depends on the system configuration specification.
+.BP ui_intr
+The interrupt vector entries for this device, copied into the UNIBUS
+interrupt vector at boot time.  The values of these fields are filled
+in by the \fBconfig\fR\|(8) program to small code segments which it
+generates in the file \fBubglue.s\fR.
+.BP ui_addr
+The control-status register address of this device.
+.BP ui_dk
+The iostat number assigned to this device.  Numbers are assigned to
+disks only, and are small positive integers which index the various
+\fBdk_*\fR arrays in <sys/dk.h>.
+.BP ui_flags
+The optional ``\fBflags \fR\fIxxx\fR'' parameter from the configuration
+specification was copied to this field, to be interpreted by the driver.
+If \fBflags\fR was not specified, then this field will contain a 0.
+.BP ui_alive
+The device is really there.  Presently set to 1 when a device is
+determined to be alive, and left 1.
+.BP ui_type
+The device type, to be used by the driver internally.  Thus the \fBup.c\fR
+driver uses a \fBui_type\fR of 0 to mean a 300 Megabyte drive and a type
+of 1 to mean a 160 Megabyte FUJITSU drive.
+.BP ui_physaddr
+The physical memory address of the device control-status register.
+This is used in the device dump routines typically.
+.BP ui_mi
+A \fBstruct uba_ctlr\fR pointer to the controller (if any) on which
+this device resides.
+.BP ui_hd
+A \fBstruct uba_hd\fR pointer to the UNIBUS on which this device resides.
+.SH
+Changing drivers
+.PP
+If you driver does not do buffered data path DMA, conversion
+to the new system should be straightforward; if it uses
+buffered data paths more work will be required, but the
+task is really mostly cosmetic.
+.PP
+In any case, first add a line to the file \fBconf/files\fR of the form
+.DS
+dev/zz.c	optional zz device-driver
+.DE
+so that your driver will be included when you
+specify it in a configuration.
+Change the \fBdev/conf.c\fR file to include a block or character
+device entry for your device.  Note that the block device entries
+now include a \fBd_dump\fR entry; if you are a block device but
+don't have a dump entry point, just make one in your driver that
+returns the value ENODEV.
+.PP
+Then build a system configuration including your driver so that
+you have a compilation environment for your driver.  You will
+have to add a \fBstruct uba_driver\fR declaration for your driver,
+and change its calls to UNIBUS routines to correspond to these
+routines in the new system.  Trouble spots will show up here.
+In particular, notice that you must specify flags to \fBuballoc\fR
+if you call it:
+.BP NEEDBDP
+if you need a buffered data path
+.BP CANTWAIT
+if you are calling (potentially) from interrupt level
+.LP
+You may discover that your driver ``cantwait'' but that you are calling
+from interrupt level.  This botch existed in most previous VAX UNIX
+drivers, since there were no mechanisms for dealing with this.
+We will describe some options shortly.
+.PP
+First, suppose your driver doesn't do buffered data path dma.
+What else is there for you to do?  Very little really.
+You should change your driver to print messages on the console
+in the format now used by all device drivers; see section 4 of the
+revised programmers manual for details.
+To make more certain that your driver is ready for the new system
+environment, look at some of the simple existing drivers
+and mimic the style to create the portions of the driver which
+are needed to interface with the configuration part of the system.
+Useful drivers to look at may be:
+.BP ct.c
+Very simple drive which does programmed i/o to C/A/T phototypesetter.
+.BP dh.c
+Communications line driver which uses non-buffered UNIBUS dma
+for output.
+.BP dz.c
+Communications line driver which does programmed i/o.
+.PP
+Basically all you have to do is write a \fBud_probe\fR and a \fBud_attach\fR
+routine for the controller.  It suffices to have a \fBud_probe\fR routine
+which just initializes \fBbr\fR and \fBcvec\fR, and a \fBud_attach\fR
+routine which does nothing.
+Making the device fully configurable requires, of course, more work,
+but is worth it if you expect the device to be in common usage
+and want to share it with others.
+.PP
+If you managed to create all the needed hooks, then make sure you include
+the necessary header files; the ones included by \fBct.c\fR are nearly
+minimal.  Order is important here, don't be suprised at undefined structure
+complaints if you order the includes wrongly.
+Finally if you get the device configured in, you can try bootstrapping
+and see if configuration messages print out about your device.
+It is a good idea to have some messages in the probe routine so that
+you can see that you are getting called and what is going on.
+If you do not get called, then you probably have the control-status
+register address wrong in your system configuration.  The autoconfigure
+code notices that the device doesn't exist in this case and you will never
+get called.
+.PP
+Assuming that your probe routine works and you manage
+to generate an interrupt, then you are basically back to where you
+would have been under older versions of UNIX.
+Just be sure to use the \fBui_ctlr\fR field of the \fBuba_device\fR
+structures to address the device; compiling in funny constants
+will make your driver only work on the CPU type you have (780 or 750).
+.PP
+Other bad things that might happen while you are setting up the configuration
+stuff:
+.IP *
+You get ``nexus zero vector'' errors from the system.  This will happen
+if you cause a device to interrupt, but take away the interrupt enable
+so fast that the UNIBUS adapter cancels the interrupt and confuses
+the processor.  The best thing to do it to put a modest delay in the
+probe code between the instructions which should cause and interrupt and
+the clearing of the interrupt enable.  (You should clear interrupt
+enable before you leave the probe routine so the device doesn't interrupt
+more and confuse the system while it is configuring other devices.)
+.IP *
+The device refuses to interrupt or interrupts with a ``zero vector''.
+This typically indicates a problem with the hardware or, for devices
+which emulate other devices, that the emulation is incomplete.  Devices
+may fail to present interrupt vectors because they have configuration
+switches set wrong, or because they are being accessed in inappropriate ways.
+Incomplete emulation can cause ``maintenance mode'' features to not work
+properly, and these features are often needed to force device interrupts.
+.SH
+Adapting devices which do buffered data path dma
+.PP
+These devices fall into two categories: those which are controllers
+to which devices are attached, and those which are just single devices.
+The interface for the former is very stylized and we recommend that
+you simply mimic one of the existing tape or disk drivers in adapting
+to the system.  You will find that the existing tape and disk drivers
+are all \fBvery\fR similar; this is deliberate so that it isn't
+necessary to rewrite the whole driver for each device, since the available
+devices are typically very similar.
+.PP
+Other devices which do buffered data path DMA can be adapted to the
+new system in one of two ways:
+.IP *
+They can do their own data path allocation, calling the UNIBUS
+allocation routines from the ``top-half'' (non-interrupt) code,
+sleeping in the UNIBUS code when resources are not available.
+See for an example the code in the \fBvp.c\fR driver.
+.IP *
+They can set up a two-level structure like the tape and disk drivers
+do, and call the \fIubago\fR routine and use the \fBud_dgo\fR interface
+to start DMA operations.
+See for an example the code in the \fBup.c\fR driver.
+.PP
+Either way works acceptably well; the second (\fIubago\fR\|) interface
+is preferable because it does not force a context switch per i/o operation
+(to the routine driving the i/o from the ``top-half'').
+.PP
+If you have questions about converting drivers, feel free to call us
+and ask or to send us mail.  We hope (eventually) to wri.\"	@(#)m9	6.1 (Berkeley) 4/29/86
+.\"
+.SH
+References
+.IP [1]
+B. G. Ryder,
+``The PFORT Verifier,''
+.ul
+Software_Practice & Experience,
+October 1974.
+.IP [2]
+American National Standard Fortran.
+American National Standards Institute,
+New York, 1966.
+.IP [3]
+.ul
+For-word: Fortran Development Newsletter,
+August 1975.
+.IP [4]
+B. W. Kernighan and D. M. Ritchie,
+.ul
+The C Programming Language,
+Prentice-Hall, Inc., 1978.
+.IP [5]
+D. M. Ritchie and K. L. Thompson,
+``The UNIX Time-sharing System.''
+\fICACM\fP, July 1974.
+.IP [6]
+S. C. Johnson,
+``YACC _ Yet Another Compiler-Compiler.''
+Bell Laboratories Computing Science Technical Report #32,
+1978.
+.IP [7]
+D. E. Knuth,
+``Structured Programming with goto Statements.''
+\fIComputing Surveys\fP, December 1974.
+.IP [8]
+B. W. Kernighan and P. J. Plauger,
+.ul
+Software Tools,
+Addison-Wesley, 1976.
+.IP [9]
+B. S. Baker,
+``Struct _ A Program which Structures Fortran'',
+Bell Laboratories internal memorandum, December 1975.
+.IP [10]
+A. D. Hall,
+``The Altran System for Rational Function Manipulation _
+A Survey.''
+\fICACM\fP, August 1971.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          .\"	@(#)m5	6.1 (Berkeley) 4/29/86
+.\"
+.NH
+CONCLUSIONS
+.PP
+Ratfor
+demonstrates that with modest effort
+it is possible to convert Fortran
+from a bad language into quite a good one.
+A preprocessor 
+is clearly a useful way to extend or ameliorate
+the facilities of a base language.
+.PP
+When designing a language,
+it is important to concentrate on
+the essential requirement of providing
+the user with the best language possible
+for a given effort.
+One must avoid throwing in
+``features'' _
+things which the user may trivially construct within the existing
+framework.
+.PP
+One must also avoid getting sidetracked on irrelevancies.
+For instance it seems pointless for
+Ratfor
+to prepare a neatly formatted
+listing of either its input or its output.
+The user is presumably capable of the self-discipline required
+to prepare neat input
+that reflects his thoughts.
+It is much more important that the language provide free-form input
+so he
+.ul
+can
+format it neatly.
+No one should read the output anyway
+except in the most dire circumstances.
+.SH
+Acknowledgements
+.PP
+C. A. R. Hoare
+once said that
+``One thing [the language designer] should not do
+is to include untried ideas of his own.''
+Ratfor
+follows this precept very closely _
+everything in it has been stolen from someone else.
+Most of the control flow structures
+are taken directly from the language C[4]
+developed by Dennis Ritchie;
+the comment and continuation
+conventions are adapted from Altran[10].
+.PP
+I am grateful to Stuart Feldman,
+whose patient simulation of an innocent user
+during the early days of Ratfor
+led to several design improvements
+and the eradication of bugs.
+He also translated the C parse-tables
+and
+.UC YACC 
+parser
+into Fortran for the
+first
+Ratfor
+version of
+Ratfor.
+                                                                                                                                                                                                                                                                                                                      .\"	@(#)m4	6.1 (Berkeley) 4/29/86
+.\"
+.NH
+EXPERIENCE
+.SH
+Good Things
+.PP
+``It's
+so much better than Fortran''
+is the most common response of users
+when asked how well
+Ratfor
+meets their needs.
+Although cynics might consider this to be vacuous,
+it does seem to be true that 
+decent control flow and cosmetics converts Fortran
+from a bad language into quite a reasonable one,
+assuming that Fortran data structures are adequate
+for the task at hand.
+.PP
+Although there are no quantitative results,
+users feel that coding in
+Ratfor
+is at least twice as fast as in Fortran.
+More important, debugging and subsequent revision
+are much faster than in Fortran.
+Partly this is simply because the code can be
+.ul
+read.
+The looping statements
+which test at the top instead of the bottom
+seem to eliminate or at least
+reduce the occurrence of a wide class of
+boundary errors.
+And of course it is easy to do structured programming in 
+Ratfor;
+this self-discipline also contributes
+markedly to reliability.
+.PP
+One interesting and encouraging fact is that
+programs written in
+Ratfor
+tend to be as readable as programs
+written in more modern languages
+like Pascal.
+Once one is freed from the shackles of Fortran's
+clerical detail and rigid input format,
+it is easy to write code that is readable, even esthetically pleasing.
+For example,
+here is a
+Ratfor
+implementation of the linear table search discussed by
+Knuth [7]:
+.P1
+A(m+1) = x
+for (i = 1; A(i) != x; i = i + 1)
+	;
+if (i > m) {
+	m = i
+	B(i) = 1
+}
+else
+	B(i) = B(i) + 1
+.P2
+A large corpus (5400 lines) of Ratfor, including a subset of
+the Ratfor preprocessor itself,
+can be found in
+[8].
+.SH
+Bad Things
+.PP
+The biggest single problem is that many Fortran syntax errors
+are not detected by
+Ratfor
+but by the local Fortran compiler.
+The compiler then prints a message
+in terms of the generated Fortran,
+and in a few cases this may be difficult
+to relate back to the offending
+Ratfor
+line,
+especially if the implementation conceals the generated Fortran.
+This problem could be dealt with
+by tagging each generated line with some indication
+of the source line that created it,
+but this is inherently implementation-dependent,
+so no action has yet been taken.
+Error message interpretation
+is actually not so arduous as might be thought.
+Since Ratfor generates no variables,
+only a simple pattern of
+.UC IF 's
+and
+.UC GOTO 's,
+data-related errors like missing
+.UC DIMENSION
+statements
+are easy to find in the Fortran.
+Furthermore, there has been a steady improvement
+in Ratfor's ability to catch trivial syntactic
+errors like unbalanced parentheses and quotes.
+.PP
+There are a number of implementation weaknesses
+that are a nuisance, especially to new users.
+For example,
+keywords are reserved.
+This rarely makes any difference, except for those hardy souls
+who want to use an Arithmetic 
+.UC IF .
+A few standard Fortran
+constructions are not accepted by 
+Ratfor,
+and this is perceived as a problem by users with a large corpus
+of existing Fortran programs.
+Protecting every line with a `%' is not really a
+complete solution, although it serves as a stop-gap.
+The best long-term solution is provided by the program
+Struct [9],
+which converts arbitrary Fortran programs into Ratfor.
+.PP
+Users who export programs often complain that the generated Fortran is
+``unreadable'' because it is not 
+tastefully formatted and contains extraneous
+.UC CONTINUE
+statements.
+To some extent this can be ameliorated
+(Ratfor now has an option to copy Ratfor comments into
+the generated Fortran),
+but it has always seemed that effort is better spent
+on the input language than on the output esthetics.
+.PP
+One final problem is partly attributable to success _
+since Ratfor is relatively easy to modify,
+there are now several dialects of Ratfor.
+Fortunately, so far most of the differences are in character set,
+or in invisible aspects like code generation.
+                                                                                                                                                                                                                              .\"	@(#)m3	6.1 (Berkeley) 4/29/86
+.\"
+.NH
+IMPLEMENTATION
+.PP
+Ratfor
+was originally written in
+C[4]
+on the
+.UC UNIX
+operating system[5].
+The language is specified by a context free grammar
+and the compiler constructed using
+the
+.UC YACC
+compiler-compiler[6].
+.PP
+The
+Ratfor
+grammar is simple and straightforward, being essentially
+.P1
+prog	: stat 
+	| prog   stat
+stat	: \f3if\fP (...) stat 
+	| \f3if\fP (...) stat \f3else\fP stat
+	| \f3while\fP (...) stat
+	| \f3for\fP (...; ...; ...) stat
+	| \f3do\fP ... stat
+	| \f3repeat\fP stat
+	| \f3repeat\fP stat \f3until\fP (...)
+	| \f3switch\fP (...) { \f3case\fP ...: prog ...
+			\f3default\fP: prog }
+	| \f3return\fP
+	| \f3break\fP
+	| \f3next\fP
+	| digits   stat
+	| { prog }
+	| anything unrecognizable
+.P2
+The observation
+that
+Ratfor
+knows no Fortran
+follows directly from the rule that says a statement is
+``anything unrecognizable''.
+In fact most of Fortran falls into this category,
+since any statement that does not begin with one of the keywords
+is by definition ``unrecognizable.''
+.PP
+Code generation is also simple.
+If the first thing on a source line is
+not a keyword
+(like
+.UL if ,
+.UL else ,
+etc.)
+the entire statement is simply copied to the output
+with appropriate character translation and formatting.
+(Leading digits are treated as a label.)
+Keywords cause only slightly more complicated actions.
+For example, when
+.UL if
+is recognized, two consecutive labels L and L+1
+are generated and the value of L is stacked.
+The condition is then isolated, and the code
+.P1
+if (.not. (condition)) goto L
+.P2
+is output.
+The 
+.ul
+statement
+part of the
+.UL if
+is then translated.
+When the end of the 
+statement is encountered
+(which may be some distance away and include nested \f3if\fP's, of course),
+the code
+.P1
+L	continue
+.P2
+is generated, unless there is an
+.UL else
+clause, in which case
+the code is
+.P1
+	goto L+1
+L	continue
+.P2
+In this latter case,
+the code
+.P1
+L+1	continue
+.P2
+is produced after the
+.ul
+statement
+part of the
+.UL else.
+Code generation for the various loops is equally simple.
+.PP
+One might argue that more care should be taken
+in code generation.
+For example,
+if there is no trailing
+.UL else ,
+.P1
+	if (i > 0) x = a
+.P2
+should be left alone, not converted into
+.P1
+	if (.not. (i .gt. 0)) goto 100
+	x = a
+100	continue
+.P2
+But what are optimizing compilers for, if not to improve code?
+It is a rare program indeed where this kind of ``inefficiency''
+will make even a measurable difference.
+In the few cases where it is important,
+the offending lines can be protected by `%'.
+.PP
+The use of a compiler-compiler is definitely the preferred method
+of software development.
+The language is well-defined,
+with few syntactic irregularities.
+Implementation is quite simple;
+the original construction took under a week.
+The language
+is sufficiently simple, however, that an
+.ul
+ad hoc
+recognizer can be readily constructed to do the same job
+if no compiler-compiler is available.
+.PP
+The C version of 
+Ratfor
+is used on
+.UC UNIX
+and on the Honeywell
+.UC GCOS
+systems.
+C compilers are not as widely available as Fortran, however,
+so there is also a
+Ratfor
+written in itself
+and originally bootstrapped with the C version.
+The
+Ratfor
+version
+was written so as to translate into the portable subset
+of Fortran described in [1],
+so it is portable,
+having been run essentially without change
+on at least twelve distinct machines.
+(The main restrictions of the portable subset are:
+only one character per machine word;
+subscripts in the 
+form
+.ul
+c*v\(+-c;
+avoiding expressions in places like
+.UC DO
+loops;
+consistency in subroutine argument usage,
+and in 
+.UC COMMON
+declarations.
+Ratfor
+itself will not gratuitously generate non-standard Fortran.)
+.PP
+The
+Ratfor
+version is about 1500 lines of
+Ratfor
+(compared to about 1000 lines of C);
+this compiles into 2500 lines of Fortran.
+This expansion ratio is somewhat higher than average,
+since the compiled code contains unnecessary occurrences
+of
+.UC COMMON
+declarations.
+The execution time of the
+Ratfor
+version is dominated by
+two routines that read and write cards.
+Clearly these routines could be replaced
+by machine coded local versions;
+unless this is done, the efficiency of other parts of the translation process
+is largely irrelevant.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        .\"	@(#)m.mac	6.1 (Berkeley) 4/29/86
+.\"
+.tr ~
+.tr _\(em
+.ND
+.if n .ls 2
+.de UL
+.if t \&\\$3\f3\\$1\fP\\$2\&
+.if n \&\\$3\f2\\$1\fP\\$2\&
+..
+.de IT
+.if n .ul
+\\$3\f2\\$1\fP\\$2
+..
+.de UI
+\f3\\$1\fI\\$2\fR\\$3
+..
+.de P1
+.if \\n(.$ .DS I \\$1
+.if !\\n(.$ .DS I 5
+.if n .ls 1
+.nf
+.if n .ta 5 10 15 20 25 30 35 40 45 50 55 60
+.if t .ta .4i .8i 1.2i 1.6i 2i 2.4i 2.8i 3.2i 3.6i 4i
+.if t .tr -\(mi|\(bv'\(fm^\(no
+.if t .tr _\(ru
+.lg 0
+.		use first argument as indent if present
+..
+.de P2
+.ft R
+.if n .ls 2
+.tr --||''^^!!_\(em
+.lg
+.DE
+..
+.hw semi-colon
+.if t .ds m \(mi
+.if n .ds m -
+.if t .ds n \(no
+.if n .ds n -
+.if t .ds S \(sl
+.if n .ds S /
+.if t .ds d \s+4\&.\&\s-4
+.if n .ds d \&.\&
+.if t .ds a \z@@
+.if n .ds a @
+.hy 14
+.	2=not last lines; 4= no -xx; 8=no xx-
+.ds m \(mi
+.tr *\(**
+.de WS
+.sp
+..
+.de UC
+\&\\$3\s-2\\$1\s0\\$2\&
+..
+                                                                                                                                                                                                  2    .   #(    ..  3    ms m4  Ü refcard                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             5    .   &    ..  6    5.t 7    0.t 8    1.t 9    2.t :    3.t ;    4.t <    a.t =    6.t >    b.t ?    c.t @    Makefile ts A  \ spell.ok ts                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         .\"	@(#)m1	6.1 (Berkeley) 4/29/86
+.\"
+.nr PS 10
+.nr VS 12
+.if t .2C
+.if n .ls 2
+.NH
+INTRODUCTION
+.PP
+Most programmers will agree that Fortran is
+an unpleasant language to program in,
+yet there are many occasions when they are forced to use it.
+For example, Fortran is often the only language
+thoroughly supported on the local computer.
+Indeed, it is the closest thing to a universal programming language
+currently available:
+with care it is possible to write large, truly portable
+Fortran programs[1].
+Finally, Fortran is often the most ``efficient'' language
+available, particularly for programs requiring much computation.
+.PP
+But Fortran 
+.ul
+is
+unpleasant.
+Perhaps the worst deficiency is in
+the control flow
+statements
+_ conditional branches and loops _
+which express the logic of the program.
+The conditional statements in Fortran are primitive.
+The Arithmetic 
+.UC IF
+forces the user into at least two statement numbers and
+two (implied) 
+.UC GOTO 's;
+it leads to unintelligible code, and is eschewed by good programmers.
+The Logical
+.UC IF
+is better, in that the test part can be stated clearly,
+but hopelessly restrictive because the statement
+that follows the
+.UC IF
+can only be one Fortran statement
+(with some
+.ul
+further
+restrictions!).
+And of course there can be no
+.UC ELSE
+part to a Fortran
+.UC IF :
+there is no way to specify an alternative action if the
+.UC IF
+is not satisfied.
+.PP
+The Fortran
+.UC DO
+restricts the user to going forward in an arithmetic progression.
+It is fine for ``1 to N in steps of 1 (or 2 or ...)'',
+but there is no direct way to go backwards,
+or even (in ANSI Fortran[2]) to go from 1 to
+.if n N-1.
+.if t N\(mi1.
+And of course the
+.UC DO
+is useless if one's problem doesn't map into an arithmetic progression.
+.PP
+The result of these failings is that Fortran programs
+must be written with numerous labels and branches.
+The resulting code is
+particularly difficult to read and understand,
+and thus hard to debug and modify.
+.PP
+When one is faced with an unpleasant language,
+a useful technique is to define
+a new language that overcomes the deficiencies,
+and to translate it into the unpleasant one
+with a preprocessor.
+This is the approach taken with 
+Ratfor.
+(The preprocessor idea is of course not new,
+and preprocessors for Fortran are especially popular
+today.
+A recent listing [3] of preprocessors 
+shows more than 50, of which at least half a dozen are widely available.)
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            her things that should not be transmogrified
+(like an existing Fortran program).
+Use `%' only for ordinary statements,
+not for the condition parts of
+.UL if ,
+.UL while ,
+etc., or the output may come out in an unexpected place.
+.PP
+The following character translations are made, 
+except within single or double quotes
+or on a line beginning with a `%'.
+.P1
+.ta .5i 1.5i 2i
+==	.eq.	!=	.ne.
+>	.gt.	>=	.ge.
+<	.lt.	<=	.le.
+&	.and.	|	.or.
+!	.not.	^	.not.
+.P2
+In addition, the following translations are provided
+for input devices with restricted character sets.
+.P1
+.ta .5i 1.5i 2i
+[	{	]	}
+$(	{	$)	}
+.P2
+.SH
+``define'' Statement
+.PP
+Any string of alphanumeric characters can be defined as a name;
+thereafter, whenever that name occurs in the input
+(delimited by non-alphanumerics)
+it is replaced by the rest of the definition line.
+(Comments and trailing white spaces are stripped off).
+A defined name can be arbitrarily long,
+and must begin with a letter.
+.PP
+.UL define
+is typically used to create symbolic parameters:
+.P1
+define	ROWS	100
+define	COLS	50
+.if t .sp 5p
+dimension a(ROWS), b(ROWS, COLS)
+.if t .sp 5p
+	if (i > ROWS  \(or  j > COLS) ...
+.P2
+Alternately, definitions may be written as
+.P1
+define(ROWS, 100)
+.P2
+In this case, the defining text is everything after the comma up to the balancing
+right parenthesis;
+this allows multi-line definitions.
+.PP
+It is generally a wise practice to use symbolic parameters
+for most constants, to help make clear the function of what
+would otherwise be mysterious numbers.
+As an example, here is the routine
+.UL equal 
+again, this time with symbolic constants.
+.P1 3
+.ta .3i .6i .9i 1.2i 1.5i 1.8i
+define	YES		1
+define	NO		0
+define	EOS		-1
+define	ARB		100
+
+# equal _ compare str1 to str2;
+#	return YES if equal, NO if not
+	integer function equal(str1, str2)
+	integer str1(ARB), str2(ARB)
+	integer i
+
+	for (i = 1; str1(i) == str2(i); 
+	i = i + 1)
+		if (str1(i) == EOS)
+			return(YES)
+	return(NO)
+	end
+.P2
+.SH
+``include'' Statement
+.PP
+The statement
+.P1
+	include file
+.P2
+inserts the file
+found on input stream
+.ul
+file
+into the
+Ratfor
+input in place of the
+.UL include
+statement.
+The standard usage is to place 
+.UC COMMON
+blocks on a file,
+and
+.UL include
+that file whenever a copy is needed:
+.P1
+subroutine x
+	include commonblocks
+	...
+	end
+
+suroutine y
+	include commonblocks
+	...
+	end
+.P2
+This ensures that all copies of the 
+.UC COMMON
+blocks are identical
+.SH
+Pitfalls, Botches, Blemishes and other Failings
+.PP
+Ratfor catches certain syntax errors, such as missing braces,
+.UL else
+clauses without an
+.UL if ,
+and most errors involving missing parentheses in statements.
+Beyond that, since Ratfor knows no Fortran, 
+any errors you make will be reported by the Fortran compiler,
+so you will from time to time have to relate a Fortran diagnostic back
+to the Ratfor source.
+.PP
+Keywords are reserved _
+using
+.UL if ,
+.UL else ,
+etc., as variable names will typically wreak havoc.
+Don't leave spaces in keywords.
+Don't use the Arithmetic
+.UC IF .
+.PP
+The Fortran
+.UL nH
+convention is not recognized anywhere by Ratfor;
+use quotes instead.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    

@@ -1,0 +1,2193 @@
+ to prevent infinite loops.
+Specifying
+.B p
+on the command line disables these checks and the ability
+to give this post-mortem analysis.
+It does make smaller and faster programs, however.
+It is also possible to control the
+.B p
+option in comments.
+To prevent the post-mortem backtrace on error,
+.B p
+must be off at the end of the
+.B program
+statement.
+Thus, the Pascal cross-reference program was translated with
+.LS
+% \*bpi -pbt pxref.p\fR
+.LE
+.NH 2
+Options available in Px
+.PP
+The first argument to
+.X
+is the name of the file containing the program to be interpreted.
+If no arguments are given, then the file
+.I obj
+is executed.
+If more arguments are given, they are available to the Pascal
+program by using the built-ins
+.I argc
+and
+.I argv
+as described in section 4.6.
+.ne 7
+.PP
+.I Px
+may also be invoked automatically.
+In this case, whenever a Pascal object file name is given as a command,
+the command will be executed with
+.X
+prepended to it; that is
+.LS
+% \*bobj primes\fR
+.LE
+will be converted to read
+.LS
+% \*bpx o.\" Copyright (c) 1980 Regents of the University of California.
+.\" All rights reserved.  The Berkeley software License Agreement
+.\" specifies the terms and conditions for redistribution.
+.\"
+.\"	@(#)pumanA.n	6.2 (Berkeley) 5/7/86
+.\"
+.if !\n(xx \{\
+.so tmac.p \}
+.ND
+.nr H1 0
+.af H1 A
+.NH 
+Appendix to Wirth's Pascal Report
+.PP
+This section is an appendix to
+the definition of the Pascal language in Niklaus Wirth's
+.I "Pascal Report"
+and, with that Report, precisely defines the
+Berkeley
+implementation.
+This appendix includes a summary of extensions to the language,
+gives the ways in which the undefined specifications were resolved,
+gives limitations and restrictions of the current implementation,
+and lists the added functions and procedures available.
+It concludes with a list of differences with the commonly available
+Pascal 6000\-3.4 implementation,
+and some comments on standard and portable Pascal.
+.NH 2
+Extensions to the language Pascal
+.PP
+This section defines non-standard language constructs available in
+.UP .
+The
+.B s
+standard Pascal option of the translators
+.PI
+and
+.PC
+can be used to detect these extensions in programs which are to be transported.
+.SH
+String padding
+.PP
+.UP
+will pad constant strings with blanks in expressions and as
+value parameters to make them as long as is required.
+The following is a legal
+.UP
+program:
+.LS
+\*bprogram\fP x(output);
+\*bvar\fP z : \*bpacked\fP \*barray\fP [ 1 .. 13 ] \*bof\fP char;
+\*bbegin\fP
+    z := 'red';
+    writeln(z)
+\*bend\fP;
+.LE
+The padded blanks are added on the right.
+Thus the assignment above is equivalent to:
+.LS
+z := 'red          '
+.LE
+which is standard Pascal.
+.SH
+Octal constants, octal and hexadecimal write
+.PP
+Octal constants may be given as a sequence of octal digits followed
+by the character `b' or `B'.
+The forms
+.LS
+write(a:n \*boct\fP)
+.LE
+and
+.LS
+write(a:n \*bhex\fP)
+.LE
+cause the internal representation of
+expression
+.I a,
+which must be Boolean, character, integer, pointer, or a user-defined enumerated
+type,
+to be written in octal or hexadecimal respectively.
+.SH
+Assert statement
+.PP
+An
+.B assert
+statement causes a
+.I Boolean
+expression to be evaluated
+each time the statement is executed.
+A runtime error results if any of the expressions evaluates to be 
+.I false .
+The
+.B assert
+statement is treated as a comment if run-time tests are disabled.
+The syntax for
+.B assert
+is:
+.LS
+\*bassert\fP <expr>
+.LE
+.SH
+Enumerated type input-output
+.PP
+Enumerated types may be read and written.
+On output the string name associated with the enumerated
+value is output.
+If the value is out of range,
+a runtime error occurs.
+On input an identifier is read and looked up
+in a table of names associated with the
+type of the variable, and
+the appropriate internal value is assigned to the variable being
+read.
+If the name is not found in the table
+a runtime error occurs.
+.SH
+Structure returning functions
+.PP
+An extension has been added which allows functions 
+to return arbitrary sized structures rather than just
+scalars as in the standard.
+.SH
+Separate compilation
+.PP
+The compiler
+.PC
+has been extended to allow separate compilation of programs.
+Procedures and functions declared at the global level
+may be compiled separately.
+Type checking of calls to separately compiled routines is performed
+at load time to insure that the program as a whole
+is consistent.
+See section 5.10 for details.
+.NH 2
+Resolution of the undefined specifications
+.SH
+File name \- file variable associations
+.PP
+Each Pascal file variable is associated with a named
+.UX
+file.
+Except for
+.I input
+and
+.I output,
+which are
+exceptions to some of the rules, a name can become associated
+with a file in any of three ways:
+.IP "\ \ \ \ \ 1)" 10
+If a global Pascal file variable appears in the
+.B program
+statement
+then it is associated with
+.UX
+file of the same name.
+.IP "\ \ \ \ \ 2)"
+If a file was reset or rewritten using the
+extended two-argument form of
+.I reset
+or
+.I rewrite
+then the given name
+is associated.
+.IP "\ \ \ \ \ 3)"
+If a file which has never had
+.UX
+name associated
+is reset or rewritten without specifying a name
+via the second argument, then a temporary name
+of the form `tmp.x'
+is associated with the file.
+Temporary names start with
+`tmp.1' and continue by incrementing the last character in the
+.SM
+USASCII
+.NL
+ordering.
+Temporary files are removed automatically
+when their scope is exited.
+.SH
+The program statement
+.PP
+The syntax of the
+.B program
+statement is:
+.LS
+\*bprogram\fP <id> ( <file id> { , <file id > } ) ;
+.LE
+The file identifiers (other than
+.I input
+and
+.I output )
+must be declared as variables of
+.B file
+type in the global declaration part.
+.SH
+The files input and output
+.PP
+The formal parameters
+.I input
+and
+.I output
+are associated with the
+.UX
+standard input and output and have a
+somewhat special status.
+The following rules must be noted:
+.IP "\ \ \ \ \ 1)" 10
+The program heading
+.B must
+contains the formal parameter
+.I output.
+If
+.I input
+is used, explicitly or implicitly, then it must
+also be declared here.
+.IP "\ \ \ \ \ 2)"
+Unlike all other files, the
+Pascal files
+.I input
+and
+.I output
+must not be defined in a declaration,
+as their declaration is automatically:
+.LS
+\*bvar\fP input, output: text
+.LE
+.IP "\ \ \ \ \ 3)"
+The procedure
+.I reset
+may be used on
+.I input.
+If no
+.UX
+file name has ever been associated with
+.I input,
+and no file name is given, then an attempt will be made
+to `rewind'
+.I input.
+If this fails, a run time
+error will occur.
+.I Rewrite
+calls to output act as for any other file, except that
+.I output
+initially has no associated file.
+This means that a simple
+.LS
+rewrite(output)
+.LE
+associates a temporary name with
+.I output.
+.SH
+Details for files
+.PP
+If a file other than
+.I input
+is to be read,
+then reading must be initiated by a call to the
+procedure
+.I reset
+which causes the Pascal system to attempt to open the
+associated
+.UX
+file for reading.
+If this fails, then a runtime error occurs.
+Writing of a file other than
+.I output
+must be initiated by a
+.I rewrite
+call,
+which causes the Pascal system to create the associated
+.UX
+file and
+to then open the file for writing only.
+.SH
+Buffering
+.PP
+The buffering for
+.I output
+is determined by the value of the
+.B b
+option
+at the end of the
+.B program
+statement.
+If it has its default value 1,
+then
+.I output
+is
+buffered in blocks of up to 512 characters,
+flushed whenever a writeln occurs
+and at each reference to the file
+.I input.
+If it has the value 0,
+.I output
+is unbuffered.
+Any value of
+2 or more gives block buffering without line or
+.I input
+reference flushing.
+All other output files are always buffered in blocks of 512 characters.
+All output buffers are flushed when the files are closed at scope exit,
+whenever the procedure
+.I message
+is called, and can be flushed using the
+built-in procedure
+.I flush.
+.PP
+An important point for an interactive implementation is the definition
+of `input\(ua'.
+If
+.I input
+is a teletype, and the Pascal system reads a character at the beginning
+of execution to define `input\(ua', then no prompt could be printed
+by the program before the user is required to type some input.
+For this reason, `input\(ua' is not defined by the system until its definition
+is needed, reading from a file occurring only when necessary.
+.SH
+The character set
+.PP
+Seven bit
+.SM USASCII
+is the character set used on
+.UX .
+The standard Pascal
+symbols `and', 'or', 'not', '<=', '>=', '<>',
+and the uparrow `\(ua' (for pointer qualification)
+are recognized.\*(dg
+.FS
+\*(dgOn many terminals and printers, the up arrow is represented
+as a circumflex `^'.
+These are not distinct characters, but rather different graphic
+representations of the same internal codes.
+.FE
+Less portable are the 
+synonyms tilde `~'
+for
+.B not ,
+`&' for
+.B and ,
+and `|' for
+.B or .
+.PP
+Upper and lower case are considered to be distinct.\*(st
+.FS
+\*(stThe proposed standard for Pascal considers them to be the same.
+.FE
+Keywords and built-in
+.B procedure
+and
+.B function
+names are
+composed of all lower case letters.
+Thus the identifiers GOTO and GOto are distinct both from each other and
+from the keyword
+\*bgoto\fP.
+The standard type `boolean' is also available as `Boolean'.
+.PP
+Charactbj primes\fR
+.LE
+.NH 2
+Options available in Pc
+.SH
+Generate assembly language \- S
+.PP
+The program is compiled and the assembly language
+output is left in file appended .s.
+Thus
+.LS
+% \*bpc -S foo.p\fR
+.LE
+creates a file
+.I foo.s .
+No executable file is created.
+.SH
+Symbolic Debugger Information \- g
+.PP
+The
+.B g
+option causes the compiler to generate information
+needed by
+.I sdb (1)
+the symbolic debugger.
+For a complete description of
+.I sdb
+see Volume 2c of the
+.UX
+Reference Manual.
+.SH
+Redirect the output file \- o
+.PP
+The
+.I name
+argument after the
+.B -o
+is used as the name of the output file instead of
+.I a.out .
+Its typical use is to name the compiled program using
+the root of the file name.
+Thus:
+.LS
+% \*bpc -o myprog myprog.p\fR
+.LE
+causes the compiled program to be called
+.I myprog .
+.SH
+Generate counters for a \*iprof\fP execution profile \- p
+.PP
+The compiler produces code which counts the number of times each
+routine is called.
+The profiling is based on a periodic sample taken by the
+system rather than by inline counters used by
+.XP .
+This results in less degradation in execution,
+at somewhat of a loss in accuracy.
+See
+.I prof (1)
+for a more complete description.
+.SH
+Run the object code optimizer \- O
+.PP
+The output of the compiler is run through
+the object code optimizer.
+This provides an increase in compile time in
+exchange for a decrease in compiled code size
+and execution time.
+.NH 2
+Options available in Pxp
+.PP
+.I Pxp
+takes, on its command line, a list of options followed by the program file
+name, which must end in `.p' as it must for
+.PI ,
+.PC ,
+and
+.IX .
+.I Pxp
+will produce an execution profile if any of the
+.B z ,
+.B t
+or
+.B c
+options is specified on the command line.
+If none of these options is specified, then
+.XP
+functions as a program reformatter.
+.PP
+It is important to note that only the
+.B z
+and
+.B w
+options of
+.XP ,
+which are common to
+.PI ,
+.PC ,
+and
+.XP
+can be controlled in comments.
+All other options must be specified on the command line to have any effect.
+.PP
+The following options are relevant to profiling with
+.XP :
+.SH
+Include the bodies of all routines in the profile \- a
+.PP
+.I Pxp
+normally suppresses printing the bodies of routines
+which were never executed, to make the profile more compact.
+This option forces all routine bodies to be printed.
+.SH
+Suppress declaration parts from a profile \- d
+.PP
+Normally a profile includes declaration parts.
+Specifying
+.B d
+on the command line suppresses declaration parts.
+.SH
+Eliminate include directives \- e
+.PP
+Normally,
+.XP
+preserves
+.B include
+directives to the output when reformatting a program,
+as though they were comments.
+Specifying
+.B \-e
+causes the contents of the specified files to be reformatted
+into the output stream instead.
+This is an easy way to eliminate
+.B include
+directives, e.g. before transporting a program.
+.SH
+Fully parenthesize expressions \- f
+.PP
+Normally
+.XP
+prints expressions with the minimal parenthesization necessary to
+preserve the structure of the input.
+This option causes
+.I pxp
+to fully parenthesize expressions.
+Thus the statement which prints as
+.LS
+d := a + b mod c / e
+.LE
+with minimal parenthesization, the default, will print as
+.LS
+d := a + ((b mod c) / e)
+.LE
+with the
+.B f
+option specified on the command line.
+.SH
+Left justify all procedures and functions \- j
+.PP
+Normally, each
+.B procedure
+and
+.B function
+body is indented to reflect its static nesting depth.
+This option prevents this nesting and can be used if the indented
+output would be too wide.
+.SH
+Print a table summarizing procedure and function calls \- t
+.PP
+The
+.B t
+option causes
+.XP
+to print a table summarizing the number of calls to each
+.B procedure
+and
+.B function
+in the program.
+It may be specified in combination with the
+.B z
+option, or separately.
+.SH
+Enable and control the profile \- z
+.PP
+The
+.B z
+profile option is very similar to the
+.B i
+listing control option of
+.PI .
+If
+.B z
+is specified on the command line, then all arguments up to the
+source file argument which ends in `.p' are taken to be the names of
+.B procedure s
+and
+.B function s
+or
+.B include
+files which are to be profiled.
+If this list is null, then the whole file is to be profiled.
+A typical command for extracting a profile of part of a large program
+would be
+.LS
+% \*bpxp -z test parser.i compiler.p\fR
+.LE
+This specifies that profiles of the routines in the file
+.I parser.i
+and the routine
+.I test
+are to be made.
+.NH 2
+Formatting programs using pxp
+.PP
+The program
+.XP
+can be used to reformat programs, by using a command of the form
+.LS
+% \*bpxp dirty.p > clean.p\fR
+.LE
+Note that since the shell creates the output file `clean.p' before
+.XP
+executes, so `clean.p' and `dirty.p' must not be the same file.
+.PP
+.I Pxp
+automatically paragraphs the program, performing housekeeping
+chores such as comment alignment, and
+treating blank lines, lines containing exactly one blank
+and lines containing only a form-feed character as though they
+were comments, preserving their vertical spacing effect in the output.
+.I Pxp
+distinguishes between four kinds of comments:
+.HP
+.RS
+.IP 1)
+Left marginal comments, which begin in the first column of the
+input line and are placed in the first column of an output line.
+.IP 2)
+Aligned comments, which are preceded by no input tokens on the
+input line.
+These are aligned in the output with the running program text.
+.IP 3)
+Trailing comments, which are preceded in the input line by a token with
+no more than two spaces separating the token from the comment.
+.IP 4)
+Right marginal comments, which are preceded in the input line
+by a token from which they are separated by at least three spaces or a tab.
+These are aligned down the right margin of the output,
+currently to the first tab stop after the 40th column from the current
+``left margin''.
+.RE
+.LP
+Consider the following program.
+.LS
+% \*bcat comments.p\fR
+.so comments1.p
+.LE
+When formatted by
+.XP
+the following output is produced.
+.LS
+% \*bpxp comments.p\fR
+.so commentsout
+%
+.LE
+The following formatting related options are currently available in
+.XP .
+The options
+.B f
+and
+.B j
+described in the previous section may also be of interest.
+.SH
+Strip comments \-s
+.PP
+The
+.B s
+option causes
+.XP
+to remove all comments from the input text.
+.SH
+Underline keywords \- \_
+.PP
+A command line argument of the form
+.B \-\_
+as in
+.LS
+% \*bpxp -_ dirty.p\fR
+.LE
+can be used to cause
+.XP
+to underline all keywords in the output for enhanced readability.
+.SH
+Specify indenting unit \- [23456789]
+.PP
+The normal unit which
+.XP
+uses to indent a structure statement level is 4 spaces.
+By giving an argument of the form
+\fB\-\fId\fR
+with
+.I d
+a digit,
+2 \(<=
+.I d
+\(<= 9
+you can specify that
+.I d
+spaces are to be used per level instead.
+.NH 2
+Pxref
+.PP
+The cross-reference program
+.I pxref
+may be used to make cross-referenced listings of Pascal
+programs.
+To produce a cross-reference of the program in the file
+`foo.p'
+one can execute the command:
+.LS
+% \*bpxref foo.p\fR
+.LE
+The cross-reference is, unfortunately, not block structured.
+Full details on
+.I pxref
+are given in its manual section
+.I pxref
+(1).
+.NH 2
+Multi-file programs
+.PP
+A text inclusion facility is available with
+.UP .
+This facility allows the interpolation of source text from other
+files into the source stream of the translator.
+It can be used to divide large programs into more manageable pieces
+for ease in editing, listing, and maintenance.
+.PP
+The
+.B include
+facility is based on that of the
+.SM
+UNIX
+.NL
+C compiler.
+To trigger it you can place the character `#' in the first portion of
+a line and then, after an arbitrary number of blanks or tabs,
+the word
+`include'
+followed by a filename enclosed in single `\(aa' or double `"' quotation
+marks.
+The file name may be followed by a semicolon `;' if you wish to treat
+this as a pseudo-Pascal statement.
+The filenames of included files must end in `.i'.
+An example of the use of included files in a main program would be:
+.LS
+\*bprogram\fR compiler(input, output, obj);
+
+#\*binclude\fR "globals.i"
+#\*binclude\fR "scanner.i"
+#\*binclude\fR "parser.i"
+#\*binclude\fR "semantics.i"
+
+\*bbegin\fR
+    { main program }
+\*bend\fR.
+.LE
+.PP
+At the point the
+.B include
+pseuer strings and constants may be delimited by the character
+`\''
+or by the character `#';
+the latter is sometimes convenient when programs are to be transported.
+Note that the `#' character has special meaning 
+.up
+when it is the first character on a line \- see
+.I "Multi-file programs"
+below.
+.SH
+The standard types
+.PP
+The standard type
+.I integer
+is conceptually defined as
+.LS
+\*btype\fP integer = minint .. maxint;
+.LE
+.I Integer
+is implemented with 32 bit twos complement arithmetic.
+Predefined constants of type
+.I integer
+are:
+.LS
+\*bconst\fP maxint = 2147483647; minint = -2147483648;
+.LE
+.PP
+The standard type
+.I char
+is conceptually defined as
+.LS
+\*btype\fP char = minchar .. maxchar;
+.LE
+Built-in character constants are `minchar' and `maxchar', `bell' and `tab';
+ord(minchar) = 0, ord(maxchar) = 127.
+.PP
+The type
+.I real
+is implemented using 64 bit floating point arithmetic.
+The floating point arithmetic is done in `rounded' mode, and
+provides approximately 17 digits of precision
+with numbers as small as 10 to the negative 38th power and as large as
+10 to the 38th power.
+.SH
+Comments
+.PP
+Comments can be delimited by either `{' and `}' or by `(*' and `*)'.
+If the character `{' appears in a comment delimited by `{' and `}',
+a warning diagnostic is printed.
+A similar warning will be printed if the sequence `(*' appears in
+a comment delimited by `(*' and `*)'.
+The restriction implied by this warning is not part of standard Pascal,
+but detects many otherwise subtle errors.
+.SH
+Option control
+.PP
+Options of the translators may be controlled
+in two distinct ways.
+A number of options may appear on the command line invoking the translator.
+These options are given as one or more strings of letters preceded by the
+character `\-' and cause the default setting of
+each given option to be changed.
+This method of communication of options is expected to predominate
+for
+.UX .
+Thus the command
+.LS
+% \*bpi \-l \-s foo.p\fR
+.LE
+translates the file foo.p with the listing option enabled (as it normally
+is off), and with only standard Pascal features available.
+.PP
+If more control over the portions of the program where options are enabled is
+required, then option control in comments can and should be used.
+The
+format for option control in comments is identical to that used in Pascal
+6000\-3.4.
+One places the character `$' as the first character of the comment
+and follows it by a comma separated list of directives.
+Thus an equivalent to the command line example given above would be:
+.LS
+{$l+,s+ listing on, standard Pascal}
+.LE
+as the first line of the program.
+The `l'
+option is more appropriately specified on the command line,
+since it is extremely unlikely in an interactive environment
+that one wants a listing of the program each time it is translated.
+.PP
+Directives consist of a letter designating the option,
+followed either by a `+' to turn the option on, or by a `\-' to turn the
+option off.
+The
+.B b
+option takes a single digit instead of
+a `+' or `\-'.
+.SH
+Notes on the listings
+.PP
+The first page of a listing
+includes a banner line indicating the version and date of generation of
+.PI
+or
+.PC .
+It also
+includes the
+.UX
+path name supplied for the source file and the date of
+last modification of that file.
+.PP
+Within the body of the listing, lines are numbered consecutively and
+correspond to the line numbers for the editor.
+Currently, two special
+kinds of lines may be used to format the listing:
+a line consisting of a form-feed
+character, control-l, which causes a page
+eject in the listing, and a line with
+no characters which causes the line number to be suppressed in the listing,
+creating a truly blank line.
+These lines thus correspond to `eject' and `space' macros found in many
+assemblers.
+Non-printing characters are printed as the character `?' in the listing.\*(dg
+.FS
+\*(dgThe character generated by a control-i indents
+to the next `tab stop'.
+Tab stops are set every 8 columns in
+.UX .
+Tabs thus provide a quick way of indenting in the program.
+.FE
+.SH
+The standard procedure write
+.PP
+If no minimum field length parameter is specified
+for a
+.I write,
+the following default
+values are assumed:
+.KS
+.TS
+center;
+l n.
+integer	10
+real	22
+Boolean	length of `true' or `false'
+char	1
+string	length of the string
+oct	11
+hex	8
+.TE
+.KE
+The end of each line in a text file should be explicitly
+indicated by `writeln(f)', where `writeln(output)' may be written
+simply as `writeln'.
+For
+.UX ,
+the built-in function `page(f)' puts a single
+.SM ASCII
+form-feed character on the output file.
+For programs which are to be transported the filter
+.I pcc
+can be used to interpret carriage control, as
+.UX
+does not normally do so.
+.NH 2
+Restrictions and limitations
+.SH
+Files
+.PP
+Files cannot be members of files or members of dynamically
+allocated structures.
+.SH
+Arrays, sets and strings
+.PP
+The calculations involving array subscripts and set elements
+are done with 16 bit arithmetic.
+This
+restricts the types over which arrays and sets may be defined.
+The lower bound of such a range must be greater than or equal to
+\-32768, and the upper bound less than 32768.
+In particular, strings may have any length from 1 to 65535 characters,
+and sets may contain no more than 65535 elements.
+.SH
+Line and symbol length
+.PP
+There is no intrinsic limit on the length of identifiers.
+Identifiers
+are considered to be distinct if they differ
+in any single position over their entire length.
+There is a limit, however, on the maximum input
+line length.
+This limit is quite generous however, currently exceeding 160
+characters.
+.SH
+Procedure and function nesting and program size
+.PP
+At most 20 levels of 
+.B procedure 
+and 
+.B function 
+nesting are allowed.
+There is no fundamental, translator defined limit on the size of the
+program which can be translated.
+The ultimate limit is supplied by the
+hardware and thus, on the \s-2PDP\s0-11,
+by the 16 bit address space.
+If
+one runs up against the `ran out of memory' diagnostic the program may yet
+translate if smaller procedures are used, as a lot of space is freed
+by the translator at the completion of each 
+.B procedure
+or
+.B function
+in the current
+implementation.
+.PP
+On the \s-2VAX\s0-11, there is an implementation defined limit
+of 65536 bytes per variable.
+There is no limit on the number of variables.
+.SH
+Overflow
+.PP
+There is currently no checking for overflow on arithmetic operations at
+run-time on the \s-2PDP\s0-11.
+Overflow checking is performed on the \s-2VAX\s0-11 by the hardware.
+.br
+.ne 15
+.NH 2
+Added types, operators, procedures and functions
+.SH
+Additional predefined types
+.PP
+The type
+.I alfa
+is predefined as:
+.LS
+\*btype\fP alfa = \*bpacked\fP \*barray\fP [ 1..10 ] \*bof\fP \*bchar\fP
+.LE
+.PP
+The type
+.I intset
+is predefined as:
+.LS
+\*btype\fP intset = \*bset of\fP 0..127
+.LE
+In most cases the context of an expression involving a constant
+set allows the translator to determine the type of the set, even though the
+constant set itself may not uniquely determine this type.
+In the
+cases where it is not possible to determine the type of the set from
+local context, the expression type defaults to a set over the entire base
+type unless the base type is integer\*(dg.
+.FS
+\*(dgThe current translator makes a special case of the construct
+`if ... in [ ... ]' and enforces only the more lax restriction
+on 16 bit arithmetic given above in this case.
+.FE
+In the latter case the type defaults to the current
+binding of
+.I intset,
+which must be ``type set of (a subrange of) integer'' at that point.
+.PP
+Note that if 
+.I intset 
+is redefined via:
+.LS
+\*btype\fP intset = \*bset of\fP 0..58;
+.LE
+then the default integer set is the implicit
+.I intset 
+of
+Pascal 6000\-3.4
+.SH
+Additional predefined operators
+.PP
+The relationals `<' and `>' of proper set
+inclusion are available.
+With
+.I a
+and
+.I b
+sets, note that
+.LS
+(\*bnot\fR (\fIa\fR < \fIb\fR)) <> (\fIa\fR >= \fIb\fR)
+.LE
+As an example consider the sets
+.I a
+= [0,2]
+and
+.I b
+= [1].
+The only relation true between these sets is `<>'.
+.SH
+Non-standard procedures
+.IP argv(i,a) 25
+where
+.I i 
+is an integer and
+.I a
+is a string variable
+assigns the (possibly truncated or blank padded)
+.I i \|'th
+argument
+of the invocation of the current
+.do-statement is encountered in the input, the lines from
+the included file are interpolated into the input stream.
+For the purposes of translation and runtime diagnostics and
+statement numbers in the listings and post-mortem backtraces,
+the lines in the included file are numbered from 1.
+Nested includes are possible up to 10 deep.
+.PP
+See the descriptions of the
+.B i
+option of
+.PI
+in section 5.2
+above;
+this can be used to control listing when
+.B include
+files are present.
+.PP
+When a non-trivial line is encountered in the source text after an
+.B include
+finishes, the
+`popped' filename is printed, in the same manner as above.
+.PP
+For the purposes of error diagnostics when not making a listing, the filename
+will be printed before each diagnostic if the current
+filename has changed since the last
+filename was printed.
+.NH 2
+Separate Compilation with Pc
+.PP
+A separate compilation facility is provided with the Berkeley Pascal compiler,
+.PC .
+This facility allows programs to be divided into a number of files and 
+the pieces to be compiled individually,
+to be linked together at some later time.
+This is especially useful for large programs,
+where small changes would otherwise require
+time-consuming re-compilation of the entire program.
+.PP
+Normally,
+.PC
+expects to be given entire Pascal programs.
+However, if given the
+.B \-c
+option on the command line, it will accept a sequence of definitions and
+declarations, and compile them into a
+.B .o
+file, to be linked with a Pascal program at a later time.
+In order that procedures and functions be available across
+separately compiled files, they must be declared with the directive
+.B external .
+This directive is similar to the directive
+.B forward
+in that it must precede the resolution of the function or procedure,
+and formal parameters and function result types must be specified
+at the
+.B external
+declaration and may not be specified at the resolution.
+.PP
+Type checking is performed across separately compiled files.
+Since Pascal type defintions define unique types,
+any types which are shared between separately compiled files
+must be the same definition.
+This seemingly impossible problem is solved using a facility similar
+to the
+.B include
+facility discussed above.
+Definitions may be placed in files with the extension
+.B .h
+and the files included by separately compiled files.
+Each definition from a 
+.B .h
+file defines a unique type, and all uses of a definition from the same 
+.B .h
+file define the same type.
+Similarly, the facility is extended to allow the definition of 
+.B const s
+and the declaration of
+.B label s,
+.B var s,
+and
+.B external
+.B function s
+and
+.B procedure s.
+Thus
+.B procedure s
+and
+.B function s
+which are used between separately compiled files must be declared
+.B external ,
+and must be so declared in a
+.B .h
+file included by any file which calls or resolves the 
+.B function
+or 
+.B procedure .
+Conversely,
+.B function s
+and
+.B procedure s
+declared
+.B external
+may only be so declared in 
+.B .h
+files.
+These files may be included only at the outermost level,
+and thus define or declare global objects.
+Note that since only
+.B external
+.B function
+and
+.B procedure
+declarations (and not resolutions) are allowed in
+.B .h
+files, statically nested
+.B function s
+and
+.B procedure s
+can not be declared
+.B external .
+.PP
+An example of the use of included
+.B .h
+files in a program would be:
+.LS
+\*bprogram\fR compiler(input, output, obj);
+
+#\*binclude\fR "globals.h"
+#\*binclude\fR "scanner.h"
+#\*binclude\fR "parser.h"
+#\*binclude\fR "semantics.h"
+
+\*bbegin\fR
+    { main program }
+\*bend\fR.
+.LE
+.PP
+This might include in the main program
+the definitions and declarations of all the global 
+.B label s,
+.B const s,
+.B type s and
+.B var s
+from the file globals.h,
+and the
+.B external
+.B function
+and
+.B procedure
+declarations for each of the
+separately compiled files for the scanner, parser and semantics.
+The header file
+.I scanner.h
+would contain declarations of the form:
+.LS
+\*btype\fR
+    token = \*brecord\fR
+	{ token fields }
+    \*bend\fR;
+
+\*bfunction\fR scan(\*bvar\fR inputfile: text): token;
+    \*bexternal\fR;
+.LE
+.ne 15
+Then the scanner might be in a separately compiled file containing:
+.LS
+#\*binclude\fR "globals.h"
+#\*binclude\fR "scanner.h"
+
+\*bfunction\fR scan;
+\*bbegin\fR
+    { scanner code }
+\*bend\fR;
+.LE
+which includes the same global definitions and declarations
+and resolves the scanner functions and procedures declared
+.B external
+in the file scanner.h.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 program kat(input, output);
+var
+    ch: char;
+begin
+    while not eof do begin
+	while not eoln do begin
+	    read(ch);
+	    write(ch)
+	end;
+	readln;
+	writeln
+    end
+end { kat }.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             1t1
+1s/.*/\\*b&\\fR/
+3t3
+3s/.*/\\*b&\\fR/
+w
+q
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  1i
+.ta 3.25i
+.
+g/           *{/s//	{/
+w
+q
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      UX
+process to the variable
+.I a .
+The range of valid
+.I i
+is
+.I 0
+to
+.I argc\-1 .
+.IP date(a) 
+assigns the current date to the alfa variable 
+.I a
+in the format `dd mmm yy ', where `mmm' is the first
+three characters of the month, i.e. `Apr'.
+.IP flush(f) 
+writes the output buffered for Pascal file
+.I f
+into the associated
+.UX
+file.
+.IP halt 
+terminates the execution of the program with
+a control flow backtrace.
+.IP linelimit(f,x)\*(dd
+.FS
+\*(ddCurrently ignored by pdp-11
+.X .
+.FE
+with
+.I f 
+a textfile and
+.I x 
+an integer expression
+causes
+the program to be abnormally terminated if more than
+.I x 
+lines are
+written on file
+.I f .
+If
+.I x 
+is less than 0 then no limit is imposed.
+.IP message(x,...) 
+causes the parameters, which have the format of those
+to the
+built-in
+.B procedure
+.I write,
+to be written unbuffered on the diagnostic unit 2,
+almost always the user's terminal.
+.IP null
+a procedure of no arguments which does absolutely nothing.
+It is useful as a place holder,
+and is generated by
+.XP
+in place of the invisible empty statement.
+.IP remove(a) 
+where
+.I a 
+is a string causes the
+.UX
+file whose
+name is
+.I a, 
+with trailing blanks eliminated, to be removed.
+.IP reset(f,a) 
+where
+.I a 
+is a string causes the file whose name
+is
+.I a 
+(with blanks trimmed) to be associated with
+.I f 
+in addition
+to the normal function of
+.I reset.
+.IP rewrite(f,a) 
+is analogous to `reset' above.
+.IP stlimit(i)
+where
+.I i 
+is an integer sets the statement limit to be
+.I i 
+statements.
+Specifying the
+.B p
+option to
+.I pc
+disables statement limit counting.
+.IP time(a) 
+causes the current time in the form `\ hh:mm:ss\ ' to be
+assigned to the alfa variable
+.I a.
+.SH
+Non-standard functions
+.IP argc 25
+returns the count of arguments when the Pascal program
+was invoked.
+.I Argc
+is always at least 1.
+.IP card(x) 
+returns the cardinality of the set
+.I x, 
+i.e. the
+number of elements contained in the set.
+.IP clock 
+returns an integer which is the number of central processor
+milliseconds of user time used by this process.
+.IP expo(x) 
+yields the integer valued exponent of the floating-point
+representation of
+.I x ;
+expo(\fIx\fP) = entier(log2(abs(\fIx\fP))).
+.IP random(x) 
+where
+.I x 
+is a real parameter, evaluated but otherwise
+ignored, invokes a linear congruential random number generator.
+Successive seeds are generated as (seed*a + c) mod m and
+the new random number is a normalization of the seed to the range 0.0 to 1.0;
+a is 62605, c is 113218009, and m is
+536870912.
+The initial seed
+is 7774755.
+.IP seed(i) 
+where
+.I i 
+is an integer sets the random number generator seed
+to
+.I i 
+and returns the previous seed.
+Thus seed(seed(i))
+has no effect except to yield value
+.I i.
+.IP sysclock
+an integer function of no arguments returns the number of central processor
+milliseconds of system time used by this process.
+.IP undefined(x) 
+a Boolean function.
+Its argument is a real number and
+it always returns false.
+.IP wallclock 
+an integer function of no arguments returns the time
+in seconds since 00:00:00 GMT January 1, 1970.
+.NH 2
+Remarks on standard and portable Pascal
+.PP
+It is occasionally desirable to prepare Pascal programs which will be
+acceptable at other Pascal installations.
+While certain system dependencies are bound to creep in,
+judicious design and programming practice can usually eliminate
+most of the non-portable usages.
+Wirth's
+.I "Pascal Report"
+concludes with a standard for implementation and program exchange.
+.PP
+In particular, the following differences may cause trouble when attempting
+to transport programs between this implementation and Pascal 6000\-3.4.
+Using the
+.B s
+translator option may serve to indicate many problem areas.\*(dg
+.FS
+\*(dgThe
+.B s
+option does not, however, check that identifiers differ
+in the first 8 characters.
+.I Pi
+and
+.PC
+also do not check the semantics of
+.B packed .
+.FE
+.SH
+Features not available in Berkeley Pascal
+.IP
+Segmented files and associated functions and procedures.
+.IP
+The function
+.I trunc 
+with two arguments.
+.IP
+Arrays whose indices exceed the capacity of 16 bit arithmetic.
+.SH
+Features available in Berkeley Pascal but not in Pascal 6000-3.4
+.IP
+The procedures
+.I  reset 
+and
+.I  rewrite 
+with file names.
+.IP
+The functions
+.I argc,
+.I seed,
+.I sysclock,
+and
+.I wallclock.
+.IP
+The procedures
+.I argv,
+.I flush,
+and
+.I remove.
+.IP
+.I Message
+with arguments other than character strings.
+.IP
+.I Write
+with keyword
+.B hex .
+.IP
+The
+.B assert
+statement.
+.IP
+Reading and writing of enumerated types.
+.IP
+Allowing functions to return structures.
+.IP
+Separate compilation of programs.
+.IP
+Comparison of records.
+.SH
+Other problem areas
+.PP
+Sets and strings are more general in \*
+.UP ;
+see the restrictions given in
+the 
+Jensen-Wirth
+.I "User Manual"
+for details on the 6000\-3.4 restrictions.
+.PP
+The character set differences may cause problems,
+especially the use of the function
+.I chr,
+characters as arguments to
+.I ord,
+and comparisons of characters,
+since the character set ordering
+differs between the two machines.
+.PP
+The Pascal 6000\-3.4 compiler uses a less strict notion of type equivalence.
+In
+.UP ,
+types are considered identical only if they are represented
+by the same type identifier.
+Thus, in particular, unnamed types are unique
+to the variables/fields declared with them.
+.PP
+Pascal 6000\-3.4 doesn't recognize our option
+flags, so it is wise to
+put the control of
+.UP
+options to the end of option lists or, better
+yet, restrict the option list length to one.
+.PP
+For Pascal 6000\-3.4 the ordering of files in the program statement has
+significance.
+It is desirable to place
+.I input 
+and
+.I output 
+as the first two files in the
+.B program
+statement.
+.sp 2
+.SH
+Acknowledgments
+.PP
+The financial support of William Joy and Susan Graham by
+the National Science Foundation under grants
+MCS74-07644-A04, MCS78-07291, and MCS80-05144,
+and the William Joy by an
+.SM IBM
+Graduate Fellowship are gratefully acknowledged.
+                                                                                                                                                                                                                   line one.
+line two.
+line three is the end.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     program mismatch(output)
+begin
+	writeln('***');
+	{ The next line is the last line in the file }
+	writeln
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       program first(output)
+begin
+	writeln('Hello, world!')
+end.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     program x(output);
+var
+	a: set of char;
+	b: Boolean;
+	c: (red, green, blue);
+	p: ^ integer;
+	A: alfa;
+	B: packed array [1..5] of char;
+begin
+	b := true;
+	c := red;
+	new(p);
+	a := [];
+	A := 'Hello, yellow';
+	b := a and b;
+	a := a * 3;
+	if input < 2 then writeln('boo');
+	if p <= 2 then writeln('sure nuff');
+	if A = B then writeln('same');
+	if c = true then writeln('hue''s and color''s')
+end.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       program digits(output);
+var r: real;
+begin
+r := 0.;
+r := .0;
+r := 1.e10;
+r := .05e-10;
+writeln(r)
+end.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         program copydata(data, output);
+var
+    ch: char;
+    data: text;
+begin
+    reset(data);
+    while not eof(data) do begin
+	while not eoln(data) do begin
+	    read(data, ch);
+	    write(ch)
+	end;
+	readln(data);
+	writeln
+    end
+end { copydata }.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           { This is a left marginal comment. }
+program hello(output);
+var i : integer; {This is a trailing comment}
+j : integer;	{This is a right marginal comment}
+k : array [ 1..10] of array [1..10] of integer;	{Marginal, but past the margin}
+{
+  An aligned, multi-line comment
+  which explains what this program is
+  all about
+}
+begin
+i := 1; {Trailing i comment}
+{A left marginal comment}
+ {An aligned comment}
+j := 1;		{Right marginal comment}
+k[1] := 1;
+writeln(i, j, k[1])
+end.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      program clash(output);
+var
+	i: integer;
+	c: char;
+begin
+	i := 1;
+	c := i;
+	write(c, i)
+end.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    (*
+ * Graphic representation of a function
+ *    f(x) = exp(-x) * sin(2 * pi * x)
+ *)
+program graph1(output);
+const
+	d = 0.0625;   (* 1/16, 16 lines for interval [x, x+1] *)
+	s = 32;       (* 32 character width for interval [x, x+1] *)
+	h = 34;       (* Character position of x-axis *)
+	c = 6.28138;  (* 2 * pi *)
+	lim = 32;
+var
+	x, y: real;
+	i, n: integer;
+begin
+	for i := 0 to lim do begin
+		x := d * i;
+		y := exp(-x) * sin(c * x);
+		n := round(s * y) + h;
+		repeat
+			write(' ');
+			n := n - 1
+		until n = 0;
+		writeln('*')
+	end
+end.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      (*
+ * Graphic representation of a function
+ *    f(x) = exp(-x) * sin(2 * pi * x)
+ *)
+program graph1(output);
+const
+	d = 0.0625;   (* 1/16, 16 lines for interval [x, x+1] *)
+	s = 32;       (* 32 character width for interval [x, x+1] *)
+	h = 34;       (* Character position of x-axis *)
+	c = 6.28138;  (* 2 * pi *)
+	lim = 32;
+var
+	x, y: real;
+	i, n: integer;
+begin
+	for i := 0 to lim do begin
+		x := d / i;
+		y := exp(-x) * sin(c * x);
+		n := round(s * y) + h;
+		repeat
+			write(' ');
+			n := n - 1
+		until n = 0;
+		writeln('*')
+	end
+end.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      (*
+ * Graphic representation of a function
+ *    f(x) = exp(-x) * sin(2 * pi * x)
+ *)
+program graph1(output);
+const
+	d = 0.0625;   (* 1/16, 16 lines for interval [x, x+1] *)
+	s = 32;       (* 32 character width for interval [x, x+1] *)
+	h = 34;       (* Character position of x-axis *)
+	c = 6.28138;  (* 2 * pi *)
+	lim = 32;
+var
+	x, y: real;
+	i, n: integer;
+begin
+	for i := 0 to lim do begin
+		x := d / i;
+		y := exp(-x) * sin(c * x);
+		n := round(s * y) + h;
+		repeat
+			write(' ');
+			n := n - 1
+		until n = 0;
+		writeln('*')
+	end
+end.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      (*
+ * Graphic representation of a function
+ *    f(x) = exp(-x) * sin(2 * pi * x)
+ *)
+program graph1(output);
+const
+	d = 0.0625;   (* 1/16, 16 lines for interval [x, x+1] *)
+	s = 32;       (* 32 character width for interval [x, x+1]
+	h = 34;       (* Character position of x-axis *)
+	c = 6.28138;  (* 2 * pi *)
+	lim = 32;
+var
+	x, y: real;
+	i, n: integer;
+begin
+	for i := 0 to lim begin
+		x := d / i;
+		y := exp(-x9 * sin(i * x);
+		n := Round(s * y) + h;
+		repeat
+			write(' ');
+			n := n - 1
+		writeln('*')
+end.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                /˜    .   )    ..  0˜    Makefile y  1˜    vhel2 ma2˜    vhel3 ma3˜    vhel4 ma4˜    vhel5 ma5˜    vhel6 ma6˜    vhel.mac y  7˜    vhel0 ma8˜  ` vhel1 ma                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                #
+# Copyright (c) 1986 Regents of the University of California.
+# All rights reserved.  The Berkeley software License Agreement
+# specifies the terms and conditions for redistribution.
+#
+#	@(#)Makefile	6.1 (Berkeley) 4/25/86
+#
+SRCS=	vhel.mac vhel0 vhel1 vhel2 vhel3 \
+	vhel4 vhel5 vhel6
+MACROS=	-msU
+PRINTER=Pdp
+EQN=	deqn -${PRINTER}
+TROFF=	ditroff -${PRINTER}
+
+paper:	paper.${PRINTER}
+	lpr -${PRINTER} -n paper.${PRINTER}
+
+paper.${PRINTER}: ${SRCS}
+	${EQN} ${SRCS} | ${TROFF} ${MACROS} -t > paper.${PRINTER}
+
+clean:
+	rm -f paper.[PT]* *.spell errs Errs make.out
+
+spell:	${SRCS}
+	@for i in ${SRCS}; do \
+		echo $$i; spell $$i | sort | comm -23 - spell.ok > $$i.spell; \
+	done
+                                                                                                                                                                                                                                                                                                                                                            .\"	@(#)vhel2	6.1 (Berkeley) 4/25/86
+.\"
+.NH
+Languages
+.NH 2
+The C Language
+.LP
+.sh CC
+Compile and/or link edit programs in the C
+language.
+The 
+.UC "UNIX/32V"
+operating system, most of the
+subsystems and C itself are written in C.
+For a full description of C, read
+.ul
+The C Programming Language,
+Brian W. Kernighan and Dennis M. Ritchie,
+Prentice-Hall, 1978.
+.op
+General purpose language
+designed for structured programming.
+.op
+Data types include
+character,
+integer,
+float,
+double,
+pointers to all types,
+functions returning above types,
+arrays of all types,
+structures and unions of all types.
+.op
+Operations intended to give machine-independent control
+of full machine facility, including to-memory
+operations and
+pointer arithmetic.
+.op
+Macro preprocessor for parameterized code and inclusion of
+standard files.
+.op
+All procedures recursive, with parameters by value.
+.op
+Machine-independent pointer manipulation.
+.op
+Object code uses full
+addressing capability of the VAX-11.
+.op
+Runtime library gives access to all system facilities.
+.OP
+Definable data types.
+.OP
+Block structure
+.sh  LINT
+Verifier for C programs.
+Reports questionable or nonportable usage such as:
+.nf
+.in +2
+Mismatched data declarations and procedure interfaces.
+.br
+Nonportable type conversions.
+.br
+Unused variables, unreachable code, no-effect operations.
+.br
+Mistyped pointers.
+.br
+Obsolete syntax.
+.in -2
+.OP
+Full cross-module checking of separately compiled programs.
+.sh CB
+A beautifier for C programs.
+Does proper indentation and placement of braces.
+.NH 2
+Fortran
+.LP
+.sh  F77
+A full compiler for 
+ANSI Standard Fortran 77.
+.OP
+Compatible with C and supporting tools at object level.
+.OP
+Optional source compatibility with Fortran 66.
+.OP
+Free format source.
+.op
+Optional subscript-range checking, detection of uninitialized variables.
+.OP
+All widths of arithmetic:
+2- and 4-byte integer; 4- and 8-byte real; 8- and 16-byte
+complex.
+.sh RATFOR
+Ratfor adds rational
+control structure \o'a\(ga' la C to Fortran.
+.op
+Compound statements.
+.op
+If-else, do, for, while,
+repeat-until, break, next
+statements.
+.op
+Symbolic constants.
+.op
+File insertion.
+.op
+Free format source
+.op
+Translation of relationals like >, >=.
+.op
+Produces genuine Fortran to carry away.
+.op
+May be used with F77.
+.sh STRUCT
+Converts ordinary ugly Fortran into structured Fortran (i.e., Ratfor),
+using statement grouping, if-else, while, for, repeat-until.
+.NH 2
+Other Algorithmic Languages
+.sh DC
+Interactive programmable desk calculator.
+Has named storage locations as well
+as conventional stack for holding integers or programs.
+.op
+Unlimited precision decimal arithmetic.
+.op
+Appropriate treatment of decimal fractions.
+.op
+Arbitrary input and output radices, in particular
+binary, octal, decimal and hexadecimal.
+.op
+Reverse Polish operators:
+.in+2
+.nf
++ \- * /
+remainder, power, square root,
+load, store, duplicate, clear,
+print, enter program text, execute.
+.in-2
+.fi
+.sh BC
+A C-like interactive interface to the desk calculator DC.
+.op
+All the capabilities of DC with a high-level syntax.
+.op
+Arrays and recursive functions.
+.op
+Immediate evaluation of expressions and evaluation of
+functions upon call.
+.op
+Arbitrary precision elementary functions:
+exp, sin, cos, atan.
+.op
+Go-to-less programming.
+.NH 2
+Macroprocessing
+.LP
+.nr c 0 1
+.sh  M4
+A general purpose macroprocessor.
+.OP
+Stream-oriented, recognizes macros anywhere in text.
+.OP
+Syntax fits with functional syntax of most higher-level
+languages.
+.OP
+Can evaluate integer arithmetic expressions.
+.NH 2
+Compiler-compilers
+.LP
+.sh YACC
+An LR(1)-based compiler writing system.
+During execution of resulting
+parsers, arbitrary C functions may be
+called to do code generation or semantic actions.
+.op
+BNF syntax specifications.
+.op
+Precedence relations.
+.op
+Accepts formally ambiguous grammars
+with non-BNF resolution rules.
+.sh  LEX
+Generator of lexical analyzers.
+Arbitrary C functions may be called
+upon isolation of each lexical token.
+.OP
+Full regular expression,
+plus left and right context dependence.
+.OP
+Resulting lexical analysers interface cleanly
+with YACC parsers.
+   .\"	@(#)vhel3	6.1 (Berkeley) 4/25/86
+.\"
+.NH
+Text Processing
+.NH 2
+Document Preparation
+.LP
+.sh ED
+Interactive context editor.
+Random access to all lines of a file.
+.op
+Find lines by number or pattern.
+Patterns may include:
+specified characters,
+don't care characters,
+choices among characters,
+repetitions of these constructs,
+beginning of line,
+end of line.
+.op
+Add, delete, change, copy, move or join lines.
+.op
+Permute or split contents of a line.
+.op
+Replace one or all instances of a pattern within a line.
+.op
+Combine or split files.
+.op
+Escape to Shell (command language) during editing.
+.ne3
+.op
+Do any of above operations on
+every pattern-selected line in a given range.
+.OP
+Optional encryption for extra security.
+.sh PTX
+Make a permuted (key word in context) index.
+.sh SPELL
+Look for spelling errors by comparing each word in a
+document against a word list.
+.OP
+25,000-word list includes proper names.
+.OP
+Handles common prefixes and suffixes.
+.OP
+Collects words to help tailor local spelling lists.
+.sh LOOK
+Search for words in dictionary that begin with specified prefix.
+.sh CRYPT
+Encrypt and decrypt files for security.
+.NH 2
+Document Formatting
+.LP
+.sh TROFF
+.sh NROFF
+Advanced typesetting.
+TROFF drives a Graphic Systems phototypesetter;
+NROFF drives ascii terminals of all types.
+This summary was typeset using TROFF.
+TROFF and NROFF are capable of elaborate
+feats of formatting,
+when appropriately programmed.
+TROFF and NROFF accept the same input language.
+.op
+Completely definable page format keyed to dynamically planted
+``interrupts'' at specified lines.
+.op
+Maintains several separately definable typesetting environments (e.g., one for
+body text, one for footnotes, and one for unusually elaborate
+headings).
+.op
+Arbitrary number of output pools can be combined at will.
+.op
+Macros with substitutable arguments, and macros invocable
+in mid-line.
+.op
+Computation and printing of numerical quantities.
+.op
+Conditional execution of macros.
+.op
+Tabular layout facility.
+.op
+Positions expressible in inches, centimeters, ems, points,
+machine units
+or arithmetic combinations thereof.
+.op
+Access to character-width computation for unusually difficult
+layout problems.
+.op
+Overstrikes, built-up brackets, horizontal and vertical line drawing.
+.op
+Dynamic relative or absolute positioning and size selection,
+globally or at the character level.
+.op
+Can exploit the characteristics of the terminal being used,
+for approximating special characters, reverse motions,
+proportional spacing, etc.
+.LP
+The Graphic Systems typesetter has a
+vocabulary of several 102-character fonts (4 simultaneously)
+in 15 sizes.
+TROFF provides
+terminal output for rough sampling of the product.
+.LP
+NROFF will produce multicolumn output on terminals capable of reverse line feed,
+or through the postprocessor COL.
+.LP
+High programming skill is required to exploit the formatting
+capabilities of TROFF and NROFF, although unskilled personnel can easily be trained
+to enter documents according to canned formats
+such as those provided by MS, below.
+TROFF and EQN are essentially identical to NROFF and NEQN
+so it is usually possible to define interchangeable 
+formats to produce
+approximate proof copy on terminals
+before actual typesetting.
+The preprocessors MS, TBL, and REFER are fully compatible
+with TROFF and NROFF.
+.sh MS
+A standardized manuscript layout package
+for use with NROFF/TROFF.
+This document was formatted with MS.
+.op
+Page numbers and draft dates.
+.op
+Automatically numbered subheads.
+.op
+Footnotes.
+.op
+Single or double column.
+.op
+Paragraphing, display and indentation.
+.op
+Numbered equations.
+.sh EQN
+A mathematical typesetting preprocessor for TROFF.
+Translates easily readable formulas, either in-line or displayed, into 
+detailed typesetting instructions.
+Formulas are written in a style like this:
+.DS
+sigma sup 2 ~=~ 1 over N sum from i=1 to N ( x sub i \- x bar ) sup 2
+.DE
+which produces:
+.EQ
+sigma sup 2 ~=~ 1 over N sum from i=1 to N ( x sub i - x bar ) sup 2
+.EN
+.op
+Automatic calculation of size changes for subscripts, sub-subscripts,
+etc.
+.op
+Full vocabulary of Greek letters and special symbols, such as `gamma', `GAMMA', `integral'.
+.op
+Automatic calculation of large bracket sizes.
+.op
+Vertical ``piling'' of formulae for matrices, conditional
+alternatives, etc.
+.op
+Integrals, sums, etc., with arbitrarily complex limits.
+.op
+Diacriticals: dots, double dots, hats, bars, etc.
+.op
+Easily learned by nonprogrammers and mathematical typists.
+.sh NEQN
+A version of EQN for NROFF;
+accepts the same input language.
+Prepares formulas for display on
+any terminal that NROFF knows about,
+for example, those based on Diablo printing mechanism.
+.op
+Same facilities as EQN within graphical capability of
+terminal.
+.sh TBL
+A preprocessor for NROFF/TROFF
+that translates simple descriptions of table layouts
+and contents into detailed typesetting instructions.
+.op
+Computes column widths.
+.op
+Handles left- and right-justified columns,
+centered columns and decimal-point
+alignment.
+.op
+Places column titles.
+.op
+Table entries can be text,
+which is adjusted to fit.
+.op
+Can box all or parts of table.
+.sh REFER
+Fills in bibliographic citations in a document
+from a data base (not supplied).
+.op
+References may be printed in any style,
+as they occur or collected at the end.
+.op
+May be numbered sequentially, by name of author, etc.
+.sh TC
+Simulate Graphic Systems typesetter on Tektronix 4014 scope.
+Useful for checking TROFF page layout before typesetting.
+.sh COL
+Canonicalize files with reverse line feeds
+for one-pass printing.
+.sh DEROFF
+Remove all TROFF commands from input.
+.sh CHECKEQ
+Check document for possible errors in EQN usage.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    .\"	@(#)vhel5	6.1 (Berkeley) 4/25/86
+.\"
+.NH
+Graphics
+.LP
+The programs in this section are predominantly intended for use
+with Tektronix 4014 storage scopes.
+.sh GRAPH
+Prepares a graph of a set of input numbers.
+.op
+Input scaled to fit standard plotting area.
+.op
+Abscissae may be supplied automatically.
+.op
+Graph may be labeled.
+.op
+Control over grid style, line style, graph orientation, etc.
+.sh SPLINE
+Provides a smooth curve through a set of points
+intended for GRAPH.
+.sh PLOT
+A set of filters for printing graphs produced by GRAPH
+and other programs
+on various terminals.
+Filters provided for
+4014, DASI terminals, Versatec printer/plotter.
+                                                                                                                                                                                                                                                                                                                                                                                       

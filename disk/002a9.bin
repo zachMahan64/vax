@@ -1,0 +1,2963 @@
+imber estimating
+timber estimator
+timber faller
+timber-floating
+timber forest
+timber frame
+timber-framed
+timber grapple
+timber grouse
+timber-headed
+timber-hitch
+timber jumper
+timber-laden
+timber leader
+timber line
+timber-lined
+timber loader
+timber mare
+timber marker
+timber measurer
+timber mill
+timber preserver
+timber-producing
+timber-propped
+timber rattlesnake
+timber right
+timber rot
+timber scribe
+timber shifter
+timber-skeletoned
+timber-strewn
+timber toe
+timber-toed
+timber topper
+timber topping
+timber tower
+timber tree
+timber unloader
+timber wheels
+timber wolf
+timber worm
+timbrel arch
+timbrel vault
+time about
+time allowance
+time-authorized
+time azimuth
+time ball
+time bargain
+time-barred
+time-battered
+time-beguiling
+time-bent
+time-bettering
+time-bewasted
+time bill
+time-blackened
+time-blanched
+time book
+time-born
+time-bound
+time-breaking
+time-canceled
+time-changed
+time chart
+time charter
+time charter party
+time-cleft
+time clerk
+time clock
+time constant
+time delay
+time-delay relay
+time-deluding
+time deposit
+time.xx "" "" "@: arithmetic on shell variables." "" csh(1)
+.xx "" "imp:" "1822 network interface." "" imp(4)
+.xx "" "ddn: DDN Standard Mode X." "25 IMP interface." "" ddn(4)
+.xx "" "lib2648: subroutines for the HP" "2648 graphics terminal." "" lib2648(3X)
+.xx "" "mset: retrieve ASCII to IBM" "3270 keyboard map." "" mset(1)
+.xx "" "database for mapping ascii keystrokes into IBM" "3270 keys." "map3270:" map3270(5)
+.xx "" "ec:" "3Com 10 Mb/s Ethernet interface." "" ec(4)
+.xx "" "diff3:" "3-way differential file comparison." "" diff3(1)
+.xx "" "openpl et al.: f77 library interface to \fIplot\fR" "(3X) libraries.." "plot:" plot(3F)
+.xx "" "sendbug: mail a system bug report to" "4bsd-bugs." "" sendbug(1)
+.xx "" "crl: VAX" "8600 console RL02 interface." "" crl(4)
+.xx "" "" "aardvark: yet another exploration game." "" aardvark(6)
+.xx "" "abort:" "abnormal termination." "" abort(3F)
+.xx "" "" "abort: abnormal termination." "" abort(3F)
+.xx "" "" "abort: generate a fault." "" abort(3)
+.xx "" "" "abs: integer absolute value." "" abs(3)
+.xx "" "abs: integer" "absolute value." "" abs(3)
+.xx "" "hypot, cabs: Euclidean distance, complex" "absolute value." "" hypot(3M)
+.xx "round-to-nearest/" "fabs, floor, ceil, rint:" "absolute value, floor, ceiling, and" "" floor(3M)
+.xx "" "" "ac: login accounting." "" ac(8)
+.xx "" "" "acc: ACC LH/DH IMP interface." "" acc(4)
+.xx "" "hdh:" "ACC IF-11/HDH IMP interface." "" hdh(4)
+.xx "" "acc:" "ACC LH/DH IMP interface." "" acc(4)
+.xx "" "accept:" "accept a connection on a socket." "" accept(2)
+.xx "" "" "accept: accept a connection on a socket." "" accept(2)
+.xx "" "" "access: determine accessability of a file." "" access(3F)
+.xx "" "" "access: determine accessibility of file." "" access(2)
+.xx "" "getgroups: get group" "access list." "" getgroups(2)
+.xx "" "initgroups: initialize group" "access list." "" initgroups(3)
+.xx "" "setgroups: set group" "access list." "" setgroups(2)
+.xx "" "access: determine" "accessability of a file." "" access(3F)
+.xx "" "access: determine" "accessibility of file." "" access(2)
+.xx "" "ac: login" "accounting." "" ac(8)
+.xx "" "sa, accton: system" "accounting." "" sa(8)
+.xx "" "acct: execution" "accounting file." "" acct(5)
+.xx "" "pac: printer/plotter" "accounting information." "" pac(8)
+.xx "" "acct: turn" "accounting on or off." "" acct(2)
+.xx "" "" "acct: execution accounting file." "" acct(5)
+.xx "" "" "acct: turn accounting on or off." "" acct(2)
+.xx "" "sa," "accton: system accounting." "" sa(8)
+.xx "their inverses." "sin, cos, tan, asin," "acos, atan, atan2: trigonometric functions and" "" sin(3M)
+.xx "" "asinh," "acosh, atanh: inverse hyperbolic functions." "" asinh(3M)
+.xx "" "signal: change the" "action for a signal." "" signal(3F)
+.xx "" "ad: Data Translation" "A/D converter." "" ad(4)
+.xx "" "" "ad: Data Translation A/D converter." "" ad(4)
+.xx "" "fortune: print a random, hopefully interesting," "adage." "" fortune(6)
+.xx "" "" "adb: debugger." "" adb(1)
+.xx "" "swapon:" "add a swap device for interleaved paging/swapping." "" swapon(2)
+.xx "" "" "addbib: create or extend bibliographic database." "" addbib(1)
+.xx "" "adduser: procedure for" "adding new users." "" adduser(8)
+.xx "" "swapon: specify" "additional device for paging and swapping." "" swapon(8)
+.xx "" "ns_addr, ns_ntoa: Xerox NS(tm)" "address conversion routines." "" ns(3N)
+.xx "" "inet_makeaddr, inet_lnaof, inet_netof: Internet" "address manipulation routines." "/inet_ntoa," inet(3N)
+.xx "" "loc: return the" "address of an object." "" loc(3F)
+.xx "" "arp:" "address resolution display and control." "" arp(8C)
+.xx "" "arp:" "Address Resolution Protocol." "" arp(4P)
+.xx "" "mailaddr: mail" "addressing description." "" mailaddr(7)
+.xx "" "" "adduser: procedure for adding new users." "" adduser(8)
+.xx "of the system clock." "" "adjtime: correct the time to allow synchronization" "" adjtime(2)
+.xx "" "" "adventure: an exploration game." "" adventure(6)
+.xx "" "battlestar: a tropical" "adventure game." "" battlestar(6)
+.xx "" "flock: apply or remove an" "advisory lock on an open file." "" flock(2)
+.xx "" "yes: be repetitively" "affirmative." "" yes(1)
+.xx "" "basename: strip filename" "affixes." "" basename(1)
+.xx "" "learn: computer" "aided instruction about UNIX." "" learn(1)
+.xx "" "" "alarm: execute a subroutine after a specified time." "" alarm(3F)
+.xx "" "" "alarm: schedule signal after specified time." "" alarm(3C)
+.xx "" "L.aliases: UUCP hostname" "alias file." "" L.aliases(5)
+.xx "" "" "alias: shell macros." "" csh(1)
+.xx "" "unalias: remove" "aliases." "" csh(1)
+.xx "" "" "aliases: aliases file for sendmail." "" aliases(5)
+.xx "" "which: locate a program file including" "aliases and paths (\fIcsh\fR only)." "" which(1)
+.xx "" "newaliases: rebuild the data base for the mail" "aliases file." "" newaliases(1)
+.xx "" "aliases:" "aliases file for sendmail." "" aliases(5)
+.xx "" "L." "aliases: UUCP hostname alias file." "" L.aliases(5)
+.xx "" "valloc:" "aligned memory allocator." "" valloc(3C)
+.xx "" "malloc, free, realloc, calloc," "alloca: memory allocator." "" malloc(3)
+.xx "" "malloc, free, realloc, calloc, alloca: memory" "allocator." "" malloc(3)
+.xx "" "malloc, free, falloc: memory" "allocator." "" malloc(3F)
+.xx "" "valloc: aligned memory" "allocator." "" valloc(3C)
+.xx "" "scandir," "alphasort: scan a directory." "" scandir(3)
+.xx "" "limit:" "alter per-process resource limitations." "" csh(1)
+.xx "" "renice:" "alter priority of running processes." "" renice(8)
+.xx "" "else:" "alternative commands." "" csh(1)
+.xx "" "lex: generator of lexical" "analysis programs." "" lex(1)
+.xx "" "error:" "analyze and disperse compiler error messages." "" error(1)
+.xx "" "style:" "analyze surface characteristics of a document." "" style(1)
+.xx "" "worms:" "animate worms on a display terminal." "" worms(6)
+.xx "" "rain:" "animated raindrops display." "" rain(6)
+.xx "" "bcd: convert to" "antique media." "" bcd(6)
+.xx "" "sticky: persistent text and" "append-only directories." "" sticky(8)
+.xx "" "apply:" "apply a command to a set of arguments." "" apply(1)
+.xx "" "" "apply: apply a command to a set of arguments." "" apply(1)
+.xx "" "flock:" "apply or remove an advisory lock on an open file." "" flock(2)
+.xx "" "patch: a program for" "applying a diff file to an original." "" patch(1)
+.xx "" "" "apropos: locate commands by keyword lookup." "" apropos(1)
+.xx "" "" "ar: archive and library maintainer." "" ar(1)
+.xx "" "" "ar: archive (library) file format." "" ar(5)
+.xx "" "number: convert" "Arabic numerals to English." "" number(6)
+.xx "" "bc:" "arbitrary-precision arithmetic language." "" bc(1)
+.xx "graphics/" "plot: openpl, erase, label, line, circle," "arc, move, cont, point, linemod, space, closepl:" "" plot(3X)
+.xx "" "tp: manipulate tape" "archive." "" tp(1)
+.xx "" "ar:" "archive and library maintainer." "" ar(1)
+.xx "" "tar: tape" "archive file format." "" tar(5)
+.xx "" "ar:" "archive (library) file format." "" ar(5)
+.xx "" "tar: tape" "archiver." "" tar(1)
+.xx "" "arff, flcopy:" "archiver and copier for floppy." "" arff(8V)
+.xx "" "ranlib: convert" "archives to random libraries." "" ranlib(1)
+.xx "" "" "arff, flcopy: archiver and copier for floppy." "" arff(8V)
+.xx "" "glob: filename expand" "argument list." "" csh(1)
+.xx "" "shift: manipulate" "argument list." "" csh(1)
+.xx "" "varargs: variable" "argument list." "" varargs(3)
+.xx "" "apply: apply a command to a set of" "arguments." "" apply(1)
+.xx "" "echo: echo" "arguments." "" csh(1)
+.xx "" "echo: echo" "arguments." "" echo(1)
+.xx "" "getarg, iargc: return command line" "arguments." "" getarg(3F)
+.xx "" "expr: evaluate" "arguments as an expression." "" expr(1)
+.xx "" "getopt: get option letter from" "argv." "" getopt(3)
+.xx "" "m_out, sdiv, itom: multiple precision integer" "arithmetic." "/omin, fmin, m_in, mout, omout, fmout," mp(3X)
+.xx "" "traper: trap" "arithmetic errors." "" traper(3F)
+.xx "" "bc: arbitrary-precision" "arithmetic language." "" bc(1)
+.xx "" "@:" "arithmetic on shell variables." "" csh(1)
+.xx "" "" "arithmetic: provide drill in number facts." "" arithmetic(6)
+.xx "" "" "arp: address resolution display and control." "" arp(8C)
+.xx "" "" "arp: Addre derivative
+time detector
+time-discolored
+time discount
+time draft
+time-eaten
+time-economizing
+time-enduring
+time enough
+time error
+time-expired
+time-exposure
+time fire
+time fuse
+time-fused
+time globe
+time-gnawn
+time gun
+time-halting
+time-hastening
+time hit
+time-honored
+time immemorial
+time killer
+time-killing
+time lag
+time-lasting
+time limit
+time loan
+time lock
+time-marked
+time-measuring
+time-mellowed
+time money
+time note
+time-noting
+time-out
+time policy
+time-pressed
+time quadrature
+time rating
+time recorder
+time-rent
+time-rusty
+time selling
+time sense
+time series
+time-served
+time service
+time sheet
+time shrapnel
+time-shrouded
+time sight
+time signal
+time signature
+time space
+time spirit
+time stamp
+time star
+time study
+time switch
+time-taught
+time-temperature
+time-temperature curve
+time-tested
+time thrust
+time ticket
+time train
+time triangle
+time-tried
+time value
+time-wasted
+time-wasting
+time-wearied
+time-white
+time-withered
+time zone
+timing gears
+timing screw
+timing valve
+timothy grass
+tim-whiskey
+tina process
+tin-bearing
+tin-bottomed
+tin-bound
+tin-bounder
+tin calciner
+tin can
+tin-capped
+tin chloride
+tin-colored
+tin-covered
+tin cow
+tin cry
+tin crystal
+tincture press
+tin cup
+tinder-cloaked
+tinder-dry
+tinder fungus
+tin dichloride
+tin dioxide
+tin-edged
+tin-filled
+tin-foil
+tin-foiler
+tin-foil paper
+tin frame
+ting-a-ling
+tin-handled
+tin hare
+tin hat
+tink-a-tink
+tinker mackerel
+tin kettle
+tin-kettler
+tinkle-tankle
+tinkle-tankling
+tin-lined
+tin liquor
+tin loaf
+tin-mailed
+tin monoxide
+tin opener
+tin ore
+tin oxide
+tin pail
+tin-pan
+tin-pan alley
+tin pest
+tin plague
+tin plate
+tin plater
+tin-plate worker
+tin pot
+tin-pottery
+tin-pottiness
+tin-potty
+tin pulp
+tin putty
+tin pyrite
+tin-roofed
+tin salt
+tinsel-bright
+tinsel-clad
+tinsel-covered
+tinsel-embroidered
+tinsel-paned
+tinsel-slippered
+tin shop
+tin smelter
+tin soldier
+tin spirit
+tin spot
+tin stream
+tin streamer
+tin streaming
+tin-tabled
+tin tack
+tint block
+tin tetrachloride
+tint meter
+tint photometer
+tint tool
+tin wash
+tin washing
+tin wedding
+tin-white
+ti palm
+tip cap
+tip car
+tip cheese
+tip crane
+tip-curled
+tip-eared
+tip-finger
+tip-off
+tippa-malku
+tipper-off
+tippet grebe
+tippet-scuffle
+tip plant
+tippling house
+tip roast
+tip roll
+tip sled
+tip slide
+tip speed
+tipsy cake
+tipsy key
+tipsy-topsy
+tip table
+tip-tap
+tip-top table
+tip truck
+tip-up
+tip van
+tip wagon
+tip worm
+tire becker
+tire bender
+tire-bending
+tire borer
+tire buffer
+tire carrier
+tire case
+tire cement
+tire chain
+tire changer
+tire-changing
+tire chipper
+tire clamp
+tire compressor
+tire cooler
+tire core
+tire cover
+tire curler
+tired-armed
+tired-eyed
+tired-faced
+tired-headed
+tired-looking
+tire dresser
+tired-winged
+tire examiner
+tire fastener
+tire filler
+tire-filling
+tire finisher
+tire fitter
+tire gauge
+tire heater
+tire-heating
+tire holder
+tire-inflating
+tire iron
+tire lacing
+tire lock
+tire-mile
+tire mold
+tire molder
+tire preservative
+tire press
+tire pressman
+tire prier
+tire protector
+tire pump
+tire rack
+tire remover
+tire repairman
+tire retreader
+tire roller
+tire setter
+tire shaper
+tire shoe
+tire shrinker
+tire stamper
+tire tape
+tire tool
+tire tread
+tire tube
+tire turner
+tire upsetter
+tire valve
+tire vulcanizer
+tiring house
+tiring irons
+tiring maid
+tiring room
+tiring woman
+tirlie-wirlie
+tirling pin
+tirly-toy
+T iron
+tissue-building
+tissue-changing
+tissue culture
+tissue-destroying
+tissue fibrinogen
+tissue fluid
+tissue-forming
+tissue paper
+tissue-producing
+tissue-secreting
+tisty-tosty
+titan crane
+titanic acid
+titanic anhydride
+titanic iron ore
+titanic oxide
+titanium dioxide
+titanium white
+tita root
+tit babbler
+tit drill
+titer test
+tithe barn
+tithe-collecting
+tithe collector
+tithe-free
+tithe gatherer
+tithe man
+tithe-paying
+tithe pig
+tithe proctor
+Titian-haired
+title bearer
+title-bearing
+title border
+title catalogue
+title deed
+title essay
+title hero
+title-holding
+title-hunting
+title insurance
+title letter
+title-mad
+title page
+title role
+title-seeking
+title space
+title type
+title-winning
+ti tree
+tit screw
+titter-totter
+tittle-tattle
+tittle-tattler
+tit-up
+Tityre-tu
+T joint
+T-man
+T nut
+toad-bellied
+toad-blind
+toad bug
+toad-frog
+toad grass
+toad-green
+toad-hating
+toad-housing
+toad-legged
+toad lily
+toad orchis
+toad rush
+toad-shaped
+toad snatcher
+toad spittle
+toad spot
+toad-spotted
+toad stabber
+toadstool disease
+toad-swollen
+to-and-fro
+to-arrive
+toast color
+toasting fork
+toasting iron
+toast list
+toast rack
+toast water
+tobacco-abusing
+tobacco bagger
+tobacco barn
+tobacco beetle
+tobacco box
+tobacco-box skate
+tobacco-breathed
+tobacco brown
+tobacco bug
+tobacco camphor
+tobacco carton
+tobacco case
+tobacco chewing
+tobacco cloth
+tobacco cultivator
+tobacco cutter
+tobacco dryer
+tobacco dust
+tobacco fertilizer
+tobacco flea beetle
+tobacco granulator
+tobacco grater
+tobacco-growing
+tobacco hawk moth
+tobacco heart
+tobacco hornworm
+tobacco lath
+tobacco leaf miner
+tobacco liquor
+tobacco liquorer
+tobacco machine
+tobacco machinery
+tobacco mildew
+tobacco molder
+tobacco mosaic
+tobacco panner
+tobacco pipe
+tobacco-pipe clay
+tobacco pouch
+tobacco press
+tobacco rack
+tobacco retainer
+tobacco roller
+tobacco shaver
+tobacco shed
+tobacco shop
+tobacco-sick
+tobacco smoker
+tobacco-smoking
+tobacco sprayer
+tobacco spreader
+tobacco-stained
+tobacco-stemming
+tobacco stick
+tobacco stopper
+tobacco stripper
+tobacco thrips
+tobacco tongs
+tobacco twister
+tobacco water
+tobacco wilt
+tobacco worm
+to-be
+tobira family
+toboggan cap
+toboggan slide
+tobosa grass
+to-burst
+Toc h
+tocher band
+tocher good
+toc-toc
+toddy bird
+toddy blossom
+toddy cat
+toddy ladle
+toddy palm
+toddy stick
+toddy tree
+to-do
+to-draw
+to-drive
+tod stove
+toe biter
+toe box
+toe calk
+toe clip
+toe crack
+toe dance
+toe dancer
+toe distance
+toe dog
+toe-drop
+toe hardy
+toe hold
+toe-in
+toe kisser
+toe kissing
+toe-mark
+toe pilling
+toe-punch
+toe ring
+toe wall
+toe weight
+to-fall
+toffee dipper
+Toft ware
+toggle bolt
+toggle chain
+toggle hook
+toggle iron
+toggle joint
+toggle-jointed
+toggle-joint press
+toggle press
+toggle riveter
+toggle switch
+togt-rider
+togt-riding
+toil-assuaging
+toil-beaten
+toil-bent
+toilet article
+toilet atomizer
+toilet bottle
+toilet brush
+toilet cabinet
+toilet case
+toilet cloth
+toilet cup
+toilet glass
+toilet hardware
+toilet mirror
+toilet paper
+toilet powder
+toilet room
+toilet service
+toilet set
+toilet soap
+toilet sponge
+toilet table
+toilet water
+toil-exhausted
+toil-hardened
+toil-marred
+toil-oppressed
+toil-stained
+toil-stricken
+toil-tried
+toil-weary
+toil-won
+to kalon
+token book
+token coin
+token money
+token payment
+token ring
+token sheet
+token silver
+tok-tokkie
+tol-de-rol
+toll agent
+toll bait
+toll bar
+toll board
+toll bridge
+toll call
+toll clerk
+toll collector
+toll corn
+toll dish
+toll farmer
+toll-free
+toll inspector
+toll line
+tol-lol
+tol-lol-de-rol
+tol-lol-ish
+toll road
+toll thorough
+toll traverse
+toll turn
+tolosa wood
+toluidine red
+toluric acid
+tolu tree
+Tom-and-jerry
+Tom-and-jerryism
+tomato black rot
+tomato blight
+tomato bouillon
+tomato can
+tomato-colored
+tomato curly top
+tomato eggplant
+tomato fern
+tomato fruitworm
+tomato gall
+tomato-growing
+tomato hamper
+tomato hawk moth
+tomato hornworm
+tomato juice
+tomato ketchup
+tomato-leaf
+tomato leaf blight
+tomato leaf mold
+tomato mosaic
+tomato packer
+tomato paste
+tomato pulp
+tomato puree
+tomato red
+tomato sauce
+tomato scalder
+tomato sphinx
+tomato streak
+tomato stripe
+tomato transplanter
+tomato trellis
+tomato-washing
+tomato wilt
+tomato worm
+tomato yellows
+tom-ax
+tomb bat
+tomb-black
+tomb-breaker
+tomb-dwelling
+tomb house
+tomb maker
+tomb-making
+tomb-paved
+tomb-robbing
+tomb-strewn
+tomb tower
+Tom collins
+Tom-come-tickle-me
+tom hurry
+tomkin post
+tommy-axe
+tommy bar
+tommy book
+tommy day
+tommy hole
+tommy master
+tommy noddy
+tommy shop
+tommy system
+tom pudding
+tom tailor
+tom-toe
+tom-tom
+tom-trot
+tonal gap
+tonal island
+to-name
+tone accent
+tone arm
+tone cluster
+tone color
+tone-deaf
+tone deafness
+tone-full
+tone gap
+tone grammar
+tone island
+tone language
+tone long
+tone measurer
+tone painting
+tone pattern
+tone picture
+tone poem
+tone poet
+tone poetry
+tone-producing
+tone quality
+tone syllable
+tone tester
+tone-up
+tone wheel
+ton-foot
+tong borer
+tongue-and-groove joint
+tongue-back
+tongue-baited
+tongue-bang
+tongue bar
+tongue bird
+tongue bit
+tongue-bitten
+tongue-blade
+tongue bone
+tongue-bound
+tongue compressor
+tongue depressor
+tonguess Resolution Protocol." "" arp(4P)
+.xx "" "ftp:" "ARPANET file transfer program." "" ftp(1C)
+.xx "" "biff: be notified if mail" "arrives and who it is from." "" biff(1)
+.xx "" "readnews: read news" "articles." "" readnews(1)
+.xx "" "vnews: read news" "articles." "" vnews(1)
+.xx "" "expr: evaluate arguments" "as an expression." "" expr(1)
+.xx "" "slattach: attach serial lines" "as network interfaces." "" slattach(8C)
+.xx "" "" "as: VAX-11 assembler." "" as(1)
+.xx "" "gmtime, asctime, timezone: convert date and time to" "ASCII." "ctime, localtime," ctime(3)
+.xx "" "ascii: map of" "ASCII character set." "" ascii(7)
+.xx "" "od: octal, decimal, hex," "ascii dump." "" od(1)
+.xx "" "map3270: database for mapping" "ascii keystrokes into IBM 3270 keys." "" map3270(5)
+.xx "" "" "ascii: map of ASCII character set." "" ascii(7)
+.xx "" "fdate: return date and time in an" "ASCII string." "" fdate(3F)
+.xx "" "mset: retrieve" "ASCII to IBM 3270 keyboard map." "" mset(1)
+.xx "" "atof, atoi, atol: convert" "ASCII to numbers." "" atof(3)
+.xx "" "ctime, localtime, gmtime," "asctime, timezone: convert date and time to ASCII." "" ctime(3)
+.xx "and their inverses." "sin, cos, tan," "asin, acos, atan, atan2: trigonometric functions" "" sin(3M)
+.xx "" "" "asinh, acosh, atanh: inverse hyperbolic functions." "" asinh(3M)
+.xx "" "as: VAX-11" "assembler." "" as(1)
+.xx "" "a.out:" "assembler and link editor output." "" a.out(5)
+.xx "" "" "assert: program verification." "" assert(3)
+.xx "" "setbuf, setbuffer, setlinebuf:" "assign buffering to a stream." "" setbuf(3S)
+.xx "" "atrm: remove jobs spooled by" "at." "" atrm(1)
+.xx "" "shutdown: close down the system" "at a given time." "" shutdown(8)
+.xx "" "at: execute commands" "at a later time." "" at(1)
+.xx "" "" "at: execute commands at a later time." "" at(1)
+.xx "" "nice, nohup: run a command" "at low priority (\fIsh\fR only)." "" nice(1)
+.xx "inverses." "sin, cos, tan, asin, acos," "atan, atan2: trigonometric functions and their" "" sin(3M)
+.xx "" "sin, cos, tan, asin, acos, atan," "atan2: trigonometric functions and their inverses." "" sin(3M)
+.xx "" "asinh, acosh," "atanh: inverse hyperbolic functions." "" asinh(3M)
+.xx "" "" "atof, atoi, atol: convert ASCII to numbers." "" atof(3)
+.xx "" "atof," "atoi, atol: convert ASCII to numbers." "" atof(3)
+.xx "" "atof, atoi," "atol: convert ASCII to numbers." "" atof(3)
+.xx "interrupt." "sigpause:" "atomically release blocked signals and wait for" "" sigpause(2)
+.xx "" "" "atq: print the queue of jobs waiting to be run." "" atq(1)
+.xx "" "" "atrm: remove jobs spooled by at." "" atrm(1)
+.xx "" "slattach:" "attach serial lines as network interfaces." "" slattach(8C)
+.xx "" "dn: DN-11" "autocall unit interface." "" dn(4)
+.xx "code." "" "autoconf: diagnostics from the autoconfiguration" "" autoconf(4)
+.xx "" "autoconf: diagnostics from the" "autoconfiguration code." "" autoconf(4)
+.xx "" "bugfiler: file bug reports in folders" "automatically." "" bugfiler(8)
+.xx "" "rc: command script for" "auto-reboot and daemons." "" rc(8)
+.xx "" "notes," "autoseq, readnotes: a news system." "" notes(1)
+.xx "" "wait:" "await completion of process." "" wait(1)
+.xx "" "" "awk: pattern scanning and processing language." "" awk(1)
+.xx "" "" "backgammon: the game." "" backgammon(6)
+.xx "" "bg: place job in" "background." "" csh(1)
+.xx "" "wait: wait for" "background processes to complete." "" csh(1)
+.xx "" "bad144: read/write dec standard 144" "bad sector information." "" bad144(8)
+.xx "" "badsect: create files to contain" "bad sectors." "" badsect(8)
+.xx "information." "" "bad144: read/write dec standard 144 bad sector" "" bad144(8)
+.xx "" "" "badsect: create files to contain bad sectors." "" badsect(8)
+.xx "" "banner: print large" "banner on printer." "" banner(6)
+.xx "" "" "banner: print large banner on printer." "" banner(6)
+.xx "" "gettytab: terminal configuration data" "base." "" gettytab(5)
+.xx "" "hosts: host name data" "base." "" hosts(5)
+.xx "" "networks: network name data" "base." "" networks(5)
+.xx "" "phones: remote host phone number data" "base." "" phones(5)
+.xx "" "printcap: printer capability data" "base." "" printcap(5)
+.xx "" "protocols: protocol name data" "base." "" protocols(5)
+.xx "" "services: service name data" "base." "" services(5)
+.xx "" "termcap: terminal capability data" "base." "" termcap(5)
+.xx "" "vgrindefs: vgrind's language definition data" "base." "" vgrindefs(5)
+.xx "" "newaliases: rebuild the data" "base for the mail aliases file." "" newaliases(1)
+.xx "" "fetch, store, delete, firstkey, nextkey: data" "base subroutines." "dbminit," dbm(3X)
+.xx "" "dbm_nextkey, dbm_error, dbm_clearerr: data" "base subroutines." "/dbm_delete, dbm_firstkey," ndbm(3)
+.xx "" "vi: screen oriented (visual) display editor" "based on ex." "" vi(1)
+.xx "" "" "basename: strip filename affixes." "" basename(1)
+.xx "" "" "battlestar: a tropical adventure game." "" battlestar(6)
+.xx "" "" "bc: arbitrary-precision arithmetic language." "" bc(1)
+.xx "" "" "bcd: convert to antique media." "" bcd(6)
+.xx "" "bcopy," "bcmp, bzero, ffs: bit and byte string operations." "" bstring(3)
+.xx "operations." "" "bcopy, bcmp, bzero, ffs: bit and byte string" "" bstring(3)
+.xx "" "cb: C program" "beautifier." "" cb(1)
+.xx "" "va:" "Benson-Varian interface." "" va(4)
+.xx "" "vfont: font formats for the" "Benson-Varian or Versatec." "" vfont(5)
+.xx "" "j0, j1, jn, y0, y1, yn:" "bessel functions." "" j0(3M)
+.xx "" "" "bessel functions: of two kinds for integer orders." "" bessel(3F)
+.xx "" "random, drandm, irandm:" "better random number generator." "" random(3F)
+.xx "changing/" "random, srandom, initstate, setstate:" "better random number generator; routines for" "" random(3)
+.xx "" "" "bg: place job in background." "" csh(1)
+.xx "bibliographic reference items." "" "bib, listrefs: bibliographic formatter; list" "" bib(1)
+.xx "" "addbib: create or extend" "bibliographic database." "" addbib(1)
+.xx "" "roffbib: run off" "bibliographic database." "" roffbib(1)
+.xx "" "sortbib: sort" "bibliographic database." "" sortbib(1)
+.xx "reference items." "bib, listrefs:" "bibliographic formatter; list bibliographic" "" bib(1)
+.xx "" "bib, listrefs: bibliographic formatter; list" "bibliographic reference items." "" bib(1)
+.xx "" "index for a bibliography, find references in a" "bibliography." "indxbib, lookbib: build inverted" lookbib(1)
+.xx "" "indxbib, lookbib: build inverted index for a" "bibliography, find references in a bibliography." "" lookbib(1)
+.xx "from." "" "biff: be notified if mail arrives and who it is" "" biff(1)
+.xx "" "comsat:" "biff server." "" comsat(8C)
+.xx "" "install: install" "binaries." "" install(1)
+.xx "" "whereis: locate source," "binary, and or manual for program." "" whereis(1)
+.xx "" "find the printable strings in a object, or other" "binary, file." "strings:" strings(1)
+.xx "" "uuencode, uudecode: encode/decode a" "binary file for transmission via mail." "" uuencode(1C)
+.xx "" "fread, fwrite: buffered" "binary input/output." "" fread(3S)
+.xx "" "bind:" "bind a name to a socket." "" bind(2)
+.xx "" "" "bind: bind a name to a socket." "" bind(2)
+.xx "" "" "binmail: send or receive mail among users." "" binmail(1)
+.xx "" "bcopy, bcmp, bzero, ffs:" "bit and byte string operations." "" bstring(3)
+.xx "functions." "" "bit: and, or, xor, not, rshift, lshift bitwise" "" bit(3F)
+.xx "" "bit: and, or, xor, not, rshift, lshift" "bitwise functions." "" bit(3F)
+.xx "communication (obsolete)." "" "bk: line discipline for machine-machine" "" bk(4)
+.xx "" "sync: update the super" "block." "" sync(8)
+.xx "" "update: periodically update the super" "block." "" update(8)
+.xx "" "sigblock:" "block signals." "" sigblock(2)
+.xx "" "sigpause: atomically release" "blocked signals and wait for interrupt." "" sigpause(2)
+.xx "" "sum: sum and count" "blocks in a file." "" sum(1)
+.xx "" "boggle: play the game of" "boggle." "" boggle(6)
+.xx "" "" "boggle: play the game of boggle." "" boggle(6)
+.xx "" "ching: the" "book of changes and other cookies." "" ching(6)
+.xx "" "reboot: UNIX" "bootstrapping procedures." "" reboot(8)
+.xx "" "mille: play Mille" "Bournes." "" mille(6)
+.xx "" "switch: multi-way command" "branch." ""-dumb
+tongue fern
+tongue fish
+tongue-flowered
+tongue-free
+tongue-front
+tongue-garbled
+tongue-gilt
+tongue-graft
+tongue grafting
+tongue grass
+tongue-haltered
+tongue-hammer
+tongue hero
+tongue-jangling
+tongue joint
+tongue-kill
+tongue-lash
+tongue-lashing
+tongue-leaved
+tongue-lolling
+tongue-murdering
+tongue-pad
+tongue pipe
+tongue-point
+tongue-puissant
+tongue-shaped
+tongue shell
+tongue swallowing
+tongue-tack
+tongue-taming
+tongue-taw
+tongue-tie
+tongue-tied
+tongue-tier
+tongue tree
+tongue twister
+tongue-valiant
+tongue-wagging
+tongue-walk
+tongue-wanton
+tongue work
+tongue worm
+tonic key
+tonic major
+tonic minor
+tonic motion
+tonic section
+tonic sol-fa
+tonic sol-faist
+tonic spasm
+tonka bean
+tonka-bean camphor
+tonka-bean wood
+ton-kilometer
+ton-mile
+ton-mileage
+tonnage coefficient
+tonnage deck
+tonnage displacement
+tonnage duty
+tonnage opening
+tonnage pool
+tonnage train
+tonneau lamp
+tonneau windshield
+too-aged
+too-anxious
+too-big
+too-bigness
+too-bold
+too-celebrated
+too-confident
+too-coy
+too-dainty
+too-devoted
+toodle-oo
+too-early
+too-earnest
+too-familiar
+too-fervent
+too-forced
+too-good
+too-hectic
+tool angle
+tool apron
+too-large
+too-late
+too-lateness
+too-laudatory
+tool bag
+tool belt
+tool boy
+tool cabinet
+tool car
+tool carriage
+tool carrier
+tool cart
+tool case
+tool chest
+tool-cleaning
+tool coupling
+tool-cutting
+tool demagnetizer
+tool-dresser
+tool-dressing
+tool engineer
+tool engineering
+tool examiner
+tool fasher
+tool fettler
+tool filer
+tool finder
+tool fitter
+tool forge
+tool forger
+tool gauge
+tool glazer
+tool grinder
+tool grinding
+tool handle
+tool heater
+tool house
+tool kit
+tool lubricant
+tool miller
+tool oil
+too-long
+tool plane
+tool post
+tool press
+tool rack
+tool reclaimer
+tool regrinding
+tool repairer
+tool rest
+tool roll
+toolroom lathe
+tool set
+tool sharpener
+tool-sharpening
+tool shed
+tool shop
+tool socket
+tool spindle
+tool stamper
+tool stand
+tool steel
+tool storekeeper
+tool subject
+tool table
+tool temper
+tool tray
+tool treating
+tool truck
+tool turner
+tool-using
+tool wagon
+tool whetter
+too-much
+too-muchness
+too-near
+too-old
+too-patient
+too-piercing
+too-proud
+too-ripe
+too-short
+too-soon
+too-soonness
+toothache grass
+toothache tree
+tooth ax
+tooth-billed
+tooth-bred
+toothbrush tree
+tooth caliper
+tooth-chattering
+tooth chisel
+tooth cleaner
+tooth cough
+tooth cress
+tooth doctor
+toothed-billed
+tooth edge
+tooth-extracting
+tooth fever
+tooth filling
+tooth forceps
+tooth fungus
+tooth gauge
+toothing plane
+tooth key
+tooth-leaved
+tooth mark
+tooth-marked
+tooth ornament
+tooth paste
+tooth plane
+tooth plugger
+tooth powder
+tooth puller
+tooth-pulling
+tooth pulp
+tooth rail
+tooth rash
+tooth relic
+tooth-rounding
+tooth sac
+tooth-set
+tooth-setting
+tooth-shaped
+tooth shell
+tooth-tempting
+tooth violet
+tooth wheel
+tooth-winged
+tooth wound
+too-timely
+tootle bug
+too-too
+toot plant
+too-trusting
+too-willing
+too-wise
+too-young
+top-armor
+topaz-colored
+topaz-green
+topaz rock
+topaz-tailed
+topaz-throated
+topaz-tinted
+topaz-yellow
+top beam
+top block
+top boot
+top-cap
+top cleaner
+top-coated
+top-cross
+top-cutter
+top-drain
+top-drawer
+top-dress
+top-dressing
+top-graft
+top grafting
+top hamper
+top-hampered
+top-hand
+top hat
+top-hatted
+top-heavily
+top-heaviness
+top-heavy
+top-hole
+tophus stone
+topic sentence
+Top-kapu
+topknot pigeon
+top light
+top line
+top liner
+top-lit
+top notch
+topographico-mythical
+top-over-tail
+topping lift
+topping-out course
+top-road bridge
+topsail-tye
+top-secret
+top-set
+top-sew
+top-shaped
+Topsy-fashion
+topsy-turvical
+topsy-turvification
+topsy-turvifier
+topsy-turvify
+topsy-turvily
+topsy-turviness
+topsy-turvy
+topsy-turvydom
+topsy-turvyhood
+topsy-turvyism
+topsy-turvyist
+topsy-turvyize
+top-timber
+top-work
+top yeast
+torch cactus
+torch course
+torch dance
+torch-fish
+torch flower
+torch holder
+torch lily
+torchon board
+torchon lace
+torchon paper
+torch pine
+torch race
+torch singer
+torch singing
+torch song
+torch staff
+torch thistle
+torch tree
+torch-tree family
+torchwood family
+to-rights
+tormentor wing
+tornado-breeding
+tornado cellar
+tornado-haunted
+tornado insurance
+tornado lantern
+tornado-swept
+torn-down
+tororo-konbu
+tororo-kubu
+torpedo battery
+torpedo boat
+torpedo-boat catcher
+torpedo-boat destroyer
+torpedo body
+torpedo boom
+torpedo catcher
+torpedo director
+torpedo mine
+torpedo net
+torpedo ram
+torpedo room
+torpedo sand
+torpedo school
+torpedo-shaped
+torpedo spar
+torpedo station
+torpedo stern
+torpedo tube
+torque arm
+torque converter
+torque tube
+Torrejon formation
+torrent-bitten
+torrent-borne
+torrent bow
+torrent-braving
+torrent duck
+torrent-flooded
+torrent-mad
+torrent-swept
+torsion angle
+torsion axis
+torsion balance
+torsion basin
+torsion curve
+torsion galvanometer
+torsion head
+torsion meter
+torsion pendulum
+torsion scale
+torsion screw
+torsion spring
+tort-feasor
+tortoise beetle
+tortoise flower
+tortoise-footed
+tortoise-headed
+tortoise-paced
+tortoise plant
+tortoise-rimmed
+tortoise-roofed
+tortoise-shaped
+tortoise shell
+tortoise-shell butterfly
+torus palatinus
+Tory democracy
+Tory democrat
+Tory-hating
+Tory-irish
+Tory-leaning
+Tory-radical
+Tory-ridden
+Tory-voiced
+tosh-up
+to-side
+total loss only policy
+totem animal
+totem badge
+totem kin
+totem pole
+tote shop
+toties quoties
+tot system
+totty-headed
+touch body
+touch cerate
+touch football
+touch judge
+touch-me-not
+touch-me-not-ish
+touch method
+touch needle
+touch paper
+touch reader
+touch spot
+touch typewriter
+touch typewriting
+touch-up
+touch writer
+touch writing
+tough-backed
+tough cake
+tough-fibered
+tough-fisted
+tough-handed
+tough-lived
+tough-looking
+tough-metaled
+tough-minded
+tough-mindedly
+tough-mindedness
+tough-muscled
+tough pitch
+tough-shelled
+tough-sinewed
+tough-skinned
+tough-thonged
+toura grass
+tour conductor
+touring car
+tourist car
+tourist class
+tourist court
+tourist-crammed
+tourist-haunted
+tourist-infested
+tourist-laden
+tourist-ridden
+tourist-trodden
+tourmaline pink
+tourmaline tongs
+tow boy
+tow car
+tow carder
+tow carrier
+tow cloth
+tow-colored
+towel gourd
+towel horse
+towel rack
+tower bastion
+tower-bearing
+tower cap
+tower-capped
+tower chime
+tower clock
+tower cress
+tower-crested
+tower-crowned
+tower-dwelling
+tower-encircled
+tower-flanked
+tower-high
+tower hill
+tower house
+tower light
+tower mustard
+tower owl
+tower-razing
+tower-shaped
+tower shell
+tower stamp
+tower-studded
+tower-supported
+tower-tearing
+tower telescope
+tower wagon
+Tower weight
+tower window
+tow-feeder
+tow-haired
+tow hook
+towing bridle
+towing lights
+towing net
+towing path
+towing post
+towing spar
+tow iron
+tow-made
+tow mixer
+town-absorbing
+town adjutant
+town ball
+town book
+town boomer
+town-born
+town-bound
+town-bred
+town bridge
+town bushel
+town car
+town church
+town clerk
+town clerkship
+town council
+town councilor
+town cress
+town crier
+town-dotted
+town dweller
+town-dwelling
+town economy
+town end
+tow-netter
+tow-netting
+town-flanked
+town foot
+town forest
+town-frequenting
+town gas
+town-girdled
+town-goer
+town-going
+town guard
+town hall
+town head
+town house
+town-imprisoned
+town jail
+town-keeping
+town-killed
+town life
+town-living
+town-looking
+town lot
+town-loving
+town-made
+town manager
+town meeting
+town mouse
+town mutual
+town officer
+town park
+town-pent
+town people
+town place
+town plan
+town planner
+town planning
+town reeve
+town row
+township road
+town-sick
+town sickness
+town soviet
+town talk
+town tallow
+town-tied
+town top
+town-trained
+town traveler
+town wall
+town way
+town-weary
+town woman
+town yard
+tow post
+tow-pung
+towrope horsepower
+tow-row
+tow-spinning
+tow team
+tow wheel
+toxin-anatoxin
+toxophore group
+toy dog
+to year and day
+toy-loving
+toy-sized
+toy spaniel
+T piece
+T plate
+trace-bearer
+trace buckle
+trace chain
+trace connector
+trace element
+trace fastener
+trace-galled
+trace-high
+trace holder
+trace hook
+trace horse
+tracer atom
+tracer bullet
+trace spring
+trachelo-occipital
+trachio branchia
+tracing braid
+tracing cloth
+tracing paper
+tracing thread
+tracing wheel
+track boat
+track bolt
+track brake
+track chisel
+track cleaner
+track-clearing
+track clip
+track drill
+track edge
+tracker action
+tracker bar
+track gauge
+track guard
+track harness
+track indicator
+track inspector
+track instrument
+track jack
+track-laying
+track level
+track leveler
+track lifter
+track liner
+track map
+track mark
+track-mile
+track oven
+track punch
+track road
+track roller
+track scale
+track shim
+track shoe
+track spike
+track sprocket
+track switch
+track tan csh(1)
+.xx "login,/" "sh, for, case, if, while, \fB:\fP, \fB.\fP," "break, continue, cd, eval, exec, exit, export," "" sh(1)
+.xx "" "" "break: exit while/foreach loop." "" csh(1)
+.xx "" "" "breaksw: exit from switch." "" csh(1)
+.xx "" "fg:" "bring job into foreground." "" csh(1)
+.xx "" "" "brk, sbrk: change data segment size." "" brk(2)
+.xx "" "ik: Ikonas frame" "buffer, graphics device interface." "" ik(4)
+.xx "" "fread, fwrite:" "buffered binary input/output." "" fread(3S)
+.xx "" "stdio: standard" "buffered input/output package." "" stdio(3S)
+.xx "" "setbuf, setbuffer, setlinebuf: assign" "buffering to a stream." "" setbuf(3S)
+.xx "" "generate a dump of the operating system's profile" "buffers." "kgmon:" kgmon(8)
+.xx "" "sendbug: mail a system" "bug report to 4bsd-bugs." "" sendbug(1)
+.xx "" "bugfiler: file" "bug reports in folders automatically." "" bugfiler(8)
+.xx "automatically." "" "bugfiler: file bug reports in folders" "" bugfiler(8)
+.xx "references in a bibliography." "indxbib, lookbib:" "build inverted index for a bibliography, find" "" lookbib(1)
+.xx "" "mknod:" "build special file." "" mknod(8)
+.xx "" "config:" "build system configuration files." "" config(8)
+.xx "" "ntohs: convert values between host and network" "byte order." "htonl, htons, ntohl," byteorder(3N)
+.xx "" "bcopy, bcmp, bzero, ffs: bit and" "byte string operations." "" bstring(3)
+.xx "" "swab: swap" "bytes." "" swab(3)
+.xx "" "bcopy, bcmp," "bzero, ffs: bit and byte string operations." "" bstring(3)
+.xx "" "cc:" "C compiler." "" cc(1)
+.xx "" "intro: introduction to" "C library functions." "" intro(3)
+.xx "" "cb:" "C program beautifier." "" cb(1)
+.xx "" "indent: indent and format" "C program source." "" indent(1)
+.xx "" "lint: a" "C program verifier." "" lint(1)
+.xx "" "xstr: extract strings from" "C programs to implement shared strings." "" xstr(1)
+.xx "" "mkstr: create an error message file by massaging" "C source." "" mkstr(1)
+.xx "" "hypot," "cabs: Euclidean distance, complex absolute value." "" hypot(3M)
+.xx "" "" "cal: print calendar." "" cal(1)
+.xx "" "diskpart:" "calculate default disk partition sizes." "" diskpart(8)
+.xx "" "dc: desk" "calculator." "" dc(1)
+.xx "" "cal: print" "calendar." "" cal(1)
+.xx "" "" "calendar: reminder service." "" calendar(1)
+.xx "" "syscall: indirect system" "call." "" syscall(2)
+.xx "" "gprof: display" "call graph profile data." "" gprof(1)
+.xx "" "getuid, getgid: get user or group ID of the" "caller." "" getuid(3F)
+.xx "" "malloc, free, realloc," "calloc, alloca: memory allocator." "" malloc(3)
+.xx "" "siginterrupt: allow signals to interrupt system" "calls." "" siginterrupt(3)
+.xx "" "intro: introduction to system" "calls and error numbers." "" intro(2)
+.xx "" "canfield, cfscores: the solitaire card game" "canfield." "" canfield(6)
+.xx "canfield." "" "canfield, cfscores: the solitaire card game" "" canfield(6)
+.xx "" "printcap: printer" "capability data base." "" printcap(5)
+.xx "" "termcap: terminal" "capability data base." "" termcap(5)
+.xx "" "canfield, cfscores: the solitaire" "card game canfield." "" canfield(6)
+.xx "" "cribbage: the" "card game cribbage." "" cribbage(6)
+.xx "cd, eval, exec, exit, export, login,/" "sh, for," "case, if, while, \fB:\fP, \fB.\fP, break, continue," "" sh(1)
+.xx "" "" "case: selector in switch." "" csh(1)
+.xx "" "tu: VAX-11/730 and VAX-11/750 TU58 console" "cassette interface." "" tu(4)
+.xx "" "uu: TU58/DECtape II UNIBUS" "cassette interface." "" uu(4)
+.xx "" "" "cat: catenate and print." "" cat(1)
+.xx "" "catman: create the" "cat files for the manual." "" catman(8)
+.xx "" "default:" "catchall clause in switch." "" csh(1)
+.xx "" "cat:" "catenate and print." "" cat(1)
+.xx "" "" "catman: create the cat files for the manual." "" catman(8)
+.xx "" "" "cb: C program beautifier." "" cb(1)
+.xx "" "" "cbrt, sqrt: cube root, square root." "" sqrt(3M)
+.xx "" "" "cc: C compiler." "" cc(1)
+.xx "" "" "cd: change directory." "" csh(1)
+.xx "" "" "cd: change working directory." "" cd(1)
+.xx "" "case, if, while, \fB:\fP, \fB.\fP, break, continue," "cd, eval, exec, exit, export, login, read,/" "/for," sh(1)
+.xx "round-to-nearest functions." "fabs, floor," "ceil, rint: absolute value, floor, ceiling, and" "" floor(3M)
+.xx "" "fabs, floor, ceil, rint: absolute value, floor," "ceiling, and round-to-nearest functions." "" floor(3M)
+.xx "" "canfield," "cfscores: the solitaire card game canfield." "" canfield(6)
+.xx "" "chdir:" "change current working directory." "" chdir(2)
+.xx "" "brk, sbrk:" "change data segment size." "" brk(2)
+.xx "" "chdir:" "change default directory." "" chdir(3F)
+.xx "" "cd:" "change directory." "" csh(1)
+.xx "" "chdir:" "change directory." "" csh(1)
+.xx "" "ioinit:" "change f77 I/O initialization." "" ioinit(3F)
+.xx "" "chgrp:" "change group." "" chgrp(1)
+.xx "" "chmod:" "change mode." "" chmod(1)
+.xx "" "chmod:" "change mode of a file." "" chmod(3F)
+.xx "" "chmod:" "change mode of file." "" chmod(2)
+.xx "" "umask:" "change or display file creation mask." "" csh(1)
+.xx "" "chown:" "change owner." "" chown(8)
+.xx "" "chown:" "change owner and group of a file." "" chown(2)
+.xx "" "chfn, chsh, passwd:" "change password file information." "" chfn(1)
+.xx "" "chfn, chsh, passwd:" "change password file information." "" chsh(1)
+.xx "" "chfn, chsh, passwd:" "change password file information." "" passwd(1)
+.xx "" "chroot:" "change root directory." "" chroot(2)
+.xx "" "signal:" "change the action for a signal." "" signal(3F)
+.xx "" "rename:" "change the name of a file." "" rename(2)
+.xx "" "set:" "change value of shell variable." "" csh(1)
+.xx "" "cd:" "change working directory." "" cd(1)
+.xx "" "ching: the book of" "changes and other cookies." "" ching(6)
+.xx "" "better random number generator; routines for" "changing generators." "/srandom, initstate, setstate:" random(3)
+.xx "" "pipe: create an interprocess communication" "channel." "" pipe(2)
+.xx "" "ungetc: push" "character back into input stream." "" ungetc(3S)
+.xx "" "iscntrl, isascii, toupper, tolower, toascii:" "character classification macros." "/isprint, isgraph," ctype(3)
+.xx "" "eqnchar: special" "character definitions for eqn." "" eqnchar(7)
+.xx "" "getc, fgetc: get a" "character from a logical unit." "" getc(3F)
+.xx "" "index, rindex, lnblnk, len: tell about" "character objects." "" index(3F)
+.xx "" "getc, getchar, fgetc, getw: get" "character or word from stream." "" getc(3S)
+.xx "" "putc, putchar, fputc, putw: put" "character or word on a stream." "" putc(3S)
+.xx "" "ascii: map of ASCII" "character set." "" ascii(7)
+.xx "" "putc, fputc: write a" "character to a fortran logical unit." "" putc(3F)
+.xx "" "style: analyze surface" "characteristics of a document." "" style(1)
+.xx "" "tr: translate" "characters." "" tr(1)
+.xx "" "snake, snscore: display" "chase game." "" snake(6)
+.xx "" "" "chdir: change current working directory." "" chdir(2)
+.xx "" "" "chdir: change default directory." "" chdir(3F)
+.xx "" "" "chdir: change directory." "" csh(1)
+.xx "" "dcheck: file system directory consistency" "check." "" dcheck(8)
+.xx "" "icheck: file system storage consistency" "check." "" icheck(8)
+.xx "" "fsck: file system consistency" "check and interactive repair." "" fsck(8)
+.xx "" "checknr:" "check nroff/troff files." "" checknr(1)
+.xx "" "eqn, neqn," "checkeq: typeset mathematics." "" eqn(1)
+.xx "" "quotacheck: file system quota consistency" "checker." "" quotacheck(8)
+.xx "" "fastboot, fasthalt: reboot/halt the system without" "checking the disks." "" fastboot(8)
+.xx "" "" "checknr: check nroff/troff files." "" checknr(1)
+.xx "" "chess: the game of" "chess." "" chess(6)
+.xx "" "" "chess: the game of chess." "" chess(6)
+.xx "information." "" "chfn, chsh, passwd: change password file" "" chfn(1)
+.xx "information." "" "chfn, chsh, passwd: change password file" "" chsh(1)
+.xx "information." "" "chfn, chsh, passwd: change password file" "" passwd(1)
+.xx "" "" "chgrp: change group." "" chgrp(1)
+.xx "" "" "ching: the book of changes and other cookies." "" ching(6)
+.xx "" "" "chmod: change mode." "" chmod(1)
+.xx "" "" "chmod: change mode of a file." "" chmod(3F)
+.xx "" "" "chmod: change mode of file." "" chmod(2)
+.xx "" "" "chown: change owner." ""k
+track tool
+track-walking
+track wrench
+tract index
+traction engine
+traction fiber
+traction sprayer
+traction wheel
+tractor propeller
+trade acceptance
+trade agreement
+trade allowance
+trade association
+trade balance
+trade board
+trade-bound
+trade club
+trade coin
+trade commissioner
+trade council
+trade cumulus
+trade cycle
+trade-destroying
+trade discount
+trade dollar
+trade ducat
+trade edition
+trade eruption
+trade-facilitating
+trade fixture
+trade-gild
+trade goods
+trade guild
+trade hall
+trade-in
+trade journal
+trade-laden
+trade-last
+trade-made
+trade magazine
+trade-mark
+trade-marker
+trade-mark infringement
+trade-mark name
+trade name
+trade officer
+trade paper
+trade practice
+trade price
+trade rat
+trade rights
+trade road
+trade route
+trade sale
+trades board
+trade school
+trades council
+trade secret
+trade-seeking
+trades hall
+trades-union
+trades-unionist
+trade test
+trade tomahawk
+trade-union
+trade-unionism
+trade-unionist
+trade warranty
+trade wind
+trade work
+trading account
+trading market
+trading post
+trading stamp
+tradition-bound
+tradition-fed
+tradition-following
+tradition-making
+tradition-nourished
+tradition-ridden
+Tradition sunday
+traditor battery
+traffic beacon
+traffic-bearing
+traffic-choked
+traffic circle
+traffic-congested
+traffic constable
+traffic control
+traffic cop
+traffic court
+traffic density
+traffic director
+traffic-furrowed
+traffic jam
+traffic-laden
+traffic law
+traffic light
+traffic manager
+traffic-mile
+traffic officer
+traffic policeman
+traffic post
+traffic-regulating
+traffic regulator
+traffic sheet
+traffic shifter
+traffic signal
+traffic squad
+traffic-thronged
+traffic tower
+tragedy-proof
+tragic-comedy
+T rail
+trail angle
+trail arms
+trail bar
+trail blazer
+trail blazing
+trail board
+trail breaker
+trail bridge
+trail car
+trail cart
+trail-eye
+trail ferry
+trail handspike
+trailing-point
+trailing-point switch
+trail-marked
+trail net
+trail plank
+trail plate
+trail rope
+trail sight
+trail spade
+trail spur
+trail-weary
+trail-wise
+train butcher
+train caller
+train conductor
+train crew
+train dispatcher
+train-dispatching
+train flagman
+train foreman
+train-giddy
+train guard
+train hand
+train indicator
+training bank
+training day
+training level
+training ship
+training table
+training tackle
+training wall
+train inspector
+train jumper
+train legs
+train-lighting
+train line
+train-mile
+train mileage
+train oil
+train pipe
+train recorder
+train reporter
+train robber
+train rope
+train schedule
+train service
+train shed
+train sheet
+train sickness
+train signal
+train staff
+train starter
+train stop
+train tackle
+train ticket
+train trip
+train wrecker
+trait-complex
+tra-la-la
+tram-borne
+tram crane
+tram greaser
+tram guard
+tram load
+trammel net
+trammel wheel
+tram plate
+tramp pick
+tramp ship
+tram rail
+tram rod
+tram shed
+tram-traveling
+tranquil-acting
+tranquil-looking
+tranquil-minded
+Trans-acherontic
+Trans-adriatic
+Trans-african
+Trans-algerian
+Trans-alleghenian
+Trans-altaian
+Trans-american
+Trans-andean
+Trans-andine
+Trans-antarctic
+Trans-apennine
+Trans-arabian
+Trans-asiatic
+Trans-australian
+Trans-austrian
+Trans-balkan
+Trans-baltic
+Trans-canadian
+Trans-carpathian
+Trans-caspian
+Trans-congo
+Trans-cordilleran
+Trans-danubian
+Trans-egyptian
+trans-etherian
+Trans-euphratean
+Trans-euphrates
+Trans-euphratic
+Trans-eurasian
+transfer agent
+transfer book
+transfer box
+transfer caliper
+transfer case
+transfer company
+transfer day
+transference neurosis
+transference number
+transfer ink
+transfer paper
+transfer picture
+transfer printing
+transfer resistance
+transferring machine
+transfer stamp
+transfer table
+transformation myth
+transformation range
+transformation scene
+transformer oil
+transfusion cell
+transfusion tissue
+Trans-gangetic
+Trans-germanic
+Trans-grampian
+Trans-himalayan
+Trans-hispanic
+Trans-iberian
+Trans-indus
+Trans-iraq
+transit certificate
+transit circle
+transit compass
+transit department
+transit duty
+transit floater
+transit instrument
+transition curve
+transition fit
+transition form
+transition point
+Transition series
+transition sound
+transition temperature
+transition tint
+Transition zone
+transit pass
+transit prism
+transit privileges
+transit rot
+transit theodolite
+transit time
+Trans-jordan
+Trans-jovian
+Trans-kei
+translating roller
+Trans-libyan
+Trans-manchurian
+Trans-martian
+Trans-mediterranean
+Trans-mersey
+transmission bands
+transmission belting
+transmission cable
+transmission case
+transmission chain
+transmission clutch
+transmission dynamometer
+transmission efficiency
+transmission gear
+transmission grating
+transmission level
+transmission lock
+transmission loss
+transmission pulley
+transmission pump
+transmission rope
+transmission shaft
+transmission sheaf
+transmission theory
+transmission tower
+transmission unit
+transmission wheel
+Trans-mississippi
+Trans-mississippian
+transmitting set
+transmitting station
+transmit warrant
+Trans-mongolian
+Trans-neptunian
+Trans-niger
+transom adjuster
+transom bar
+transom butt
+transom catch
+transom center
+transom chain
+transom eye
+transom frame
+transom knee
+transom lift
+transom operator
+transom plate
+transom stern
+transom-sterned
+transom window
+Trans-paraguayan
+Trans-persian
+transphysical science
+transpiration current
+transportation engineer
+transportation insurance
+transport number
+transport rider
+transport riding
+transport ship
+transport vessel
+transposed matrix
+transposing instrument
+transposition cipher
+transposition method
+Trans-pyrenean
+Trans-rhenish
+Trans-sahara
+Trans-saharan
+Trans-saturnian
+Trans-severn
+Trans-siberian
+trans-sonic
+Trans-stygian
+Trans-tiberine
+Trans-ural
+Trans-uranian
+Transvaal daisy
+transverse section
+Trans-volga
+Trans-zambezian
+trap bat
+trap brilliant
+trap bushing
+trap clamp
+trap cleaner
+trap cover
+trap crop
+trap cut
+trap door
+trap-door spider
+trap driver
+trap drummer
+trapezoid ligament
+trap fisher
+trap hatch
+trap lever
+trap line
+trap match
+trap nest
+trap-nester
+trap net
+trap screw
+trap shot
+trap stair
+trap tree
+trap tuff
+trap vent
+trap weir
+trap window
+trash bag
+trash barrel
+trash can
+trash farming
+trash gatherer
+trash ice
+trash pile
+trash shield
+trash turner
+travel agent
+travel-bent
+travel book
+travel-broken
+travel-changed
+travel-disordered
+travel-enjoying
+traveler crane
+traveler iron
+travel-famous
+travel-formed
+travel-gifted
+travel-infected
+traveling agent
+traveling bag
+traveling carriage
+traveling case
+traveling clock
+traveling crab
+traveling derrick
+traveling elevator
+traveling examiner
+traveling fellowship
+traveling grate
+traveling-head shaper
+traveling hoist
+traveling inspector
+traveling tinker
+traveling trunk
+travel-jaded
+travel literature
+travel-loving
+travel-mad
+travel-met
+travel-opposing
+travel-parted
+travel-planning
+travel ration
+travel-sated
+travel shot
+travel sickness
+travel-soiled
+travel-spent
+travel-stained
+travel-tainted
+travel-tattered
+travel-tired
+travel-toiled
+travel-weary
+travel-worn
+traverse board
+traverse circle
+traverse drill
+traverse feed
+traverse flute
+traverse jury
+traverse rail
+traverse rod
+traverse sailing
+traverse shaper
+traverse survey
+traverse table
+traverse track
+traverse wind
+traversing bridge
+traversing circle
+traversing crane
+traversing gear
+traversing jack
+traversing mandrel
+travois road
+trawl board
+trawl line
+tray agriculture
+tray boy
+tray cloth
+tray conveyer
+tray elevator
+tray emptier
+tray filler
+tray frame
+tray handle
+tray maker
+tray-shaped
+tray-top table
+treacle mold
+treacle molding
+treacle mustard
+treacle sleep
+treacle water
+treacle wormseed
+treading mill
+tread-softly
+treason-breeding
+treason-canting
+treason felony
+treason-hatching
+treason-haunted
+treason-sowing
+treasure-baited
+treasure-bearing
+treasure box
+treasure chamber
+treasure chest
+treasure city
+treasure-filled
+treasure house
+treasure hunt
+treasure hunter
+treasure hunting
+treasure-laden
+treasure quest
+treasurer general
+treasure room
+treasure seeker
+treasure-seeking
+treasure ship
+treasure-trove
+treasury bench
+treasury bill
+treasury bond
+treasury certificate
+treasury letter
+treasury note
+treasury stock
+treasury warrant
+treaty-bound
+treaty-breaking
+treaty-favoring
+treaty maker
+treaty making
+treaty reinsurance
+treaty-sealed
+treaty-secured
+treble best
+treble block
+treble bob
+treble clef
+treble-dated
+treble gear
+treble-geared
+treble purchase
+treble-sinewed
+treble staff
+treble viol
+tree agate
+tree aloe
+tree azalea
+tree-banding
+tree bear
+tree belt
+tree boa
+tree-border chown(8)
+.xx "" "" "chown: change owner and group of a file." "" chown(2)
+.xx "" "" "chroot: change root directory." "" chroot(2)
+.xx "" "chfn," "chsh, passwd: change password file information." "" chfn(1)
+.xx "" "chfn," "chsh, passwd: change password file information." "" chsh(1)
+.xx "" "chfn," "chsh, passwd: change password file information." "" passwd(1)
+.xx "closepl:/" "plot: openpl, erase, label, line," "circle, arc, move, cont, point, linemod, space," "" plot(3X)
+.xx "" "isascii, toupper, tolower, toascii: character" "classification macros." "/isprint, isgraph, iscntrl," ctype(3)
+.xx "" "default: catchall" "clause in switch." "" csh(1)
+.xx "" "uuclean: uucp spool directory" "clean-up." "" uuclean(8C)
+.xx "" "" "clear: clear terminal screen." "" clear(1)
+.xx "" "clri:" "clear i-node." "" clri(8)
+.xx "" "clear:" "clear terminal screen." "" clear(1)
+.xx "" "ferror, feof," "clearerr, fileno: stream status inquiries." "" ferror(3S)
+.xx "" "csh: a shell (command interpreter) with" "C-like syntax." "" csh(1)
+.xx "" "the time to allow synchronization of the system" "clock." "adjtime: correct" adjtime(2)
+.xx "" "kg: KL-11/DL-11W line" "clock." "" kg(4)
+.xx "" "cron:" "clock daemon." "" cron(8)
+.xx "" "" "close: delete a descriptor." "" close(2)
+.xx "" "shutdown:" "close down the system at a given time." "" shutdown(8)
+.xx "" "fclose, fflush:" "close or flush a stream." "" fclose(3S)
+.xx "" "opendir, readdir, telldir, seekdir, rewinddir," "closedir: directory operations." "" directory(3)
+.xx "" "syslog, openlog," "closelog, setlogmask: control system log." "" syslog(3)
+.xx "" "circle, arc, move, cont, point, linemod, space," "closepl: graphics interface." "/erase, label, line," plot(3X)
+.xx "" "" "clri: clear i-node." "" clri(8)
+.xx "" "L." "cmds: UUCP remote command permissions file." "" L.cmds(5)
+.xx "" "" "cmp: compare two files." "" cmp(1)
+.xx "" "autoconf: diagnostics from the autoconfiguration" "code." "" autoconf(4)
+.xx "" "pi: Pascal interpreter" "code translator." "" pi(1)
+.xx "" "" "col: filter reverse line feeds." "" col(1)
+.xx "" "" "colcrt: filter nroff output for CRT previewing." "" colcrt(1)
+.xx "log." "dmesg:" "collect system diagnostic messages to form error" "" dmesg(8)
+.xx "" "" "colrm: remove columns from a file." "" colrm(1)
+.xx "" "colrm: remove" "columns from a file." "" colrm(1)
+.xx "files." "" "comm: select or reject lines common to two sorted" "" comm(1)
+.xx "" "exec: overlay shell with specified" "command." "" csh(1)
+.xx "" "time: time" "command." "" csh(1)
+.xx "" "routines for returning a stream to a remote" "command." "rcmd, rresvport, ruserok:" rcmd(3)
+.xx "" "rexec: return stream to a remote" "command." "" rexec(3)
+.xx "" "system: issue a shell" "command." "" system(3)
+.xx "" "system: execute a UNIX" "command." "" system(3F)
+.xx "" "test: condition" "command." "" test(1)
+.xx "" "time: time a" "command." "" time(1)
+.xx "" "nice, nohup: run a" "command at low priority (\fIsh\fR only)." "" nice(1)
+.xx "" "switch: multi-way" "command branch." "" csh(1)
+.xx "" "uux: unix to unix" "command execution." "" uux(1C)
+.xx "" "rehash: recompute" "command hash table." "" csh(1)
+.xx "" "unhash: discard" "command hash table." "" csh(1)
+.xx "" "hashstat: print" "command hashing statistics." "" csh(1)
+.xx "" "nohup: run" "command immune to hangups." "" csh(1)
+.xx "" "csh: a shell" "(command interpreter) with C-like syntax." "" csh(1)
+.xx "" "whatis: describe what a" "command is." "" whatis(1)
+.xx "" "readonly, set, shift, times, trap, umask, wait:" "command language." "/exec, exit, export, login, read," sh(1)
+.xx "" "getarg, iargc: return" "command line arguments." "" getarg(3F)
+.xx "" "L.cmds: UUCP remote" "command permissions file." "" L.cmds(5)
+.xx "" "repeat: execute" "command repeatedly." "" csh(1)
+.xx "" "rc:" "command script for auto-reboot and daemons." "" rc(8)
+.xx "" "onintr: process interrupts in" "command scripts." "" csh(1)
+.xx "" "apply: apply a" "command to a set of arguments." "" apply(1)
+.xx "" "goto:" "command transfer." "" csh(1)
+.xx "" "else: alternative" "commands." "" csh(1)
+.xx "" "intro: introduction to" "commands." "" intro(1)
+.xx "" "introduction to system maintenance and operation" "commands." "intro:" intro(8)
+.xx "" "rcsintro: introduction to RCS" "commands." "" rcsintro(1)
+.xx "" "at: execute" "commands at a later time." "" at(1)
+.xx "" "apropos: locate" "commands by keyword lookup." "" apropos(1)
+.xx "" "while: repeat" "commands conditionally." "" csh(1)
+.xx "" "lastcomm: show last" "commands executed in reverse order." "" lastcomm(1)
+.xx "" "source: read" "commands from file." "" csh(1)
+.xx "" "comm: select or reject lines" "common to two sorted files." "" comm(1)
+.xx "" "socket: create an endpoint for" "communication." "" socket(2)
+.xx "" "pipe: create an interprocess" "communication channel." "" pipe(2)
+.xx "" "bk: line discipline for machine-machine" "communication (obsolete)." "" bk(4)
+.xx "" "talkd: remote user" "communication server." "" talkd(8C)
+.xx "" "dmc: DEC DMC-11/DMR-11 point-to-point" "communications device." "" dmc(4)
+.xx "" "dh: DH-11/DM-11" "communications multiplexer." "" dh(4)
+.xx "" "dhu: DHU-11" "communications multiplexer." "" dhu(4)
+.xx "" "dz: DZ-11" "communications multiplexer." "" dz(4)
+.xx "" "users:" "compact list of users who are on the system." "" users(1)
+.xx "" "diff: differential file and directory" "comparator." "" diff(1)
+.xx "" "cmp:" "compare two files." "" cmp(1)
+.xx "" "diff3: 3-way differential file" "comparison." "" diff3(1)
+.xx "" "liszt:" "compile a Franz Lisp program." "" liszt(1)
+.xx "" "cc: C" "compiler." "" cc(1)
+.xx "" "f77: Fortran 77" "compiler." "" f77(1)
+.xx "" "pc: Pascal" "compiler." "" pc(1)
+.xx "" "error: analyze and disperse" "compiler error messages." "" error(1)
+.xx "" "yacc: yet another" "compiler-compiler." "" yacc(1)
+.xx "" "fp: Functional Programming language" "compiler/interpreter." "" fp(1)
+.xx "" "wait: wait for background processes to" "complete." "" csh(1)
+.xx "" "wait: await" "completion of process." "" wait(1)
+.xx "" "hypot, cabs: Euclidean distance," "complex absolute value." "" hypot(3M)
+.xx "" "compress, uncompress, zcat:" "compress and expand data." "" compress(1)
+.xx "data." "" "compress, uncompress, zcat: compress and expand" "" compress(1)
+.xx "" "learn:" "computer aided instruction about UNIX." "" learn(1)
+.xx "" "hangman:" "Computer version of the game hangman." "" hangman(6)
+.xx "" "" "comsat: biff server." "" comsat(8C)
+.xx "" "test:" "condition command." "" test(1)
+.xx "" "endif: terminate" "conditional." "" csh(1)
+.xx "" "if:" "conditional statement." "" csh(1)
+.xx "" "while: repeat commands" "conditionally." "" csh(1)
+.xx "" "" "config: build system configuration files." "" config(8)
+.xx "" "gettytab: terminal" "configuration data base." "" gettytab(5)
+.xx "" "resolver" "configuration file." "" resolver(5)
+.xx "" "config: build system" "configuration files." "" config(8)
+.xx "" "ifconfig:" "configure network interface parameters." "" ifconfig(8C)
+.xx "" "" "connect: initiate a connection on a socket." "" connect(2)
+.xx "" "tip, cu:" "connect to a remote system." "" tip(1C)
+.xx "" "getpeername: get name of" "connected peer." "" getpeername(2)
+.xx "" "socketpair: create a pair of" "connected sockets." "" socketpair(2)
+.xx "" "shutdown: shut down part of a full-duplex" "connection." "" shutdown(2)
+.xx "" "accept: accept a" "connection on a socket." "" accept(2)
+.xx "" "connect: initiate a" "connection on a socket." "" connect(2)
+.xx "" "listen: listen for" "connections on a socket." "" listen(2)
+.xx "" "" "cons: VAX-11 console interface." "" cons(4)
+.xx "" "dcheck: file system directory" "consistency check." "" dcheck(8)
+.xx "" "icheck: file system storage" "consistency check." "" icheck(8)
+.xx "" "fsck: file system" "consistency check and interactive repair." "" fsck(8)
+.xx "" "quotacheck: file system quota" "consistency checker." "" quotacheck(8)
+.xx "" "tu: VAX-11/730 and VAX-11/750 TU58" "console cassette interface." "" tu(4)
+.xx "" "fl:" "console floppy interface." "" fl(4)
+.xx "" "cons: VAX-11" "console interface." "" cons(4)
+.xx "" "crl: VAX 8600" "console RL02 interface." "" crl(4)
+.xx "" "show what versioned
+tree-boring
+tree bracket
+tree cactus
+tree calf
+tree cat
+tree celandine
+tree-clad
+tree class
+tree-climbing
+tree clover
+tree cobra
+tree compass
+tree cony
+tree cotton
+tree-covered
+tree crab
+tree creeper
+tree cricket
+tree crow
+tree-crowned
+tree cult
+tree cypress
+tree dassie
+tree-dotted
+tree dove
+tree duck
+tree-dwelling
+tree-embowered
+tree-feeding
+tree feller
+tree fender
+tree fern
+tree-fringed
+tree fruit
+tree fuchsia
+tree-garnished
+tree germander
+tree-girt
+tree-god
+tree-goddess
+tree goldenrod
+tree goose
+tree-great
+tree guard
+tree-haunting
+tree heath
+tree-hewing
+tree holder
+tree hoopoe
+tree hopper
+tree houseleek
+tree huckleberry
+tree hyrax
+tree-inhabiting
+tree insulator
+tree ipomoea
+tree kangaroo
+tree lark
+tree lily
+tree line
+tree-lined
+tree-living
+tree-locked
+tree looker
+tree lotus
+tree-loving
+tree lucern
+tree lungwort
+tree lupine
+tree mallow
+tree-marked
+tree marking
+tree marten
+tree martin
+tree medic
+tree mildew
+tree milk
+tree moss
+tree mouse
+tree myrtle
+tree nymph
+tree onion
+tree orchis
+tree partridge
+tree peony
+tree pie
+tree pigeon
+tree pipit
+tree-planted
+tree planter
+tree planting
+tree poke
+tree poppy
+tree porcupine
+tree primrose
+tree protector
+tree pruner
+tree-pruning
+tree-ripe
+tree root rot
+tree-run
+tree rune
+tree runner
+tree-sawing
+tree scribe
+tree-shaded
+tree shrew
+tree-skirted
+tree snake
+tree sorrel
+tree sparrow
+tree spirit
+tree-spraying
+tree squirrel
+tree steppe
+tree stool
+tree sugar
+tree surgeon
+tree surgery
+tree swallow
+tree swift
+tree tag
+tree tiger
+tree toad
+tree tobacco
+tree tomato
+tree trimmer
+tree trunk
+tree veld
+tree violet
+tree viper
+tree wax
+tree wool
+tree wormwood
+tree worship
+tree worshiper
+trefoil arch
+trefoil knot
+trefoil-shaped
+trek ox
+trek wagon
+trellis-bordered
+trellis-covered
+trellis-framed
+trellis-shaded
+trellis-sheltered
+trellis-woven
+Tremadoc slates
+trembleuse cup
+tremor disk
+trench albuminuria
+trench artillery
+trench back
+trench bomb
+trench cart
+trench cavalier
+trench coat
+trench digger
+trench disease
+trencher attendant
+trencher cap
+trencher companion
+trencher critic
+trencher-fed
+trencher friend
+trencher knight
+trencher philosopher
+trencher plate
+trencher poetry
+trencher rascal
+trencher slave
+trencher time
+trench fever
+trench foot
+trench gun
+trenching plane
+trench knife
+trench mouth
+trench nephritis
+trench plow
+trench sickness
+trench silo
+trench warfare
+Tresca section
+trespass board
+trespass offering
+tress-braiding
+tress-encircled
+tress-lifting
+tress-plaiting
+tress-shorn
+tress-topped
+tres-tine
+trestle bed
+trestle bent
+trestle board
+trestle bridge
+trestle legs
+trestle post
+trestle table
+tres vif
+trey-ace
+trial-and-error
+trial balance
+trial balloon
+trial brief
+trial case
+trial court
+trial docket
+trial engagement
+trial frame
+trial glasses
+trial heat
+trial jury
+trial lawyer
+trial lenses
+trial marriage
+trial order
+trial package
+trial piece
+trial proof
+trial sample
+trial square
+trial trip
+triammonium phosphate
+triangle-leaved
+triangle-shaped
+triangle spider
+triangle winding
+triangular-shaped
+triangulato-ovate
+Triangulum australe
+Triangulum minor
+tribute money
+tribute pitch
+triceps surae
+tri-city
+trickle charge
+trickle charger
+trick-o-the-loop
+trick score
+trick valve
+trick work
+tricot stitch
+tricuspid valve
+trident bat
+trident-shaped
+tridymite-trachyte
+tri-ester
+trigesimo-secundo
+trigger finger
+trigger guard
+trigger hair
+trigger plant
+trigger tube
+trig loop
+tri-iodide
+trillium family
+trim-ankled
+trim-bearded
+trim-bodiced
+trim-bodied
+trim-cut
+trim-dressed
+trim-hedged
+tri-mide
+trim-kept
+trim-looking
+trimmer arch
+trimmer beam
+trimmer condenser
+trimmer joist
+trimmer signal
+trimming hatch
+trimming hole
+trimming joist
+trimming machine
+trimming press
+trimming punch
+trimming tank
+trim-suited
+trim-swept
+trim-waisted
+T ring
+trinity column
+trinity field
+trinity lily
+Trinity season
+Trinity sitting
+Trinity sunday
+trinity violet
+trinkum-trankum
+trip catch
+trip charter party
+trip dial
+trip die
+tripe-de-roche
+tripe dresser
+tripe-eating
+trip engine
+tripe seller
+tripe-selling
+trip-free
+trip gear
+trip hammer
+triphenylmethane color
+triphenylmethane dye
+trip hook
+triple-acting
+triple-action
+triple-aisled
+triple-apsidal
+triple-arched
+triple-awned
+triple-barbed
+triple-barred
+triple-bearded
+triple-bodied
+triple-bolted
+triple-branched
+triple-chorded
+triple-colored
+triple-crested
+triple crown
+triple-crowned
+triple-cylinder
+triple-deck
+triple-decked
+triple-dyed
+triple-edged
+triple-entry
+triple-expansion
+triple-formed
+triple-gemmed
+triple-hatted
+triple-headed
+triple-hearth
+triple-ingrain
+triple-line
+triple-lived
+triple-lock
+triple-nerved
+triple-piled
+triple-pole
+triple-rayed
+triple-ribbed
+triple-rivet
+triple-roofed
+triple-stranded
+triple-tailed
+triple tangent
+triple tangent plane
+triple-terraced
+triple-thread
+triple-throated
+triple-throw
+triple-tiered
+triplet lily
+triple-tongued
+triple-tonguing
+triple-toothed
+triple-towered
+triple-turned
+triple-turreted
+triple-veined
+triple-wick
+triplicate-pinnate
+triplicate-ternate
+trip line
+tri-ply
+trip money
+tripod puller
+tripod table
+trip piece
+trip pin
+tripping coil
+tripping line
+tripping link
+tripping relay
+tripping transformer
+trip rate
+trip shaft
+trip slip
+trip system
+trip-toe
+trip train
+trisodium phosphate
+Tri-state
+trit-trot
+tri-tunnel
+trivet table
+trocar-shaped
+troilus butterfly
+trois point
+troll-drum
+trolley attendant
+trolley block
+trolley bracket
+trolley bus
+trolley car
+trolley carrier
+trolley catcher
+trolley clip
+trolley cord
+trolley fork
+trolley frog
+trolley gong
+trolley guard
+trolley harp
+trolley hoist
+trolley insulator
+trolley lace
+trolley line
+trolley locomotive
+trolley maker
+trolley pole
+trolley rail
+trolley retrieiver
+trolley road
+trolley shoe
+trolley spring
+trolley track
+trolley tracking
+trolley wagon
+trolley wheel
+trolley wire
+troll plate
+tromba marina
+trombone coil
+trone weight
+tron weight
+troop duck
+troop leader
+troop-lined
+troop school
+troop-thronged
+troop train
+trophy cress
+trophy money
+trophy room
+trophy tax
+troth-contracted
+troth-keeping
+troth ring
+troth-telling
+trotter cases
+troubadour fiddle
+trouble-bringing
+trouble-free
+trouble-giving
+trouble-haunted
+trouble-house
+trouble maker
+trouble man
+trouble-mirth
+trouble-saving
+trouble shooter
+trouble shooting
+trouble-tossed
+trouble-worn
+trough battery
+trough conveyor
+trough gutter
+trough keel
+trough roof
+trough room
+trough-shaped
+trou madame
+trouser-press
+trouser presser
+trout bass
+trout brook
+trout-colored
+trout-famous
+trout fishing
+trout fly
+trout-haunted
+trout lily
+trout perch
+trout shad
+trout stream
+trowel bayonet
+trowel-shaped
+troy ounce
+troy pound
+troy weight
+truant officer
+truant school
+truce flag
+truce-hating
+truce-seeking
+truck box
+truck car
+truck driver
+truck farm
+truck farmer
+truck farming
+truck garden
+truck gardener
+truck gardening
+truck horse
+truck house
+trucking house
+truckle bed
+truck system
+truck tractor
+truck trailer
+trudgen crawl
+trudgen stroke
+true-aimed
+true-based
+true-begotten
+true-believing
+true-blooded
+true-blue
+true-breasted
+true-dealing
+true-derived
+true-devoted
+true-disposing
+true-divining
+true-eyed
+true-false
+true-felt
+true-grained
+true-heroic
+true-life
+truelove knot
+true-made
+true-mannered
+true-meaning
+true-meant
+true-noble
+true-paced
+true-ringing
+true-run
+true-seeming
+true-souled
+true-speaking
+true-spell

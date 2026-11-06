@@ -1,0 +1,798 @@
+]<cr>" 16
+.sp 1
+Move the cursor down the screen to the beginning of the next line.
+Scroll up if necessary.
+.IP "[cnt]$" 16
+Move the cursor to the end of the line.
+If there is a count, move to the end of the line "cnt" lines
+forward in the file.
+.IP "^" 16
+Move the cursor to the beginning of the first word on the line.
+.IP "0" 16
+Move the cursor to the left margin of the current line.
+.IP "[cnt]|" 16
+Move the cursor to the column specified by the count.  The default is
+column zero.
+.IP "[cnt]w" 16
+Move the cursor to the beginning of the next word. If there
+is a count, then move forward that many words and
+position the cursor at the beginning of the word.
+Mnemonic: next-\fBw\fRord
+.IP "[cnt]W" 16
+Move the cursor to the beginning of the next word which follows
+a "white space" (<sp>,<tab>, or <nl>).  Ignore other punctuation.
+.IP "[cnt]b" 16
+Move the cursor to the preceding word.  Mnemonic: \fBb\fRackup-word
+.IP "[cnt]B" 16
+Move the cursor to the preceding word that is separated from the
+current word by a "white .\" Copyright (c) 1980 Regents of the University of California.
+.\" All rights reserved.  The Berkeley software License Agreement
+.\" specifies the terms and conditions for redistribution.
+.\"
+.\"	@(#)vi.chars	6.1 (Berkeley) 5/30/86
+.\"
+.bd S 3
+..pn 21
+.de iP
+.IP "\fB\\$1\fR" \\$2
+..
+.SH
+Appendix: character functions
+.PP
+This appendix gives the uses the editor makes of each character.  The
+characters are presented in their order in the \s-2ASCII\s0 character
+set:  Control characters come first, then most special characters, then
+the digits, upper and then lower case characters.
+.PP
+For each character we tell a meaning it has as a command and any meaning it
+has during an insert.
+If it has only meaning as a command, then only this is discussed.
+Section numbers in parentheses indicate where the character is discussed;
+a `f' after the section number means that the character is mentioned
+in a footnote.
+.iP "^@" 15
+Not a command character.
+If typed as the first character of an insertion it is replaced with the
+last text inserted, and the insert terminates.  Only 128 characters are
+saved from the last insert; if more characters were inserted the mechanism
+is not available.
+A \fB^@\fR cannot be part of the file due to the editor implementation
+(7.5f).
+.iP "^A" 15
+Unused.
+.iP "^B" 15
+Backward window.
+A count specifies repetition.
+Two lines of continuity are kept if possible (2.1, 6.1, 7.2).
+.iP "^C" 15
+Unused.
+.iP "^D" 15
+As a command, scrolls down a half-window of text.  
+A count gives the number of (logical) lines to scroll, and is remembered
+for future \fB^D\fR and \fB^U\fR commands (2.1, 7.2).
+During an insert, backtabs over \fIautoindent\fR white space at the beginning
+of a line (6.6, 7.5); this white space cannot be backspaced over.
+.iP "^E" 15
+Exposes one more line below the current screen in the file, leaving
+the cursor where it is if possible.
+(Version 3 only.)
+.iP "^F" 15
+Forward window.  A count specifies repetition.
+Two lines of continuity are kept if possible (2.1, 6.1, 7.2).
+.iP "^G" 15
+Equivalent to \fB:f\fR\s-2CR\s0, printing the current file, whether
+it has been modified, the current line number and the number of lines
+in the file, and the percentage of the way through the file that you
+are.
+.iP "^H (\fR\s-2BS\s0\fP)" 15
+Same as
+.B "left arrow" .
+(See
+.B h ).
+During an insert, eliminates the last input character, backing over it
+but not erasing it; it remains so you can see what you typed if you
+wish to type something only slightly different (3.1, 7.5).
+.iP "^I\ (\fR\s-2TAB\s0\fP)" 15
+Not a command character.
+When inserted it prints as some
+number of spaces.
+When the cursor is at a tab character it rests at the last of the spaces
+which represent the tab.
+The spacing of tabstops is controlled by the \fItabstop\fR option (4.1, 6.6).
+.iP "^J\ (\fR\s-2LF\s0\fP)" 15
+Same as
+.B "down arrow"
+(see
+.B j ).
+.iP "^K" 15
+Unused.
+.iP "^L" 15
+The \s-2ASCII\s0 formfeed character, this causes the screen to be cleared
+and redrawn.  This is useful after a transmission error, if characters
+typed by a program other than the editor scramble the screen,
+or after output is stopped by an interrupt (5.4, 7.2f).
+.iP "^M\ (\fR\s-2CR\s0\fP)" 15
+A carriage return advances to the next line, at the first non-white position
+in the line.  Given a count, it advances that many lines (2.3).
+During an insert, a \s-2CR\s0 causes the insert to continue onto
+another line (3.1).
+.iP "^N" 15
+Same as
+.B "down arrow"
+(see
+.B j ).
+.iP "^O" 15
+Unused.
+.iP "^P" 15
+Same as
+.B "up arrow"
+(see
+.B k ).
+.iP "^Q" 15
+Not a command character.
+In input mode,
+.B ^Q
+quotes the next character, the same as
+.B ^V ,
+except that some teletype drivers will eat the
+.B ^Q
+so that the editor never sees it.
+.iP "^R" 15
+Redraws the current screen, eliminating logical lines not corresponding
+to physical lines (lines with only a single @ character on them).
+On hardcopy terminals in \fIopen\fR mode, retypes the current line
+(5.4, 7.2, 7.8).
+.iP "^S" 15
+Unused.  Some teletype drivers use
+.B ^S
+to suspend output until
+.B ^Q is pressed.
+.iP "^T" 15
+Not a command character.
+During an insert, with \fIautoindent\fR set and at the beginning of the
+line, inserts \fIshiftwidth\fR white space.
+.iP "^U" 15
+Scrolls the screen up, inverting \fB^D\fR which scrolls down.  Counts work as
+they do for \fB^D\fR, and the previous scroll amount is common to both.
+On a dumb terminal, \fB^U\fR will often necessitate clearing and redrawing
+the screen further back in the file (2.1, 7.2).
+.iP "^V" 15
+Not a command character.
+In input mode, quotes the next character so that it is possible
+to insert non-printing and special characters into the file (4.2, 7.5).
+.iP "^W" 15
+Not a command character.
+During an insert, backs up as \fBb\fR would in command mode; the deleted
+characters remain on the display (see \fB^H\fR) (7.5).
+.iP "^X" 15
+Unused.
+.iP "^Y" 15
+Exposes one more line above the current screen, leaving the cursor where
+it is if possible.  (No mnemonic value for this key; however, it is next
+to \fB^U\fR which scrolls up a bunch.)
+(Version 3 only.)
+.iP "^Z" 15
+If supported by the Unix system,
+stops the editor, exiting to the top level shell.
+Same as \fB:stop\fP\s-2CR\s0.
+Otherwise, unused.
+.iP "^[\ (\fR\s-2ESC\s0\fP)" 15
+Cancels a partially formed command, such as a \fBz\fR when no following
+character has yet been given; terminates inputs on the last line (read
+by commands such as \fB: /\fR and \fB?\fR); ends insertions of new text
+into the buffer.
+If an \s-2ESC\s0 is given when quiescent in command state, the editor
+rings the bell or flashes the screen.  You can thus hit \s-2ESC\s0 if
+you don't know what is happening till the editor rings the bell.
+If you don't know if you are in insert mode you can type \s-2ESC\s0\fBa\fR,
+and then material to be input; the material will be inserted correctly
+whether or not you were in insert mode when you started (1.5, 3.1, 7.5).
+.iP "^\e" 15
+Unused.
+.iP "^]" 15
+Searches for the word which is after the cursor as a tag.  Equivalent
+to typing \fB:ta\fR, this word, and then a \s-2CR\s0.
+Mnemonically, this command is ``go right to'' (7.3).
+.iP "^\(ua" 15
+Equivalent to \fB:e #\fR\s-2CR\s0, returning to the previous position
+in the last edited file, or editing a file which you specified if you
+got a `No write since last change diagnostic' and do not want to have
+to type the file name again (7.3).
+(You have to do a \fB:w\fR before \fB^\(ua\fR
+will work in this case.  If you do not wish to write the file you should
+do \fB:e!\ #\fR\s-2CR\s0 instead.)
+.iP "^_" 15
+Unused.
+Reserved as the command character for the
+Tektronix 4025 and 4027 terminal.
+.iP "\fR\s-2SPACE\s0\fP" 15
+Same as
+.B "right arrow"
+(see
+.B l ).
+.iP "!" 15
+An operator, which processes lines from the buffer with reformatting commands.
+Follow \fB!\fR with the object to be processed, and then the command name
+terminated by \s-2CR\s0.  Doubling \fB!\fR and preceding it by a count
+causes count lines to be filtered; otherwise the count
+is passed on to the object after the \fB!\fR.  Thus \fB2!}\fR\fIfmt\fR\s-2CR\s0
+reformats the next two paragraphs by running them through the program
+\fIfmt\fR.  If you are working on \s-2LISP\s0,
+the command \fB!%\fR\fIgrind\fR\s-2CR\s0,*
+.FS
+*Both
+.I fmt
+and
+.I grind
+are Berkeley programs and may not be present at all installations.
+.FE
+given at the beginning of a
+function, will run the text of the function through the \s-2LISP\s0 grinder
+(6.7, 7.3).
+To read a file or the output of a command into the buffer use \fB:r\fR (7.3).
+To simply execute a command use \fB:!\fR (7.3).
+.tr "
+.iP  15
+Precedes a named buffer specification.  There are named buffers \fB1\-9\fR
+used for saving deleted text and named buffers \fBa\-z\fR into which you can
+place text (4.3, 6.3)
+.tr 
+.iP "#" 15
+The macro character which, when followed by a number, will substitute
+for a function key on terminals without function keys (6.9).
+In input mode, 
+if this is your erase character, it will delete the last character
+you typed in input mode, and must be preceded with a \fB\e\fR to insert
+it, since it normally backs over the last input character you gave.
+.iP "$" 15
+Moves to the end of the current line.  If you \fB:se list\fR\s-2CR\s0,.\" Copyright (c) 1983 Regents of the University of California.
+.\" All rights reserved.  The Berkeley software License Agreement
+.\" specifies the terms and conditions for redistribution.
+.\"
+.\"	@(#)2.2.t	6.3 (Berkeley) 5/12/86
+.\"
+.sh "File system
+.NH 3
+Overview
+.PP
+The file system abstraction provides access to a hierarchical
+file system structure.
+The file system contains directories (each of which may contain
+other sub-directories) as well as files and references to other
+objects such as devices and inter-process communications sockets.
+.PP
+Each file is organized as a linear array of bytes.  No record
+boundaries or system related information is present in
+a file.
+Files may be read and written in a random-access fashion.
+The user may read the data in a directory as though
+it were an ordinary file to determine the names of the contained files,
+but only the system may write into the directories.
+The file system stores only a small amount of ownership, protection and usage
+information with a file.
+.NH 3
+Naming
+.PP
+The file system calls take \fIpath name\fP arguments.
+These consist of a zero or more component \fIfile names\fP
+separated by ``/\^'' characters, where each file name
+is up to 255 ASCII characters excluding null and ``/\^''.
+.PP
+Each process always has two naming contexts: one for the
+root directory of the file system and one for the
+current working directory.  These are used
+by the system in the filename translation process.
+If a path name begins with a ``/\^'', it is called
+a full path name and interpreted relative to the root directory context.
+If the path name does not begin with a ``/\^'' it is called
+a relative path name and interpreted relative to the current directory
+context.
+.PP
+The system limits
+the total length of a path name to 1024 characters.
+.PP
+The file name ``..'' in each directory refers to
+the parent directory of that directory.
+The parent directory of the root of the file system is always that directory.
+.PP
+The calls
+.DS
+chdir(path);
+char *path;
+
+chroot(path)
+char *path;
+.DE
+change the current working directory and root directory context of a process.
+Only the super-user can change the root directory context of a process.
+.NH 3
+Creation and removal
+.PP
+The file system allows directories, files, special devices,
+and ``portals'' to be created and removed from the file system.
+.NH 4
+Directory creation and removal
+.PP
+A directory is created with the \fImkdir\fP system call:
+.DS
+mkdir(path, mode);
+char *path; int mode;
+.DE
+where the mode is defined as for files (see below).
+Directories are removed with the \fIrmdir\fP system call:
+.DS
+rmdir(path);
+char *path;
+.DE
+A directory must be empty if it is to be deleted.
+.NH 4
+File creation
+.PP
+Files are created with the \fIopen\fP system call,
+.DS
+fd = open(path, oflag, mode);
+result int fd; char *path; int oflag, mode;
+.DE
+The \fIpath\fP parameter specifies the name of the
+file to be created.  The \fIoflag\fP parameter must
+include O_CREAT from below to cause the file to be created.
+Bits for \fIoflag\fP are
+defined in \fI<sys/file.h>\fP:
+.DS
+._d
+#define	O_RDONLY	000	/* open for reading */
+#define	O_WRONLY	001	/* open for writing */
+#define	O_RDWR	002	/* open for read & write */
+#define	O_NDELAY	004 	/* non-blocking open */
+#define	O_APPEND	010	/* append on each write */
+#define	O_CREAT	01000	/* open with file create */
+#define	O_TRUNC	02000	/* open with truncation */
+#define	O_EXCL	04000	/* error on create if file exists */
+.DE
+.PP
+One of O_RDONLY, O_WRONLY and O_RDWR should be specified,
+indicating what types of operations are desired to be performed
+on the open file.  The operations will be checked against the user's
+access rights to the file before allowing the \fIopen\fP to succeed.
+Specifying O_APPEND causes writes to automatically append to the
+file.
+The flag O_CREAT causes the file to be created if it does not
+exist, owned by the current user
+and the group of the containing directory.
+The protection for the new file is specified in \fImode\fP.
+The file mode is used as a three digit octal number.
+Each digit encodes read access as 4, write access as 2 and execute
+access as 1, or'ed together.  The 0700 bits describe owner
+access, the 070 bits describe the access rights for processes in the same
+group as the file, and the 07 bits describe the access rights
+for other processes.
+.PP
+If the open specifies to create the file with O_EXCL
+and the file already exists, then the \fIopen\fP will fail
+without affecting the file in any way.  This provides a
+simple exclusive access facility.
+If the file exists but is a symbolic link, the open will fail
+regardless of the existence of the file specified by the link.
+.NH 4
+Creating references to devices
+.PP
+The file system allows entries which reference peripheral devices.
+Peripherals are distinguished as \fIblock\fP or \fIcharacter\fP
+devices according by their ability to support block-oriented
+operations.
+Devices are identified by their ``major'' and ``minor''
+device numbers.  The major device number determines the kind
+of peripheral it is, while the minor device number indicates
+one of possibly many peripherals of that kind.
+Structured devices have all operations performed internally
+in ``block'' quantities while
+unstructured devices often have a number of
+special \fIioctl\fP operations, and may have input and output
+performed in varying units.
+The \fImknod\fP call creates special entries:
+.DS
+mknod(path, mode, dev);
+char *path; int mode, dev;
+.DE
+where \fImode\fP is formed from the object type
+and access permissions.  The parameter \fIdev\fP is a configuration
+dependent parameter used to identify specific character or
+block I/O devices.
+.NH 4
+Portal creation\(dg
+.PP
+.FS
+\(dg The \fIportal\fP call is not implemented in 4.3BSD.
+.FE
+The call
+.DS
+fd = portal(name, server, param, dtype, protocol, domain, socktype)
+result int fd; char *name, *server, *param; int dtype, protocol;
+int domain, socktype;
+.DE
+places a \fIname\fP in the file system name space that causes connection to a
+server process when the name is used.
+The portal call returns an active portal in \fIfd\fP as though an
+access had occurred to activate an inactive portal, as now described.
+.PP
+When an inactive portal is accessed, the system sets up a socket
+of the specified \fIsocktype\fP in the specified communications
+\fIdomain\fP (see section 2.3), and creates the \fIserver\fP process,
+giving it the specified \fIparam\fP as argument to help it identify
+the portal, and also giving it the newly created socket as descriptor
+number 0.  The accessor of the portal will create a socket in the same
+\fIdomain\fP and \fIconnect\fP to the server.  The user will then
+\fIwrap\fP the socket in the specified \fIprotocol\fP to create an object of
+the required descriptor type \fIdtype\fP and proceed with the
+operation which was in progress before the portal was encountered.
+.PP
+While the server process holds the socket (which it received as \fIfd\fP
+from the \fIportal\fP call on descriptor 0 at activation) further references
+will result in connections being made to the same socket.
+.NH 4
+File, device, and portal removal
+.PP
+A reference to a file, special device or portal may be removed with the
+\fIunlink\fP call,
+.DS
+unlink(path);
+char *path;
+.DE
+The caller must have write access to the directory in which
+the file is located for this call to be successful.
+.NH 3
+Reading and modifying file attributes
+.PP
+Detailed information about the attributes of a file
+may be obtained with the calls:
+.DS
+#include <sys/stat.h>
+
+stat(path, stb);
+char *path; result struct stat *stb;
+
+fstat(fd, stb);
+int fd; result struct stat *stb;
+.DE
+The \fIstat\fP structure includes the file
+type, protection, ownership, access times,
+size, and a count of hard links.
+If the file is a symbolic link, then the status of the link
+itself (rather than the file the link references)
+may be found using the \fIlstat\fP call:
+.DS
+lstat(path, stb);
+char *path; result struct stat *stb;
+.DE
+.PP
+Newly created files are assigned the user id of the
+process that created it and the group id of the directory
+in which it was created.  The ownership of a file may
+be changed by either of the calls
+.DS
+chown(path, owner, group);
+char *pa of the old memory is copied to the new memory.
+The old memory is freed
+and the tables are updated.
+If there is not enough primary memory,
+secondary memory is allocated instead.
+The process is swapped out onto the
+secondary memory,
+ready to be swapped in with
+its new size.
+.PP
+One separate process in the kernel,
+the swapping process,
+simply swaps the other
+processes in and out of primary memory.
+It examines the
+process table looking for a process
+that is swapped out and is
+ready to run.
+It allocates primary memory for that
+process and
+reads its segments into
+primary memory, where that process competes for the
+central processor with other loaded processes.
+If no primary memory is available,
+the swapping process makes memory available
+by examining the process table for processes
+that can be swapped out.
+It selects a process to swap out,
+writes it to secondary memory,
+frees the primary memory,
+and then goes back to look for a process
+to swap in.
+.PP
+Thus there are two specific algorithms
+to the swapping process.
+Which of the possibly many processes that
+are swapped out is to be swapped in?
+This is decided by secondary storage residence
+time.
+The one with the longest time out is swapped in first.
+There is a slight penalty for larger processes.
+Which of the possibly many processes that
+are loaded is to be swapped out?
+Processes that are waiting for slow events
+(i.e., not currently running or waiting for
+disk I/O)
+are picked first,
+by age in primary memory,
+again with size penalties.
+The other processes are examined
+by the same age algorithm,
+but are not taken out unless they are
+at least of some age.
+This adds
+hysteresis to the swapping and
+prevents total thrashing.
+.PP
+These swapping algorithms are the
+most suspect in the system.
+With limited primary memory,
+these algorithms cause total swapping.
+This is not bad in itself, because
+the swapping does not impact the
+execution of the resident processes.
+However, if the swapping device must
+also be used for file storage,
+the swapping traffic severely
+impacts the file system traffic.
+It is exactly these small systems
+that tend to double usage of limited disk
+resources.
+.NH 2
+Synchronization and scheduling
+.PP
+Process synchronization is accomplished by having processes
+wait for events.
+Events are represented by arbitrary integers.
+By convention,
+events are chosen to be addresses of
+tables associated with those events.
+For example, a process that is waiting for
+any of its children to terminate will wait
+for an event that is the address of
+its own process table entry.
+When a process terminates,
+it signals the event represented by
+its parent's process table entry.
+Signaling an event on which no process
+is waiting has no effect.
+Similarly,
+signaling an event on which many processes
+are waiting will wake all of them up.
+This differs considerably from
+Dijkstra's P and V
+synchronization operations,
+.[
+dijkstra sequential processes 1968
+.]
+in that
+no memory is associated with events.
+Thus there need be no allocation of events
+prior to their use.
+Events exist simply by being used.
+.PP
+On the negative side,
+because there is no memory associated with events,
+no notion of ``how much''
+can be signaled via the event mechanism.
+For example,
+processes that want memory might
+wait on an event associated with
+memory allocation.
+When any amount of memory becomes available,
+the event would be signaled.
+All the competing processes would then wake
+up to fight over the new memory.
+(In reality,
+the swapping process is the only process
+that waits for primary memory to become available.)
+.PP
+If an event occurs
+between the time a process decides
+to wait for that event and the
+time that process enters the wait state,
+then
+the process will wait on an event that has
+already happened (and may never happen again).
+This race condition happens because there is no memory associated with
+the event to indicate that the event has occurred;
+the only action of an event is to change a set of processes
+from wait state to run state.
+This problem is relieved largely
+by the fact that process switching can
+only occur in the kernel by explicit calls
+to the event-wait mechanism.
+If the event in question is signaled by another
+process,
+then there is no problem.
+But if the event is signaled by a hardware
+interrupt,
+then special care must be taken.
+These synchronization races pose the biggest
+problem when
+.UX
+is adapted to multiple-processor configurations.
+.[
+hawley meyer multiprocessing unix
+.]
+.PP
+The event-wait code in the kernel
+is like a co-routine linkage.
+At any time,
+all but one of the processes has called event-wait.
+The remaining process is the one currently executing.
+When it calls event-wait,
+a process whose event has been signaled
+is selected and that process
+returns from its call to event-wait.
+.PP
+Which of the runable processes is to run next?
+Associated with each process is a priority.
+The priority of a system process is assigned by the code
+issuing the wait on an event.
+This is roughly equivalent to the response
+that one would expect on such an event.
+Disk events have high priority,
+teletype events are low,
+and time-of-day events are very low.
+(From observation,
+the difference in system process priorities
+has little or no performance impact.)
+All user-process priorities are lower than the
+lowest system priority.
+User-process priorities are assigned
+by an algorithm based on the
+recent ratio of the amount of compute time to real time consumed
+by the process.
+A process that has used a lot of
+compute time in the last real-time
+unit is assigned a low user priority.
+Because interactive processes are characterized
+by low ratios of compute to real time,
+interactive response is maintained without any
+special arrangements.
+.PP
+The scheduling algorithm simply picks
+the process with the highest priority,
+thus
+picking all system processes first and
+user processes second.
+The compute-to-real-time ratio is updated
+every second.
+Thus,
+all other things being equal,
+looping user processes will be
+scheduled round-robin with a
+1-second quantum.
+A high-priority process waking up will
+preempt a running, low-priority process.
+The scheduling algorithm has a very desirable
+negative feedback character.
+If a process uses its high priority
+to hog the computer,
+its priority will drop.
+At the same time, if a low-priority
+process is ignored for a long time,
+its priority will rise.
+.NH
+I/O SYSTEM
+.PP
+The I/O system
+is broken into two completely separate systems:
+the block I/O system and the character I/O system.
+In retrospect,
+the names should have been ``structured I/O''
+and ``unstructured I/O,'' respectively;
+while the term ``block I/O'' has some meaning,
+``character I/O'' is a complete misnomer.
+.PP
+Devices are characterized by a major device number,
+a minor device number, and
+a class (block or character).
+For each class,
+there is an array of entry points into the device drivers.
+The major device number is used to index the array
+when calling the code for a particular device driver.
+The minor device number is passed to the
+device driver as an argument.
+The minor number has no significance other
+than that attributed to it by the driver.
+Usually,
+the driver uses the minor number to access
+one of several identical physical devices.
+.PP
+The use of the array of entry points
+(configuration table)
+as the only connection between the
+system code and the device drivers is
+very important.
+Early versions of the system had a much
+less formal connection with the drivers,
+so that it was extremely hard to handcraft
+differently configured systems.
+Now it is possible to create new
+device drivers in an average of a few hours.
+The configuration table in most cases
+is created automatically by a program
+that reads the system's parts list.
+.NH 2
+Block I/O system
+.PP
+The model block I/O device consists
+of randomly addressed, secondary
+memory blocks of 512 bytes each.
+The blocks are uniformly addressed
+0, 1, .\|.\|. up to the size of the device.
+The block device driver has the job of
+emulating this model on a
+physical device.
+.PP
+The block I/O devices are accessed
+through a layer of buffering software.
+The system maintains a list of buffers
+(typically between 10 and 70)
+each assigned                         ˇˇˇH–Ø	9 X              
+      <    ‡ˇˇ ¸ˇˇ   
+                   ˛ˇˇ	      @                                          3      ô        P     ®C  ¸œ                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       	  - : 1 . 8 / < 6 ` Z d ^ [ b \ i Ü ç á ë ã à è â ∂ ≥ ∫ ¥ æ ∏ µ º È „ ‡ Á · Î Â ‚ ?9C=:A;EˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇT                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    e–Ø     P  
+   i  ∆           9                                       %   -   -   ,   -   ,   -   -   ,   -   -   ,   -   ,                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   ˇˇˇˇˇˇˇ                                                                                                                                                                                                                                                        U	                                                                                              ÄÚ¯¸ˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇˇ                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              ˝A   
+        H–Ø    µ3Á    H–Ø    ËÍ                                                                                    §Å   
+         H–Ø    çhf    H–Ø                                                                                            §Å   
+ ê       H–Ø    m–Ø    m–Ø    “Ì                                                                                    §Å   
+        H–Ø    m–Ø    m–Ø    ‡Ì                                                                                    §Å   
+        e–Ø    e–Ø    e–Ø    –Ì                                                                                    §Å   
+         H–Ø    Öhf    H–Ø                                                                                            §Å   
+ å      H–Ø    f–Ø    f–Ø    ÿÌ                                                                                    §Å B          H–Ø    Öhf    H–Ø                                                                                            ÌÅ   
+ √      H–Ø    õ3Á    H–Ø    ÈÍ                                                                                    ÌÅ   
+ 0      H–Ø    õ3Á    H–Ø    ÎÍ                                                                                    ÌÅ   
+ T      H–Ø    õ3Á    H–Ø    ÏÍ                                                                                    ˝A   
+        H–Ø    )Ã«    H–Ø    ÌÍ                                                                                    $Å   
+ 6      H–Ø    *Ã«    H–Ø     Î                                                                                    $Å   
+ p      H–Ø    u£≈    H–Ø    ÓÍ                                                                                    $Å   
+ t      H–Ø    v£≈    H–Ø    hÎ                                                                                    $Å   
+  !      H–Ø    “˝»    H–Ø    ÄÎ Î                                                                                $Å   
+ 2"      H–Ø    y£≈    H–Ø    8Î nÎ                                                                                $Å   
+ s      H–Ø    z£≈    H–Ø    PÎ                                                                                    $Å   
+ #      H–Ø    π®≈    H–Ø    Î                                                                                    $Å   
+ ˜      H–Ø    |£≈    H–Ø    TÎ                                                                                    $Å   
+ õ      H–Ø    ∫®≈    H–Ø     Î                                                                                    $Å   
+ †      H–Ø    }£≈    H–Ø    "Î                                                                                    $Å   
+ !      H–Ø    ~£≈    H–Ø    àÎ                                                             
+                       $Å   
+ Z<      H–Ø    æ®≈    H–Ø    †Î Î                                                                                 $Å   
+ 8      H–Ø    √®≈    H–Ø    Í XÎ                                                                                $Å   
+ 6      H–Ø    É£≈    H–Ø    pÎ                                                                                    $Å   
+ Ì      H–Ø    É£≈    H–Ø    _Î                                                                                    $Å   
+ L      H–Ø    Æ-∆    H–Ø    (Î                                                             
+                       $Å   
+ Ã      H–Ø    jP¿    H–Ø    oÎ                                                                                    $Å   
+ 	      H–Ø    uß≈    H–Ø    %Î                                                                                    ˝A   
+        I–Ø    ˇ≥√    I–Ø    vÎ                                                                                    $Å   
+ ⁄      I–Ø    ãÛ¬    I–Ø    wÎ                                                                                    $Å   
+ r      I–Ø    ãÛ¬    I–Ø    -Î                                                                                    $Å   
+ ]      I–Ø    ãÛ¬    I–Ø    çÎ                                                                                    $Å   
+ à      I–Ø    çÛ¬    I–Ø    @Î ®Î ¯Í Î xÎ                                             F                       ˝A   
+        I–Ø    B~≠    I–Ø    /Î                                                                                    $Å   
+ ›ò      I–Ø    ´Ï›    I–Ø    êÎ ‡Í HÎ `Î 0Î                                             N                       $Å   
+ ≠b      I–Ø    –Ï›    I–Ø    òÎ ¿Ï –Ï 7Î                                                 2                       $Å   
+ ë/     I–Ø    TÌ›    I–Ø    »Ï ÿÏ ËÏ ¯Ï Ì Ì (Ì 8Ì HÌ {Î                         ò                       $Å   
+ '      I–Ø    pÌ›    I–Ø    ‡Ï Ï                                                                                $Å   
+ æ      I–Ø    "Ô›    I–Ø    Î                                                                                    ˝A   
+        I–Ø    É:§    I–Ø    ÚÏ                                                                                    $Å   
+ U      I–Ø    *Ø”    I–Ø    ÛÏ                                                                                    $Å   
+ t      I–Ø    >Ø”    I–Ø     Ì                                                                                    $Å   
+ Ã      I–Ø    MØ”    I–Ø    ÙÏ                                                                                    $Å   
+ :Ç      I–Ø    ÇØ”    I–Ø    Ì  Ì 0Ì @Ì ˆÏ                                             B                       $Å   
+ ~      I–Ø    êØ”    I–Ø    PÌ                                                                                    ˝A   
+        I–Ø    ¶æ–    I–Ø    ˜Ï                                                                                    $Å   
+ π      I–Ø    6Êª    I–Ø    RÌ                                                                                    $Å   
+ `Ò      I–Ø     ÷›    I–Ø    XÌ hÌ xÌ àÌ òÌ ®Ì ∏Ì SÌ                                 z                       $Å   
+ œ›      I–Ø    √÷›    I–Ø    `Ì pÌ ÄÌ êÌ †Ì ∞Ì ¿Ì                                     p                       ÌA   
+        J–Ø    €mË    J–Ø    »Ì                                                                                    §Å   
+ 5       J–Ø    ’mË    J–Ø    …Ì                                                                                    §Å   
+       J–Ø    €mË    J–Ø     Ì                                                                                    ÌA   
+        K–Ø    Å=’    K–Ø    ÃÌ                                                                                    ˇA   
+        L–Ø    Ï\è    L–Ø    ÕÌ                                                                                    ˝A          c–Ø    c–Ø    c–Ø    ŒÌ                                                                                    §Å           c–Ø    c–Ø    c–Ø    ”Ì                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    

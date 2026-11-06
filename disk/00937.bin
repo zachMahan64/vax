@@ -1,0 +1,1293 @@
+initial connection request where there is no round-trip time estimate,
+a much more conservative policy is used.
+When a slow link intervenes between the sender and the destination,
+this policy avoids queuing large numbers of retransmitted connection requests
+before a reply can be received. It also avoids saturation when
+the destination host
+is down or nonexistent.
+During a connection, when the retransmission timer expires,
+only a single packet is sent.
+When only a single packet has been lost, this avoids resending
+data that was successfully received;
+when a host has gone down or become unreachable, it avoids sending
+multiple packets at each timeout.
+Once another acknowledgement is received, the transmission policy
+returns to normal.
+.PP
+4.2BSD offered a maximum receive segment size of 1024 for all connections,
+and accepted such offers whenever made.
+However, that size was especially poor for the Arpanet
+and other 1822-based IMP networks (sorry, make that PSN networks)
+where the maximum packet size is 1007 byte.\" Copyright (c) 1986 Regents of the University of California.
+.\" All rights reserved.  The Berkeley software License Agreement
+.\" specifies the terms and conditions for redistribution.
+.\"
+.\"	@(#)sys.kern.t	1.7 (Berkeley) 4/11/86
+.\"
+.EQ
+delim $$
+.EN
+.ne 1i
+.NH 2
+Changes in initialization and kernel-level support
+.PP
+This section describes changes in the kernel files in \fB/sys/sys\fP
+with prefixes
+\fIinit_\fP or \fIkern_\fP.
+.XP init_main.c
+Several subsystems have new or renamed initialization routines that are called
+by \fImain\fP.
+These include \fIpqinit\fP for process queues,
+\fIxinit\fP for the text table handling routines,
+and \fInchinit\fP for the name translation cache.
+The virtual memory startup \fIsetupclock\fP has been replaced by \fIvminit\fP,
+that also sets the initial virtual memory limits for process 0 and its
+descendants.
+Process 1, \fIinit\fP, is now created before process 2, \fIpagedaemon\fP.
+.XP init_sysent.c
+In addition to entries for the two system calls new in 4.3BSD,
+the system call table specifies a range of system call numbers
+that are reserved for redistributors of 4.3BSD.  Other unused slots
+in earlier parts of the table should be reserved for future Berkeley use.
+Syscall 63 is no longer special.
+.XP kern_acct.c
+The process time accounting file in 4.2BSD stored times in seconds
+rather than clock ticks.
+This made accounting independent of the clock rate, but was too large
+a granularity to be useful.
+Therefore, 4.3BSD uses a smaller but unvarying unit for accounting times,
+1/64 second, specified in \fIacct.h\fP as its reciprocal AHZ.
+The \fIcompress\fP function converts seconds and microseconds
+to these new units, expressed as before in 16-bit pseudo-floating point numbers.
+.XP kern_clock.c
+The hardware clock handler implements the new time-correction primitive
+\fIadjtime\fP by skewing the rate at which time increases until a specified
+correction has been achieved.
+The \fIbumptime\fP routine used to increment the time has been changed into
+a macro.
+The overhead of software interrupts used to schedule the \fIsoftclock\fP
+handler has been reduced
+by noting whether any profiling or timeout activity requires it to run,
+and by calling \fIsoftclock\fP directly from \fIhardclock\fP
+(with reduced processor priority) if the previous
+priority was sufficiently low.
+.XP kern_descrip.c
+Most uses of the \fIgetf()\fP function have been replaced by the
+GETF macro form.
+The \fIdup\fP calls (including that from \fIfcntl\fP\^) no longer copy
+the close-on-exec flag from the original file descriptor.
+Most of the changes to support the open file descriptor high-water mark,
+\fIu.u_lastfile\fP, are in this file.
+The \fIflock\fP system call has had several bugs fixed.
+Unix-domain file descriptor garbage collection is no longer triggered
+from \fIclosef\fP, but when a socket is torn down.
+.XP kern_exec.c
+The \fIa.out\fP header used in the course of \fIexec\fP is no longer in the user
+structure, but is local to \fIexec\fP.
+Argument and environment strings are copied to and from the user address space
+a string at a time using the new \fIcopyinstr\fP and \fIcopyoutstr\fP
+primitives.
+When invoking an executable script, the first argument is now the name
+of the interpreter rather than the file name; the file name appears only
+after the interpreter name and optional argument.
+An \fIiput\fP was moved to avoid a deadlock when the executable image
+had been opened and marked close-on-exec.
+The \fIsetregs\fP routine has been split;
+machine-independent parts such as signal action modification are done
+in \fIexecve\fP directly, and the remaining machine-dependent routine
+was moved to \fImachdep.c\fP.
+Image size verification using \fIchksize\fP checks data and bss sizes
+separately to avoid overflow on their addition.
+.XP kern_exit.c
+Instead of looping at location 0x13 in user mode if \fI/etc/init\fP cannot
+be executed, the system now prints a message and pauses.
+This is done by \fIexit\fP if process 1 could not run.
+The search for child processes in \fIexit\fP uses the child and sibling
+linkage in the \fIproc\fP entry
+instead of a linear search of the \fIproc\fP table.
+Failures when copying out resource usage information from \fIwait\fP
+are now reflected to the caller.
+.XP kern_fork.c
+One of the two linear searches of the proc table during process creation
+has been eliminated, the other looks only at active processes.
+As the first scan is needed only to count the number of processes
+for this user, it is bypassed for root.
+A comment dating to version 7 (``Partially simulate the environment
+so that when it is actually created (by copying) it will look right.'')
+has finally been removed; it relates only to PDP-11 code.
+.XP kern_mman.c
+\fIChksize\fP takes an extra argument so that data and bss expansion
+can be checked separately to avoid problems with overflow.
+.XP kern_proc.c
+The \fIspgrp\fP routine has been corrected.
+An attempt to optimize its $ O ( n sup 2 ) $ algorithm
+(multiple scans of the process table)
+did so incorrectly; it now uses the child and sibling pointers in the proc
+table to find all descendents in linear time.
+\fIPqinit\fP is called at initialization time to set up the process
+queues and free all process slots.
+.XP kern_prot.c
+A number of changes were needed to reflect the type changes
+of the user and group ID's.
+The \fIgetgroups\fP and \fIsetgroups\fP routines pass groups as arrays
+of integers and thus must convert.
+All scans of the groups array look for an explicit NOGROUP terminator
+rather than any negative group.
+For consistency, the \fIsetreuid\fP call sets the process \fIp_uid\fP
+to the new effective user ID instead of the real ID as before.
+This prevents the anomaly of a process not being
+allowed to send signals to itself.
+.XP kern_resource.c
+Attempts to change resource limits for process sizes are checked
+against the maximum segment size that the swap map supports, \fImaxdmap\fP.
+The error returned when attempting to change another user's priority
+was changed from EACCESS to EPERM.
+.XP kern_sig.c
+The \fIsigmask\fP macro is now used throughout the kernel.
+The treatment of the \fIsigvec\fP flag has 
+been expanded to include the SV_INTERRUPT
+option.
+\fIKill\fP and \fIkillpg\fP have been rewritten, and the errors returned
+are now closer to those of System V.
+In particular, unprivileged users may broadcast signals with no error
+if they managed to kill something,
+and an attempt to signal process group 0 (one's own group) when no group
+is set receives an ESRCH instead of an EINVAL.
+SIGWINCH joins the class of signals whose default action is to ignore.
+When a process stops under \fIptrace\fP, its parent now receives a SIGCHLD.
+.XP kern_synch.c
+The CPU overhead of \fIschedcpu\fP has been reduced as much as possible
+by removing loop invariants
+and by ignoring processes that have not run since the last calculation.
+When long-sleeping processes are awakened, their priority is recomputed
+to consider their sleep time.
+\fISchedcpu\fP need not remove processes with new priorities
+from their run queues and reinsert them unless they are moving to a new queue.
+The sleep queues are now treated as circular (FIFO) lists,
+as the old LIFO behavior caused problems for some programs queued
+for locks.
+\fISleep\fP no longer allows context switches after a panic,
+but simply drops the processor priority momentarily then returns;
+this converts sleeps during the filesystem update into busy-waits.
+.XP kern_time.c
+\fIGettimeofday\fP returns the microsecond time on hardware supporting
+it, including the VAX.
+It is now possible to set the timezone as well as the time
+with \fIsettimeofday\fP.
+A system call, \fIadjtime\fP,
+has been added to correct the time by a small amount
+using gradual skew rather than discontinuous jumps forward or backward.
+.XP kern_xxx.c
+The 4.1-compatible \fIsignal\fP entry sets the signal SV_INTERRUPT option
+as well as the per-process SOUSIG, which now controls only the resetting
+of signal action to default upon invocation of a caught signal.
+.XP subr_log.c
+This new file contains routines that implement a kernel error
+log device.
+Kernel messages are placed in the message buffer as before,
+and can be read from there through the log devices.
+This was compounded by a bug in the LH/DH driver that did not allow
+space for an end-of-packet bit in the receive buffer,
+and thus maximum size packets that were received were split across buffers.
+This, in turn, aggravated a hardware
+problem causing small packets following a segmented packet to be concatenated
+with the previous packet.
+The result of this set of conditions was that performance across
+the Arpanet was sometimes abominably slow.
+The maximum size segment selected by 4.3BSD is chosen according
+to the destination and the interface to be used.
+The segment size chosen is somewhat less than the maximum transmission unit
+of the outgoing interface.
+If the destination is not local,
+the segment size is a convenient small size near
+the default maximum size (512 bytes).
+This value is both the maximum segment size
+offered to the sender by the receive side,
+and the maximum size segment that will be sent.
+Of course, the send size is also limited
+to be no more than the receiver has indicated it is willing to receive.
+.PP
+The initial sequence number prototype for TCP is now
+incremented much more quickly; this has exposed two bugs.
+Both the window-update receiving code and the urgent data receiving
+code compared sequence numbers to 0 the first time they were called
+on a connection.  This fails if the initial sequence number has
+wrapped around to negative numbers.  Both are now initialized
+when the connection is set up.  This still remains a problem
+in maintaining compatibility with 4.2BSD systems;
+thus an option, TCP_COMPAT_42, was added to avoid using such sequence numbers
+until 4.2 systems have been upgraded.
+.PP
+Additional changes in TCP are listed by source file:
+.XP tcp_input.c
+The common case of TCP data input, the arrival of the next
+expected data segment with an empty reassembly queue, was made
+into a simplified macro for efficiency.
+\fITcp_input\fP was modified to know when it needed to call the output side,
+reducing unnecessary tests for most acknowledgement-only packets.
+The receive window size calculation on input was modified
+to avoid shrinking the offered window;
+this change was needed due to a change in input data
+packaging by the link layer.
+A bug in handling TCP packets received with both data and options
+(that are not supposed to be used) has been corrected.
+If data is received on a connection after the process has closed,
+the other end is sent a reset, preventing connections from
+hanging in CLOSE_WAIT on one end and FIN_WAIT_2 on the other.
+(4.2BSD contained code to do this, but it was never executed
+because such input packets had already been dropped
+as being outside of the receive window.)
+A timer is now started upon entering
+FIN_WAIT_2 state if the local user has closed, closing the connection
+if the final FIN is not received within a reasonable time.
+Half-open connections are now reset more reliably; there were circumstances
+under which one end could be rebooted, and new connection requests
+that used the same port number might not receive a reset.
+The urgent-data code was modified to remember which data had
+already been read by the user, avoiding possible confusion if two
+urgent-data signals were received close together.
+Another change was made specifically for connections with a TAC.
+The TAC doesn't fill in the window field on its initial packet (SYN),
+and the apparent window is random.
+There is some question as to the validity of the window field
+if the packet does not have ACK set,
+and therefore TCP was changed to ignore the window information
+on those packets.
+.XP tcp_output.c
+The advertised window is never allowed to shrink,
+in correspondence with the earlier change in the input handler.
+The retransmit code was changed to check for shrinking windows,
+updating the connection state rather than timing out
+while waiting for acknowledgement.
+The modifications to the send policy described above are largely
+within this file.
+.XP tcp_timer.c
+The timer routines were changed to allow a longer wait for acknowledgements.
+(TCP would generally time out before the routing protocol
+had changed routes.)
+.NH 2
+UDP
+.PP
+An error in the checksumming of output UDP packets was corrected.
+Checksums are now checked by default, unless the COMPAT_42 configuration
+option is specified; it is provided to allow communication with the 4.2BSD UDP
+implementation, which generates incorrect checksums.
+When UDP datagrams are received for a port at which no process is listening,
+ICMP unreachable messages are sent in response unless the input packet
+was a broadcast.
+The size of the receive buffer was increased, as several large datagrams
+and their attached addresses could otherwise fill the buffer.
+The time-to-live of output datagrams was reduced from 255
+to 30.
+UDP uses its own \fIctlinput\fP routine for handling of ICMP errors,
+so that errors may be reported to the sender without closing the socket.
+.NH 2
+Address Resolution Protocol
+.PP
+The address resolution protocol has been generalized somewhat.
+It was specific for IP on 10\  Mb/s Ethernet; it now handles multiple
+protocols on 10 Mb/s Ethernet and could easily be adapted to other
+hardware as well.
+This change was made while adding ARP resolution
+of trailer protocol addresses.
+Hosts desiring to receive trailer
+encapsulations must now indicate that by the use of ARP.  This allows
+trailers to be used between cooperating 4.3 machines while using
+non-trailer encapsulations with other hosts.
+The negotiation need not be symmetrical: a VAX may request trailers,
+for example, and a SUN may note this and send trailer packets
+to the VAX without itself requesting trailers.
+This change requires modifications to the 10 Mb/s Ethernet drivers,
+which must provide an additional argument to \fIarpresolve\fP,
+a pointer for the additional return value indicating whether trailer
+encapsulations may be sent.
+With this change, the IFF_NOTRAILERS flag on each interface is interpreted
+to mean that trailers should not be requested.
+Modifications to ARP from SUN Microsystems add \fIioctl\fP operations
+to examine and modify entries in the ARP address translation table, 
+and to allow ARP translations to be ``published.''
+When future requests are received for Ethernet address translations,
+if the translation is in the table and is marked as published,
+they will be answered for that host.
+Those modifications superceded the ``oldmap'' algorithmic translation
+from IP addresses, which has been removed.
+Packets are not forwarded to the loopback interface if it is not marked
+up, and a bug causing an mbuf to be freed twice
+if the loopback output fails was corrected.
+ARP complains if a host lists the broadcast address as its Ethernet address.
+The ARP tables were enlarged to reflect larger network configurations
+now in use.
+A new function for use in driver messages, \fIether_sprintf\fP,
+formats a 48-bit Ethernet address and returns a pointer to the resulting string.
+.NH 2
+IMP support
+.PP
+The support facilities for connections to an 1822 (or X.25) IMP port
+(\fB/sys/netimp\fP)
+have had several bug fixes and one extension.
+Unit numbers are now checked more carefully during autoconfiguration.
+Code from BRL was installed to support class B and C networks.
+Error packets received from the IMP such as Host Dead are queued
+in the interrupt handler for reprocessing from a software interrupt,
+avoiding state transitions in the protocols at priorities above \fIsplnet\fP.
+The host-dead timer is no longer restarted when attempting new output,
+as a persistent sender could otherwise prevent new output from being attempted
+once a host was reported down.
+The network number is always taken from the address
+configured for the interface at boot time;
+network 10 is no longer assumed.
+A timer is used to prevent blocking if RFNM messages from the IMP are lost.
+A race was fixed when freeing mbufs containing host table entries,
+as the mbuf had been used after it was freed.
+                                                                                                                                                                                                                                                                                                      \fI/dev/klog\fP.
+.XP subr_mcount.c
+The kernel profiling buffers are allocated with \fIcalloc\fP instead 
+of \fIwmemall\fP
+to avoid the dramatic decrease in user virtual memory that could be supported
+after allocation of a large section of \fIusrpt\fP.
+.XP subr_prf.c
+Support was added for the kernel error log.
+The \fIlog\fP routine is similar to \fIprintf\fP
+but does not print on the console, thereby suspending system operation.
+\fILog\fP takes a priority as well as a format, both of which are read from
+the log device by the system error logger \fIsyslogd\fP.
+\fIUprintf\fP was modified to check its terminal output queue
+and to block rather than to use all of the system clists;
+it is now even less appropriate for use from interrupt level.
+\fITprintf\fP is similar to \fIuprintf\fP but prints to the tty specified
+as an argument rather than to that of the current user.
+\fITprintf\fP does not block if the output queue is overfull, but logs only
+to the error log;
+it may thus be used from interrupt level.
+Because of these changes, \fIputchar\fP and \fIprintn\fP require
+an additional argument
+specifying the destination(s) of the character.
+The \fItablefull\fP error routine was changed to use \fIlog\fP rather than
+\fIprintf\fP.
+.XP subr_rmap.c
+An off-by-one error in \fIrmget\fP was corrected.
+.XP sys_generic.c
+The \fIselect\fP call may now be used with more than 32 file descriptors,
+requiring that the masks be treated as arrays.
+The result masks are returned to the user if and only if no error (including
+EINTR) occurs.
+A select bug that caused processes to disappear was fixed;
+\fIselwakeup\fP needed to handle stopped processes differently
+than sleeping processes.
+.XP sys_inode.c
+Problems occurring after an interrupted close were corrected
+by forcing \fIino_close\fP to return to \fIclosef\fP even after an interrupt;
+otherwise, \fIf_count\fP could be cleared too early or twice.
+The code to unhash text pages being overwritten needed to be protected
+from memory allocations at interrupt level to avoid a bogus ``panic: munhash.'' 
+The internal routine implementing \fIflock\fP was reworked to avoid several
+bad assumptions and to allow restarts after an interruption.
+.XP sys_process.c
+\fIProcxmt\fP uses the new \fIptrace.h\fP header file;
+hopefully, the next release will have neither \fIptrace\fP nor \fIprocxmt\fP.
+The text XTRC flag is set when modifying a pure text image,
+protecting it from sharing and overwriting.
+.XP sys_socket.c
+The socket involved in an interface \fIioctl\fP is passed to \fIifioctl\fP
+so that it can call the protocol if necessary, as when setting the interface
+address for the protocol.
+It is now possible to be notified of pending out-of-band data by selecting
+for exceptional conditions.
+.XP syscalls.c
+The system call names here have been made to agree with reality.
+                                                                                                                                                                                                                                                          .\" Copyright (c) 1986 Regents of the University of California.
+.\" All rights reserved.  The Berkeley software License Agreement
+.\" specifies the terms and conditions for redistribution.
+.\"
+.\"	@(#)sys.tty.t	1.7 (Berkeley) 4/11/86
+.\"
+.NH 2
+Changes in the terminal line disciplines
+.XP tty.c
+The kernel maintains the terminal or window size in the tty structure
+and provides \fIioctl\fP\^s to set and get these values.
+The window size is cleared on final close.
+The sizes include rows and columns in characters
+and may include X and Y dimensions in pixels where that is meaningful.
+The kernel makes no use of these values, but they are stored here
+to provide a consistent way to determine the current size.
+When a new value is set, a SIGWINCH signal is sent to the process group
+associated with the terminal.
+.XP
+The notions of line discipline exit and final close have been separated.
+\fITtyclose\fP is used only at final close, while \fIttylclose\fP
+is provided for closing down a discipline.
+Modem control transitions are handled more cleanly
+by moving the common code from the terminal hardware drivers
+into the line disciplines; the \fIl_modem\fP entry in the \fIlinesw\fP
+is now used for this purpose.
+\fITtymodem\fP handles carrier transitions for the standard disciplines;
+\fInullmodem\fP is provided for disciplines with minimal requirements.
+.XP
+A new mode, LPASS8, was added to support 8-bit input in normal modes;
+it is the input analog of LLITOUT.
+An entry point, \fIcheckoutq\fP, has been added to enable internal
+output operations (\fIuprintf\fP, \fItprintf\fP) to check for output overflow
+and optionally to block to wait for space.
+Certain operations are handled more carefully than before:
+the use of the TIOCSTI \fIioctl\fP requires read permission on the terminal,
+and SPGRP is disallowed if the group corresponds with another user's
+process.
+\fITtread\fP and \fIttwrite\fP both check for carrier drop when
+restarting after a sleep.
+An off-by-one consistency check of \fIuio_iovcnt\fP
+in \fIttwrite\fP was corrected.
+A bug was fixed that caused data to be flushed
+when opening a terminal that was already open when using the ``old''
+line discipline.
+\fISelect\fP now returns true for reading if carrier has been lost.
+While changing line disciplines, interrupts must be disabled until
+the change is complete or is backed out.
+If changing to the same discipline, the close and reopen (and probable
+data flush) are avoided.
+The \fIt_delct\fP field in the tty structure was not used and has been deleted.
+.XP tty_conf.c
+The line discipline close entries that used \fIttyclose\fP
+now use \fIttylclose\fP.
+The two tablet disciplines have been combined.
+A new entry was added for a Serial-Line link-layer encapsulation for the
+Internet Protocol, SLIPDISC.
+.XP tty_pty.c
+Large sections of the pseudo-tty driver have been reworked to improve
+performance and to avoid
+races when one side closed, which subsequently hung pseudo-terminals.
+The line-discipline modem control routine is called to clean up
+when the master closes.
+Problems with REMOTE mode and non-blocking I/O were fixed by using the 
+raw queue
+rather than the cannonicalized queue.
+A new mode was added to allow a small set of commands to be passed
+to the pty master from the slave as a rudimentary type of \fIioctl\fP,
+in a manner analogous to that of PKT mode.
+Using this mode or PKT mode, a \fIselect\fP for exceptional
+conditions on the master
+side of a pty returns true when a command operation is available to be read.
+\fISelect\fP for writing on the master side has been corrected,
+and now uses the same criteria as \fIptcwrite\fP.
+As the pty driver depends on normal operation of the tty queues,
+it no longer permits changes to non-tty line disciplines.
+.XP tty_subr.c
+The \fIclist\fP support routines have been modified to use block moves
+instead of \fIgetc/putc\fP wherever possible.
+.XP tty_tablet.c
+The two line disciplines have been merged and a number of new
+tablet types are supported.
+Tablet type and operating mode are now set by \fIioctl\fP\^s.
+Tablets that continuously stream data are now told to stop
+sending on last close.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     .\" Copyright (c) 1986 Regents of the University of California.
+.\" All rights reserved.  The Berkeley software License Agreement
+.\" specifies the terms and conditions for redistribution.
+.\"
+.\"	@(#)sys.ufs.t	1.5 (Berkeley) 4/11/86
+.\"
+.NH
+Changes in the filesystem
+.PP
+The major change in the filesystem was the addition of a name translation
+cache.
+A table of recent name-to-inode translations is maintained by \fInamei\fP,
+and used as a lookaside cache when translating each component of each
+file pathname.
+Each \fInamecache\fP entry contains the parent directory's device and inode,
+the length of the name, and the name itself, and is hashed on the name.
+It also contains a pointer to the inode for the file whose name it contains.
+Unlike most inode pointers, which hold a ``hard'' reference
+by incrementing the reference count,
+the name cache holds a ``soft'' reference, a pointer to an inode
+that may be reused.
+In order to validate the inode from a name cache reference,
+each inode is assigned a unique ``capability'' when it is brought
+into memory.
+When the inode entry is reused for another file,
+or when the name of the file is changed,
+this capability is changed.
+This allows the inode cache to be handled normally,
+releasing inodes at the head of the LRU list without regard for name
+cache references,
+and allows multiple names for the same inode to be in the cache simultaneously
+without complicating the invalidation procedure.
+An additional feature of this scheme is that when opening
+a file, it is possible to determine whether the file was previously open.
+This is useful when beginning execution of a file, to check whether
+the file might be open for writing, and for similar situations.
+.PP
+Other changes that are visible throughout the filesystem
+include greater use of the ILOCK and IUNLOCK macros rather than the
+subroutine equivalents.
+The inode times are updated on each \fIirele\fP, not only when
+the reference count reaches zero,
+if the IACC, IUPD or ICHG flags are set.
+This is accomplished with the ITIMES macro;
+the inode is marked as modified with the new IMOD flag,
+that causes it to be written to disk when released, or on the next sync.
+.PP
+The remainder of this section describes the filesystem changes that are
+localized to individual files.
+.XP ufs_alloc.c
+The algorithm for extending file fragments was changed
+to take advantage of the observation that fragments that were once extended
+were frequently extended again, that is, that the file was being written
+in fragments.
+Therefore, the first time a given fragment is allocated,
+a best-fit strategy is used.
+Thereafter, when this fragment is to be extended,
+a full-sized block is allocated, the fragment removed from it,
+and the remainder freed for use in subsequent expansion.
+As this policy may result in increased fragmentation,
+it is not used when the filesystem becomes excessively
+fragmented (i.e. when the number of free fragments falls to 2%
+of the minfree value);
+the policy is stored in the superblock and may be changed with \fItunefs\fP.
+The \fIfserr\fP routine was converted to use \fIlog\fP rather than \fIprintf\fP.
+.XP ufs_bio.c
+I/O operations traced now include the size where relevant.
+.XP ufs_inode.c
+The size of the buffer hash table was increased substantially
+and changed to a power of two to allow the modulus to be computed with a mask
+operation.
+\fIIget\fP invalidates the capability in each inode that is flushed
+from the inode cache for reuse.
+The new \fIigrab\fP routine is used instead of \fIiget\fP
+when fetching an inode from a name cache reference;
+it waits for the inode to be unlocked if necessary,
+and removes it from the free list if it was free.
+The caller must check that the inode is still valid after the \fIigrab\fP.
+A bug was fixed in \fIitrunc\fP that allowed old contents to creep back into
+a file.
+When truncating to a location within a block,
+\fIitrunc\fP must clear the remainder of the block.
+Otherwise, if the file is extended by seeking past the end of file
+and then writing, the old contents reappear.
+.\" \fIItrunc\fP also waits for 
+.XP ufs_mount.c
+The \fImount\fP system call was modified to return different error numbers
+for different types of errors.
+\fIMount\fP now examines the superblock more carefully
+before using size field it contains as the amount to copy into a new buffer.
+If a mount fails for a reason other than the device already being
+mounted, the device is closed again.
+When performing the name lookup for the mount point,
+\fImount\fP must prevent the name translation from being left
+in the name cache;
+\fIumount\fP must flush all name translations for the device.
+A bug in \fIgetmdev\fP caused an inode to remain locked
+if the specified device was not a block special file; this has been fixed.
+.XP ufs_namei.c
+This file was previously called ufs_nami.c.
+The \fInamei\fP function has a new calling convention
+with its arguments, associated context, and side effects
+encapsulated in a single structure.
+It has been extensively modified to implement the name cache
+and to cache directory offsets for each process.
+It may now return ENAMETOOLONG when appropriate,
+and returns EINVAL if the 8th bit is set on one of the pathname
+characters.
+Directories may be foreshortened if the last one or more blocks
+contain no entries;
+this is done when files are being created, as the entire directory 
+must already be searched.
+An entry is provided for invalidating the entire name cache
+when the 32-bit prototype for capabilities wraps around.
+This is expected to happen after 13 months of operation,
+assuming 100 name lookups per second, all of which miss the cache.
+.XP
+A change in filesystem semantics is the introduction
+of ``sticky'' directories.
+If the ISVTX (sticky text) bit is set in the mode of a directory,
+files may only be removed from that directory by the owner of the file,
+the owner of the directory, or the superuser.
+This is enforced by \fInamei\fP when the lookup operation is DELETE. 
+.XP ufs_subr.c
+The strategy for \fIsyncip\fP, the internal routine implementing \fIfsync\fP,
+has been modified for large files (those larger than half of the buffer
+cache).
+For large files all modified buffers for the device are written out.
+The old algorithm could run for a very long time on a very large file,
+that might not actually have many data blocks.
+The \fIupdate\fP routine now saves some work by calling \fIiupdate\fP
+only for modified inodes.
+The C replacements for the special VAX instructions have been collected
+in this file.
+.XP ufs_syscalls.c
+When doing an open with flags O_CREAT and O_EXCL (create only if the file
+did not exist), it is now considered to be an error if the target exists
+and is a symbolic link, even if the symbolic link refers to a nonexistent
+file.
+This behavior is desirable for reasons of security
+in programs that create files with predictable names.
+\fIRename\fP follows the policy of \fInamei\fP in disallowing removal
+of the target of a rename if the target directory is ``sticky''
+and the user is not the owner of the target or the target directory.
+A serious bug in the open code which allowed directories and other unwritable
+files to be truncated has been corrected.
+Interrupted opens no longer lose file descriptors.
+The \fIlseek\fP call returns an ESPIPE error when seeking on sockets
+(including pipes) for backward compatibility.
+The error returned from \fIreadlink\fP when reading something other than
+a symbolic link was changed from ENXIO to EINVAL.
+Several calls that previously failed silently on read-only filesystems
+(\fIchmod\fP, \fIchown\fP, \fIfchmod\fP, \fIfchown\fP and \fIutimes\fP)
+now return EROFS.
+The \fIrename\fP code was reworked to avoid several races
+and to invalidate the name cache.
+It marks a directory being renamed with IRENAME
+to avoid races due to concurrent renames of the same directory.
+\fIMkdir\fP now sets the size of all new directories to DIRBLKSIZE.
+\fIRmdir\fP purges the name cache of entries for the removed directory.
+.XP ufs_xxx.c
+The routines \fIuchar\fP and \fIschar\fP are no longer used
+and have been removed.
+.XP quota_kern.c
+The quota hash size was changed to a power of 2 so that the modulus could
+be computed with a mask.
+.XP quot.\" Copyright (c) 1986 Regents of the University of California.
+.\" All rights reserved.  The Berkeley software License Agreement
+.\" specifies the terms and conditions for redistribution.
+.\"
+.\"	@(#)sys.uipc.t	1.7 (Berkeley) 4/11/86
+.\"
+.NH 2
+Changes in Interprocess Communication support
+.XP uipc_domain.c
+The skeletal support for the PUP-1 protocol has been removed.
+A domain for Xerox NS is now in use.
+The per-domain data structure allows a per-domain initialization routine
+to be called at boot time.
+.XP
+The \fIpffindproto\fP routine, used in creating a socket to support
+a specified protocol,
+takes an additional argument, the type of the socket.
+It checks both the protocol and type, useful when the same protocol
+implements multiple socket types.
+If the type is SOCK_RAW and no exact match is found,
+a \fIprotosw\fP entry for raw support and a wildcard protocol (number zero)
+will be used.
+This allows for a generic raw socket that passes
+through packets for any given protocol.
+.XP
+The second argument to \fIpfctlinput\fP, the generic error-reporting
+routine, is now declared as a \fIsockaddr\fP pointer.
+.XP  uipc_mbuf.c
+The mbuf support routines now use the \fIwait\fP flag passed to \fIm_get\fP
+or MGET.
+If M_WAIT is specified, the allocator may wait for free memory,
+and the allocation is guaranteed to return an mbuf if it returns.
+In order to prevent the system from slowly going to sleep after
+exhausting the mbuf pool by losing the mbufs to a leak,
+the allocator will panic after creating the maximum allocation of mbufs
+(by default, 256K).
+Redundant \fIspl\fP's have been removed; most internal routines must
+be called at \fIsplimp\fP, the highest priority at which mbuf and memory
+allocation occur.
+.XP
+When copying mbuf chains \fIm_copy\fP now preserves the type of each mbuf.
+There were problems in \fIm_adj\fP, in particular assumptions
+that there would be no zero-length mbufs within the chain;
+this was corrected by changing its \fIn\fP-pass algorithm for trimming
+from the tail of the chain
+to either one- or two-pass, depending on whether the correction was entirely
+within the last mbuf.
+In order to avoid return business, \fIm_pullup\fP was changed
+to pull additional data (MPULL_EXTRA, defined in \fImbuf.h\fP)
+into the contiguous area in the first mbuf, if convenient.
+\fIm_pullup\fP will use the first mbuf of the chain rather then a new one
+if it can avoid copying.
+.XP uipc_pipe.c
+This ``temporary'' file has been removed;
+pipe now uses \fIsocketpair\fP.
+.XP uipc_proto.c
+New entries in the protocol switch for externalization and disposal
+of access rights are initialized for the Unix domain protocols.
+.XP uipc_socket.c
+The \fIsocreate\fP function uses the new interface to \fIpffindproto\fP
+described above if the protocol is specified by the caller.
+The \fIsoconnect\fP routine will now try to disconnect a connected socket
+before reconnecting.
+This is only allowed if the protocol itself is not connection oriented.
+Datagram sockets may connect to specify
+a default destination, then later connect to another destination
+or to a null destination to disconnect.
+The \fIsodisconnect\fP routine never used its second argument, and it has
+been removed.
+.XP
+The \fIsosend\fP routine, which implements write and send on sockets,
+has been restructured for clarity.
+The old routine had the main loop upside down, first emptying and then filling
+the buffers.
+The new implementation also makes it possible to send zero-length datagrams.
+The maximum length calculation was simplified to avoid problems
+trying to account for both mbufs and characters of buffer space used.
+Because of the large improvement in speed of data handling when large
+buffers are used, \fIsosend\fP will use page clusters if it can use
+at least half of the cluster.
+Also, if not using nonblocking I/O,
+it will wait for output to drain if it has enough data
+to fill an mbuf cluster but not enough space in the output queue for one,
+instead of fragmenting the write into small mbufs.
+A bug allowing access rights to be sent more than once when using scatter-gather
+I/O (\fIsendmsg\fP) was fixed.
+A race that occurred when \fIuiomove\fP blocked during a page fault
+was corrected by allowing the protocol send routines to report disconnection
+errors; as with disconnection detected earlier, \fIsosend\fP returns
+EPIPE and sends a SIGPIPE signal to the process.
+.XP
+The receive side of socket operations, \fIsoreceive\fP, has also been reworked.
+The major changes are a reflection of the way that datagrams are now queued;
+see uipc_socket2.c for further information.
+The MSG_PEEK flag is passed to the protocol's \fIusrreq\fP routine
+when requesting out-of-band data so that the protocol may know
+when the out-of-band data has been consumed.
+Another bug in access-rights passing was corrected here; the protocol
+is not called to externalize the data when PEEKing.
+.XP
+The \fIsosetopt\fP and \fIsogetopt\fP functions have been expanded
+considerably.
+The options that existed in 4.2BSD all set some flag at the socket level.
+The corresponding options in 4.3BSD use the value argument as a boolean,
+turning the flag off or on as appropriate.
+There are a number of additional options at the socket level.
+Most importantly, it is possible to adjust the send or receive buffer
+allocation so that higher throughput may be achieved, or that temporary
+peaks in datagram arrival are less likely to result in datagram loss.
+The linger option is now set with a structure including a boolean
+(whether or not to linger) and a time to linger if the boolean is true.
+Other options have been added to determine the type of a socket
+(eg, SOCK_STREAM, SOCK_DGRAM), and to collect any outstanding error status.
+If an option is not destined for the socket level itself,
+the option is passed to the protocol using the \fIctloutput\fP entry.
+\fIGetopt\fP's last argument was changed from \fImbuf *\fP to \fImbuf **\fP
+for consistency with \fIsetopt\fP and the 
+new \fIctloutput\fP calling convention.
+.XP
+\fISelect\fP for exceptional conditions on sockets is now possible,
+and this returns true when out-of-band data is pending.
+This is true from the time that the socket layer is notified
+that the OOB data is on its way until the OOB data has been consumed.
+The interpretation of socket process groups in 4.2BSD was inconsistent
+with that of ttys and with the \fIfcntl\fP documentation.
+This was corrected; positive numbers refer to processes, negative numbers
+to process groups.
+The socket process group is used when posting a SIGURG to notify
+processes of pending out-of-band data.
+.XP uipc_socket2.c
+Signal-driven I/O now works with sockets as well as with ttys;
+\fIsorwakeup\fP and \fIsowwakeup\fP call the new routine \fIsowakeup\fP
+which calls \fIsbwakeup\fP as before and also sends SIGIO as appropriate.
+Process groups are interpreted in the same manner as for SIGURG.
+.XP
+Larger socket buffers may be used with 4.3BSD than with 4.2BSD;
+socket buffers (\fIsockbuf\fPs) have been modified to use unsigned short
+rather than short integers for character counts and mbuf counts.
+This increases the maximum buffer size to 64K\-1.  These fields
+should really be unsigned longs, but a socket would no longer fit
+in an mbuf.
+So that as much as possible of the allotment may be used,
+\fIsbreserve\fP allows the high-water mark for data to be set as high as 80%
+of the maximum value (64K), and sets the high-water mark on mbuf allocation
+to the smaller of twice the character limit and 64K.
+.XP
+In 4.2BSD, datagrams queued in sockbufs were linked through the mbuf
+\fIm_next\fP field, with \fIm_act\fP set to 1 in the last mbuf
+of each datagram.
+Also, each datagram was required to have one mbuf to contain an address,
+another to contain access rights, and at least one additional mbuf of data.
+In 4.3BSD, the mbufs comprising a datagram are linked through \fIm_next\fP,
+and different datagrams are linked through the \fIm_act\fP field of the first
+mbuf in each.
+No mbuf is used to represent missing components of a datagram,
+but the ordering of the mbufs remains important.
+The components are distinguished by the mbuf type.
+Any address must be in the first mbuf.
+Access rights follow the address if present, otherwi.\" Copyright (c) 1986 Regents of the University of California.
+.\" All rights reserved.  The Berkeley software License Agreement
+.\" specifies the terms and conditions for redistribution.
+.\"
+.\"	@(#)sys.vm.t	1.8 (Berkeley) 4/11/86
+.\"
+.NH 2
+Changes in the virtual memory system
+.PP
+The virtual memory system in 4.3BSD is largely unchanged from 4.2BSD.
+The changes that have been made were in two areas: adapting the VM
+substem to larger physical memories, and optimization by simplifying
+many of the macros.
+.PP
+Many of the internal limits on the virtual memory system
+were imposed by the \fIcmap\fP structure.
+This structure was enlarged to increase those limits.
+The limit on physical memory has been changed from 8 megabytes to 64 megabytes,
+with expansion space provided for larger limits,
+and the limit of 15 mounted file systems has been changed to 255.
+The maximum file system size has been increased to 8 gigabytes,
+number of processes to 65536,
+and per-process size to 64 megabytes of data and 64 megabytes of stack.
+Configuration parameters and other segment size limits were
+converted from pages to bytes. 
+Note that most of these are upper bounds;
+the default limits for these quantities are tuned for systems
+with 4-8 megabytes of physical memory.
+The process region sizes may be adjusted
+with kernel configuration file options;
+for example,
+.nf
+.RS
+.sp
+options	MAXDSIZ=33554432
+.sp
+.RE
+.fi
+increases the data segment to 32 megabytes.
+With no option, data segments receive a hard limit of roughly 17Mb
+and a soft limit of 6Mb
+(that may be increased with the csh limit command).
+.PP
+The global clock page replacement algorithm used to have a single
+hand that was used both to mark and to reclaim memory.
+The first time that it encountered a page it would clear its reference bit.
+If the reference bit was still clear on its next pass across the page,
+it would reclaim the page.
+(On the VAX, the reference bit was simulated using the valid bit.)
+The use of a single hand does not work well with large physical
+memories as the time to complete a single revolution of the hand
+can take up to a minute or more.
+By the time the hand gets around to the marked pages,
+the information is usually no longer pertinent.
+During periods of sudden shortages,
+the page daemon will not be able to find any reclaimable pages until
+it has completed a full revolution.
+To alleviate this problem,
+the clock hand has been split into two separate hands.
+The front hand clears the reference bits,
+and the back hand follows a constant number of pages behind,
+reclaiming pages that have have not been referenced since the front hand
+passed.
+While the code has been written in such a way as
+to allow the distance between
+the hands to be varied, we have not yet found any algorithms
+suitable for determining how to dynamically adjust this distance.
+The parameters determining the rate of page scan
+have also been updated to reflect larger configurations.
+The free memory threshold at which \fIpageout\fP begins was reduced
+from one-fourth of memory to 512K
+for machines with more than 2 megabytes of user memory.
+The scan rate is now independent of memory size
+instead of proportional to memory size.
+.PP
+The text table is now managed differently.
+Unused entries are treated
+as a cache, similar to the usage of the inode table.
+Entries with reference counts of 0 are placed in an LRU cache
+for potential reuse.
+In effect, all texts are ``sticky,'' except that they are flushed
+after a period of disuse or overflow of the table.
+The sticky bit works
+as before, preventing entries from being freed and locking
+text files into the cache.
+The code to prevent modification of running
+texts was cleaned up by keeping a pointer to the text entry in the
+inode, allowing texts to be freed when unlinking files without linear
+searches.
+.PP
+The swap code was changed
+to handle errors a bit better (\fIswapout\fP doesn't do \fIswkill\fPs, it just
+reflects errors to the caller for action there).
+During swapouts,
+interrupts are now blocked for less time after freeing the pages
+of the user structure and page tables
+(as explained by the old comment from \fIswapout\fP,
+``XXX hack memory interlock''),
+and this is now done only when swapping out the current process.
+The same situation existed in \fIexit\fP, but had not yet been protected
+by raised priority.
+.PP
+Various routines that took page numbers as arguments
+now take \fIcmap\fP pointers instead to reduce the number of conversions.
+These include \fImlink\fP, \fImunlink\fP, \fImlock\fP, \fImunlock\fP, and
+\fImwait\fP.
+\fIMlock\fP and \fImunlock\fP are generally used in their macro forms.
+.PP
+The remainder of the section details the other changes according to source
+file.
+.XP vm_mem.c
+Low-level support for mapped files was removed,
+as the descriptor field in the page table entry was too small.
+Callers of \fImunhash\fP must block interrupts with \fIsplimp\fP
+between checking for the presence of a block in the hash list
+and removing it with \fImunhash\fP in order to avoid reallocation
+of the page and a subsequent panic.
+.XP vm_page.c
+When filling a page from the text file, \fIpagein\fP uses a new routine,
+\fIfodkluster\fP, to bring in additional pages that are contiguous
+in the filesystem.
+If errors occur while reading in text pages,
+no page-table change is propagated to other users of the shared image,
+allowing them to retry and notice the error
+if they attempt to use the same page.
+Virtual memory initialization code has been collected into \fIvminit\fP,
+which adjusts swap interleaving to allow the configured size limits,
+set up the parameters for the clock algorithm, and set the initial
+virtual memory-related resource limits.
+The limit to resident-set size is set to the size of the available user memory.
+This change causes a single large process occupying most of memory
+to begin random page replacement as memory resources run short.
+Several races in \fIpagein\fP have been detected and fixed.
+Most of the \fIpageout\fP code was moved to \fIcheckpage\fP
+in implementing the two-handed clock algorithm.
+.XP vm_proc.c
+The \fIsetjmp\fP in \fIprocdup\fP was changed to \fIsavectx\fP,
+which saves all registers, not just those needed to locate
+the others on the stack.
+.XP vm_pt.c
+The \fIsetjmp\fP call in \fIptexpand\fP was changed to \fIsavectx\fP
+to save all registers before initiating a swapout.
+\fIVrelu\fP does an \fIsplimp\fP before freeing user-structure pages
+if running on behalf of the current process.
+This had been done by \fIswapout\fP before, but not by \fIexit\fP.
+.XP vm_sched.c
+The swap scheduler looks through the \fIallproc\fP list for processes
+to swap in or out.
+A call to \fIremrq\fP when swapping sleeping processes was unnecessary
+and was removed.
+If swapouts fail upon exhaustion of swap space,
+\fIsched\fP does not continue to attempt swapouts.
+.XP vm_subr.c
+The \fIptetov\fP function and the unused \fIvtopte\fP function
+were recoded without using the usual macros
+in order to fold the similar cases together.
+.XP vm_sw.c
+The error returned by \fIswapon\fP when the device is not one of those
+configured was changed from ENODEV to EINVAL for accuracy.
+The search for the specified device begins with the first entry
+so that the error is correct (EBUSY) when attempting to enable the primary
+swap area.
+.XP vm_swap.c
+The \fIswapout\fP routine now leaves any \fIswkill\fP to its caller.
+This avoids killing processes in a few situations.
+It uses \fIxdetach\fP instead of \fIxccdec\fP.
+Several unneeded \fIspl\fP's were deleted.
+.XP vm_swp.c
+The \fIswap\fP routine now consistently returns error status.
+\fIPhysio\fP was modified to do scatter-gather I/O correctly.
+.XP vm_text.c
+The text routines use a text free list as a cache of text images,
+resulting in numerous changes throughout this file.
+\fIXccdec\fP now works only on locked text entries,
+and is replaced by \fIxdetach\fP for external callers.
+\fIXumount\fP frees unused swap images from all
+devices when called with NODEV as argument.
+It is no longer necessary to search the text table
+to find any text associated with an inode in \fIxrele\fP,
+as the inode stores a pointer to any text entry mapping it.
+Statistics are gathered on the hit rate of the .\" Copyright (c) 1986 Regents of the University of California.
+.\" All rights reserved.  The Berkeley software License Agreement
+.\" specifies the terms and conditions for redistribution.
+.\"
+.\"	@(#)sys.t	1.7 (Berkeley) 4/11/86
+.\"
+.NH
+Changes in the kernel proper
+.PP
+The next several sections describe changes in the parts of the kernel
+that reside in \fB/sys/sys\fP.
+This section summarizes several of the changes that impact
+several different areas.
+.NH 2
+Process table management
+.PP
+Although the process table has grown considerably since its original
+design, its use was largely the same as in its first incarnation.
+Several parts of the system used a linear search of the entire
+table to locate a process, a group of processes, or group of processes
+in a certain state.
+4.2BSD maintained linkages between the children of each parent process,
+but made no use of these pointers.
+In order to reduce the time spent examining the process table,
+several changes have been made.
+The first is to place all process table entries onto one of three 
+doubly-linked lists,
+one each for entries in use by existing processes (\fIallproc\fP),
+entries for zombie processes (\fIzombproc\fP), and free entries 
+(\fIfreeproc\fP).
+This allows the scheduler and other facilities that must examine all
+existing processes to limit their search to those entries actually in use.
+Other searches are avoided by using the linkage among the children
+of each process and by noting a range of usable process ID's when searching
+for a new unique ID.
+.NH 2
+Signals
+.PP
+One of the major incompatibilities introduced in 4.2BSD
+was that system calls interrupted by a caught signal were restarted.
+This facility, while necessary for many programs that use signals to drive
+background activities without disrupting the foreground processing,
+caused problems for other, more naive, programs.
+In order to resolve this difficulty, the 4.2BSD signal model has been
+extended to allow signal handlers to specify whether or not the signal
+is to abort or to resume interrupted system calls.
+This option is specified with the \fIsigvec\fP call used to specify the handler.
+The \fIsv_onstack\fP field has been usurped for a flag field,
+with flags available to indicate whether the handler should be invoked
+on the signal stack and whether it should interrupt pending system calls
+on its return.
+As a result of this change, those system calls that may be restarted
+and that therefore take control over system call interruptions
+must be modified to support this new behavior.
+The calls affected in 4.3BSD are \fIopen\fP, \fIread\fP/\fIwrite\fP,
+\fIioctl\fP, \fIflock\fP and \fIwait\fP.
+.PP
+Another change in signal usage in 4.3BSD affects fewer programs
+and less kernel code.
+In 4.2BSD, invocation of a signal handler on the signal stack caused
+some of the saved status to be pushed onto the normal stack before
+switching to the signal stack to build the call frame.
+The status information on the normal stack included the saved PC and PSL;
+this allowed a user-mode \fIrei\fP instruction to be used in implementing
+the return to the interrupted context.
+In order to avoid changes to the normal runtime stack when switching to
+the signal stack, the return procedure has been changed.
+As the return mechanism requires a special system call for restoring
+the signal state, that system call was replaced with a new call,
+\fIsigreturn\fP, that implements the complete return to the previous context.
+The old call, number 139, remains in 4.3BSD for binary compatibility with
+the 4.2BSD version of \fIlongjmp\fP.
+.NH 2
+Open file handling
+.PP
+Previous versions of
+.UX
+have traditionally limited each process
+to at most 20 files open simultaneously.
+In 4.2BSD, that limit could not be increased past 30,
+as a 5-bit field in the page table entry was used to specify
+either a file number or the reserved values PGTEXT or PGZERO
+(fill from text file or zero fill).
+However, the file mapping facility that previously used this field
+no longer existed, and its replacement is unlikely to require this low
+limit.
+Accordingly, the internal virtual memory system support for mapped files
+has been removed and the number of open files increased.
+The standard limit is 64, but this may easily be increased if sufficient
+memory for the user structure is provided.
+In order to avoid searching through this longer list of open files
+when the actual number in use is small,
+the index of the last used open file slot is maintained in the field
+\fIu.u_lastfile\fP.
+The routines that implement open and close or implicit close (\fIexit\fP
+and \fIexec\fP) maintain this field, and it is used whenever
+the open file array \fIu.u_ofile\fP is scanned.
+.NH 2
+Niceness
+.PP
+The values for \fInice\fP used in 4.2BSD and previous systems
+ranged from 0 though 39.
+Each use of this scheduling parameter offset the actual value by the default,
+NZERO (20).
+This has been changed in 4.3BSD to use a range of -20 to 20,
+with NZERO redefined as zero.
+.NH 2
+Software interrupts and terminal multiplexors
+.PP
+The DH11 and DZ11 terminal multiplexor handlers had been modified
+to use the hardware's received-character silo
+when those devices were used by the Berknet network.
+In order to avoid stagnation of input characters and slow response to input
+during periods of reduced input,
+the low-level software clock interrupt handler had been made to call
+the terminal drivers to drain input.
+When the clock rate was increased in 4.2BSD, the overhead of checking
+the input silos with each clock tick was increased,
+and the use of specialized network hardware reduced the need for this
+optimization.
+Therefore, the terminal multiplexors in 4.3BSD use per-character
+interrupts during periods of low input rate, and enable the silos
+only during periods of high-speed input.
+While the silo is enabled, the routine to drain it runs less 
+frequently than every clock tick; it is scheduled
+using the standard timeout mechanism.
+As a result, the software clock service routine
+need not to be invoked on every clock tick, but only when timeouts or
+profiling require service.
+                                                                  #next
+0.1a 10
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  #print
+In the basic files course you learned about the "ls" command
+for listing the names of files in the current directory.
+You will now learn some of the extra abilities of "ls".
+UNIX maintains a lot more information about a file than just
+its name; this extra information includes the size of the
+file, the date and time it was last changed, the owner,
+and scattered other miscellany.  To see this "long" list of information,
+use the command "ls -l".  (That's an "ell", not a "one".)
+The "-l" is called an "optional argument",
+since it may or may not be present.
+
+To begin, try just "ls -l", then type "ready".
+#create junk
+this is garbage
+#copyin
+#user
+#uncopyin
+#match ls -l
+#log
+#next
+0.1b 10
+                                                                                                                                                                                                                                                                                                                                     .\" Copyright (c) 1986 Regents of the University of California.
+.\" All rights reserved.  The Berkeley software License Agreement
+.\" specifies the terms and conditions for redistribution.
+.\"
+.\"	@(#)vax.t	1.6 (Berkeley) 4/11/86
+.\"
+.NH
+Machine specific support
+.PP
+The next several sections describe changes to the VAX-specific
+portion of the kernel whose sources reside in \fB/sys/vax\fP.
+.NH 2
+Autoconfiguration
+.PP
+The data structures and top level of autoconfiguration
+have been generalized to support the VAX 8600 and
+machines whose main I/O busses are not similar to an SBI.
+The \fIpercpu\fP structure has been broken into three
+structures.
+The \fIpercpu\fP structure itself contains only the CPU type,
+an approximate value for the speed of the CPU,
+and a pointer to an array of I/O bus descriptions.
+Each of these, in turn, contain general information about one I/O bus that must
+be configured and a pointer to the private data for its configuration
+routine.
+The third new structure that has been defined
+describes the SBI and the other interconnects that emulate it.
+At boot time,
+\fIconfigure\fP calls \fIprobeio\fP to configure the I/O bus(ses).
+\fIProbeio\fP looks through the array of bus descriptions,
+indirecting to the correct routine to configure each bus.
+For the VAXen currently supported,
+the main bus is configured by either
+\fIprobe_Abus\fP (on the 8600 and 8650)
+or by \fIprobenexi\fP, that is used on anything resembling an SBI.
+Multiple SBI adaptors on the 8600 are handled by multiple calls
+to \fIprobenexi\fP.
+(Although the code has been tested with a second SBI,
+there were no adaptors installed on the second SBI.)
+This structure is easily extensible to other architectures
+using the BI bus, Q bus, or any combination of busses.
+.PP
+The CPU speed value is used to scale the DELAY macro
+so that autoconfiguration of old devices on faster CPU's
+will continue to work.
+The units are roughly millions of instructions per second (MIPS),
+with a value of 1 for the 780,
+although fractional values are not used.
+When multiple CPU's share the same CPU type,
+the largest value for any of them is used.
+.PP
+UNIBUS autoconfiguration has been modified to accommodate UNIBUS
+memory devices correctly.
+A new routine, \fIubameminit\fP, is used to configure UNIBUS memory
+before probing other devices,
+and is also used after a UNIBUS reset to remap these memory areas.
+The device probe or attach routines may then allocate and hold
+UNIBUS map registers without interfering with these devices.
+.NH 2
+Memory controller support
+.PP
+The introduction of the MS780-E memory controller for the VAX 780
+made it necessary to configure the memory controller(s) on a VAX
+separately from the CPU.
+During autoconfiguration, the types of the memory controllers
+are recorded in an array.
+Memory error routines that must know the type of controller
+then use this information rather than the CPU type.
+The MS780-E controller is listed as two controllers, as each half
+reports errors independently.
+Both 1Mb and 4Mb boards using 64K and 256K dRAM chips are supported.
+.XP Locore.c
+For \fIlint\fP's sake, \fILocore.c\fP has been updated to include the functions
+provided by \fIinline\fP and the new functions in \fIlocore.s\fP.
+.XP autoconf.c
+Most of the changes to autoconfiguration are described above.
+Other minor changes:
+UNIBUS controller probe routines are now passed an additional argument,
+a pointer to the \fIuba_ctlr\fP structure,
+and similarly device probe routines are passed a pointer to the \fIuba_device\fP
+structure.
+\fIUbaaccess\fP and \fInxaccess\fP were combined into a single routine
+to map I/O register areas.
+A logic error was corrected so that swap device sizes that were initialized
+from information in the machine configuration file
+are used unmodified.
+\fIDumplo\fP is set at configuration time according
+to the sizes of the dump device and memory.
+.XP conf.c
+Several new devices have been added and old entries have been deleted.
+A number of devices incorrectly set unused UNIBUS reset entries
+to \fInodev\fP; these were changed to \fInulldev\fP.
+An entry was added for the new error log device.
+Additional device numbers have been reserved for local use.
+.XP cons.h
+New definitions have been added for the 8600 console.
+.XP "crl.h,crl.c"
+New files for the VAX 8600 console RL02 (our third RL02 driver!).
+.XP flp.c
+It was discovered that not all VAXen that are not 780's are 750's;
+the console floppy driver for the 780 now checks for cpu == 780,
+not cpu != 750.
+An error causing the floppy to be locked in the busy state was corrected.
+.XP genassym.c
+Several new structure offsets were needed by the assembly language routines.
+.XP in_cksum.c
+It was discovered that the instruction used to clear the carry
+in the checksum loops did not actually clear carry.
+As the carry bit was always off when entering the checksum loop,
+this was never noticed.
+.XP inline
+This directory contains the new \fIinline\fP program used to edit
+the assembly language output by the compiler.
+.XP locore.s
+The assembly language support for the kernel has a number of changes,
+some of which are VAX specific and some of which are needed
+on all machines.
+They are simply enumerated here without distinction.
+.XP
+The \fIdoadump\fP routine sometimes faulted because it changed the page
+table entry for the \fIrpb\fP without flushing the translation buffer.
+In order to reconfigure UNIBUS memory devices again after UNIBUS resets,
+\fIbadaddr\fP was reimplemented without the need to modify the
+system control block.
+The machine check handler catches faults predicted by \fIbadaddr\fP,
+cleans up and then returns to the error handler.
+The interrupt vectors have each been modified to count the number
+of interrupts from their respective devices, so that it is possible
+to account for software interrupts and UBA interrupts,
+and to determine which of several similar devices is generating
+unexpected interrupt loads.
+The \fIconfig\fP program generates the definitions for the indices
+into this interrupt count table.
+Software clock interrupts no longer call timer entries in the dz
+and dh drivers.
+The processing of network software interrupts has been reordered
+so that new interrupts requested during the protocol interrupt routine
+are likely to be handled before return from the software interrupt.
+Additional map entries were added to the network buffer and user page
+table page maps, as both use origin-1 indexing.
+The memory size limit and  the offsets into the coremap are both obtained
+from \fIcmap.h\fP instead of inline constants.
+The signal trampoline code is all new and uses the \fIsigreturn\fP
+system call to reset signal masks and perform the \fIrei\fP to user mode.
+The initialization code for process 1, \fIicode\fP, was moved to this file
+to avoid hand assembly; it has been changed to exit instead of looping
+if \fI/etc/init\fP cannot be executed, and to allow arguments
+to be passed to \fIinit\fP.
+The routines that are called with \fIjsb\fP rather than \fIcalls\fP
+use a new entry macro that allows them to be profiled if profiling
+is enabled.
+.XP
+Several new routines were added to move data from address space to address
+space a character string at a ti

@@ -1,0 +1,1884 @@
+ports multiple printers of many different characteristics.
+A master data base, /etc/printcap, describes both local printers
+and printers accessable across a network.  A document
+describing the line printer system is now part of Volume 2C
+of the UNIX Programmer's Manual.
+.BP lprm
+Is totally new, see lpr.
+.BP ls
+Has been rewritten for the new directory format.  It understands
+symbolic links and uses the new inode field which contains the
+actual number of blocks allocated to a file when the 
+.B \-s
+flag is supplied.  Many rarely used options have been deleted.
+.BP m4
+A bug which caused m4 to dump core when keywords were 
+undefined then redefined has been fixed.
+.BP Mail
+Now supports mail folders in the style of the Rand MH system.
+Has been reworked to cooperate with sendmail in understanding
+the new mail address formats.  Allows users to defined message
+header fields which are not be displayed when a messages is
+viewed.  Many other changes are described in a revised
+version of the user manual.
+.BP make
+Understan.\" Copyright (c) 1986 Regents of the University of California.
+.\" All rights reserved.  The Berkeley software License Agreement
+.\" specifies the terms and conditions for redistribution.
+.\"
+.\"	@(#)rcs.ms	6.1 (Berkeley) 5/7/86
+.\"
+.OH 'Introduction to RCS''PS1:13-%'
+.EH 'PS1:13-%''Introduction to RCS'
+.TL
+An Introduction to the Revision Control System
+.AU
+Walter F. Tichy
+.AI
+Department of Computer Sciences
+Purdue University
+West Lafayette, IN 47907
+.AB
+The Revision Control System (RCS) manages software libraries.
+It greatly increases programmer productivity
+by centralizing and cataloging changes to a software project.
+This document describes the benefits of using a source code control system.
+It then gives a tutorial introduction to the use of RCS.
+.AE
+.SH
+Functions of RCS
+.PP
+The Revision Control System (RCS) manages multiple revisions of text files.
+RCS automates the storing, retrieval, logging, identification, and merging
+of revisions. RCS is useful for text that is revised frequently, for example
+programs, documentation, graphics, papers, form letters, etc.
+It greatly increases programmer productivity
+by providing the following functions.
+.IP 1.
+RCS stores and retrieves multiple revisions of program and other text.
+Thus, one can maintain one or more releases while developing the next
+release, with a minimum of space overhead. Changes no longer destroy the
+original -- previous revisions remain accessible.
+.RS
+.IP a.
+Maintains each module as a tree of revisions.
+.IP b.
+Project libraries can
+be organized centrally, decentralized, or any way you like.
+.IP c.
+RCS works for any type of text: programs, documentation, memos, papers,
+graphics, VLSI layouts, form letters, etc.
+.RE
+.IP 2.
+RCS maintains a complete history of changes.
+Thus, one can find out what happened to a module easily
+and quickly, without having to compare source listings or
+having to track down colleagues.
+.RS
+.IP a.
+RCS performs automatic record keeping.
+.IP b.
+RCS logs all changes automatically.
+.IP c.
+RCS guarantees project continuity.
+.RE
+.IP 3.
+RCS manages multiple lines of development.
+.IP 4.
+RCS can merge multiple lines of development.
+Thus, when several parallel lines of development must be consolidated
+into one line, the merging of changes is automatic.
+.IP 5.
+RCS flags coding conflicts.
+If two or more lines of development modify the same section of code,
+RCS can alert programmers about overlapping changes.
+.IP 6.
+RCS resolves access conflicts.
+When two or more programmers wish to modify the same revision,
+RCS alerts the programmers and makes sure that one change will not wipe
+out the other one.
+.IP 7.
+RCS provides high-level retrieval functions.
+Revisions can be retrieved according to ranges of revision numbers,
+symbolic names, dates, authors, and states.
+.IP 8.
+RCS provides release and configuration control.
+Revisions can be marked as released, stable, experimental, etc.
+Configurations of modules can be described simply and directly.
+.IP 9.
+RCS performs automatic identification of modules with name, revision
+number, creation time, author, etc.
+Thus, it is always possible to determine which revisions of which
+modules make up a given configuration.
+.IP 10.
+Provides high-level management visibility.
+Thus, it is easy to track the status of a software project.
+.RS
+.IP a.
+RCS provides a complete change history.
+.IP b.
+RCS records who did what when to which revision of which module.
+.RE
+.IP 11.
+RCS is fully compatible with existing software development tools.
+RCS is unobtrusive -- its interface to the file system is such that
+all your existing software tools can be used as before.
+.IP 12.
+RCS' basic user interface is extremely simple. The novice only
+needs to learn two commands. Its more sophisticated features have been
+tuned towards advanced software development environments and the
+experienced software professional.
+.IP 13.
+RCS simplifies software distribution if customers
+also maintain sources with RCS. This technique assures proper
+identification of versions and configurations, and tracking of customer
+changes. Customer changes can be merged into distributed
+versions locally or by the development group.
+.IP 14.
+RCS needs little extra space for the revisions (only the differences).
+If intermediate revisions are deleted, the corresponding
+differences are compressed into the shortest possible form.
+.SH
+Getting Started with RCS
+.PP
+Suppose you have a file f.c that you wish to put under control of RCS. 
+Invoke the checkin command:
+.DS
+ci  f.c 
+.DE
+This command creates f.c,v, stores f.c into it as revision 1.1, and
+deletes f.c.
+It also asks you for a description. The description should be
+a synopsis of the contents of the file.
+All later checkin commands will ask you for a log entry,
+which should summarize the changes that you made.
+.PP
+Files ending in ,v are called RCS files ("v" stands for "versions"),
+the others are called working files.
+To get back the working file f.c in the previous example, use the checkout
+command:
+.DS
+co  f.c
+.DE
+This command extracts the latest revision from f.c,v and writes
+it into f.c.
+You can now edit f.c and check it in back in by invoking:
+.DS
+ci  f.c
+.DE
+\fICi\fR increments the revision number properly. 
+If \fIci\fR complains with the message
+.DS
+        ci error: no lock set by <your login>
+.DE
+then your system administrator has decided to create all RCS files
+with the locking attribute set to ``strict''.
+With strict locking, you you must lock the revision during
+the previous checkout. 
+Thus, your last checkout should have been
+.DS
+co  -l  f.c
+.DE
+Locking assures that you, and only you, can check in the next update, and
+avoids nasty problems if several people work on the same file.
+Of course, it is too late now to do the checkout with locking, because you
+probably modified f.c already, and a second checkout would
+overwrite your changes. Instead, invoke
+.DS
+rcs  -l  f.c
+.DE
+This command will lock the latest revision for you, unless somebody
+else got ahead of you already.
+If someone else has the lock you will have to negotiate your changes
+with them.
+.PP
+If your RCS file is private, i.e., if you are the only person who is going
+to deposit revisions into it, strict locking is not needed and you
+can turn it off.
+If strict locking is turned off,
+the owner off the RCS file need not have a lock for checkin; all others
+still do. Turning strict locking off and on is done with the commands:
+.DS
+rcs  -U  f.c       and         rcs  -L  f.c
+.DE
+You can set the locking to strict or non-strict on every RCS file.
+.PP
+If you do not want to clutter your working directory with RCS files, create 
+a subdirectory called RCS in your working directory, and move all your RCS 
+files there. RCS commands will look first into that directory to find 
+needed files. All the commands discussed above will still work, without any 
+change*. 
+.FS
+* Pairs of RCS and working files can really be specified in 3 ways: 
+a) both are given, b) only the working file is given, c) only the
+RCS file is given. Both files may have arbitrary path prefixes;
+RCS commands pair them up intelligently.
+.FE
+.PP
+To avoid the deletion of the working file during checkin (should you want to
+continue editing), invoke
+.DS
+ci  -l  f.c
+.DE
+This command checks in f.c as usual, but performs an additional
+checkout with locking.
+Thus, it saves you one checkout operation.
+There is also an option
+\fB-u\fR for \fIci\fR that does a checkin followed by a checkout without
+locking. This is useful if you want to compile the file after the checkin.
+Both options also update the identification markers in your file (see below).
+.PP
+You can give \fIci\fR the number you want assigned to a checked in
+revision. Assume all your revisions were numbered 1.1, 1.2, 1.3, etc.,
+and you would like to start release 2.
+The command
+.DS
+ci  -r2  f.c       or          ci  -r2.1  f.c
+.DE
+assigns the number 2.1 to the new revision.
+From then on, \fIci\fR will number the subsequent revisions
+with 2.2, 2.3, etc. The corresponding \fIco\fR commands
+.DS
+co  -r2  f.c       and         co  -r2.1  f.c
+.DE
+retrieve the latest revision numbered 2.x and the revision 2.1,
+respectively. \fICo\fR without a revision number selects
+the latest revisids not to unlink directories when interrupted.
+Understands the new ``.F'' suffix for Fortran source files
+which are to be run through the C preprocessor.  Has a
+new predefined macro MFLAGS which contains the flags
+supplied to make on the command line (useful in creating
+hierarchies of makefiles).
+.BP mkdir
+Now uses the mkdir system call to run faster.
+.BP mt
+Has a new command, status, which shows the current state
+of a tape drive.
+.BP mv
+Has been rewritten to use the new rename system call.  As
+a result, multiple directories may now be moved in a single
+command, the restrictions on having ``..'' in a pathname
+are no longer present, and everything runs faster.
+.BP net
+And all related Berknet programs are no longer part
+of the standard distribution.  These programs live on
+in /usr/src/old for those who can not do without them.
+.BP netstat
+Is a new program which displays network statistics and
+active connections.
+.BP oldcsh
+No longer exists.
+.BP od
+Has gobs of new formats options.
+.BP pagesize
+Is a new program which prints the system page size for use
+in constructing portable shell scripts.
+.BP passwd
+Now reliably interlocks with chsh, chfn, and vipw, in
+guarding against concurrent updates to the password file.
+.BP pc/pi
+\fBFor\fP loops are now done according to the standard.
+Files may now be dynamically allocated and disposed.
+Records and variant records are now aligned to correspond to 
+C structures and unions (this was falsely claimed before).
+Several obscure bugs involving formal routines have been
+fixed.  Three new library routines support random access
+file i/o, see /usr/include/pascal for details.
+.BP pc (only)
+\fBFor\fP loop variables and \fBwith\fP
+pointers are now allocated to registers.
+Separate compilation type checking can now be done without reference
+to the source file; this permits movement (including distribution)
+of .o files and creation of libraries.
+Display entries are saved only when needed (a speed optimization).
+.BP pdx
+Is a new debugger for use with pi.  Pdx is invoked automatically
+by the interpreter if a run-time error is encountered. 
+Future work is planned to extend the new
+dbx debugger to understand code generated by
+the Pascal compiler pc.
+.BP ps
+Has been changed to work with the new kernel and is no longer
+dependent on system page size.  All process segment sizes
+are now shown in kilobytes.  Understands that the old
+``using new signal facilities'' bit in the process structure
+now means ``using old 4.1BSD signal facilities''.
+.BP pwd
+Now simply calls the \fIgetwd\fP\|(3) routine.
+.BP rcp
+Is a new program for copying files across a network.
+The complete syntax of cp is supported, including recursive
+directory copying.
+.BP refer
+Has had many bugs fixed in it and the associated \-ms macro
+package support made to work.
+.BP reset
+Now resets all the special characters to the system defaults
+specified in the include file <sys/ttychars.h>.
+.BP rlogin
+Is a new program for logging in to a machine across a
+network.  Rlogin uses the files /etc/hosts.equiv and .rhosts
+in the users login directory to allow logins to be performed
+without a password.  Rlogin supports proper handling of ^S/^Q
+and flushing of output when an interrupt is typed at the 
+terminal.  Its `~' escape sequences are reminiscent of the
+old cu program (as it is based on the same source code).
+.BP rmdir
+Now uses the rmdir system call to run more efficiently and
+not require root privileges.  Unfortunately, this means
+arguments which end in one or more ``/'' characters are no
+longer legal.
+.BP roffbib
+Is a new program for running off bibiliographic databases.
+.BP rsh
+Is a new program which supports remote command execution
+across a network.
+.BP ruptime
+Is a new program which displays system status information
+for clusters of machines attached to a local area network.
+.BP rwho
+Is a new program which displays users logged in on clusters
+of machines attached to a local area network.
+.BP script
+Has been rewritten to use pseudo-terminals.  This allows
+the C shell job control facilities (among other things)
+to be used while scripting.  A side effect of this change
+is that scripts now contain everything typed at a terminal.
+.BP sdb
+Has been replaced by dbx; it still lives on in /usr/src/old
+for those with a personal attachment.
+.BP sendbug
+Is a new command for submitting bug reports on 4.2BSD in
+a standard format suitable for automatic filing by the
+bugfiler program.
+.BP sh
+No longer has a newgrp command due to the new groups facilities.
+.BP sortbib
+Is a new command for sorting bibliographic databases.
+.BP strip
+Has been made blindingly fast by using the new truncate
+system call (thereby eliminating the old method of copying
+the file).
+.BP stty
+The default system erase, kill, and interrupt characters have
+been made the DEC standard values of DEL (`^?'), `^U', and
+\&`^C'.  This is not expected to gain much popularity, but was
+done in the interest of compatibility with many other standard
+operating systems.
+.BP su
+Has been changed to do a ``full login'' when starting up
+the subshell.  A new flag, \fB\-f\fP, does a ``fast'' su for when
+a system is heavily loaded.  Extra arguments supplied to
+su are now treated as a command line and executed directly
+instead of creating an interactive shell.
+.BP sysline
+Is a new program for maintaining system status information
+on terminals which support a ``status line''; a poor man's
+alternative to a window manager (or emacs).
+.BP tail
+Has a larger buffer so that ``tail \-r'' and similar
+show more.
+.BP talk
+Is a new program which provides a screen-oriented write
+facility.  Users may be ``talked to''across a network,
+though satellite response times have indicated overseas
+conversations are still best done by phone.  Can be very
+obnoxious when engaged in important work.
+.BP tar
+Now allocates its internal buffers dynamically so that the
+block size can be specified to be very large for streaming
+tape drives.  Also, now avoids many core-core copy operations.
+Has a new
+.B \-C
+option for forcing chdir operations in the middle
+of operation (thereby allowing multiple disjoint subtrees to
+be easily placed in a single file, each with short relative
+pathnames).  Has a new flag, `B', for forcing 20 block records
+to be read and written; useful in joining two tar commands
+with a remote
+shell to transfer large amounts of data across a network.
+.BP telnet
+Is a new program which supports the ARPA standard Telnet
+protocol.
+.BP tip
+Replaces cu as the standard mechanism for connecting to 
+machines across a phone line or through a hardwired connection.  Tip
+uses a database of system descriptions, supports many different
+auto-call units, and understands many nuances required to talk
+to non-UNIX systems.  Files may be transferred
+to and from non-UNIX systems in a simple fashion.
+.BP ul
+A bug which sometimes caused an extra blank line to
+be printed after reaching end of file has been fixed.
+.BP uucp
+And related programs have been extensively enhanced
+to support many different auto-call units and multiple spooling
+directories (among other things).  A large number of bugs
+and performance enhancements have been made.
+.BP uusnap
+Is a new program which gives a snap-shot of the uucp
+spooling area.
+.BP vfontinfo
+Is a program used to inspect and print information about
+fonts.
+.BP vgrind
+Now uses a regular expression language
+to describe formatting.  A
+.B \-f
+flag forces vgrind to act as
+a filter, generating output suitable for inclusion in troff
+and/or nroff documents.  Language descriptions exist for C, Pascal, 
+Model, C shell, Bourne shell, Ratfor, and Icon programs.
+.BP vi
+A bug which caused the ^B command to place the cursor on
+the wrong line has been fixed.  A bug which caused vi to
+believe a file had been modified when an i/o error occurred
+has been fixed.  A bug which allowed ``hardtabs'' to be
+set to 0 causing a divide by zero fault has been fixed.
+.BP vlp
+Is a new program for pretty printing Lisp programs.
+.BP vmstat
+Has had one new piece of information added to
+.B \-s
+summary, the number of fast page reclaims performed.
+The fields related to paging activity are now all
+given in kilobytes.
+.BP vpr
+And associated programs for spooling and printing files
+on Va#
+# Copyright (c) 1980, 1986 Regents of the University of California.
+# All rights reserved.  The Berkeley software License Agreement
+# specifies the terms and conditions for redistribution.
+#
+#	@(#)Makefile.vax	7.1 (Berkeley) 6/5/86
+#
+# Makefile for 4.3 BSD
+#
+# This makefile is constructed from a machine description:
+#	config machineid
+# Most changes should be made in the machine description
+#	/sys/conf/``machineid''
+# after which you should do
+#	 config machineid
+# Generic makefile changes should be made in
+#	/sys/conf/Makefile.``machinetype''
+# after which config should be rerun for all machines.
+#
+# N.B.: NO DEPENDENCIES ON FOLLOWING FLAGS ARE VISIBLE TO MAKEFILE
+#	IF YOU CHANGE THE DEFINITION OF ANY OF THESE RECOMPILE EVERYTHING
+#
+# -DTRACE	compile in kernel tracing hooks
+# -DQUOTA	compile in file system quotas
+# -DUUDMA	compile in unibus tu58 pseudo-dma code
+#
+C2=	/lib/c2
+LD=	/bin/ld
+INLINECMD= ../vax/inline/inline
+INLINE=	${INLINECMD} ${INLINEOPTS}
+TOUCH=	touch -f -c
+
+INCLUDES= -I. -I../h
+COPTS=	${INCLUDES} ${IDENT} -DKERNEL
+CFLAGS=	-O ${COPTS}
+
+AHEADS=	../vax/pcb.m
+
+%OBJS
+
+%CFILES
+
+%LOAD
+
+clean:
+	rm -f eddep *vmunix tags *.o locore.i [a-tv-z]*.s \
+		errs linterrs makelinks
+
+lint: /tmp param.c
+	@lint -hbxn -DGENERIC ${COPTS} ${PARAM} ../vax/Locore.c \
+	  ${CFILES} ../vax/swapgeneric.c ioconf.c param.c | \
+	    grep -v 'struct/union .* never defined' | \
+	    grep -v 'possible pointer alignment problem'
+
+../vax/symbols.sort: ../vax/symbols.raw
+	grep -v '^#' ../vax/symbols.raw \
+	    | sed 's/^	//' | sort -u > ../vax/symbols.sort
+
+../vax/inline/inline: ../vax/inline/inline.h ../vax/inline/langpats.c
+../vax/inline/inline: ../vax/inline/libcpats.c ../vax/inline/machdep.c
+../vax/inline/inline: ../vax/inline/machpats.c ../vax/inline/main.c
+	cd ../vax/inline; make
+
+locore.o: assym.s ${AHEADS} ../vax/rpb.s ../vax/scb.s ubvec.s \
+    ../vax/locore.s ubglue.s ../vax/mtpr.h ../vax/trap.h ../machine/psl.h \
+    ../machine/pte.h ../vax/cpu.h mba.h
+	cat assym.s ../vax/rpb.s ../vax/scb.s ubvec.s ../vax/locore.s \
+	    ubglue.s > locore.c
+	cc -E -DLOCORE -I../vax ${COPTS} locore.c > locore.i
+	@echo 'as -o locore.o $${AHEADS} locore.i'
+	@as -o locore.o ${AHEADS} locore.i
+	@rm locore.i
+
+emulate.o: ../vax/emulate.s
+	/lib/cpp -I. ${COPTS} ../vax/emulate.s | ${AS} -o emulate.o
+
+# the following is necessary because autoconf.o depends on #if GENERIC
+autoconf.o tu.o: Makefile
+
+# the following are necessary because the files depend on the types of
+# vax cpu's included in the system configuration
+clock.o machdep.o autoconf.o conf.o cons.o cpudata.o : Makefile
+crl.o flp.o mba.o uba.o vaxcpu.o : Makefile
+
+# depend on network configuration
+af.o uipc_proto.o locore.o: Makefile
+
+# depend on maxusers
+assym.s: Makefile
+
+assym.s: ../h/param.h ../machine/pte.h ../h/buf.h ../h/vmparam.h \
+    ../h/vmmeter.h ../h/dir.h ../h/cmap.h ../h/map.h ../vaxuba/ubavar.h \
+    ../vaxuba/ubareg.h ../h/proc.h ../h/msgbuf.h ../h/text.h ../h/user.h \
+    ../vax/rpb.h
+	cc ${INCLUDES} ${IDENT} ${PARAM} ../vax/genassym.c
+	./a.out >assym.s; rm -f a.out
+
+depend:	assym.s
+	${CC} -M ${COPTS} ${CFILES} | \
+	sed -e ':loop' \
+	    -e 's/\.\.\/[^ /]*\/\.\./../' \
+	    -e 't loop' | \
+	awk ' { if ($$1 != prev) { print rec; rec = $$0; prev = $$1; } \
+		else { if (length(rec $$2) > 78) { print rec; rec = $$0; } \
+		       else rec = rec " " $$2 } } \
+	      END { print rec } ' > makedep
+	echo '/^# DO NOT DELETE THIS LINE/+1,$$d' >eddep
+	echo '$$r makedep' >>eddep
+	echo 'w' >>eddep
+	cp Makefile Makefile.bak
+	ex - Makefile < eddep
+	rm eddep makedep
+
+
+links:
+	egrep '#if' ${CFILES} | sed -f ../conf/defines | \
+	  sed -e 's/:.*//' -e 's/\.c/.o/' | sort -u > dontlink
+	echo ${CFILES} | tr -s ' ' '\12' | sed 's/\.c/.o/' | \
+	  sort -u | comm -23 - dontlink | \
+	  sed 's,../.*/\(.*.o\),rm -f \1;ln -s ../GENERIC/\1 \1,' > makelinks
+	echo 'rm -f udiv.o;ln -s ../GENERIC/udiv.o udiv.o' >> makelinks
+	echo 'rm -f urem.o;ln -s ../GENERIC/urem.o urem.o' >> makelinks
+	sh makelinks && rm -f dontlink
+
+tags:
+	/usr/ucb/ctags ${CFILES}
+
+print:
+	@pr -f Makefile ../sys/TODO linterrs
+	@/usr/ucb/ctags -x ${CFILES} | pr -f -h XREF
+	@(size vmunix *.o) | pr -f -h sizes
+	@ls -ls | pr -f
+	@cd ../h; ls -ls | pr -f ; pr -f *.m *.h
+	@echo 'once upon a time ...'
+	@cd ../vax; pr -f Locore.c scb.s locore.s
+	@cd ../vax/inline; make print
+	@pr -f ${CFILES}
+
+ioconf.o: ioconf.c ../h/param.h ../machine/pte.h ../h/buf.h ../h/map.h \
+    ../vaxmba/mbavar.h ../h/vm.h ../vaxuba/ubavar.h
+	${CC} -c -S ${COPTS} ioconf.c
+	${C2} ioconf.s | ../vax/inline/inline | ${AS} -o ioconf.o
+	rm -f ioconf.s
+
+param.c: ../conf/param.c
+	-rm -f param.c
+	cp ../conf/param.c .
+
+param.o: param.c Makefile
+	${CC} -c ${CFLAGS} ${PARAM} param.c
+
+%RULES
+
+# DO NOT DELETE THIS LINE -- make depend uses it
+
+                                                                                                                                                                                                                                                                                                                                                                          (    .       ..  (    1.t (    2.t (    0.t (    3.t (    4.t (    5.t (    6.t (    7.t (    8.t (  | 9.t                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 .de IR
+\fI\\$1\fR\\$2\\fR\\fR
+..
+.TL
+Bug fixes and changes in 4.2BSD
+.sp
+July 28, 1983
+.AU
+Samuel J. Leffler
+.AI
+Computer Systems Research Group
+Department of Electrical Engineering and Computer Science
+University of California, Berkeley
+Berkeley, California 94720
+(415) 642-7780
+.AB
+This document describes briefly the changes in the Berkeley system
+for the VAX between the 4.1BSD distribution of April 1981
+and this, its revision of July 1983.
+It attempts to summarize, without going into great detail, the
+changes which have been made.
+.AE
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 (    .   	à    ..  (    rcs.man  (    rcs.ms  !(    man "(  º Makefile  .g                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        on on the "trunk", i.e., the highest
+revision with a number consisting of 2 fields. Numbers with more than 2
+fields are needed for branches.
+For example, to start a branch at revision 1.3, invoke
+.DS
+		ci  -r1.3.1  f.c
+.DE
+This command starts a branch numbered 1 at revision 1.3, and assigns
+the number 1.3.1.1 to the new revision. For more information about
+branches, see \fIrcsfile\fR(5).
+.SH
+Automatic Identification
+.PP
+RCS can put special strings for identification into your source and object
+code. To obtain such identification, place the marker
+.DS
+$Header$
+.DE
+into your text, for instance inside a comment.
+RCS will replace this marker with a string of the form
+.DS
+$Header:  filename  revisionnumber  date  time  author  state $
+.DE
+You never need to touch this string, because RCS keeps it
+up to date automatically.
+To propagate the marker into your object code, simply put
+it into a literal character string. In C, this is done as follows:
+.DS
+static char rcsid[] = "$Header$";
+.DE
+The command \fIident\fR extracts such markers from any file, even object code.
+Thus, \fIident\fR helps you to find out 
+which revisions of which modules were used in a given program. 
+.PP
+You may also find it useful to put the marker
+.DS
+$Log$
+.DE
+into your text, inside a comment. This marker accumulates
+the log messages that are requested during checkin.
+Thus, you can maintain the complete history of your file directly inside it.
+There are several additional identification markers; see \fIco\fR (1) for
+details.
+.SH
+How to combine MAKE and RCS
+.PP
+If your RCS files are in the same directory as your working files,
+you can put a default rule into your makefile. Do not use a rule
+of the form .c,v.c, because such a rule keeps a copy of every
+working file checked out, even those you are not working on. Instead, use this:
+.DS
+
+ .SUFFIXES: .c,v
+
+ .c,v.o:
+           co -q $*.c
+           cc $(CFLAGS) -c $*.c
+           rm -f $*.c
+
+ prog:   f1.o f2.o .....
+           cc f1.o f2.o ..... -o prog
+.DE
+This rule has the following effect. If a file f.c does not exist, and f.o 
+is older than f.c,v, MAKE checks out f.c, compiles f.c into f.o, and then 
+deletes f.c. 
+From then on, MAKE will use f.o until you change f.c,v.
+.PP
+If f.c exists (presumably because you are working on it), the default
+rule .c.o takes precedence, and f.c is compiled into f.o, but not deleted.
+.PP
+If you keep your RCS file in the directory ./RCS, all this will not work
+and you have to write explicit checkout rules for every file, like
+.DS
+f1.c:   RCS/f1.c,v; co -q f1.c
+.DE
+Unfortunately, these rules do not
+have the property of removing unneeded .c-files.
+.SH
+Additional Information on RCS
+.PP
+If you want to know more about RCS, for example how to work
+with a tree of revisions and how to use symbolic revision numbers, read
+the following paper:
+.sp 1
+Walter F. Tichy, ``Design, Implementation, and Evaluation of a
+Revision Control System,'' in \fIProceedings of the 6th International
+Conference on Software Engineering\fR, IEEE, Tokyo, Sept. 1982.
+.PP
+Taking a look at the manual page \fIRCSFILE\fP(5)
+should also help to understand the revision tree permitted by RCS.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   $(    .   #(    ..  %(    Makefile os &(  ‘ intro.me os                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 #
+# Copyright (c) 1986 Regents of the University of California.
+# All rights reserved.  The Berkeley software License Agreement
+# specifies the terms and conditions for redistribution.
+#
+#	@(#)Makefile	6.2 (Berkeley) 4/16/86
+#
+SRCS=	intro.me
+DEVICE=	dp
+TROFF=	ditroff -P${DEVICE}
+
+paper:	intro.${DEVICE}
+	lpr -P${DEVICE} -n intro.${DEVICE}
+
+intro.${DEVICE}: ${SRCS}
+	${TROFF} -me -t ${SRCS} > intro.${DEVICE}
+
+clean:
+	rm -f intro.${DEVICE} *.spell errs Errs make.out
+
+spell:	${SRCS}
+	@for i in ${SRCS}; do \
+		echo $$i; spell $$i | sort | comm -23 - spell.ok > $$i.spell; \
+	done
+                                                                                                                                                                                                                                                                                                                                                                                                                                                            erminals,
+but are typeset as
+.b ``
+and
+.b ''
+respectively.
+For example,
+use:
+.(b
+\e*(lqSome things aren\(aat true
+even if they did happen.\e*(rq
+.)b
+to generate the result:
+.(b
+.q "Some things aren't true even if they did happen."
+.)b
+As a shorthand,
+the special font request:
+.(b
+\&.q "quoted text"
+.)b
+will generate
+.q "quoted text" .
+Notice that you must surround
+the material to be quoted
+with double quote marks
+if it is more than one word.
+.sh 0
+.sp 1i
+.b Acknowledgments
+.pp
+I would like to thank
+Bob Epstein,
+Bill Joy,
+and Larry Rowe
+for having the courage
+to use the \-me macros
+to produce non-trivial papers
+during the development stages;
+Ricki Blau,
+Pamela Humphrey,
+and Jim Joyce
+for their help with the documentation phase;
+peter kessler
+for numerous complaints years after I was
+.q done
+with this project,
+most accompanied by fixes
+(hence forcing me to fix several small bugs);
+and the plethora of people who have contributed ideas
+and have given support for the project.
+.sp 1i
+This document was
+.if n \*N'ed
+.if t \*T'ed
+on \*(td
+and applies to version
+\*(MO
+of the \-me macros.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         :
+.(b
+\&.EQ (eq 34)
+text of equation 34
+\&.EN C
+\&.EQ
+continuation of equation 34
+\&.EN
+.)b
+The
+.b C
+on the
+.b .EN
+request
+specifies that the equation
+will be continued.
+.pp
+The
+.b tbl
+program produces tables.
+It is fully described
+(including numerous examples)
+in the document
+.ul
+Tbl \- A Program to Format Tables
+by M. E. Lesk.
+Tables begin with the
+.b .TS
+request
+and end with the
+.b .TE
+request.
+Tables are normally kept on a single page.
+If you have a table which is too big
+to fit on a single page,
+so that you know it will extend
+to several pages,
+begin the table with the request
+.b ".TS\ H"
+and put the request
+.b .TH
+after the part of the table
+which you want
+duplicated at the top of every page
+that the table is printed on.
+For example, a table definition
+for a long table might look like:
+.ds TA \|\h'.4n'\v'-.2n'\s-4\zT\s0\v'.2n'\h'-.4n'\(ci\|
+.if n .ds TA \ \o'-T'\ \"
+.(b
+\&.TS H
+c s s
+n n n.
+THE TABLE TITLE
+\&.TH
+text of the table
+\&.TE
+.)b
+.pp
+.sh 2 "Two Column Output"
+.pp
+You can get two column output
+automatically
+by using the request
+.b .2c .
+This causes everything after it
+to be output in two-column form.
+The request
+.b .bc
+will start a new column;
+it differs from
+.b .bp
+in that
+.b .bp
+may leave a totally blank column
+when it starts a new page.
+To revert to single column output,
+use
+.b .1c .
+.sh 2 "Defining Macros"
+.pp
+A
+.i macro
+is a collection of requests and text
+which may be used
+by stating a simple request.
+Macros begin with the line
+.b ".de" \ \c
+.i xx
+(where
+.i xx
+is the name of the macro to be defined)
+and end with the line consisting of two dots.
+After defining the macro,
+stating the line
+.b . \c
+.i xx
+is the same as stating all the other lines.
+For example,
+to define a macro
+that spaces 3 lines
+and then centers the next input line,
+enter:
+.(b
+\&.de SS
+\&.sp 3
+\&.ce
+\&..
+.)b
+and use it by typing:
+.(b
+\&.SS
+\&Title Line
+(beginning of text)
+.)b
+.pp
+Macro names may be one or two characters.
+In order to avoid conflicts
+with names in \-me,
+always use upper case letters as names.
+The only names to avoid are
+.b TS ,
+.b TH ,
+.b TE ,
+.b EQ ,
+and
+.b EN .
+.sh 2 "Annotations Inside Keeps"
+.pp
+Sometimes you may want to put
+a footnote
+or index entry inside a keep.
+For example,
+if you want to maintain a
+.q "list of figures"
+you will want to do something like:
+.(b
+\&.(z
+\&.(c
+text of figure
+\&.)c
+\&.ce
+Figure 5.
+\&.(x f
+Figure 5
+\&.)x
+\&.)z
+.)b
+which you may hope
+will give you a figure
+with a label
+and an entry in the index
+.b f
+(presumably a list of figures index).
+Unfortunately,
+the
+index entry
+is read and interpreted
+when the keep is read,
+not when it is printed,
+so the page number in the index is likely to be wrong.
+The solution is to use the magic string
+.b \e!
+at the beginning of all the lines dealing with the index.
+In other words,
+you should use:
+.(b
+\&.(z
+\&.(c
+Text of figure
+\&.)c
+\&.ce
+Figure 5.
+\e!.(x f
+\e!Figure 5
+\e!.)x
+\&.)z
+.)b
+which will defer the processing of the index
+until the figure is output.
+This will guarantee
+that the page number in the index
+is correct.
+The same comments apply
+to
+blocks
+(with
+.b .(b
+and
+.b .)b )
+as well.
+.sh 1 "\*T and the Photosetter"
+.pp
+With a little care,
+you can prepare
+documents that
+will print nicely
+on either a regular terminal
+or when phototypeset
+using the \*T formatting program.
+.sh 2 "Fonts"
+.pp
+A
+.i font
+is a style of type.
+There are three fonts
+that are available simultaneously,
+Times Roman,
+Times Italic,
+and Times Bold,
+plus the special math font.
+The normal font is Roman.
+Text which would be underlined in \*N
+with the
+.b .ul
+request
+is set in italics
+in \*T.
+.pp
+There are ways of switching between fonts.
+The requests
+.b .r ,
+.b .i ,
+and
+.b .b
+switch to Roman,
+italic,
+and bold fonts respectively.
+You can set a single word
+in some font
+by typing (for example):
+.(b
+\&.i word
+.)b
+which will set
+.i word
+in italics
+but does not affect the surrounding text.
+In \*N,
+italic and bold text
+is underlined.
+.pp
+Notice that if you are setting more than one word
+in whatever font,
+you must surround that word with double quote marks
+(`\|"\|')
+so that it will appear to the \*N processor as a single word.
+The quote marks will not appear in the formatted text.
+If you do want a quote mark to appear,
+you should quote the entire string
+(even if a single word),
+and use
+.i two
+quote marks where you want one to appear.
+For example,
+if you want to produce the text:
+.(b
+.i """Master Control\|"""
+.)b
+in italics, you must type:
+.(b
+\&.i """Master Control\e|"""
+.)b
+The
+.b \e|
+produces a very narrow space
+so that the
+.q l
+does not overlap the quote sign in \*T,
+like this:
+.(b
+.i """Master Control"""
+.)b
+.pp
+There are also several
+.q pseudo-fonts
+available.
+The input:
+.(b
+\&.(b
+\&.u underlined
+\&.bi "bold italics"
+\&.bx "words in a box"
+\&.)b
+.)b
+generates
+.(b
+.u underlined
+.bi "bold italics"
+.bx "words in a box"
+.)b
+In \*N these all just underline
+the text.
+Notice that pseudo font requests
+set only the single parameter in the pseudo font;
+ordinary font requests will begin setting all text
+in the special font
+if you do not provide a parameter.
+No more than one word
+should appear
+with these three font requests
+in the middle of lines.
+This is because
+of the way \*T justifies text.
+For example,
+if you were to issue the requests:
+.(b
+\&.bi "some bold italics"
+and
+\&.bx "words in a box"
+.)b
+in the middle of a line
+\*T would produce
+.bi "some bold italics"
+and
+.bx "words in a box" ,\c
+.if t \p
+.if n \& \"
+.if t which I think you will agree does not look good.
+.if n which would look really lousy in \*T.
+.pp
+The second parameter
+of all font requests
+is set in the original font.
+For example,
+the font request:
+.(b
+\&.b bold face
+.)b
+generates
+.q bold
+in bold font,
+but sets
+.q face
+in the font of the surrounding text,
+resulting in:
+.(b
+.b bold face.
+.)b
+To set the two words
+.b bold
+and
+.b face
+both in
+.b "bold face" ,
+type:
+.(b
+\&.b "bold face"
+.)b
+.pp
+You can mix fonts in a word by using the
+special sequence
+.b \ec
+at the end of a line
+to indicate
+.q "continue text processing" ;
+this allows input lines
+to be joined together
+without a space between them.
+For example, the input:
+.(b
+\&.u under \ec
+\&.i italics
+.)b
+generates
+.u under \c
+.i italics ,
+but if we had typed:
+.(b
+\&.u under
+\&.i italics
+.)b
+the result would have been
+.u under
+.i italics
+as two words.
+.sh 2 "Point Sizes"
+.pp
+The phototypesetter
+supports different sizes of type,
+measured in points.
+The default point size
+is 10 points
+for most text,
+8 points for footnotes.
+To change the pointsize,
+type:
+.(b
+\&.sz \c
+.i +N
+.)b
+where
+.i N
+is the size wanted in points.
+The
+.i "vertical spacing"
+(distance between the bottom of most letters
+(the
+.i baseline )
+between adjacent lines)
+is set to be proportional
+to the type size.
+.pp
+These pointsize changes are
+.i temporary !!!
+For example,
+to reset the pointsize of basic text to twelve point, use:
+.(b
+\&.nr pp 12
+\&.nr sp 12
+\&.nr tp 12
+.)b
+to reset the default pointsize of
+paragraphs,
+section headers,
+and titles respectively.
+If you only want to set the names of sections in a larger pointsize,
+use:
+.(b
+\&.nr sp 11
+.)b
+alone \*- this sets section titles
+(e.g.,
+.b "Point Sizes"
+above)
+in a larger font than the default.
+.pp
+A single word or phrase can be set in a smaller pointsize
+than the surrounding text
+using the
+.b .sm
+request.
+This is especially convenient for words that are all capitals,
+due to the optical illusion that makes them look even larger
+than they actually are.
+For example:
+.(b
+\&.sm UNIX
+.)b
+prints as
+.sm UNIX
+rather than
+UNIX.
+.pp
+Warning:
+changing point sizes
+on the phototypesetter
+is a slow mechanical operation.
+On laser printers it may require loading new fonts.
+Size changes
+should be considered carefully.
+.sh 2 "Quotes"
+.pp
+It is conventional when using
+the typesetter to
+use pairs of grave and acute accents
+to generate double quotes,
+rather than the
+double quote character
+(`\|"\|').
+This is because it looks better
+to use grave and acute accents;
+for example, compare
+"quote" to
+``quote''.
+.pp
+In order to make quotes compatible
+between the typesetter and terminals,
+you may use the sequences
+.b \e*(lq
+and
+.b \e*(rq
+to stand for the left and right quote
+respectively.
+These both appear as
+.b """"
+on most t#
+# GENERIC VAX + MicroVAX II
+#
+machine		vax
+cpu		"VAX8600"
+cpu		"VAX780"
+cpu		"VAX750"
+cpu		"VAX730"
+cpu		"VAX630"
+makeoptions	INLINEOPTS="-s"
+ident		GENERIC
+timezone	8 dst
+maxusers	8
+options		QUOTA
+options		INET
+options		NS
+
+config		vmunix		swap generic
+config		hkvmunix	root on hk
+config		hpvmunix	root on hp
+
+controller	mba0	at nexus ?
+controller	mba1	at nexus ?
+controller	mba2	at nexus ?
+controller	mba3	at nexus ?
+controller	uba0	at nexus ?
+controller	uba1	at nexus ?
+controller	uba2	at nexus ?
+controller	uba3	at nexus ?
+disk		hp0	at mba? drive 0
+disk		hp1	at mba? drive ?
+disk		hp2	at mba? drive ?
+disk		hp3	at mba? drive ?
+master		ht0	at mba? drive ?
+tape		tu0	at ht0 slave 0
+tape		tu1	at ht0 slave 1
+master		mt0	at mba? drive ?
+tape		mu0	at mt0 slave 0
+tape		mu1	at mt0 slave 1
+controller	hk0	at uba? csr 0177440 		vector rkintr
+disk		rk0	at hk0 drive 0
+disk		rk1	at hk0 drive 1
+disk		rk2	at hk0 drive 2
+disk		rk3	at hk0 drive 3
+controller	tm0	at uba? csr 0172520		vector tmintr
+tape		te0	at tm0 drive 0
+tape		te1	at tm0 drive 1
+controller	ut0	at uba? csr 0172440		vector utintr
+tape		tj0	at ut0 drive 0
+tape		tj1	at ut0 drive 1
+controller	tmscp0	at uba? csr 0174500		vector tmscpintr
+tape		tms0	at tmscp0 drive 0
+tape		tms1	at tmscp0 drive 1
+controller	sc0	at uba? csr 0176700 		vector upintr
+disk		up0	at sc0 drive 0
+disk		up1	at sc0 drive 1
+disk		up2	at sc0 drive 2
+disk		up3	at sc0 drive 3
+controller	uda0	at uba? csr 0172150		vector udintr
+disk		ra0	at uda0 drive 0
+disk		ra1	at uda0 drive 1
+disk		ra2	at uda0 drive 2
+disk		ra3	at uda0 drive 3
+controller	idc0	at uba0 csr 0175606		vector idcintr
+disk		rb0	at idc0 drive 0
+disk		rb1	at idc0 drive 1
+controller	hl0	at uba? csr 0174400		vector rlintr
+disk		rl0	at hl0 drive 0
+disk		rl1	at hl0 drive 1
+device	 	dh0	at uba? csr 0160020		vector dhrint dhxint
+device		dm0	at uba? csr 0170500		vector dmintr
+device	 	dh1	at uba? csr 0160040		vector dhrint dhxint
+device		dz0	at uba? csr 0160100 flags 0xff	vector dzrint dzxint
+device		dz1	at uba? csr 0160110 flags 0xff	vector dzrint dzxint
+device		dz2	at uba? csr 0160120 flags 0xff	vector dzrint dzxint
+device		dz3	at uba? csr 0160130 flags 0xff	vector dzrint dzxint
+device		dz4	at uba? csr 0160140 flags 0xff	vector dzrint dzxint
+device		dz5	at uba? csr 0160150 flags 0xff	vector dzrint dzxint
+device		dz6	at uba? csr 0160160 flags 0xff	vector dzrint dzxint
+device		dz7	at uba? csr 0160170 flags 0xff	vector dzrint dzxint
+controller	zs0	at uba? csr 0172520		vector tsintr
+device		ts0	at zs0 drive 0
+device		dmf0	at uba? csr 0160340 flags 0xfc
+	vector dmfsrint dmfsxint dmfdaint dmfdbint dmfrint dmfxint dmflint
+device          dmz0    at uba? csr 0160540 flags 0xffffff
+	vector dmzrinta dmzxinta dmzrintb dmzxintb dmzrintc dmzxintc
+device		dhu0	at uba? csr 0160440		vector dhurint dhuxint
+device		lp0	at uba? csr 0177514		vector lpintr
+pseudo-device	pty
+pseudo-device	loop
+pseudo-device	ether
+device		en0	at uba? csr 0161000	vector enxint enrint encollide
+device		ec0	at uba? csr 0164330 flags 0
+						vector ecrint eccollide ecxint
+device		de0	at uba? csr 0174510	vector deintr
+device		il0	at uba? csr 0164000	vector ilrint ilcint
+device		ex0	at uba? csr 0164344	vector excdint
+device		qe0	at uba? csr 0174440	vector qeintr
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            d to disable disk quotas on file systems.
+.BP pstat
+Has been modified to understand new kernel data structures.
+.BP rc
+Has had system dependent startup commands moved to /etc/rc.local.
+.BP rdump
+Is a new program to dump file systems across a network.
+.BP renice
+Has been rewritten to use the new setpriority system call.
+As a result, you can now renice users and process groups.
+.BP repquota
+Is a new program which summarizes disk quotas on one or
+more file systems.
+.BP restor
+No longer exists.  A new program, restore, is its successor.
+.BP restore
+Replaces restor.  Restore operates on mounted file systems; 
+it contains an interactive mode and can be used to restore
+files by name.  Restore has become almost as flexible to use
+as tar in retrieving files from tape.
+.BP rexecd
+Is a network server for the \fIrexec\fP\|(3X) library routine.
+Supports remote command execution where authentication is
+performed using user accounts and passwords.
+.BP rlogind
+Is a network server for the \fIrlogin\fP\|(1C) command.
+Supports remote login sessions where authentication is
+performed using privileged port numbers and two files,
+/etc/hosts.equiv and .rhosts (in each users home directory).
+.BP rmt
+Is a program used by rrestore and rdump for doing remote
+tape operations.
+.BP route
+Is a program for manually manipulating network routing
+tables.
+.BP routed
+Is a routing daemon which uses a variant of the Xerox
+Routing Information Protocol to automatically maintain
+up to date routing tables.
+.BP rrestore
+Is a version of restore which works across a network.
+.BP rshd
+Is a server for the \fIrsh\fP\|(1C) command.  It
+supports remote command execution using privileged
+port numbers and the /etc/hosts.equiv and .rhosts
+files in users' home directories.
+.BP rwhod
+Is a server which generates and listens for host status
+information on local networks.  The information stored
+by rwhod is used by the \fIrwho\fP\|(1C) and\fIruptime\fP\|(1C)
+programs.
+.BP rxformat
+Is a program for formatting floppy disks (this uses
+the \fIrx\fP device driver, not the console floppy interface).
+.BP savecore
+Has been modified to get many pieces of information
+from the running system and crash dump to avoid compiled
+in constants.
+.BP sendmail
+Is a new program replacing delivermail; it provides fully
+internetwork mail forwarding capabilities.  Sendmail uses
+the DARPA standard SMTP protocol to send and receive mail.
+Sendmail uses a configuration file to control its operation,
+eliminating the compiled in description used in delivermail.
+.BP setifaddr
+Is a new program used to set a network interface's address.
+Calls to this program are normally placed in the /etc/rc.local
+file to configure the network hardware present on a machine.
+.BP syslog
+Is a server which receives system logging messages.  Currently,
+only the sendmail program uses this server.
+.BP telnetd
+Is a server for the DARPA standard TELNET protocol.
+.BP tftpd
+Is a server for the DARPA Trivial File Transfer Protocol.
+.BP trpt
+Is a program used in debugging TCP.  Trpt transliterates
+protocol trace information recorded by TCP in a circular buffer in
+kernel memory.
+.BP  tunefs
+Is a program for modifying certain parameters in the
+super block of file systems.
+.BP vipw
+Is no longer a shell script and properly interacts
+with passwd, chsh, and chfn in locking the password file.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  .SH
+.LG
+.ce
+Section 4
+.SM
+.sp
+.PP
+The system now supports the 11/730, the new 64Kbit RAM memory
+controllers for the 11/750 and 11/780, and the second UNIBUS
+adapter for the 11/750.
+Several new character and/or block device drivers have been added, 
+as well as support for many hardware devices which are
+accessible only through the network facilities.  Each new
+piece of hardware supported is listed below.
+.PP
+New manual entries in section 4 have been created to describe
+communications protocols, and network architectures supported.
+At present the only network architecture fully supported is
+the DARPA Internet with the TCP, IP, UDP, and ICMP protocols.
+.PP
+.BP acc
+A network driver for the ACC LH/DH IMP interface.
+.BP ad
+A driver for the Data Translation A/D converter.
+.BP arp
+The Address Resolution Protocol for dynamically
+mapping betwee 32-bit DARPA Internet addresses and
+48-bit Xerox 10Mb/s Ethernet addresses.
+.BP css
+A network driver for the DEC IMP-11A LH/DH IMP interface.
+.BP dmc
+A network interface driver for the DEC DMC-11/DMR-11
+point-to-point communications device.
+.BP ec
+A network interface driver for the 3Com 10Mb/s Ethernet controller.
+.BP en
+A network interface driver for the Xerox 3Mb/s experimental 
+Ethernet controller.
+.BP hy
+A network interface driver for the Network Systems Hyperchannel
+Adapter.
+.BP ik
+A driver for an Ikonas frame buffer graphics device interface.
+.BP il
+A network interface driver for the Interlan 10Mb/s Ethernet
+interface.
+.BP imp
+A network interface driver for the standard 1822 interface
+to an IMP; used in conjunction with either acc or css hardware.
+.BP kg
+A driver for a KL-11/DL-11W used as an alternate real
+time clock source for gathering kernel statistics and profiling
+information.
+.BP lo
+A software loopback network interface for protocol
+testing and performance analysis.
+.BP pcl
+A network interface driver for the DEC PCL-11B communications
+controller.
+.BP ps
+A driver for an Evans and Sutherland Picture System 2
+graphics device connected with a DMA interface.
+.BP pty
+Now includes a simple packet protocol to support 
+flow controlled operation with mechanisms for flushing
+data to be read and/or written.
+.BP rx
+A driver for the DEC dual RX02 floppy disk unit.
+.BP ts
+Now supports TU80 tape drives.
+.BP tu
+The VAX-11/750 console cassette interface has been
+made somewhat usable when operating in single-user
+mode.  The device driver employs assembly language
+pseudo-dma code for the reception of incoming
+packets from the cassette.
+.BP uda
+Now supports RA81, RA80, and RA60 disk drives.
+.BP un
+A network interface driver for an Ungermann-Bass network
+interface unit connected to the host via a DR-11W.
+.BP up
+Now supports ECC correction and bad sector handling.
+Also has improved logic for recognizing many different
+kinds of disk drives automatically at boot time.
+.BP uu
+A driver for DEC dual TU58 tape cartridges connected
+via a DL-11W interface.
+.BP va
+The Varian driver has been rewritten so that it may
+coexist on the same UNIBUS with devices which require
+exclusive use of the bus; i.e. RK07's.
+.BP vv
+A network interface driver for the Proteon proNET 10Mb/s
+ring network controller.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     .\"	@(#)rcs.man	6.1 (Berkeley) 5/7/86
+.\"
+.TH CHUCK THIS
+.rs
+.rm }C
+.de }F
+.bp
+..
+.de }H
+.ev 1
+'sp .5i
+.ft 1
+.ps 10
+.if o .tl '\\*(]H'Introduction to RCS'PS1:13-%'
+.if e .tl 'PS1:13-%'Introduction to RCS'\\*(]H'
+.sp .5i
+.ev
+.ns
+..
+.de TH
+.ds ]H \\$1\|(\|\\$2\|)
+.rs
+.bp
+..
+.pn 5
+.so man/ci.1
+.so man/co.1
+.so man/ident.1
+.so man/merge.1
+.so man/rcs.1
+.so man/rcsdiff.1
+.so man/rcsfile.5
+.so man/rcsmerge.1
+.so man/rlog.1
+.so man/sccstorcs.1
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       /usr/src/new/rcs/man                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            #
+# Copyright (c) 1986 Regents of the University of California.
+# All rights reserved.  The Berkeley software License Agreement
+# specifies the terms and conditions for redistribution.
+#
+#	@(#)Makefile	6.1 (Berkeley) 5/7/86
+#
+SRCS=	rcs.ms
+MSRC=	rcs.man
+MACROS=	-msU
+PRINTER=Pdp
+TROFF=	ditroff -${PRINTER}
+
+paper:	paper.${PRINTER} manpg.${PRINTER}
+	lpr -${PRINTER} -n paper.${PRINTER}
+	lpr -${PRINTER} -n manpg.${PRINTER}
+
+paper.${PRINTER}: ${SRCS}
+	${TROFF} ${MACROS} -t ${SRCS} > paper.${PRINTER}
+
+manpg.${PRINTER}: ${MSRC}
+	${TROFF} -man -t ${MSRC} > manpg.${PRINTER}
+
+clean:
+	rm -f manpg.[PT]* paper.[PT]* *.spell errs Errs make.out
+
+spell:	${SRCS}
+	@for i in ${SRCS}; do \
+		echo $$i; spell $$i | sort | comm -23 - spell.ok > $$i.spell; \
+	done
+                                                                                                                                                                                                                                                                                   #(    .       ..  %0    02.learn   w4H    03.shell   w&P    04.csh l8†    05.dc  lX    06.bc  l%h    07.Mail à    08.mh nr:Ä    09.newsread :†    10.etiq -ê    11.notes ad 9ò    12.edtut  e =†    13.edadv  e '®    14.edit #∞    15.vi in¿    16.ex le»    17.jove      18.sed  $    19.awk  2    20.msmacros     
+ 21.msdiffs  $(    22.memacros 10    23.meref os :H    24.troff os ?Ä    25.trofftut ?    26.eqn  -P    27.eqnguide X    28.tbl u    2h    29.refer de A`   	 30.invert e +®    31.bib r)∞   
+ 32.diction  ¿    33.rogue n  !»    34.trek '(    00.contents      01.begin ts ((  h Title in                                                                                                                                                                                                                                                                                                                                                        .\" Copyright (c) 1986 Regents of the University of California.
+.\" All rights reserved.  The Berkeley software License Agreement
+.\" specifies the terms and conditions for redistribution.
+.\"
+.\"	@(#)00.contents	5.1 (Berkeley) 4/15/86
+.\"
+.OH '''USD Contents'
+.EH 'USD Contents'''
+.TL
+UNIX User's Supplementary Documents (USD)
+.sp
+\s-24.3 Berkeley Software Distribution, Virtual \s-2VAX\s+2\-11 Version\s+2
+.sp
+\fRFebruary, 1986\fR
+.PP
+This volume contains documents which supplement the manual pages in
+.I
+The Unix User's Reference Manual
+.R
+for the Virtual \s-2VAX\s0-11 version of the system as distributed by U.C.
+Berkeley, and Volumes 2a and 2b as provided by Bell Laboratories.
+
+.SH
+Getting Started
+.IP
+.tl 'Unix for Beginners \- Second Edition''USD:1'
+.QP
+An introduction to the most basic uses of the system.
+.IP
+.tl 'Learn \- Computer\-Aided Instruction on UNIX (Second Edition)''USD:2'
+.QP
+Describes a computer-aided instruction program that walks new users through
+the basics of files, the editor, and document prepararation software.
+.SH
+Basic Utilities
+.IP
+.tl 'An Introduction to the UNIX Shell''USD:3'
+.QP
+Steve Bourne's introduction to the capabilities of 
+.I sh,
+a command interpreter especially popular for writing shell scripts.
+.IP
+.tl 'An Introduction to the C shell''USD:4'
+.QP
+This introduction to
+.I csh,
+(a command interpreter popular for interactive work)  describes many 
+commonly used UNIX commands, assumes little prior knowledge of UNIX,
+and has a glossary useful for beginners.
+.IP
+.tl 'DC \- An Interactive Desk Calculator''USD:5'
+.QP
+A super HP calculator, if you do not need floating point.
+.IP
+.tl 'BC \- An Arbitrary Precision Desk-Calculator Language''USD:6'
+.QP
+A front end for DC that provides infix notation, control flow, and 
+built\-in functions.
+.SH
+Communicating with the World
+.IP
+.tl 'Mail Reference Manual''USD:7'
+.QP
+Complete details on one of the programs for sending and reading your mail.
+.IP
+.tl 'The Rand MH Message Handling System''USD:8'
+.QP
+This system for managing your computer mail uses lots of small programs, 
+instead of one large one.
+.IP
+.tl 'How to Read the Network News''USD:9'
+.QP
+Describes how news works (generally) and some alternatives for reading it,
+.I readnews
+and 
+.I vnews .
+.IP
+.tl 'How to Use USENET Effectively''USD:10'
+.QP
+Describes the customs, protocols, and etiquette of network news, plus answers
+to the questions most frequently asked by newcomers to the network.
+.IP
+.tl 'Notesfile Reference Manual''USD:11'
+.QP
+This feature-packed system for maintaining computer-aided discussion groups is
+also useful for reading netnews.
+.SH
+Text Editing
+.IP
+.tl 'A Tutorial Introduction to the Unix Text Editor''USD:12'
+.QP
+An easy way to get started with the line editor, 
+.I ed.
+.IP
+.tl 'Advanced Editing on Unix''USD:13'
+.QP
+The next step.
+.IP
+.tl 'Edit: A Tutorial''USD:14'
+.QP
+An introduction to 
+.I edit, 
+a line\-oriented editor which is a version of 
+.I ex, 
+assuming no previous knowledge of UNIX or text editing.
+.IP
+.tl 'An Introduction to Display Editing with Vi''USD:15'
+.QP
+The document to learn to use the \fIvi\fR screen editor.
+.IP
+.tl 'Ex Reference Manual (Version 3.7)''USD:16'
+.QP
+The final reference for the \fIex\fR editor, which underlies both \fIedit\fR
+and \fIvi\fR. 
+.IP
+.tl 'Jove Manual for UNIX Users''USD:17'
+.QP
+Jove is a small, self-documenting, customizable display editor, based on
+EMACS.  A plausible alternative to 
+.I vi.
+.IP
+.tl 'SED \- A Non-interactive Text Editor''USD:18'
+.QP
+Describes a one-pass variant of 
+.I ed
+useful as a filter for processing large files.
+.IP
+.tl 'AWK \- A Pattern Scanning and Processing Language (Second Edition)''USD:19'
+.QP
+A program for data selection and transformation.
+.SH
+Document Preparation
+.IP
+.tl 'Typing Documents on UNIX: Using the \-ms Macros with Troff and Nroff''USD:20'
+.QP
+Describes and gives examples of the basic use of the typesetting tools and 
+``-ms'', a frequently used package of formatting requests that make it easier 
+to lay out most documents.
+.IP
+.tl 'A Revised Version of \-ms''USD:21'
+.QP
+A brief description of the Berkeley revisions made to the \-ms formatting
+macros for nroff and troff.
+.IP
+.tl 'Writing Papers with \fInroff\fR using \-me''USD:22'
+.QP
+Another popular macro package for
+.I nroff.
+.IP
+.tl '\-me Reference Manual''USD:23'
+.QP
+The final word on \-me.
+.IP
+.tl 'NROFF/TROFF User\'s Manual''USD:24'
+.QP
+Extremely detailed information about these document formatting programs.
+.KS
+.IP
+.tl 'A TROFF Tutorial''USD:25'
+.QP
+An introduction to the most basic uses of
+.I troff 
+for those who really want to know such things, or want to write their 
+own macros.
+.KE
+.KS
+.IP
+.tl 'A System for Typesetting Mathematics''USD:26'
+.QP
+Describes 
+.I eqn, 
+an easy-to-learn language for high-quality mathematical typesetting.
+.IP
+.tl 'Typesetting Mathematics \- User\'s Guide (Second Edition)''USD:27'
+.QP
+More details about how to use 
+.I eqn.
+.IP
+.KE
+.tl 'Tbl \- A Program to Format Tables''USD:28'
+.QP
+A program for easily typesetting tabular material.
+.IP
+.tl 'Refer \- A Bibliography System''USD:29'
+.QP
+An introduction to one set of tools used to maintain bibliographic databases. 
+The major program, 
+.I refer,
+is used to automatically retrieve and format the references 
+based on document citations.
+.IP
+.tl 'Some Applications of Inverted Indexes on the UNIX System''USD:30'
+.QP
+Mike Lesk's paper describes the
+.I refer 
+programs in a somewhat larger context.
+.IP
+.tl 'BIB \- A Program for Formatting Bibliographies''USD:31'
+.QP
+This is an alternative to
+.I refer
+for expanding citations in documents.
+.IP
+.tl 'Writing Tools \- The STYLE and DICTION Programs''USD:32'
+.QP
+These are programs which can help you understand and improve your 
+writing style.
+.SH 
+Amusements
+.IP
+.tl 'A Guide to the Dungeons of Doom''USD:33'
+.QP
+An introduction to the popular game of \fIrogue\fP, a fantasy game
+which is one of the biggest known users of VAX cycles.
+.IP
+.tl 'Star Trek''USD:34'
+.QP
+You are the Captain of the Starship Enterprise.  Wipe out the
+Klingons and save the Federation.
+.IP
+                                                                                         .\" Copyright (c) 1986 Regents of the University of California.
+.\" All rights reserved.  The Berkeley software License Agreement
+.\" specifies the terms and conditions for redistribution.
+.\"
+.\"	@(#)Title	6.1 (Berkeley) 5/14/86
+.\"
+.ps 18
+.vs 22
+.sp 2.75i
+.ft B
+.ce 2
+UNIX User's Supplementary Documents
+(USD)
+.ps 14
+.vs 16
+.sp |4i
+.ce 2
+4.3 Berkeley Software Distribution
+Virtual VAX\-11 Version
+.sp |5.75i
+.ft R
+.pt 12
+.vs 16
+.ce
+April, 1986
+.sp |8.2i
+.ce 5
+Computer Systems Research Group
+Computer Science Division
+Department of Electrical Engineering and Computer Science
+University of California
+Berkeley, California  94720
+.bp
+.ll 5.3i
+.in 1.25i
+.hy 0
+.ps 10
+.vs 12p
+.sp |3i
+Copyright 1979, 1980, 1983, 1986 Regents of the University of California.
+Permission to copy these documents or any portion thereof as necessary
+for licensed use of the software is granted to licensees of this
+software, provided this copyright notice and statement of permission
+are included.
+.sp 2
+Documents USD:1, 2, 3, 5, 6, 12, 13, 18, 1

@@ -1,0 +1,2176 @@
+he retransmission queue.  If this ACK reflects
+	 * more up to date window information we update our window information.
+	 */
+	case TCPS_ESTABLISHED:
+	case TCPS_FIN_WAIT_1:
+	case TCPS_FIN_WAIT_2:
+	case TCPS_CLOSE_WAIT:
+	case TCPS_CLOSING:
+	case TCPS_LAST_ACK:
+	case TCPS_TIME_WAIT:
+#define	ourfinisacked	(acked > 0)
+
+		if (SEQ_LEQ(ti->ti_ack, tp->snd_una))
+			break;
+		if (SEQ_GT(ti->ti_ack, tp->snd_max))
+			goto dropafterack;
+		acked = ti->ti_ack - tp->snd_una;
+
+		/*
+		 * If transmit timer is running and timed sequence
+		 * number was acked, update smoothed round trip time.
+		 */
+		if (tp->t_rtt && SEQ_GT(ti->ti_ack, tp->t_rtseq)) {
+			if (tp->t_srtt == 0)
+				tp->t_srtt = tp->t_rtt;
+			else
+				tp->t_srtt =
+				    tcp_alpha * tp->t_srtt +
+				    (1 - tcp_alpha) * tp->t_rtt;
+			tp->t_rtt = 0;
+		}
+
+		/*
+		 * If all outstanding data is acked, stop retransmit
+		 * timer and remember to restart (more output or persist).
+		 * If there is more data to be acked, restart retransmit
+		 * timer.
+		 */
+		if (ti->ti_ack =tantly sending status packets when
+the daemons would be idle was never seriously considered
+because it was felt that the daemon should have as light a system
+load as possible; it seems now the daemons are busy most of the time
+and thus the initial connection tradeoffs
+should have been studied more closely.
+.SH
+The Low-Level Protocol
+.PP
+The network transmits over TTY lines through terminal interfaces
+and system drivers which behave as if the characters coming from another
+machine are from a terminal.
+This mode was chosen because it is absolutely the simplest,
+cheapest interconnection scheme possible.
+Unfortunately, the
+.UX
+terminal drivers cannot accept 8-bit bytes unless they are in
+.I raw
+mode.
+This was judged to be a high system load, so the
+TTY lines operate in
+.I cooked,
+the reverse of
+.I raw,
+mode.
+In this mode certain bit combinations,
+e.g. ASCII newline and escape, do not
+transmit through the terminal driver to the user's program
+but rather are interpreted as control information.
+.PP
+After much experimentation, the following transmission method was chosen.
+Each 3 byte triple is viewed as 24 bits, and broken into 4 6-bit groups.
+Each 6-bit number is in the range 0-63, and is added to a constant
+representing the lowest acceptable character code (a blank)
+in the ASCII sequence.
+This is sent as an ASCII character to a receiver
+who gathers 4 bytes, subtracts the increment, and shifts the 4 6-bit groups
+into 3 bytes.
+This represents a 3 to 4 expansion of all characters over the
+link, or a 33% loss of bandwidth.
+.PP
+In retrospect, this expansion has a considerable cost.
+The most scarce resource in the network
+is the actual hardware speed of the links.
+The alternative of using raw mode was never seriously considered.
+.PP
+The implementor's hope is that better hardware will make better
+middle- and lower-level protocols easier.
+Until then, the difficulties of using TTY lines efficiently
+make further protocol improvements unlikely to yield big increases in speed.
+.SH
+A Note About Features this Protocol Lacks
+.PP
+In
+.UX
+a process may only read or write one I/O device at a time.
+A daemon approach requires a single process reading and writing on a link to
+another machine.
+This process must decide who will receive this packet.
+I judged (correctly) that this decision was hard to schedule using
+.UX
+pipes and signals,
+and only allow one kind of communication between daemons.
+This also makes it almost impossible
+to forward packets through intermediate machines.
+Thus intermediate machines copy whole requests before sending them again.
+.PP
+If the design specification required a simple packet-oriented driver
+within the system, the
+.UX
+kernel could decide which of several special files this was destined to,
+and allow much more intermixing of traffic than before.
+I did not realize the importance of this and, in retrospect,
+would have chosen the other of the two approaches.
+.SH
+.sp 1
+.ce
+Portability
+.sp .5
+.PP
+The acquisition of VAX/UNIX (Version 7) and the divergence of the Computer
+Center and Cory Hall Version 6 systems made the portability of the
+network source code important.
+Until then, the source code on all machines was identical.
+Fortunately, the
+.UX
+implementors encountered these same problems and developed a number of
+facilities the network now uses.
+.PP
+Since many system calls use machine and version dependent data fields,
+so-called ``include'' files are available to hide the system differences
+and help standardize the system interface.
+The conditional compilation feature of the C language was used to select
+which kinds of code to generate, when the ``include'' files were
+not sufficient.
+Roughly, the following command included at the beginning of each C module:
+.DS
+# include <whoami.h>
+.DE
+would define which system, by name, the code was run on.
+For example, the above defines ``VAX'' on the VAX machine,
+and then lines such as
+.DS
+# ifdef VAX
+ .
+ .
+# endif
+.DE
+control the code generated.
+In the network, sequences such as this in turn define other sequences,
+such as
+.DS
+# ifdef \s-2CORY\s0
+# define \s-2FUID\s0
+# define \s-2OLDTTY\s0
+# define \s-2PASSWDF\s0
+# endif
+.DE
+defines the unusual features of the Cory machine:
+the combined user-id and group-id returned by the
+.I getuid()
+system call, that it uses the old 1-character terminal names, and
+that it has a split password file for security reasons.
+Each of these symbols, e.g. ``FUID'', is tested
+in order to compile the correct code for that feature.
+.PP
+To help in isolating the changes, attempts were made to create a procedural
+interface to hide machines differences.
+These procedures are all in one file.
+Only one or two cases exist of conditional sections of code
+not in ``mach.c'' or ``mach.h'', its header file.
+.PP
+One problem these features pose is testing changes \-
+the conditional sections hide errors in inapplicable code.
+A regimen was adopted:
+Testing was first done on the VAX (Version 7),
+then, after it was stable for a few days,
+moved to Cory, where typically there was some Version 6-dependent
+error, and after that was fixed and stable, it was moved to the
+Computer Center machines.
+This notion of a ``testing'' machine is very important \-
+the VAX always has an up-to-date copy of the network
+source, even though other machines may lag in improvements.
+.PP
+There is now a ``retrofit library''
+that simulates many of the features ``mach.c'' provides.
+It was not stable enough when the network was converted to Version 7,
+otherwise I would have used it.
+.PP
+At this point, when the entire source for the software
+for the network is transferred between machines only the first five
+lines of the ``makefile'' need be changed.
+.SH
+.sp 1
+.ce
+.sp .5
+Security
+.PP
+Over Christmas vacation of 1978, a 15-year old high school student
+repeatedly broke into the Computer Center and Cory machines.
+He was able to use the network to gain access to privileged files on
+the VAX, and the fear of protection ``holes'' caused the staff to take
+the network down for seven weeks.
+.PP
+There were two security problems posed by the network:
+.RS
+.IP 1.
+The threat to the ``root'' account on another system.
+.IP 2.
+The threat to a user's remote accounts.
+.RE
+.NH 0
+Threat to ``root''
+.PP
+Originally the network would allow a user logged in as ``root''
+on one machine to execute any command as ``root'' on another network
+machine.
+As far as we know, this feature was never used to break into a system.
+However, the network has been changed to prevent a user from logging
+in as ``root'' on another machine, regardless of the password.
+This check is performed on the sending machine.
+Since ``root'' could conceivably circumvent this check by altering
+the command, the receiving end of a command checks the user-id
+of all commands being executed.
+If it is zero (i.e. ``root'') only a set of five commands is allowed,
+all needed by the network internally, and believed ``safe''.
+.PP
+We believe this makes the network ``safer'' than many local machine
+features such as the use of dial-up lines.
+.NH
+Threat to user's remote accounts.
+.PP
+If a user places remote passwords in his ``.netrc'' file,
+an illicit superuser could get the password to all the user's remote
+accounts.
+Even if the user does not care, system managers dislike this because
+the illicit superuser could now use a legal account on another system
+to break into it.
+.PP
+We have no good solutions to this.
+Users are now warned of this danger in the documentation,
+and a ``.netrc'' file with passwords must be
+readable only by the owner of the file.
+.PP
+Various solutions have been proposed:
+.RS
+.IP a)
+Disallow passwords in ``.netrc'' files.
+.br
+Unfortunately, heavy network users would have to repeatedly
+type their password.
+.IP b)
+Encrypt the ``.netrc'' file.
+.br
+A program would have to exist to decrypt the file.
+A superuser could get access to whatever key technique that program used,
+if it were on the local machine.
+A public-key encryption scheme would make this option possible.
+We decided it was too much work to implement this.
+.IP c)
+Once-a-session passwords.
+.br
+In this scheme, a user would register his password when he logged in,
+then use the network without needing to type in a password.
+When he l/*
+ * Copyright (c) 1982, 1986 Regents of the University of California.
+ * All rights reserved.  The Berkeley software License Agreement
+ * specifies the terms and conditions for redistribution.
+ *
+ *	@(#)in_proto.c	7.1 (Berkeley) 6/5/86
+ */
+
+#include "param.h"
+#include "socket.h"
+#include "protosw.h"
+#include "domain.h"
+#include "mbuf.h"
+
+#include "in.h"
+#include "in_systm.h"
+
+/*
+ * TCP/IP protocol family: IP, ICMP, UDP, TCP.
+ */
+int	ip_output(),ip_ctloutput();
+int	ip_init(),ip_slowtimo(),ip_drain();
+int	icmp_input();
+int	udp_input(),udp_ctlinput();
+int	udp_usrreq();
+int	udp_init();
+int	tcp_input(),tcp_ctlinput();
+int	tcp_usrreq(),tcp_ctloutput();
+int	tcp_init(),tcp_fasttimo(),tcp_slowtimo(),tcp_drain();
+int	rip_input(),rip_output(),rip_ctloutput();
+extern	int raw_usrreq();
+/*
+ * IMP protocol family: raw interface.
+ * Using the raw interface entry to get the timer routine
+ * in is a kludge.
+ */
+#include "imp.h"
+#if NIMP > 0
+int	rimp_output(), hostslowtimo();
+#endif
+
+#ifdef NSIP
+int	idpip_input(), nsip_ctlinput();
+#endif
+
+extern	struct domain inetdomain;
+
+struct protosw inetsw[] = {
+{ 0,		&inetdomain,	0,		0,
+  0,		ip_output,	0,		0,
+  0,
+  ip_init,	0,		ip_slowtimo,	ip_drain,
+},
+{ SOCK_DGRAM,	&inetdomain,	IPPROTO_UDP,	PR_ATOMIC|PR_ADDR,
+  udp_input,	0,		udp_ctlinput,	ip_ctloutput,
+  udp_usrreq,
+  udp_init,	0,		0,		0,
+},
+{ SOCK_STREAM,	&inetdomain,	IPPROTO_TCP,	PR_CONNREQUIRED|PR_WANTRCVD,
+  tcp_input,	0,		tcp_ctlinput,	tcp_ctloutput,
+  tcp_usrreq,
+  tcp_init,	tcp_fasttimo,	tcp_slowtimo,	tcp_drain,
+},
+{ SOCK_RAW,	&inetdomain,	IPPROTO_RAW,	PR_ATOMIC|PR_ADDR,
+  rip_input,	rip_output,	0,		rip_ctloutput,
+  raw_usrreq,
+  0,		0,		0,		0,
+},
+{ SOCK_RAW,	&inetdomain,	IPPROTO_ICMP,	PR_ATOMIC|PR_ADDR,
+  icmp_input,	rip_output,	0,		rip_ctloutput,
+  raw_usrreq,
+  0,		0,		0,		0,
+},
+#ifdef NSIP
+{ SOCK_RAW,	&inetdomain,	IPPROTO_IDP,	PR_ATOMIC|PR_ADDR,
+  idpip_input,	rip_output,	nsip_ctlinput,	0,
+  raw_usrreq,
+  0,		0,		0,		0,
+},
+#endif
+	/* raw wildcard */
+{ SOCK_RAW,	&inetdomain,	0,		PR_ATOMIC|PR_ADDR,
+  rip_input,	rip_output,	0,		rip_ctloutput,
+  raw_usrreq,
+  0,		0,		0,		0,
+},
+};
+
+struct domain inetdomain =
+    { AF_INET, "internet", 0, 0, 0, 
+      inetsw, &inetsw[sizeof(inetsw)/sizeof(inetsw[0])] };
+
+#if NIMP > 0
+extern	struct domain impdomain;
+
+struct protosw impsw[] = {
+{ SOCK_RAW,	&impdomain,	0,		PR_ATOMIC|PR_ADDR,
+  0,		rimp_output,	0,		0,
+  raw_usrreq,
+  0,		0,		hostslowtimo,	0,
+},
+};
+
+struct domain impdomain =
+    { AF_IMPLINK, "imp", 0, 0, 0,
+      impsw, &impsw[sizeof (impsw)/sizeof(impsw[0])] };
+#endif
+
+#include "hy.h"
+#if NHY > 0
+/*
+ * HYPERchannel protocol family: raw interface.
+ */
+int	rhy_output();
+extern	struct domain hydomain;
+
+struct protosw hysw[] = {
+{ SOCK_RAW,	&hydomain,	0,		PR_ATOMIC|PR_ADDR,
+  0,		rhy_output,	0,		0,
+  raw_usrreq,
+  0,		0,		0,		0,
+},
+};
+
+struct domain hydomain =
+    { AF_HYLINK, "hy", 0, 0, 0, hysw, &hysw[sizeof (hysw)/sizeof(hysw[0])] };
+#endif
+                                                                                                                                                       /*
+ * Copyright (c) 1982, 1986 Regents of the University of California.
+ * All rights reserved.  The Berkeley software License Agreement
+ * specifies the terms and conditions for redistribution.
+ *
+ *	@(#)tcp_timer.c	7.1 (Berkeley) 6/5/86
+ */
+
+#include "param.h"
+#include "systm.h"
+#include "mbuf.h"
+#include "socket.h"
+#include "socketvar.h"
+#include "protosw.h"
+#include "errno.h"
+
+#include "../net/if.h"
+#include "../net/route.h"
+
+#include "in.h"
+#include "in_pcb.h"
+#include "in_systm.h"
+#include "ip.h"
+#include "ip_var.h"
+#include "tcp.h"
+#include "tcp_fsm.h"
+#include "tcp_seq.h"
+#include "tcp_timer.h"
+#include "tcp_var.h"
+#include "tcpip.h"
+
+int	tcpnodelack = 0;
+/*
+ * Fast timeout routine for processing delayed acks
+ */
+tcp_fasttimo()
+{
+	register struct inpcb *inp;
+	register struct tcpcb *tp;
+	int s = splnet();
+
+	inp = tcb.inp_next;
+	if (inp)
+	for (; inp != &tcb; inp = inp->inp_next)
+		if ((tp = (struct tcpcb *)inp->inp_ppcb) &&
+		    (tp->t_flags & TF_DELACK)) {
+			tp->t_flags &= ~TF_DELACK;
+			tp->t_flags |= TF_ACKNOW;
+			(void) tcp_output(tp);
+		}
+	splx(s);
+}
+
+/*
+ * Tcp protocol timeout routine called every 500 ms.
+ * Updates the timers in all active tcb's and
+ * causes finite state machine actions if timers expire.
+ */
+tcp_slowtimo()
+{
+	register struct inpcb *ip, *ipnxt;
+	register struct tcpcb *tp;
+	int s = splnet();
+	register int i;
+
+	/*
+	 * Search through tcb's and update active timers.
+	 */
+	ip = tcb.inp_next;
+	if (ip == 0) {
+		splx(s);
+		return;
+	}
+	for (; ip != &tcb; ip = ipnxt) {
+		ipnxt = ip->inp_next;
+		tp = intotcpcb(ip);
+		if (tp == 0)
+			continue;
+		for (i = 0; i < TCPT_NTIMERS; i++) {
+			if (tp->t_timer[i] && --tp->t_timer[i] == 0) {
+				(void) tcp_usrreq(tp->t_inpcb->inp_socket,
+				    PRU_SLOWTIMO, (struct mbuf *)0,
+				    (struct mbuf *)i, (struct mbuf *)0);
+				if (ipnxt->inp_prev != ip)
+					goto tpgone;
+			}
+		}
+		tp->t_idle++;
+		if (tp->t_rtt)
+			tp->t_rtt++;
+tpgone:
+		;
+	}
+	tcp_iss += TCP_ISSINCR/PR_SLOWHZ;		/* increment iss */
+#ifdef TCP_COMPAT_42
+	if ((int)tcp_iss < 0)
+		tcp_iss = 0;				/* XXX */
+#endif
+	splx(s);
+}
+
+/*
+ * Cancel all timers for TCP tp.
+ */
+tcp_canceltimers(tp)
+	struct tcpcb *tp;
+{
+	register int i;
+
+	for (i = 0; i < TCPT_NTIMERS; i++)
+		tp->t_timer[i] = 0;
+}
+
+int	tcp_backoff[TCP_MAXRXTSHIFT+1] =
+    { 1, 2, 4, 6, 8, 10, 15, 20, 30, 30, 30, 30, 30 };
+/*
+ * TCP timer processing.
+ */
+struct tcpcb *
+tcp_timers(tp, timer)
+	register struct tcpcb *tp;
+	int timer;
+{
+	register int rexmt;
+
+	switch (timer) {
+
+	/*
+	 * 2 MSL timeout in shutdown went off.  If we're closed but
+	 * still waiting for peer to close and connection has been idle
+	 * too long, or if 2MSL time is up from TIME_WAIT, delete connection
+	 * control block.  Otherwise, check again in a bit.
+	 */
+	case TCPT_2MSL:
+		if (tp->t_state != TCPS_TIME_WAIT &&
+		    tp->t_idle <= TCPTV_MAXIDLE)
+			tp->t_timer[TCPT_2MSL] = TCPTV_KEEP;
+		else
+			tp = tcp_close(tp);
+		break;
+
+	/*
+	 * Retransmission timer went off.  Message has not
+	 * been acked within retransmit interval.  Back off
+	 * to a longer retransmit interval and retransmit one segment.
+	 */
+	case TCPT_REXMT:
+		tp->t_rxtshift++;
+		if (tp->t_rxtshift > TCP_MAXRXTSHIFT) {
+			tp = tcp_drop(tp, ETIMEDOUT);
+			break;
+		}
+		if (tp->t_srtt == 0)
+			rexmt = tcp_beta * TCPTV_SRTTDFLT;
+		else
+			rexmt = (int)(tcp_beta * tp->t_srtt);
+		rexmt *= tcp_backoff[tp->t_rxtshift - 1];
+		TCPT_RANGESET(tp->t_timer[TCPT_REXMT], rexmt,
+			    TCPTV_MIN, TCPTV_MAX);
+		/*
+		 * If losing, let the lower level know
+		 * and try for a better route.
+		 */
+		if (tp->t_rxtshift >= TCP_MAXRXTSHIFT / 4 ||
+		    rexmt >= 10 * PR_SLOWHZ)
+			in_losing(tp->t_inpcb);
+		tp->snd_nxt = tp->snd_una;
+		/*
+		 * If timing a segment in this window,
+		 * and we have already gotten some timing estimate,
+		 * stop the timer.
+		 */
+		if (tp->t_rtt && tp->t_srtt)
+			tp->t_rtt = 0;
+		(void) tcp_output(tp);
+		break;
+
+	/*
+	 * Persistance timer into zero window.
+	 * Force a byte to be output, if possible.
+	 */
+	case TCPT_PERSIST:
+		tcp_setpersist(tp);
+		tp->t_force = 1;
+		(void) tcp_output(tp);
+		tp->t_force = 0;
+		break;
+
+	/*
+	 * Keep-alive timer went off; send something
+	 * or drop connection if idle for too long.
+	 */
+	case TCPT_KEEP:
+		if (tp->t_state < TCPS_ESTABLISHED)
+			goto dropit;
+		if (tp->t_inpcb->inp_socket->so_options & SO_KEEPALIVE &&
+		    tp->t_state <= TCPS_CLOSE_WAIT) {
+		    	if (tp->t_idle >= TCPTV_MAXIDLE)
+				goto dropit;
+			/*
+			 * Saying tp->rcv_nxt-1 lies about what
+			 * we have received, and by the protocol spec
+			 * requires the correspondent TCP to respond.
+			 * Saying tp->snd_una-1 causes the transmitted
+			 * byte to lie outside the receive window; this
+			 * is important because we don't necessarily
+			 * have a byte in the window to send (consider
+			 * a one-way stream!)
+			 */
+			tcp_respond(tp,
+			    tp->t_template, tp->rcv_nxt-1, tp->snd_una-1, 0);
+		}
+		tp->t_timer[TCPT_KEEP] = TCPTV_KEEP;
+		break;
+	dropit:
+		tp = tcp_drop(tp, ETIMEDOUT);
+		break;
+	}
+	return (tp);
+}
+                                                                                                                                /*
+ * Copyright (c) 1982, 1986 Regents of the University of California.
+ * All rights reserved.  The Berkeley software License Agreement
+ * specifies the terms and conditions for redistribution.
+ *
+ *	@(#)tcp_usrreq.c	7.1 (Berkeley) 6/5/86
+ */
+
+#include "param.h"
+#include "systm.h"
+#include "mbuf.h"
+#include "socket.h"
+#include "socketvar.h"
+#include "protosw.h"
+#include "errno.h"
+#include "stat.h"
+
+#include "../net/if.h"
+#include "../net/route.h"
+
+#include "in.h"
+#include "in_pcb.h"
+#include "in_systm.h"
+#include "ip.h"
+#include "ip_var.h"
+#include "tcp.h"
+#include "tcp_fsm.h"
+#include "tcp_seq.h"
+#include "tcp_timer.h"
+#include "tcp_var.h"
+#include "tcpip.h"
+#include "tcp_debug.h"
+
+/*
+ * TCP protocol interface to socket abstraction.
+ */
+extern	char *tcpstates[];
+struct	tcpcb *tcp_newtcpcb();
+int	tcpsenderrors;
+
+/*
+ * Process a TCP user request for TCP tb.  If this is a send request
+ * then m is the mbuf chain of send data.  If this is a timer expiration
+ * (called from the software clock routine), then timertype tells which timer.
+ */
+/*ARGSUSED*/
+tcp_usrreq(so, req, m, nam, rights)
+	struct socket *so;
+	int req;
+	struct mbuf *m, *nam, *rights;
+{
+	register struct inpcb *inp = sotoinpcb(so);
+	register struct tcpcb *tp;
+	int s = splnet();
+	int error = 0;
+	int ostate;
+
+	if (req == PRU_CONTROL)
+		return (in_control(so, (int)m, (caddr_t)nam,
+			(struct ifnet *)rights));
+	if (rights && rights->m_len) {
+		splx(s);
+		return (EINVAL);
+	}
+	/*
+	 * When a TCP is attached to a socket, then there will be
+	 * a (struct inpcb) pointed at by the socket, and this
+	 * structure will point at a subsidary (struct tcpcb).
+	 */
+	if (inp == 0 && req != PRU_ATTACH) {
+		splx(s);
+		return (EINVAL);		/* XXX */
+	}
+	if (inp) {
+		tp = intotcpcb(inp);
+		/* WHAT IF TP IS 0? */
+#ifdef KPROF
+		tcp_acounts[tp->t_state][req]++;
+#endif
+		ostate = tp->t_state;
+	} else
+		ostate = 0;
+	switch (req) {
+
+	/*
+	 * TCP attaches to socket via PRU_ATTACH, reserving space,
+	 * and an internet control block.
+	 */
+	case PRU_ATTACH:
+		if (inp) {
+			error = EISCONN;
+			break;
+		}
+		error = tcp_attach(so);
+		if (error)
+			break;
+		if ((so->so_options & SO_LINGER) && so->so_linger == 0)
+			so->so_linger = TCP_LINGERTIME;
+		tp = sototcpcb(so);
+		break;
+
+	/*
+	 * PRU_DETACH detaches the TCP protocol from the socket.
+	 * If the protocol state is non-embryonic, then can't
+	 * do this directly: have to initiate a PRU_DISCONNECT,
+	 * which may finish later; embryonic TCB's can just
+	 * be discarded here.
+	 */
+	case PRU_DETACH:
+		if (tp->t_state > TCPS_LISTEN)
+			tp = tcp_disconnect(tp);
+		else
+			tp = tcp_close(tp);
+		break;
+
+	/*
+	 * Give the socket an address.
+	 */
+	case PRU_BIND:
+		error = in_pcbbind(inp, nam);
+		if (error)
+			break;
+		break;
+
+	/*
+	 * Prepare to accept connections.
+	 */
+	case PRU_LISTEN:
+		if (inp->inp_lport == 0)
+			error = in_pcbbind(inp, (struct mbuf *)0);
+		if (error == 0)
+			tp->t_state = TCPS_LISTEN;
+		break;
+
+	/*
+	 * Initiate connection to peer.
+	 * Create a template for use in transmissions on this connection.
+	 * Enter SYN_SENT state, and mark socket as connecting.
+	 * Start keep-alive timer, and seed output sequence space.
+	 * Send initial segment on connection.
+	 */
+	case PRU_CONNECT:
+		if (inp->inp_lport == 0) {
+			error = in_pcbbind(inp, (struct mbuf *)0);
+			if (error)
+				break;
+		}
+		error = in_pcbconnect(inp, nam);
+		if (error)
+			break;
+		tp->t_template = tcp_template(tp);
+		if (tp->t_template == 0) {
+			in_pcbdisconnect(inp);
+			error = ENOBUFS;
+			break;
+		}
+		soisconnecting(so);
+		tp->t_state = TCPS_SYN_SENT;
+		tp->t_timer[TCPT_KEEP] = TCPTV_KEEP;
+		tp->iss = tcp_iss; tcp_iss += TCP_ISSINCR/2;
+		tcp_sendseqinit(tp);
+		error = tcp_output(tp);
+		break;
+
+	/*
+	 * Create a TCP connection between two sockets.
+	 */
+	case PRU_CONNECT2:
+		error = EOPNOTSUPP;
+		break;
+
+	/*
+	 * Initiate disconnect from peer.
+	 * If connection never passed embryonic stage, just drop;
+	 * else if don't need to let data drain, then can just drop anyways,
+	 * else have to begin TCP shutdown process: mark socket disconnecting,
+	 * drain unread data, state switch to reflect user close, and
+	 * send segment (e.g. FIN) to peer.  Socket will be really disconnected
+	 * when peer sends FIN and acks ours.
+	 *
+	 * SHOULD IMPLEMENT LATER PRU_CONNECT VIA REALLOC TCPCB.
+	 */
+	case PRU_DISCONNECT:
+		tp = tcp_disconnect(tp);
+		break;
+
+	/*
+	 * Accept a connection.  Essentially all the work is
+	 * done at higher levels; just return the address
+	 * of the peer, storing through addr.
+	 */
+	case PRU_ACCEPT: {
+		struct sockaddr_in *sin = mtod(nam, struct sockaddr_in *);
+
+		nam->m_len = sizeof (struct sockaddr_in);
+		sin->sin_family = AF_INET;
+		sin->sin_port = inp->inp_fport;
+		sin->sin_addr = inp->inp_faddr;
+		break;
+		}
+
+	/*
+	 * Mark the connection as being incapable of further output.
+	 */
+	case PRU_SHUTDOWN:
+		socantsendmore(so);
+		tp = tcp_usrclosed(tp);
+		if (tp)
+			error = tcp_output(tp);
+		break;
+
+	/*
+	 * After a receive, possibly send window update to peer.
+	 */
+	case PRU_RCVD:
+		(void) tcp_output(tp);
+		break;
+
+	/*
+	 * Do a send by putting data in output queue and updating urgent
+	 * marker if URG set.  Possibly send more data.
+	 */
+	case PRU_SEND:
+		sbappend(&so->so_snd, m);
+#ifdef notdef
+		if (tp->t_flags & TF_PUSH)
+			tp->snd_end = tp->snd_una + so->so_snd.sb_cc;
+#endif
+		error = tcp_output(tp);
+		if (error) {		/* XXX fix to use other path */
+			if (error == ENOBUFS)		/* XXX */
+				error = 0;		/* XXX */
+			tcpsenderrors++;
+		}
+		break;
+
+	/*
+	 * Abort the TCP.
+	 */
+	case PRU_ABORT:
+		tp = tcp_drop(tp, ECONNABORTED);
+		break;
+
+	case PRU_SENSE:
+		((struct stat *) m)->st_blksize = so->so_snd.sb_hiwat;
+		return (0);
+
+	case PRU_RCVOOB:
+		if ((so->so_oobmark == 0 &&
+		    (so->so_state & SS_RCVATMARK) == 0) ||
+		    so->so_options & SO_OOBINLINE ||
+		    tp->t_oobflags & TCPOOB_HADDATA) {
+			error = EINVAL;
+			break;
+		}
+		if ((tp->t_oobflags & TCPOOB_HAVEDATA) == 0) {
+			error = EWOULDBLOCK;
+			break;
+		}
+		m->m_len = 1;
+		*mtod(m, caddr_t) = tp->t_iobc;
+		if (((int)nam & MSG_PEEK) == 0)
+			tp->t_oobflags ^= (TCPOOB_HAVEDATA | TCPOOB_HADDATA);
+		break;
+
+	case PRU_SENDOOB:
+		if (sbspace(&so->so_snd) < -512) {
+			m_freem(m);
+			error = ENOBUFS;
+			break;
+		}
+		/*
+		 * According to RFC961 (Assigned Protocols),
+		 * the urgent pointer points to the last octet
+		 * of urgent data.  We continue, however,
+		 * to consider it to indicate the first octet
+		 * of data past the urgent section.
+		 * Otherwise, snd_up should be one lower.
+		 */
+		sbappend(&so->so_snd, m);
+		tp->snd_up = tp->snd_una + so->so_snd.sb_cc;
+		tp->t_force = 1;
+		error = tcp_output(tp);
+		tp->t_force = 0;
+		break;
+
+	case PRU_SOCKADDR:
+		in_setsockaddr(inp, nam);
+		break;
+
+	case PRU_PEERADDR:
+		in_setpeeraddr(inp, nam);
+		break;
+
+	/*
+	 * TCP slow timer went off; going through this
+	 * routine for tracing's sake.
+	 */
+	case PRU_SLOWTIMO:
+		tp = tcp_timers(tp, (int)nam);
+		req |= (int)nam << 8;		/* for debug's sake */
+		break;
+
+	default:
+		panic("tcp_usrreq");
+	}
+	if (tp && (so->so_options & SO_DEBUG))
+		tcp_trace(TA_USER, ostate, tp, (struct tcpiphdr *)0, req);
+	splx(s);
+	return (error);
+}
+
+tcp_ctloutput(op, so, level, optname, mp)
+	int op;
+	struct socket *so;
+	int level, optname;
+	struct mbuf **mp;
+{
+	int error = 0;
+	struct inpcb *inp = sotoinpcb(so);
+	register struct tcpcb *tp = intotcpcb(inp);
+	register struct mbuf *m;
+
+	if (level != IPPROTO_TCP)
+		return (ip_ctloutput(op, so, level, optname, mp));
+
+	switch (op) {
+
+	case PRCO_SETOPT:
+		m = *mp;
+		switch (optname) {
+
+		case TCP_NODELAY:
+			if (m == NULL || m->m_len < sizeof (int))
+				error = EINVAL;
+			else if (*mtod(m, int *))
+				tp->t_flags |= TF_NODELAY;
+			else
+				tp->t_flags &= ~TF_NODELAY;
+			break;
+
+		case TCP_MAXSEG:	/* not yet */
+		default:
+			error = EINVAL;
+			break;
+		}
+		(void)m_free(m);
+		break;
+
+	case PRCO_GETOPT:
+		*mp = m = m_get(M_WAIT, MT_SOOPTS);
+		m->m_len = sizeof(int);
+
+		switch (optname) {
+		case TCP_NODELAY:
+			*mtod(m, int *) = tp->t_flags & TF_NODELAY;
+			break;
+		case TCP_MAXSEG:
+			*mtod(m, int *) = tp->t_maxseg;
+			break;
+		default:
+			error = EINVAL;
+			break;
+		}
+		break;
+	}
+	return (error);
+}
+
+int	tcp_sendspace = 1024*4;
+int	tcp_recvspace = 1024*4;
+/*
+ * ogged off, the password would be removed.
+We discarded this because we could not guarantee the password would
+disappear unless we wrote a daemon, which itself could be compromised.
+The best solution along this line uses the ``alias'' feature
+of the C shell.
+Each net command is aliased with itself and the
+\fB\-l\fP, \fB\-p\fP options.
+When the user logs in,
+he sets a shell variable to his password.
+When he logs off, his shell dies and the passwords are forgotten.
+.RE
+.PP
+I believe the current alternatives are sufficient for a conscientious
+user to protect himself and still have an easy-to-use network interface.
+.SH
+.sp 1
+.ce
+Future Plans
+.sp .5
+.NH 0
+Hardware
+.PP
+The net has suffered with low speed hardware.
+Short-term plans include speeding up the current terminal
+interface hardware from 1200 Baud to 9600 Baud and writing a driver
+for the device to bypass the internal
+.UX
+character queues.
+This driver will improve the reliability of transmission and decrease the character
+interrupt overhead.
+The speedup from 1200 Baud to 9600 Baud may overload the systems due
+to the number of hardware interrupts it causes.
+.PP
+In the longer term, the EECS Department is considering acquiring
+direct-memory-access (DMA) devices such as the Logical Network Interface (LNI)
+or the Digital Corp. DMC-11 links for high-speed transmission.
+These devices are capable of over 1-megabit speeds, and
+would increase the speed of the current network by factors of hundreds.
+.NH
+Adding More Machines to the Network
+.PP
+The \s-2INGRES\s0 Research group and various other research units within
+the EECS department have expressed interest in being added to the network.
+.NH
+Remote Use of the Typesetter Facilities
+.PP
+The Computer Center A machine has a Graphics Systems phototypesetter
+and the VAX Research machine has a Versatec 36'' dot-matrix plotter
+with a
+.I troff
+simulator.
+Software now being debugged will allow remote use of the typesetter
+by running the
+.I troff
+program locally and sending the typesetter device codes to the remote
+machine.
+.PP
+This will distribute the typesetting load and help overloading on
+the A and VAX machines.
+It will also allow the use of
+.I troff
+macro packages only available on some machines.
+.NH
+Remote Mail Forwarding
+.PP
+The
+.UX
+mail programs will be modified to forward mail to another account on another
+machine, allowing a user with accounts on many machines to read it all on one
+designated machine.
+.SH
+.sp 1
+.ce
+Summary Points
+.sp .5
+.PP
+The author would like to stress these points about his experience:
+.IP 1.
+Success in building networking software depends on having ready access
+to the correct hardware.
+The minimum is two terminals connected to two usable machines with two
+magnetic tape drives or some other existing means of software transfer.
+.IP 2.
+Design in portability and security.
+More careful attention to machine dependence and security
+in the first phase would have saved much later re-programming.
+.IP 3.
+Develop good local debugging techniques.
+The ``self-loop'' trick for network debugging depends on the accuracy
+of that simulation.
+.UX
+pipes, for example, were not sufficient to simulate TTY lines
+because TTY lines are 7-bits with a restricted ASCII range.
+.IP 4.
+Encourage users to use the system.
+Their feed back is important.
+However, it is necessary to have an unused network link for new
+protocol development, etc.
+.IP 5.
+There is a fine line between support of an existing network and research.
+In the best of all possible worlds, support of research-developed
+software would be the responsibility of the systems staff
+for the machines it runs on.
+This is seldom the case.
+.IP 6.
+The concept of layers of networks was very helpful in this project.
+There appear to be these levels:
+.DS L
+.ce 99
+.ls 2
+.sp 2
+user interface
+queues and daemons
+command protocol
+packet protocol
+transmission protocol
+teletype lines
+.sp 2
+.ls 1
+.ce 0
+.DE
+These levels are quite distinct.
+If a new, better network not involving queues is built, the transfer of files
+could still be by
+.I netcp.
+If state-of-the-art link hardware is used, perhaps all of the levels
+below the command protocol could be discarded.
+.IP 7.
+The chief virtue of the current system is its extreme flexibility
+and low start-up costs.
+No modifications to the
+.UX
+kernel are required and all local features are conditionally
+specified in a header file.
+.IP 8.
+Networks are hard to build because
+.RS
+.IP a)
+They involve mutually-cooperating copies of software on (usually)
+differing computers.
+.IP b)
+Many options are not practical because of compatibility considerations \-
+new networks need drivers in unchangeable systems, and new protocols have to
+accept the old protocols until the old protocols are extinct.
+.RE
+                                                                                                                                                                                                                                                                                                                                                                                                        Bill Joy, Bob Fabry, Eric Schmidt (CS Division)
+Vance Vaughn, Ed Gould, Kirk Thege, Ricki Blau (CC)
+George Lavender(SRC, 2538 Channing Way, Campus)
+Bob Kridle (187M Cory), Asa Bromberger (384 Cory), Len Edmonsen (187M Cory), Eric Allman (380 Cory), Jim Kleckner (319 Cory)
+Dave Wasley (431 Davis Hall, Campus)
+John Saxer Naval Ocean Systems Center, Point Loma, San Diego 
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            .LP
+.nr LL 5.5i
+.LP
+.sp 20
+.sp .5i
+.ce 99
+.ps 14
+.ft B
+The Berkeley UNIX Network
+.ps
+.sp 2
+.ft I
+Eric Schmidt
+.ft R
+.sp 3
+.ce
+.sp .5i
+.RS
+.SH
+Overall Introduction
+.PP
+This set of papers documents a network constructed to satisfy the project
+option for the Master's degree from the EECS Department, C. S. Division,
+U. C. Berkeley.
+.PP
+The first paper is a technical description of the history of the project,
+details of implementation, and summary points.
+The second paper is an introduction being sold to many
+.UX
+users on the Berkeley campus.
+The third group of pages are the
+.UX
+Programmers Manual sections for the network commands available.
+The last paper is a manual for systems staff about operation
+and setup of the network.
+.LP
+.sp 2
+.sp 2
+.in 20
+.DS
+Eric Schmidt
+.sp
+June 1979
+.DE
+.in 0
+                                                                                                                                                                                                                                    +`    .   	ˆ    ..  ,`    appen.A -`    appen.B .`    appen.C /`    doc.I se0`    doc.II e1`    doc.III 2`    doc.IV e3`    intro.0 4`    intro.1 5`    intro.2 6`    intro.3 7`    intro.4 8`    intro.5 9`    macros e:`    c_macros  .g;`    Master e<`    Makefile  .g=`    life.c e>`   
+ twinkle1.c g?`   
+ twinkle2.c g@`  ˜  win_st.c   g                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    /*
+ * Copyright (c) 1980 Regents of the University of California.
+ * All rights reserved.  The Berkeley software License Agreement
+ * specifies the terms and conditions for redistribution.
+ */
+
+#ifndef lint
+static char sccsid[] = "@(#)twinkle2.c	6.1 (Berkeley) 4/24/86";
+#endif not lint
+
+extern int	_putchar();
+
+main()
+{
+	reg char	*sp;
+
+	srand(getpid());		/* initialize random sequence */
+
+	if (isatty(0)) {
+	       gettmode();
+	       if ((sp = getenv("TERM")) != NULL)
+		       setterm(sp);
+		signal(SIGINT, die);
+	}
+	else {
+		printf("Need a terminal on %d\n", _tty_ch);
+		exit(1);
+	}
+	_puts(TI);
+	_puts(VS);
+
+	noecho();
+	nonl();
+	tputs(CL, NLINES, _putchar);
+	for (;;) {
+		makeboard();		/* make the board setup */
+		puton('*');		/* put on '*'s */
+		puton(' ');		/* cover up with ' 's */
+	}
+}
+
+puton(ch)
+char	ch;
+{
+	reg LOCS	*lp;
+	reg int		r;
+	reg LOCS	*end;
+	LOCS		temp;
+	static int	lasty, lastx;
+
+	end = &Layout[Numstars];
+	for (lp = Layout; lp < end; lp++) {
+		r = rand() % Numstars;
+		temp = *lp;
+		*lp = Layout[r];
+		Layout[r] = temp;
+	}
+
+	for (lp = Layout; lp < end; lp++)
+			/* prevent scrolling */
+		if (!AM || (lp->y < NLINES - 1 || lp->x < NCOLS - 1)) {
+			mvcur(lasty, lastx, lp->y, lp->x);
+			putchar(ch);
+			lasty = lp->y;
+			if ((lastx = lp->x + 1) >= NCOLS)
+				if (AM) {
+					lastx = 0;
+					lasty++;
+				}
+				else
+					lastx = NCOLS - 1;
+		}
+}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            A_h_o
+.if t \f2%A A. V. Aho\f1
+.if n _%_A _D_. _S_. _H_i_r_s_c_h_b_e_r_g
+.if t \f2%A D. S. Hirschberg\f1
+.if n _%_A _J_. _D_. _U_l_l_m_a_n
+.if t \f2%A J. D. Ullman\f1
+.if n _%_J _J_o_u_r_. _A_C_M
+.if t \f2%J Jour. ACM\f1
+.if n _%_V _2_3
+.if t \f2%V 23\f1
+.if n _%_N _1
+.if t \f2%N 1\f1
+.if n _%_P _1_-_1_2
+.if t \f2%P 1-12\f1
+.if \nP=0 .if n _%_M _T_M _7_5_-_1_2_7_1_-_7
+.if \nP>0 .if n _%_M _M_e_m_o _n_u_m_b_e_r
+.if \nP=0 .if t \f2%M TM 75-1271-7\f1
+.if \nP>0 .if t \f2%M abcd\f1
+.if n _%_D _J_a_n_. _1_9_7_6
+.if t \f2%D Jan. 1976\f1
+
+w
+.if n _2_9_2
+.if t \f2292\f1
+q
+.if n _$
+.if t \f2$\f1
+.DE
+Finally, execute
+.I pub.run ,
+making sure to remember that you
+have prepared a new file ``new.1'':
+.DS
+\f2$\f1 pub.run new.1
+.DE
+and about fifteen minutes later the new index would be complete
+and all the changes would be included.
+.NH
+Printing a Publication List
+.PP
+There are two commands for printing a publication list,
+depending on whether you want to print one person's list,
+or the list of many people.
+To print a list for one person, use the
+.I pub.indiv
+command:
+.DS
+pub.indiv M Lesk
+.DE
+This runs off the list for M. Lesk and puts it in file ``output''.
+Note that no `.' is given after the initial.
+In case of ambiguity two initials can be used.
+Similarly, to get the list for group of people, say
+.DS
+pub.org xxx
+.DE
+which prints all the publications of the members of organization
+.I xxx ,
+taking the names for the list in the file
+.I /usr/dict/papers/centlist/xxx .
+This command should normally be run in the background; it takes
+perhaps 15 minutes.
+Two options are available with these commands:
+.DS
+pub.indiv \-p M Lesk
+.DE
+prints only the papers, leaving out unpublished notes, patents, etc.
+Also
+.DS
+pub.indiv \-t M Lesk | gcat
+.DE
+prints a typeset copy, instead of a computer printer copy.
+In this case it has been directed to an alternate typesetter with the
+`gcat' command.
+These options may be used together, and may be used with the
+.I pub.org
+command as well.
+For example, to print
+only the papers for all of organization zzz and typeset them,
+you could type
+.DS
+pub.center \-t \-p zzz | gcat &
+.DE
+These publication lists are printed double column with a citation style
+taken from a set of publication list macros; the macros, of course, can be
+changed easily to adjust the format of the lists.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       D`    .   &    ..  E`    0.t F`    1.t G`    2.t H`    3.t I`    4.t J`    5.t K`    6.t L`    7.t M`    Makefile t.sN`  t spell.ok t.s                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                .\" Copyright (c) 1983 Regents of the University of California.
+.\" All rights reserved.  The Berkeley software License Agreement
+.\" specifies the terms and conditions for redistribution.
+.\"
+.\"	@(#)0.t	6.4 (Berkeley) 5/14/86
+.\"
+.if n .ND
+.TL
+4.3BSD Line Printer Spooler Manual
+.EH 'SMM:6-%''4.3BSD Line Printer Spooler Manual'
+.OH '4.3BSD Line Printer Spooler Manual''SMM:6-%'
+.AU
+Ralph Campbell
+.AI
+Computer Systems Research Group
+Computer Science Division
+Department of Electrical Engineering and Computer Science
+University of California, Berkeley
+Berkeley, CA  94720
+.AB
+.FS
+* UNIX is a trademark of Bell Laboratories.
+.FE
+This document describes the structure and installation procedure
+for the line printer spooling system
+developed for the 4.3BSD version
+of the UNIX* operating system.
+.de D?
+.ie \\n(.$>1 Revised \\$1 \\$2 \\$3
+.el DRAFT of \n(mo/\n(dy/\n(yr
+..
+.sp 2
+.LP
+.D? May 14, 1986
+.AE
+.de IR
+\fI\\$1\fP\\$2
+..
+.de DT
+.TA 8 16 24 32 40 48 56 64 72 80
+..
+                                                   #
+# Copyright (c) 1986 Regents of the University of California.
+# All rights reserved.  The Berkeley software License Agreement
+# specifies the terms and conditions for redistribution.
+#
+#	@(#)Makefile	6.1 (Berkeley) 4/17/86
+#
+SRCS=	0.t 1.t 2.t 3.t 4.t 5.t 6.t 7.t
+MACROS=	-msU
+PRINTER=Pdp
+EQN=	deqn -${PRINTER}
+TBL=	dtbl -${PRINTER}
+TROFF=	ditroff -${PRINTER}
+
+paper:	paper.${PRINTER}
+	lpr -${PRINTER} -n paper.${PRINTER}
+
+paper.${PRINTER}: ${SRCS}
+	${TBL} ${SRCS} | ${TROFF} ${MACROS} -t > paper.${PRINTER}
+
+clean:
+	rm -f paper.${PRINTER} *.spell errs Errs make.out
+
+spell:	${SRCS}
+	@for i in ${SRCS}; do \
+		echo $$i; spell $$i | sort | comm -23 - spell.ok > $$i.spell; \
+	done
+                                                                                                                                                                                                                                                                                                                                                       /*
+ * Copyright (c) 1982, 1986 Regents of the University of California.
+ * All rights reserved.  The Berkeley software License Agreement
+ * specifies the terms and conditions for redistribution.
+ *
+ *	@(#)udp_var.h	7.1 (Berkeley) 6/5/86
+ */
+
+/*
+ * UDP kernel structures and variables.
+ */
+struct	udpiphdr {
+	struct 	ipovly ui_i;		/* overlaid ip structure */
+	struct	udphdr ui_u;		/* udp header */
+};
+#define	ui_next		ui_i.ih_next
+#define	ui_prev		ui_i.ih_prev
+#define	ui_x1		ui_i.ih_x1
+#define	ui_pr		ui_i.ih_pr
+#define	ui_len		ui_i.ih_len
+#define	ui_src		ui_i.ih_src
+#define	ui_dst		ui_i.ih_dst
+#define	ui_sport	ui_u.uh_sport
+#define	ui_dport	ui_u.uh_dport
+#define	ui_ulen		ui_u.uh_ulen
+#define	ui_sum		ui_u.uh_sum
+
+struct	udpstat {
+	int	udps_hdrops;
+	int	udps_badsum;
+	int	udps_badlen;
+};
+
+#define	UDP_TTL		30		/* time to live for UDP packets */
+
+#ifdef KERNEL
+struct	inpcb udb;
+struct	udpstat udpstat;
+#endif
+                                                                                                                /*
+ * Copyright (c) 1985, 1986 Regents of the University of California.
+ * All rights reserved.  The Berkeley software License Agreement
+ * specifies the terms and conditions for redistribution.
+ *
+ *	@(#)in_var.h	7.1 (Berkeley) 6/5/86
+ */
+
+/*
+ * Interface address, Internet version.  One of these structures
+ * is allocated for each interface with an Internet address.
+ * The ifaddr structure contains the protocol-independent part
+ * of the structure and is assumed to be first.
+ */
+struct in_ifaddr {
+	struct	ifaddr ia_ifa;		/* protocol-independent info */
+#define	ia_addr	ia_ifa.ifa_addr
+#define	ia_broadaddr	ia_ifa.ifa_broadaddr
+#define	ia_dstaddr	ia_ifa.ifa_dstaddr
+#define	ia_ifp		ia_ifa.ifa_ifp
+	u_long	ia_net;			/* network number of interface */
+	u_long	ia_netmask;		/* mask of net part */
+	u_long	ia_subnet;		/* subnet number, including net */
+	u_long	ia_subnetmask;		/* mask of net + subnet */
+	struct	in_addr ia_netbroadcast; /* broadcast addr for (logical) net */
+	int	ia_flags;
+	struct	in_ifaddr *ia_next;	/* next in list of internet addresses */
+};
+/*
+ * Given a pointer to an in_ifaddr (ifaddr),
+ * return a pointer to the addr as a sockadd_in.
+ */
+#define	IA_SIN(ia) ((struct sockaddr_in *)(&((struct in_ifaddr *)ia)->ia_addr))
+/*
+ * ia_flags
+ */
+#define	IFA_ROUTE	0x01		/* routing entry installed */
+
+#ifdef	KERNEL
+struct	in_ifaddr *in_ifaddr;
+struct	in_ifaddr *in_iaonnetof();
+struct	ifqueue	ipintrq;		/* ip packet input queue */
+#endif
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                ../sys/tags                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     /*
+ * Copyright (c) 1982, 1986 Regents of the University of California.
+ * All rights reserved.  The Berkeley software License Agreement
+ * specifies the terms and conditions for redistribution.
+ *
+ *	@(#)ip.h	7.1 (Berkeley) 6/5/86
+ */
+
+/*
+ * Definitions for internet protocol version 4.
+ * Per RFC 791, September 1981.
+ */
+#define	IPVERSION	4
+
+/*
+ * Structure of an internet header, naked of options.
+ *
+ * We declare ip_len and ip_off to be short, rather than u_short
+ * pragmatically since otherwise unsigned comparisons can result
+ * against negative integers quite easily, and fail in subtle ways.
+ */
+struct ip {
+#ifdef vax
+	u_char	ip_hl:4,		/* header length */
+		ip_v:4;			/* version */
+#endif
+	u_char	ip_tos;			/* type of service */
+	short	ip_len;			/* total length */
+	u_short	ip_id;			/* identification */
+	short	ip_off;			/* fragment offset field */
+#define	IP_DF 0x4000			/* dont fragment flag */
+#define	IP_MF 0x2000			/* more fragments flag */
+	u_char	ip_ttl;			/* time to live */
+	u_char	ip_p;			/* protocol */
+	u_short	ip_sum;			/* checksum */
+	struct	in_addr ip_src,ip_dst;	/* source and dest address */
+};
+
+/*
+ * Definitions for options.
+ */
+#define	IPOPT_COPIED(o)		((o)&0x80)
+#define	IPOPT_CLASS(o)		((o)&0x60)
+#define	IPOPT_NUMBER(o)		((o)&0x1f)
+
+#define	IPOPT_CONTROL		0x00
+#define	IPOPT_RESERVED1		0x20
+#define	IPOPT_DEBMEAS		0x40
+#define	IPOPT_RESERVED2		0x60
+
+#define	IPOPT_EOL		0		/* end of option list */
+#define	IPOPT_NOP		1		/* no operation */
+
+#define	IPOPT_RR		7		/* record packet route */
+#define	IPOPT_TS		68		/* timestamp */
+#define	IPOPT_SECURITY		130		/* provide s,c,h,tcc */
+#define	IPOPT_LSRR		131		/* loose source route */
+#define	IPOPT_SATID		136		/* satnet id */
+#define	IPOPT_SSRR		137		/* strict source route */
+
+/*
+ * Offsets to fields in options other than EOL and NOP.
+ */
+#define	IPOPT_OPTVAL		0		/* option ID */
+#define	IPOPT_OLEN		1		/* option length */
+#define IPOPT_OFFSET		2		/* offset within option */
+#define	IPOPT_MINOFF		4		/* min value of above */
+
+/*
+ * Time stamp option structure.
+ */
+struct	ip_timestamp {
+	u_char	ipt_code;		/* IPOPT_TS */
+	u_char	ipt_len;		/* size of structure (variable) */
+	u_char	ipt_ptr;		/* index of current entry */
+	u_char	ipt_flg:4,		/* flags, see below */
+		ipt_oflw:4;		/* overflow counter */
+	union {
+		n_long	ipt_time[1];
+		struct	ipt_ta {
+			struct in_addr ipt_addr;
+			n_long ipt_time;
+		} ipt_ta[1];
+	}
+};
+
+/* flag bits for ipt_flg */
+#define	IPOPT_TS_TSONLY		0		/* timestamps only */
+#define	IPOPT_TS_TSANDADDR	1		/* timestamps and addresses */
+#define	IPOPT_TS_PRESPEC	2		/* specified modules only */
+
+/* bits for security (not byte swapped) */
+#define	IPOPT_SECUR_UNCLASS	0x0000
+#define	IPOPT_SECUR_CONFID	0xf135
+#define	IPOPT_SECUR_EFTO	0x789a
+#define	IPOPT_SECUR_MMMM	0xbc4d
+#define	IPOPT_SECUR_RESTR	0xaf13
+#define	IPOPT_SECUR_SECRET	0xd788
+#define	IPOPT_SECUR_TOPSECRET	0x6bc5
+
+/*
+ * Internet implementation parameters.
+ */
+#define	MAXTTL		255		/* maximum time to live (seconds) */
+#define	IPFRAGTTL	15		/* time to live for frag chains */
+#define	IPTTLDEC	1		/* subtracted when forwarding */
+
+#define	IP_MSS		576		/* default maximum segment size */
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  ueue destined for the \*Y machine.
+.I Netq
+summarizes requests from other users.
+The command
+.DS
+% netq \-a
+.DE
+will print the requests from all users.
+.sp 1.5
+.NH
+\*e
+.PP
+If you want to cancel your net request, and ``b99999''
+(see the
+.I netq
+example above) is your ``Code,'' use the command
+.DS
+% netrm b99999
+.DE
+which will remove the request (if it hasn't already been sent).
+Furthermore,
+.DS
+% netrm \-
+.DE
+will remove all your net requests in the queues on the local machine
+(you must have made the request in order to remove it).
+.sp 1.5
+.NH
+\*f
+.PP
+To send mail to remote machines, use the
+.I mail
+command with the remote account prefixed by the destination machine's
+name and a `:'.
+``\*Y:schmidt'', for example, refers to an account ``schmidt'' on the \*Y machine.
+The full sequence is illustrated below:
+.DS
+% mail \*Y:schmidt
+\ \ \ \ {your message to user ``schmidt'' }
+{control-d}
+.DE
+This will send to user ``schmidt'' on the \*Y machine the text you type in.
+As with intra-machine mail, the message is terminated by a control-d.
+.PP
+You do not need an account on a remote machine to send mail to a user there.
+.ne 9v
+.sp 1.5
+.NH
+\*g
+.PP
+It is also possible to read your mail on remote machines.
+From the \*X machine, the command
+.DS
+% netmail \*Y
+.DE
+sends a command to the \*Y machine to take any mail you may have and mail
+it back to you.
+As a precaution, the mail on the remote machine (\*Y in this example)
+is appended to the file ``mbox''.
+Netmail has
+\fB\-l\fP, \fB\-p\fP, \fB\-n\fP and \fB\-f\fP options just like
+.I netcp.
+If a machine is not specified, the default machine\(dg is used.
+.FS
+\(dg (see ``Setting Defaults'' below)
+.FE
+If the 
+.B
+\-q
+.R
+option is specified (like
+.I netcp)
+no message is sent back if there is no mail.
+.PP
+Netmail also takes a
+.B
+\-c
+.R
+option:
+.DS
+% netmail\ \-c\ \*Y:username
+.DE
+which turns the command into a ``mail check'' command.
+A message is sent back telling the user whether the specified username
+has mail.
+No password is required.
+As above, the
+.B
+\-q
+.R
+option suppresses the message if there is no mail.
+This command was designed to be put in C shell ``.login'' files.
+.sp 1.5
+.NH
+\*h
+.PP
+Remote lineprinters can be used with the
+.I netlpr
+command:
+.DS
+\fBnetlpr\fR [\fB\-m\fI machine\fR] [\fB\-c\fI command\fR] \fIfile1 file2 ... filen\fR
+.DE
+which sends the files its arguments represent to the lineprinter on
+.I machine.
+It will prompt you for an account and password.
+The \fB\-l\fR, \fB\-p\fR, \fB\-n\fR and \fB\-f\fR options may be supplied,
+as in the
+.I netcp
+command.
+If the 
+.B
+\-c
+.R
+option is specified, a different printing
+.I command
+(default is ``lpr'') can be specified;
+see Appendix A for the list of printers allowed.
+Copies of the files are not made in the remote account.
+.sp 1.5
+.NH
+Net Prototype Command
+.PP
+The above commands all use internally one more general command\(emthe
+.I net
+command which has the following form:
+.DS
+.ds a \fR[\fP
+.ds b \fR]\fP
+\fBnet \*a\-m\fI machine\*b \*a\fB\-l\fI login\*b \*a\fB\-p\fI password\*b \*a\fB\-r\fI file\*b \*a\fB\-\*b \*a\-n\*b \*a\-q\*b \*a\-f\*b\fI command\fR
+.DE
+.I Net
+sends the given command to a remote machine.
+The machine may be specified either with the
+.B
+\-m
+.R
+option or in the ``.netrc'' file
+(for the specific names, see Appendix A).
+If not specified, a default is used.
+\fB\-l\fP, \fB\-p\fP, \fB\-n\fP, \fB\-q\fP and \fB\-f\fP are as explained above for the
+.I netcp
+command.
+The \fB\-r\fP option indicates the local
+.I file
+which will receive the output (the standard output and standard error files) of
+.I command
+when it is executed on the remote machine.
+By default this output is written or mailed to you.
+Thus, for example, to find out who is on the \*Y machine when you are
+logged in on the \*X machine,
+execute the following command:
+.DS
+% net \-m \*Y "who"
+.DE
+which will run the
+.I who
+command on the \*Y machine;
+the response will be written or mailed to you.
+Similarly,
+.DS
+% net \-m \*Y \-r resp "who"
+.DE
+will take the output (result)
+and return it to you in file `resp' on the local machine.
+If instead you want the result of the
+.I who
+command to remain on the \*Y machine the command
+.DS
+% net \-m \*Y "who >resp"
+.DE
+will create a file `resp' in your login directory on the \*Y machine.
+It is a good idea to put the command in quotes, and it
+.I must
+be in quotes if I/O redirection
+(<, >, or other syntax special to the shell) is used.
+.PP
+If you do not specify the remote machine explicitly (or in the ``.netrc''
+file, explained below), the default machine will be used (see Appendix A).
+.PP
+The
+.B
+\-
+.R
+option indicates that standard input from the
+local machine is to be supplied to the command executing remotely
+as standard input, thus if defaults for the login name and password
+are set up correctly as described below,
+.DS
+% net \-m \*Y \- "mail ripper"
+\ \ \ \ { message to ripper }
+{control-d}
+.DE
+is equivalent to
+.DS
+% mail \*Y:ripper
+\ \ \ \ { message to ripper }
+{control-d}
+.DE
+.PP
+The net command also has other options not documented here.
+See the
+.UX
+Programmer's Manual sections for more details.
+.SH
+Setting Defaults
+.PP
+Instead of repeatedly typing frequently-needed options
+for every invocation of the various network commands, the user may supply
+in his login directory a file ``.netrc'', which contains the repeated
+information.
+The ``.netrc'' file is typically used to specify login names
+on remote machines, as well as other options.
+An example of such a file is given below:
+.DS
+default \*Y
+machine \*Y, login dracula
+machine \*Z login dracula, quiet yes
+.DE
+.LP
+This example sets the default machine to \*Y
+so that for net commands where a remote machine is not explicitly specified,
+the command will then be executed on the \*Y machine.
+The second and third lines indicate
+for the \*Y and \*Z machines a login name of ``dracula''
+should be used to network commands, and to assume the ``quiet''
+option on all commands destined for the \*Z machine.
+The complete list of options that may follow the machine indication is:
+.sp 1
+.TS
+center box;
+cB s s s
+l l l l.
+ .netrc options for each machine
+Option	Parameter	Default	Comment
+_
+\fBlogin\fP	name	localname	login name for remote machine
+\fBpassword\fP	password	(none)	password for remote login name
+\fBcommand\fP	command	(none)	default command to be executed
+\fBwrite\fP	yes/no	yes	if possible, write to user
+\fBforce\fP	yes/no	no	always prompt for name and password
+\fBquiet\fP	yes/no	no	like the \fB\-q\fR option
+.TE
+.sp 1
+.PP
+In setting up the ``.netrc'' file, if the ``default'' option is present,
+it must be the first line of the file.
+The information for each machine starts with the word
+``machine'' and the machine name and continues
+one or more lines up to another machine indication
+(or the end of the file).
+Input is free-format.
+Multiple spaces, tabs, newlines, and commas
+serve as separators between words.
+Double quotes (") must surround passwords with blanks or special
+characters in them.
+.SH 
+How to Specify Remote Passwords
+.PP
+For the commands which require the password for the account on the remote
+machine, there are a number of ways to specify the password:
+.IP 1)
+letting the command ask you, as in the
+.I netcp
+example in Section 1,
+.IP 2)
+specifying it with an alias (if using the C shell),
+.IP 3)
+putting it into the current environment if the local machine is running 
+.UX
+Version 7,
+.IP 4)
+specifying it on the command line with the
+.B
+\-p
+.R
+option,
+.IP 5)
+storing it in the ``.netrc'' file, described in the previous section.
+.PP
+These can be ranked in order of security, from 1 = greatest security
+to 5 = lowest security, from the point of view of security of passwords
+from unauthorized use by other users and possibly an illicit super-user.
+Each is described in turn:
+.IP 1)
+If you make no effort to specify the remote password elsewhere,
+the network commands will prompt you with:
+.DS
+Password(mach:username):
+.DE
+Type your password, followed by a carriage return.
+This is the most secure mode of specifying passwords.
+If the net command is executed in the background
+(i.e. with ``&'') then the command can't read the password from
+your terminal and one of options 2-5 below must be used.
+.IP 2)
+The alias feature of.\"	@(#)pubuse	6.1 (Berkeley) 6/2/86
+.\"
+..... use tbl and troff \-ms
+.if \nP=0 .IM
+.TL
+Updating Publication Lists
+.AU
+M. E. Lesk
+.NH
+Introduction.
+.PP
+.\".if \nP>0 .pn 14
+This note describes several commands to update the
+publication lists.
+The data base consisting of these lists is kept in
+a set of files in
+the directory
+.I /usr/dict/papers
+on the Version 7
+.UX
+system.
+The reason for having special commands to update these files is
+that they are indexed, and the only reasonable way to find the
+items to be updated is to use the index.
+However, altering the files
+destroys the usefulness of the index,
+and makes further editing difficult.
+So the recommended procedure is to
+.IP (1)
+Prepare additions, deletions, and changes in separate files.
+.IP (2)
+Update the data base and reindex.
+.LP
+Whenever you make changes, etc. it is necessary to run
+the ``add & index'' step before logging off; otherwise the
+changes do not take effect.
+The next section shows the format of the files
+in the data base.
+After that, the procedures for
+preparing additions, preparing changes, preparing deletions,
+and updating the public data base are given.
+.NH
+Publication Format.
+.PP
+The format of a data base entry is given completely in ``Some Applications
+of Inverted Indexes on UNIX'' by M. E. Lesk,
+the first part of this report,
+.if \nP=0 (also TM 77-1274-17)
+and is summarized here via a few examples.
+In each example, first the output format for an item is shown,
+and then the corresponding data base entry.
+.LP
+.DS
+.ti 0
+Journal article:
+.fi
+.ll 5i
+A. V. Aho, D. J. Hirschberg, and J. D. Ullman, ``Bounds
+on the Complexity of the Maximal Common Subsequence Problem,''
+.I
+J. Assoc. Comp. Mach.,
+.R
+vol. 23, no. 1, pp. 1-12 (Jan. 1976).
+.nf
+.ll
+.sp
+%T Bounds on the Complexity of the Maximal Common
+Subsequence Problem
+%A A. V. Aho
+%A D. S. Hirschberg
+%A J. D. Ullman
+%J J. Assoc. Comp. Mach.
+%V 23
+%N 1
+%P 1-12
+%D Jan. 1976
+.if \nP=0 %M TM 75-1271-7
+.if \nP>0 %M Memo abcd...
+.DE
+.DS
+.ti 0
+Conference proceedings:
+.fi
+.ll 5i
+B. Prabhala and R. Sethi, ``Efficient Computation of Expressions with Common
+Subexpressions,''
+.I
+Proc. 5th ACM Symp. on Principles of Programming Languages,
+.R
+pp. 222-230, Tucson, Ariz. (January 1978).
+.nf
+.ll
+.sp
+%A B. Prabhala
+%A R. Sethi
+%T Efficient Computation of Expressions with
+Common Subexpressions
+%J Proc. 5th ACM Symp. on Principles
+of Programming Languages
+%C Tucson, Ariz.
+%D January 1978
+%P 222-230
+.DE
+.DS
+.ti 0
+Book:
+.fi
+.ll 5i
+B. W. Kernighan and P. J. Plauger,
+.I
+Software Tools,
+.R
+Addison-Wesley, Reading, Mass. (1976).
+.nf
+.ll
+.sp
+%T Software Tools
+%A B. W. Kernighan
+%A P. J. Plauger
+%I Addison-Wesley
+%C Reading, Mass.
+%D 1976
+.DE
+.DS
+.ti 0
+Article within book:
+.fi
+.ll 5i
+J. W. de Bakker, ``Semantics of Programming Languages,''
+pp. 173-227 in
+.I
+Advances in Information Systems Science, Vol. 2,
+.R
+ed. J. T. Tou, Plenum Press, New York, N. Y. (1969).
+.nf
+.ll
+.sp
+%A J. W. de Bakker
+%T Semantics of programming languages
+%E J. T. Tou
+%B Advances in Information Systems Science, Vol. 2
+%I Plenum Press
+%C New York, N. Y.
+%D 1969
+%P 173-227
+.DE
+.DS
+.ti 0
+Technical Report:
+.fi
+.ll 5i
+F. E. Allen, ``Bibliography on Program Optimization,''
+Report RC-5767, IBM T. J. Watson Research Center,
+Yorktown Heights, N. Y. (1975).
+.nf
+.ll
+.sp
+%A F. E. Allen
+%D 1975
+%T Bibliography on Program Optimization
+%R Report RC-5767
+%I IBM T. J. Watson Research Center
+%C Yorktown Heights, N. Y.
+.DE
+.DS
+.di xx
+.ti 0
+Technical Memorandum:
+.fi
+.ll 5i
+A. V. Aho, B. W. Kernighan and P. J. Weinberg,
+``AWK \- Pattern Scanning and Processing Language'',
+TM 77-1271-5, TM 77-1273-12, TM 77-3444-1 (1977).
+.nf
+.ll
+.sp
+%T AWK \- Pattern Scanning and Processing Language
+%A A. V. Aho
+%A B. W. Kernighan
+%A P. J. Weinberger
+%M TM 77-1271-5, TM 77-1273-12, TM 77-3444-1
+%D 1977
+.di
+.if \nP=0 .xx
+.rm xx
+.DE
+.LP
+Other forms of publication can be entered similarly.
+Note that conference
+proceedings are entered as if journals,
+with the conference name on a
+.I %J
+line.
+This is also sometimes appropriate for obscure publications
+such as series of lecture notes.
+When something is both a report and an article, or
+both a memorandum and an article, enter all necessary information
+for both; see the first article above, for example.
+Extra information (such as ``In preparation'' or ``Japanese translation'')
+should be placed on a line beginning
+.I %O .
+The most common use of %O lines now is for ``Also in ...'' to give
+an additional reference to a secondary appearance of the same paper.
+.PP
+Some of the possible fields of a citation are:
+.TS
+c c 5 c c
+a l   a l .
+Letter	Meaning	Letter	Meaning
+A	Author	K	Extra keys
+B	Book including item	N	Issue number
+C	City of publication	O	Other
+D	Date	P	Page numbers
+E	Editor of book	R	Report number
+I	Publisher (issuer)	T	Title of item
+J	Journal name	V	Volume number
+.TE
+Note that
+.I %B
+is used to indicate the title
+of a book containing the article being entered;
+when an item is an entire book, the title should
+be entered with a
+.I %T
+as usual.
+.PP
+Normally, the order of items does not matter.  The only exception is
+that if there are multiple authors (%A lines) the order of authors
+should be that on the paper.
+If a line is too long, it may be continued on to the next line;
+any line not beginning with % or . (dot) is assumed to be
+a continuation of the previous line.
+Again, see the first article above for an example of a long title.
+Except for authors, do not repeat any items; if two %J lines are
+given, for example, the first is ignored.
+Multiple items on the same file should be separated by blank lines.
+.PP
+Note that in formatted printouts of the file, the
+exact appearance of the items is determined by
+a set of macros and the formatting programs.
+Do not try to adjust fonts, punctuation, etc. by editing
+the data base; it is wasted effort.  In case someone has
+a real need for a differently-formatted output, a new set
+of macros can easily be generated to provide alternative
+appearances of the citations.
+.NH
+Updating and Re-indexing.
+.PP
+This section describes the commands that are used to manipulate
+and change the data base.
+It explains the procedures for (a) finding references in the data base,
+(b) adding new references, (c) changing existing references, and (d)
+deleting references.
+Remember that all changes, additions, and deletions are done by preparing
+separate files and then running an `update and reindex' step.
+.PP
+.I
+Checking what's there now.
+.R
+Often you will want to know what is currently in the data base.
+There is a special command
+.I lookbib
+to look for things and print them
+out.
+It searches for articles based on words in the title, or the author's name,
+or the date.
+For example, you could find the first paper above with
+.DS
+lookbib aho ullman maximal subsequence 1976
+.DE
+or
+.DS
+lookbib aho ullman hirschberg
+.DE
+.LP
+If you don't give enough words, several items will be found;
+if you spell some wrong, nothing will be found.
+There are around 4300 papers in the public file; you should
+always use this command to check when you are not sure
+whether a certain paper is there or not.
+.PP
+.I
+Additions.
+.R
+To add new papers, just type in, on one or more files, the citations

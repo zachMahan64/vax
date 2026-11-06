@@ -1,0 +1,1846 @@
+tion (cons (car l) (cdr location)))))
+                  (let ((p (si:package-super-package pkg)))
+                    (or (memq p (car location))
+                        (memq p (cdr location))
+                        (rplacd location (cons p (cdr location)))))
+		  (or (cdr location) (return (setq val 't)))
+		  (rplacd location
+			  (prog1 (cddr location)
+				 (rplaca location
+					 (rplacd (cdr location)
+						 (car location)))))
+		  (setq pkg (caar location))
+		  (setq symtab (si:package-symbol-table pkg))
+		  (setq index (vector-length symtab))
+		  (go lp))
+	       ((symbolp (vref symtab index)) (return ()))
+	       ('t (go lp))))
+    (values val pkg index location))
+
+#+Run-in-Maclisp
+(defun loop-test-and-step-mapatoms (ob list index)
+    (loop-test-and-step-mapatoms-local ob list index))
+
+#-Run-in-Maclisp
+(defun loop-test-and-step-mapatoms-local (pkg index symtab &aux val)
+    (prog ()
+      lp (cond ((-p (setq index (1-& index))) (return (setq val 't)))
+	       ((symbolp (vref symtab index)) (return ()))(setq rcs-cmufncs-
+   "$Header: /usr/lib/lisp/cmufncs.l,v 1.1 83/01/29 18:34:20 jkf Exp $")
+
+(eval-when (compile eval) (load 'cmumacs))
+
+(declare (special filelst %changes $%dotflg %prevfn% %%cfn part %%l
+		  lastword %trcflg form fn))
+(def tab (lexpr (n)
+		(prog (nn prt) (setq nn (arg 1))
+			       (cond ((> n 1)(setq prt (arg 2))))
+			       (cond ((> (nwritn prt) nn) (terpri prt)))
+			       (printblanks (- nn (nwritn prt)) prt))))
+
+
+(dv $%dotflg nil)
+(def %lineread
+     (lambda 
+      (chan)
+      (prog (ans)
+       loop (setq ans (cons (read chan 'EOF) ans))
+	    (cond ((eq (car ans) 'EOF) (return (reverse (cdr ans)))))
+       loop2(cond ((eq 10 (tyipeek chan)) (return (reverse ans)))
+                  ((memq (tyipeek chan) '(41 93))
+                   (tyi chan)
+                   (go loop2))
+                  (t (go loop))))))
+
+
+(dv %prevfn% " ")
+(dv %trcflg t)
+   
+(def attach
+     (lambda 
+      (x y)
+      (cond ((dtpr y) (rplacd y (cons (car y) (cdr y))) (rplaca y x))
+            (t (eprint y) (error '"IS AN ATOM, CAN'T BE ATTACHED TO")))))
+
+(dv %changes ())
+
+(def dremove
+   (lambda (x l)
+	   (cond ((atom l) nil)
+		 ((eq x (car l))
+		  (cond ((cdr l)
+			 (rplaca l (cadr l))
+			 (rplacd l (cddr l))
+			 (dremove x l))))
+		 (t (prog (z)
+			  (setq z l)
+		    lp    (cond ((atom (cdr l)) (return z))
+				((eq x (cadr l)) (rplacd l (cddr l)))
+				(t (setq l (cdr l))))
+			  (go lp))))))
+(def dreverse
+     (lambda (l)
+      (prog (l1 y z)
+            (setq l1 l)
+       l1   (cond
+             ((atom (setq y l))
+              (cond ((or (null z) (null (cdr z))) (return z))
+                    ((null (cddr z))
+                     (setq y (car l1))
+                     (rplaca l1 (car z))
+                     (rplaca z y)
+                     (rplacd l1 z)
+                     (rplacd z nil)
+                     (return l1))
+                    (t (rplacd (Cnth z (sub1 (length z))) z)
+                       (setq y (car l1))
+                       (rplaca l1 (car z))
+                       (rplaca z y)
+                       (rplacd l1 (cdr z))
+                       (rplacd z nil)
+                       (return l1)))))
+            (setq l (cdr l))
+            (setq z (rplacd y z))
+            (go l1))))
+
+(def dsubst
+     (lambda (x y z)
+      (prog (b)
+            (cond ((eq y (setq b z)) (return (copy x))))
+       lp   (cond ((atom z) (return b))
+                  ((cond ((symbolp y) (eq y (car z))) (t (equal y (car z))))
+                   (rplaca z (copy x)))
+                  (t (dsubst x y (car z))))
+            (cond ((and y (eq y (cdr z))) (rplacd z (copy x)) (return b)))
+            (setq z (cdr z))
+            (go lp))))
+
+(putd 'eqstr (getd 'equal))
+
+; where are the functions this calls??
+(def every
+     (lambda 
+      (everyx everyfn1 everyfn2)
+      (prog nil
+       a    (cond ((null everyx) (return t))
+                  ((funcall everyfn1 (car everyx))
+                   (setq everyx
+                         (cond ((null everyfn2) (cdr everyx))
+                               (t (funcall everyfn2 everyx))))
+                   (go a))
+                  (t (return nil))))))
+(def insert
+     (lambda 
+      (x l comparefn nodups)
+      (cond ((null l) (list x))
+            ((atom l)
+             (eprint l)
+             (error '"is an atom, can't be inserted into"))
+            (t (cond
+                ((null comparefn) (setq comparefn (function alphalessp))))
+               (prog (l1 n n1 y)
+                     (setq l1 l)
+                     (setq n (length l))
+                a    (setq n1 (*quo (add1 n) 2))
+                     (setq y (Cnth l1 n1))
+                     (cond ((< n 3)
+                            (cond ((funcall comparefn x (car y))
+                                   (cond
+                                    ((not
+                                      (and nodups (equal x (car y))))
+                                     (rplacd y (cons (car y) (cdr y)))
+                                     (rplaca y x))))
+                                  ((eq n 1) (rplacd y (cons x (cdr y))))
+                                  ((funcall comparefn x (cadr y))
+                                   (cond
+                                    ((not
+                                      (and nodups (equal x (cadr y))))
+                                     (rplacd (cdr y)
+                                             (cons (cadr y) (cddr y)))
+                                     (rplaca (cdr y) x))))
+                                  (t (rplacd (cdr y) (cons x (cddr y))))))
+                           ((funcall comparefn x (car y))
+                            (cond
+                             ((not (and nodups (equal x (car y))))
+                              (setq n (sub1 n1))
+                              (go a))))
+                           (t (setq l1 (cdr y)) (setq n (- n n1)) (go a))))
+               l))))
+
+(def kwote (lambda (x) (list 'quote x)))
+
+(def lconc
+     (lambda 
+      (ptr x)
+      (prog (xx)
+            (return
+             (cond ((atom x) ptr)
+                   (t (setq xx (last x))
+                      (cond ((atom ptr) (cons x xx))
+                            ((dtpr (cdr ptr))
+                             (rplacd (cdr ptr) x)
+                             (rplacd ptr xx))
+                            (t (rplaca (rplacd ptr xx) x)))))))))
+
+(def ldiff
+     (lambda 
+      (x y)
+      (cond ((eq x y) nil)
+            ((null y) x)
+            (t
+             (prog (v z)
+                   (setq z (setq v (ncons (car x))))
+              loop (setq x (cdr x))
+                   (cond ((eq x y) (return z))
+                         ((null x) (error '"NOT A TAIL - LDIFF")))
+                   (setq v (cdr (rplacd v (ncons (car x)))))
+                   (go loop))))))
+
+
+(def lsubst
+     (lambda 
+      (x y z)
+      (cond ((null z) nil)
+            ((atom z) (cond ((eq y z) x) (t z)))
+            ((equal y (car z)) (nconc (copy x) (lsubst x y (cdr z))))
+            (t (cons (lsubst x y (car z)) (lsubst x y (cdr z)))))))
+
+(def memcdr
+     (lambda 
+      (%x% %y%)
+      (prog nil
+       l1   (cond ((eq %x% (cdr %y%)) (return t))
+                  ((eq %x% %y%) (return nil)))
+            (setq %x% (cdr %x%))
+            (go l1))))
+
+(def merge
+     (lambda 
+      (a b %%cfn)
+      (cond ((null %%cfn) (setq %%cfn (function alphalessp))))
+      (merge1 a b)))
+
+(def merge1
+     (lambda 
+      (a b)
+      (cond ((null a) b)
+            ((null b) a)
+            (t
+             (prog (val end)
+                   (setq val
+                         (setq end
+                               (cond ((funcall %%cfn (car a) (car b))
+                                      (prog1 a (setq a (cdr a))))
+                                     (t (prog1 b (setq b (cdr b)))))))
+              loop (cond ((null a) (rplacd end b) (return val))
+                         ((null b) (rplacd end a) (return val))
+                         ((funcall %%cfn (car a) (car b))
+                          (rplacd end a)
+                          (setq a (cdr a)))
+                         (t (rplacd end b) (setq b (cdr b))))
+                   (setq end (cdr end))
+                   (go loop))))))
+
+(def notany
+     (lambda (somex somefn1 somefn2) (not (some somex somefn1 somefn2))))
+
+(def notevery
+     (lambda 
+      (everyx everyfn1 everyfn2)
+      (not (every everyx everyfn1 everyfn2))))
+
+(def Cnth
+     (lambda 
+      (x n)
+      (cond ((> 1 n) (cons nil x))
+            (t
+             (prog nil
+              lp   (cond ((or (atom x) (eq n 1)) (return x)))
+                   (setq x (cdr x))
+                   (setq n (sub1 n))
+                   (go lp))))))
+
+(def nthchar
+     (lambda 
+      (x n)
+      (cond ((plusp n) (car (Cnth (explodec x) n)))
+            ((minusp n) (car (Cnth (reverse (explodec x)) (minus n))))
+            ((zerop n) nil))))
+
+(def prinlev
+     (lambda 
+      ($%x $%n)
+      (cond ((not (dtpr $%x)) (print $%x))
+            ((and %trcflg (eq (car $%x) 'evl-trace) (dtpr (cdr $%x)))
+             (prinlev (cadr $%x) $%n))
+            ((and %trcflg
+                  (eq (car $%x) '\#)
+                  (dtpr (cdr $%x))
+                  (dtpr (cddr $%x)))
+  
+	       ('t (go lp))))
+    (values val pkg index symtab))
+
+#+Run-in-Maclisp
+(defun loop-test-and-step-mapatoms-local (ob list index &aux val)
+    (declare (fixnum index))
+    (prog () 
+     lp (cond ((not (null (cdr list)))
+	         (rplaca list (cadr list))
+		 (rplacd list (cddr list))
+		 (return ()))
+	      ((minusp (setq index (1- index))) (return (setq val 't)))
+	      ('t ; If this is going to run in multics maclisp also the
+		  ; arraycall should be hacked to have type `obarray'.
+		  (rplacd list (arraycall t ob index))
+		  (go lp))))
+    (values val ob list index))
+
+#-Run-in-Maclisp
+(defun loop-get-mapatoms-symbol (pkg index something-or-other)
+    ;Note there is a potential bug/timing screw in here.  We should be
+    ; looking in the symbol-table saved initially, not the current one.
+    ; There just isn't enough state saved (sigh).
+    (declare (ignore something-or-other))
+    (vref (si:package-symbol-table pkg) index))
+
+#+Run-in-Maclisp
+(defun loop-get-mapatoms-symbol (ob list index)
+    (declare (ignore ob index))
+    (car list))
+
+(and #+Run-in-Maclisp (status feature complr)
+     (*expr loop-get-mapatoms-symbol
+	    loop-initialize-mapatoms-state
+	    loop-test-and-step-mapatoms
+	    loop-test-and-step-mapatoms-local))
+)
+
+
+;;;; Maclisp interned-symbols path
+
+#+For-Maclisp
+(defun loop-interned-symbols-path (path variable data-type prep-phrases
+				   inclusive? allowed-preps data
+				   &aux indexv listv ob)
+   allowed-preps data	; unused vars
+   (and inclusive? (loop-simple-error
+		      "INTERNED-SYMBOLS path doesn't work inclusively"
+		      variable))
+   (and (not (null prep-phrases))
+	(or (cdr prep-phrases)
+	    (not (si:loop-tmember (caar prep-phrases) '(in of))))
+	(loop-simple-error
+	   "Illegal prep phrase(s) in INTERNED-SYMBOLS LOOP path"
+	   (list* variable 'being path prep-phrases)))
+   (loop-make-variable variable () data-type)
+   (loop-make-variable
+      (setq ob (gensym)) (if prep-phrases (cadar prep-phrases) 'obarray) ())
+   ; Multics lisp does not store single-char-obs in the obarray buckets.
+   ; Thus, we need to iterate over the portion of the obarray
+   ; containing them also.  (511. = (ascii 0))
+   (loop-make-variable
+      (setq indexv (gensym)) #+Multics 639. #-Multics 511. 'fixnum)
+   (loop-make-variable (setq listv (gensym)) () ())
+   `(() ()
+     (and #-Multics (null ,listv)
+	  #+Multics (or (> ,indexv 510.) (null ,listv))
+	  (prog ()
+	   lp (cond ((minusp (setq ,indexv (1- ,indexv))) (return t))
+		    ((setq ,listv (arraycall ; The following is the kind of
+					     ; gratuity that pisses me off:
+					     #+Multics obarray #-Multics t
+					     ,ob ,indexv))
+		       (return ()))
+		    ((go lp)))))
+     (,variable
+       #+Multics (cond ((> ,indexv 510.) ,listv)
+		       (t (prog2 () (car ,listv) (setq ,listv (cdr ,listv)))))
+       #-Multics (car ,listv))
+      ()
+     #+Multics () #-Multics (,listv (cdr ,listv))))
+
+
+;;;; Lispm interned-symbols path
+
+#+Lispm
+(progn 'compile
+
+ (defun loop-interned-symbols-path (path variable data-type prep-phrases
+				    inclusive? allowed-preps data
+				    &aux statev1 statev2 statev3
+					 (localp (car data)))
+    path data-type allowed-preps			; unused vars
+    (and inclusive? (loop-simple-error
+		       "INTERNED-SYMBOLS path doesn't work inclusively"
+		       variable))
+    (and (not (null prep-phrases))
+	 (or (cdr prep-phrases)
+	     (not (si:loop-tmember (caar prep-phrases) '(in of))))
+	   (ferror () "Illegal prep phrase(s) in ~A path of ~A - ~A"
+		   path variable prep-phrases))
+    (loop-make-variable variable () data-type)
+    (loop-make-variable
+       (setq statev1 (gensym))
+       (if prep-phrases `(pkg-find-package ,(cadar prep-phrases)) 'package)
+       ())
+    (loop-make-variable (setq statev2 (gensym)) () ())
+    (loop-make-variable (setq statev3 (gensym)) () ())
+    (push `(multiple-value (,statev1 ,statev2 ,statev3)
+		  (loop-initialize-mapatoms-state ,statev1 ,localp))
+	    loop-prologue)
+    `(() () (multiple-value (nil ,statev1 ,statev2 ,statev3)
+	       (,(if localp 'loop-test-and-step-mapatoms-local
+		     'loop-test-and-step-mapatoms)
+		,statev1 ,statev2 ,statev3)) 
+      (,variable (loop-get-mapatoms-symbol ,statev1 ,statev2 ,statev3))
+      () ()))
+
+ (defun loop-initialize-mapatoms-state (pkg localp)
+    ; Return the initial values of the three state variables.
+    ; This scheme uses them to be:
+    ; (1)  Index into the package (decremented as we go)
+    ; (2)  Temporary (to hold the symbol)
+    ; (3)  the package
+    localp ; ignored
+    (prog ()
+       (return (array-dimension-n 2 pkg) () pkg)))
+
+ (defun loop-test-and-step-mapatoms (index temp pkg)
+    temp ; ignored
+    (prog ()
+     lp (cond ((< (setq index (1- index)) 0)
+	         (cond ((setq pkg (pkg-super-package pkg))
+			  (setq index (array-dimension-n 2 pkg))
+			  (go lp))
+		       (t (return t))))
+	      ((numberp (ar-2 pkg 0 index))
+	         (return nil index (ar-2 pkg 1 index) pkg))
+	      (t (go lp)))))
+
+ (defun loop-test-and-step-mapatoms-local (index temp pkg)
+    temp ; ignored
+    (prog ()
+     lp (cond ((minusp (setq index (1- index))) (return t))
+	      ((numberp (ar-2 pkg 0 index))
+	         (return () index (ar-2 pkg 1 index) pkg))
+	      (t (go lp)))))
+
+ (defun loop-get-mapatoms-symbol (index temp pkg)
+    index pkg ; ignored
+    temp)
+ )
+
+; We don't want these defined in the compilation environment because
+; the appropriate environment hasn't been set up.  So, we just bootstrap
+; them up.
+(mapc '(lambda (x)
+	  (mapc '(lambda (y)
+		    (setq loop-path-keyword-alist
+			  (cons (cons y (cdr x))
+				(delq (si:loop-tassoc
+				         y loop-path-keyword-alist)
+				      loop-path-keyword-alist))))
+		(car x)))
+      '(
+      #+(or For-NIL For-Maclisp Lispm)
+	((interned-symbols interned-symbol)
+	   loop-interned-symbols-path (in))
+      #+(or For-NIL Lispm)
+	((local-interned-symbols local-interned-symbol)
+	   loop-interned-symbols-path (in) t)
+	))
+
+#-Multics ; none defined yet
+(mapc '(lambda (x)
+	 (mapc '(lambda (y)
+		  (setq loop-path-keyword-alist
+			(cons `(,y si:loop-sequence-elements-path
+				(of in from downfrom to downto below above by)
+				. ,(cdr x))
+			      (delq (si:loop-tassoc
+				      y loop-path-keyword-alist)
+				    loop-path-keyword-alist))))
+	       (car x)))
+      '(#+Lispm
+        ((array-element array-elements) aref array-active-length)
+	; These NIL guys are set up by NILAID in the PDP10 version but no one
+	; sets them up on the VAX.  Anyway redundancy won't hurt unless i
+	; break something.
+	#+(and For-NIL (not Run-in-Maclisp))
+	  ((vector-element vector-elements) vref vector-length vector)
+        #+(and For-NIL (not Run-in-Maclisp))
+	  ((bit bits) bit bits-length bits fixnum)
+	#+(and For-NIL (not Run-in-Maclisp))
+	  ((character characters) char string-length string character)
+	)
+      )
+
+; Sigh. (c.f. loop-featurep, note macro-expansion lossage.)
+; Note that we end up doing both in the PDP10 NIL version.
+#+(or (not For-NIL) Run-in-Maclisp)
+  (or (status feature loop) (sstatus feature loop))
+#+For-NIL
+  (set-feature 'loop 'local)
+
+                                                                                                       k.o write.o cerror.o _exit.o _environ start _main _exit _moncontrol mcount _buffer __iob _fprintf _strcpy _rindex _strcat _printf __doprnt _fflush __flsbuf _write _fstat _malloc _isatty _fclose _close _free cerror __findiop _getdtablesize _calloc __fwalk __cleanup __exit _bzero _cfree _ioctl _getpagesize _sbrk _realloc_srchlen _realloc _bcopy _end minbrk curbrk _errno                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         (prinlev (caddr $%x) $%n))
+            ((eq %prevfn% $%x) (princ '//\#//))
+            ((eq $%n 0) (princ '"& "))
+            (t
+             (prog ($%kk $%cl)
+                   (princ
+                    (cond ($%dotflg (setq $%dotflg nil) '"... ")
+                          (t '"(")))
+                   (prinlev (car $%x) (sub1 $%n))
+                   (setq $%kk $%x)
+              lp   (cond
+                    ((memcdr $%x $%kk)
+                     (cond ($%cl (princ '" ...]") (return nil))
+                           (t (setq $%cl t)))))
+                   (cond ((not (*** eq (cdr $%kk) (unbound)))
+                          (setq $%kk (cdr $%kk)))
+                         (t (princ '" . unbound)") (return nil)))
+                   (cond ((null $%kk) (princ '")") (return nil))
+                         ((atom $%kk)
+                          (princ '" . ")
+                          (patom $%kk)
+                          (princ '")")
+                          (return nil)))
+                   (princ '" ")
+                   (prinlev (car $%kk) (sub1 $%n))
+                   (go lp))))))
+
+(def printlev (lambda ($%x $%n) (terpri) (prinlev $%x $%n) $%x))
+
+
+
+(def remove
+     (lambda 
+      (elt list)
+      (cond ((atom list) list)
+            ((equal (car list) elt) (remove elt (cdr list)))
+            ((cons (car list) (remove elt (cdr list)))))))
+
+(def some
+     (lambda 
+      (somex somefn1 somefn2)
+      (prog nil
+       a    (cond ((null somex) (return nil))
+                  ((funcall somefn1 (car somex)) (return somex))
+                  (t (setq somex
+                           (cond ((null somefn2) (cdr somex))
+                                 (t (funcall somefn2 somex))))
+                     (go a))))))
+
+; this probably should have another names since is   ****
+; just a duplication of an existing function and since it has a
+; default second arg which I believe is not documented.
+(def sort
+     (lambda 
+      (%%l %%cfn)
+      (prog (val n)
+            (cond ((null %%cfn) (setq %%cfn (function alphalessp))))
+            (setq n 0)
+            (setq val (sort1 0))
+       loop (cond ((null %%l) (return val))
+                  (t (setq val (merge1 val (sort1 n)))
+                     (setq n (add1 n))
+                     (go loop))))))
+
+(def sort1
+     (lambda 
+      (n)
+      (cond ((null %%l) nil)
+            ((zerop n)
+             (prog (run end)
+                   (setq run %%l)
+              loop (setq end %%l)
+                   (setq %%l (cdr %%l))
+                   (cond ((or (null %%l)
+                              (not (funcall %%cfn (car end) (car %%l))))
+                          (rplacd end nil)
+                          (return run))
+                         (t (go loop)))))
+            (t (merge1 (sort1 (sub1 n)) (sort1 (sub1 n)))))))
+
+(def subpair
+     (lambda 
+      (old new expr)
+      (cond (old (subpr expr old (or new '(nil)))) (t expr))))
+
+(def subpr
+     (lambda 
+      (expr l1 l2)
+      (prog (d a)
+            (cond ((atom expr) (go lp))
+                  ((setq d (cdr expr)) (setq d (subpr d l1 l2))))
+            (setq a (subpr (car expr) l1 l2))
+            (return
+             (cond ((or (neq a (car expr)) (neq d (cdr expr))) (cons a d))
+                   (t expr)))
+       lp   (cond ((null l1) (return expr))
+                  (l2 (cond ((eq expr (car l1)) (return (car l2)))))
+                  (t (cond ((eq expr (caar l1)) (return (cdar l1))))))
+            (setq l1 (cdr l1))
+            (and l2 (setq l2 (or (cdr l2) '(nil))))
+            (go lp))))
+
+(def tailp
+     (lambda 
+      (x y)
+      (and x
+           (prog nil
+            lp   (cond ((atom y) (return nil)) ((eq x y) (return x)))
+                 (setq y (cdr y))
+                 (go lp)))))
+
+(def tconc
+     (lambda 
+      (p x)
+      (cond ((atom p) (cons (setq x (ncons x)) x))
+            ((dtpr (cdr p)) (rplacd p (cdr (rplacd (cdr p) (ncons x)))))
+            (t (rplaca p (cdr (rplacd p (ncons x))))))))
+
+(def ttyesno (lambda nil (yesno (read))))
+
+(def yesno (lambda (x) (selectq x ((t y yes) t) ((nil n no) nil) x)))
+
+; this really duplicates a function in auxfns1.l but this does more
+; error checking.
+(defun nth (N L)
+	(cond ((null L)nil)
+	      (t(do ((LCDR L (cdr LCDR))
+		     (COUNT N (1- COUNT)))
+		    ((or (and (atom LCDR) LCDR
+   		              (err '"non-proper list passed to nth"))
+		         (or (lessp COUNT 0)(zerop COUNT)))
+		     (car LCDR))
+		    nil))))
+(declare (special piport))
+(def dc-dskin			; LWE Hacking to compile OK
+   (nlambda (args)
+	    (prog (tmp tmp1 tmp2)
+		  (setq tmp
+			(prog (c cc)
+			      (setq cc (get (car args) 'comment))
+			      loop
+			      (cond ((not cc)(return nil)))
+			      (setq c (car cc))
+			      (cond ((eq (car c)(cadr args))
+				     (return nil)))
+			      (setq cc (cdr cc))
+			      (go loop)))
+		  (setq tmp2 piport)
+		  (setq tmp1 (get-comment 27 tmp2))
+		  (cond (tmp  (disgusting tmp
+					  (cons (cadr args)
+						(cons (caddr args) tmp1))))
+			(t (putprop (car args)
+				    (cons (cons (cadr args)
+						(cons (caddr args) tmp1))
+					  (get (car args) 'comment))
+				    'comment)))
+		  (mark!changed (car args))
+		  (return nil))))
+
+(def disgusting (lambda (a b) ; (rplaca a b)))
+b))
+
+(def get-comment
+  (lambda (stopper piport)
+    (prog (ans line)
+          (cond ((eq 10 (tyipeek piport)) (tyi piport)))
+     l:   (setq line nil)
+;          (until (member (car line) (list 10 stopper))
+;                 (setq line (cons (tyi piport) line)))
+	   (prog nil loop
+		(cond ((member (car line)(list 10 stopper))
+		       (return nil)))
+	        (setq line (cons (tyi piport) line))
+		(go loop))
+          (setq ans (cons (implode (dreverse (cdr line))) ans))
+          (cond ((eq (car line) 10) (go l:)) (t (return (dreverse ans)))))))
+                                                                                                                                                                                                                                                                                                                                                                  (File charmac.l)
+(feature-present lambda error return null cdr do cadr feature-present not car eq quote status memq atom cond)
+(SharpmMg00244 lambda read quote assoc cadr feature-present not cond)
+(Sharpmtg00239 lambda list)
+(|Sharpm\\g00228| lambda list quote error or car return caar eq cond null do assq cdr setq read)
+(Sharpm,g00223 lambda read eval list)
+(|Sharpm'g00218| lambda read quote list)
+(Sharpm^g00212 lambda tyi cdr fixnum-BitAndNot boole list)
+(Sharpm/g00207 lambda tyi list)
+(Sharpm-g00200 lambda feature-present cond read)
+(Sharpm+g00193 lambda feature-present not cond read)
+(Sharpmxg00170 lambda list return untyi * eq and + setq <& < >& > or not cond tyi do)
+(Sharpmog00165 lambda read list)
+(defsharp-expand lambda quote list cons aexploden car setq symbolp cond)
+(defsharp macro cdddr caddr list nreverse cdr defsharp-expand car null liszt-internal-do mapcar append quote cons return gensym caadr cadr dtpr cond concat setq prog)
+(new-sharp-sign-macro lambda ascii error Internal-bcdcall getdisc quote bcdp cxr getd symbolp and funcall cdr car return caar eq null do assq setq cond tyi)
+(back=quotify lambda cdar null cadr cons and back=quotify setq caar not or cdr car eq quote list atom cond)
+(back-quote-comma-macro lambda read cons tyi tyipeek eq error bigp not cdr null and zerop cond |1-|)
+(back-quote-ch-macro lambda read |1+| back=quotify)
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     (setq rcs-fix-
+   "$Header: /usr/lib/lisp/RCS/fix.l,v 1.2 83/08/06 08:39:58 jkf Exp $")
+
+; vi: set lisp :
+
+(eval-when (compile eval)
+  (or (get 'cmumacs 'version) (load 'cmumacs)))
+
+; LWE 1/11/81 Hack hack....
+;
+; LWE 1/11/81 Bet you didn't know this, but this won't work INTERPRETED,
+;	      but Dave assures me it works compiled. (In MACLisp...)
+; 
+(declare (special cmd frame x cnt var init label part incr limit selectq))
+
+(dv fixfns
+    ((*** This is FIXIT written by David Touretzky and adapted to Franz by Don
+      Cohen)
+     (declare (special framelist rframelist interrupt-handlers handler-labels)
+              (special prinlevel prinlength evalhook-switch traced-stuff)
+              (special lastword piport hush-debug)
+              (*fexpr editf step type))
+     (sstatus feature fixit)
+     (*rset t)
+     ER%tpl
+     fixit
+     debug
+     debug-iter
+     debug1
+     debug-bktrace
+     debug-print
+     debug-print1
+     debug-findcall
+     debug-replace-function-name
+     debug-scanflist
+     debug-scanstk
+     debug-getframes
+     debug-nextframe
+     debug-upframe
+     debug-dnframe
+     debug-upfn
+     debug-dnfn
+     debug-showvar
+     debug-nedit
+     debug-insidep
+     debug-findusrfn
+     debug-findexpr
+     debug-pop
+     debug-where
+     debug-sysp
+     interrupt-handlers
+     handler-labels
+     (or (boundp 'traced-stuff) (setq traced-stuff nil))
+     (or (boundp 'evalhook-switch) (setq evalhook-switch nil))
+     (setq hush-debug nil)))
+
+(or (boundp 'traced-stuff) (setq traced-stuff nil))
+(or (boundp 'evalhook-switch) (setq evalhook-switch nil))
+(or (boundp 'debug-sysmode) (setq debug-sysmode nil))
+(setq hush-debug nil)
+
+(*** This is FIXIT written by David Touretzky and adapted to Franz by Don Cohen)
+
+(declare (special framelist rframelist interrupt-handlers handler-labels)
+         (special prinlevel prinlength evalhook-switch traced-stuff)
+         (special lastword piport hush-debug debug-sysmode)
+         (*fexpr editf step type))
+
+(defvar fixit-eval nil)
+(defvar fixit-print nil)
+(defvar fixit-pp nil)
+
+(sstatus feature fixit)
+
+(*rset t)
+
+; (jkf) it is not clear that you want this to take over on all errors,
+; but the cmu people seem to want that.
+#+cmu (progn 'compile
+	     (dv ER%tpl fixit)
+	     (dv ER%all fixit) ; LWE 1/17/81 MAYBE THIS WILL FIX THIS code
+	     )
+
+;--- eval, print and pretty-print functions are user-selectable by just
+; assigning another value to fixit-eval, fixit-print and fixit-pp.
+;
+(defmacro fix-eval (&rest args)
+   `(cond ((and fixit-eval
+		(getd fixit-eval))
+	   (funcall fixit-eval ,@args))
+	  (t (eval ,@args))))
+
+(defmacro fix-print (&rest args)
+   `(cond ((and fixit-print
+		(getd fixit-print))
+	   (funcall fixit-print ,@args))
+	  (t (print ,@args))))
+
+(defmacro fix-pp (&rest args)
+   `(cond ((and fixit-pp
+		(getd fixit-pp))
+	   (funcall fixit-pp ,@args))
+	  (t ($prpr ,@args))))
+
+(def fixit
+  (nlambda (l)
+    (prog (piport)
+          (do nil (nil) (eval (cons 'debug l))))))
+
+(def debug
+  (nlambda (params)
+    (prog (cmd frame framelist rframelist nframe val infile)
+          (setq infile t)
+          (and evalhook-switch (step nil))
+          (setq rframelist
+                (reverse
+                 (setq framelist
+                       (or (debug-getframes)
+                           (list
+                            (debug-scanstk '(nil) '(debug)))))))
+          (setq frame (debug-findexpr (car framelist)))
+          ;(tab 0)
+          (cond
+           ((and (car params) (not (eq (car params) 'edit)))
+            (terpri)
+            (princ '|;debug: |)
+            (princ (cadddr params))
+            (cond ((cddddr params)
+                   (princ '| -- |)
+                   (fix-print (cddddr params))))
+            (terpri)
+            (go loop)))
+          (debug-print1 frame nil)
+          (terpri)
+          (cond (hush-debug (setq hush-debug nil) (go loop))
+                ((not (memq 'edit params)) (go loop)))
+          (drain nil)
+          (princ '|type e to edit, <cr> to debug: |)
+          (setq val (tyi))
+          (cond ((or (= val 69) (= val 101))
+                 (and (errset (debug-nedit frame))
+                      (setq cmd '(ok))
+                      (go cmdr)))
+                ((or (= val 78) (= val 110)) (terpri) (debug-pop)))
+     loop (terpri)
+          (princ ':)
+          (cond ((null (setq cmd (lineread))) (reset)))
+     cmdr (cond
+           ((dtpr (car cmd))
+            (setq val (fix-eval (car cmd) (cadddr frame)))
+            (fix-print val)
+            (terpri)
+            (go loop)))
+          (setq nframe (debug1 cmd frame))
+          (and (not (atom nframe)) (setq frame nframe) (go loop))
+          (fix-print (or nframe (car cmd)))
+          (princ '" Huh? - type h for help")
+          (go loop))))
+
+(def debug-iter
+  (macro (x)
+    (cons 'prog
+          (cons 'nil
+                (cons 'loop
+                      (cons (list 'setq 'nframe (cadr x))
+                            '((setq cnt (|1-| cnt))
+                              (and (or (null nframe) (zerop cnt))
+                                   (return nframe))
+                              (setq frame nframe)
+                              (go loop))))))))
+
+(def debug1
+  (lambda (cmd frame)
+    (prog (nframe val topframe cnt item)
+          (setq topframe (car framelist))
+          (or (eq (typep (car cmd)) 'symbol) (return nil))
+          ; if "> name", replace function or variable name with new atom
+          (and (eq (car cmd) '>)
+               (return (debug-replace-function-name cmd topframe)))
+          (and (eq (getchar (car cmd) 1) 'b)
+               (eq (getchar (car cmd) 2) 'k)
+               (return (debug-bktrace cmd frame)))
+          (setq cnt
+                (cond ((fixp (cadr cmd)) (cadr cmd))
+                      ((fixp (caddr cmd)) (caddr cmd))
+                      (t 1)))
+          (and (< cnt 1) (setq cnt 1))
+          (setq item
+                (cond ((symbolp (cadr cmd)) (cadr cmd))
+                      ((symbolp (caddr cmd)) (caddr cmd))))
+          (and item
+               (cond ((memq (car cmd) '(u up))
+                      (setq cmd (cons 'ups (cdr cmd))))
+                     ((memq (car cmd) '(d dn))
+                      (setq cmd (cons 'dns (cdr cmd))))))
+          (selectq (car cmd)
+                   (top (debug-print1 (setq frame topframe) nil))
+                   (bot (debug-print1 (setq frame (car rframelist)) nil))
+                   (p (debug-print1 frame nil))
+                   (pp (fix-pp (caddr frame)))
+                   (where (debug-where frame))
+                   (help
+                    (cond ((cdr cmd) (eval cmd))
+                          (t (ty |/usr/lib/lisp/fixit.ref|))))
+                   ((? h) (ty |/usr/lib/lisp/fixit.ref|))
+                   ((go ok)
+                    (setq frame (debug-findexpr topframe))
+                    (cond ((eq (caaddr frame) 'debug)
+                           (freturn (cadr frame) t))
+                          (t (fretry (cadr frame) frame))))
+                   (pop (debug-pop))
+                   (step (setq frame (debug-findexpr frame))
+                         (step t)
+                         (fretry (cadr (debug-dnframe frame)) frame))
+                   (redo (and item
+                              (setq frame
+                                    (debug-findcall item frame framelist)))
+                         (and frame (fretry (cadr frame) frame)))
+                   (return (setq val (eval (cadr cmd)))
+                           (freturn (cadr frame) val))
+                   (edit (debug-nedit frame))
+                   (editf
+                    (cond ((null item)
+                           (setq frame
+                                 (or (debug-findusrfn (debug-nedit frame))
+                                     (car rframelist))))
+                          ((dtpr (getd item))
+                           (errset (funcall 'editf (list item))))
+                          (t (setq frame nil))))
+                   (u (debug-iter (debug-upframe frame))
+                      (cond
+                       ((null nframe) (terpri) (princ '|<top of stack>|)))
+                      (debug-print1 (setq frame (or (setq rcs-step-
+   "$Header: /usr/lib/lisp/step.l,v 1.1 83/01/29 18:39:46 jkf Exp $")
+
+; vi: set lisp :
+
+;;;                     LISP Stepping Package
+;;;
+;;; Adapted by Mitch Marcus for Franz Lisp from Chuck Rich's MACLISP
+;;; package.
+;;;
+;;;
+;;; Adapted 2/80 from the Maclisp version of 11/03/76
+;;; Further modified 5/80 by Don Cohen (DNC)
+;;;
+;;; modified by jkf 6/81 to handle funcallhook.
+;;;
+;;; User Interface Function
+;;;
+;;;             Valid Forms:                            
+;;; (step) or (step nil)	:: turn off stepping
+;;; (step t) 			:: turn on stepping right away.
+;;; (step e)			:: turn on stepping of eval only
+;;; (step foo1 foo2 ...)  	:: turn on stepping when one of fooi is
+;;;				:: called
+;;;
+;------ implementation:
+; evalhook* is nil meaning no stepping, or t meaning always step
+;    or is a list of forms which will start continuous stepping.
+;
+; The hook functions are evalhook* and funcallhook*.
+;
+
+(declare (special 
+	  evalhook-switch piport 	
+	  hookautolfcount funcallhook
+	  evalhook evalhook* |evalhook#| prinlevel prinlength
+  	  fcn-evalhook fcn-funcallhook
+	  Standard-Input)
+         (macros nil))
+
+;; First Some Macros
+
+(defun 7bit macro (s)
+       ;; (7BIT n c) tests if n is ascii for c
+       (list '= (list 'boole 1 127. (cadr s)) (caddr s)))
+
+;--- print* 
+; indent based on current evalhook recursion level then print the
+; arg in form
+;
+(defun print* macro (s)
+          ;; print with indentation
+         '(do ((i 1 (1+ i))
+               (indent (* 2 |evalhook#|))
+               (prinlevel 3)
+               (prinlength 5))
+              ((> i indent) 
+	       (cond ((eq type 'funcall) (patom "f:")))
+	       (print form))
+              (tyo 32.)))
+
+(defun step fexpr (arg)
+  (cond ((or (null arg) (car arg))
+	 (setq evalhook-switch t) ; for fixit package
+	 (setq |evalhook#| 0.)                  ;initialize depth count
+	  (setq hookautolfcount 0)		; count if auto lfs at break
+	 (setq evalhook nil)                  ;for safety
+	 (setq funcallhook nil)
+	 ; (step e) means just step eval things, else step eval and funcal
+	 (cond ((eq (car arg) 'e) 
+		(setq fcn-evalhook 'evalhook* fcn-funcallhook nil))
+	       (t (setq fcn-evalhook 'evalhook* fcn-funcallhook 'funcallhook*)))
+	 (setq evalhook*
+	       (cond ((null arg) nil)
+		     ((or (eq (car arg) t) (eq (car arg) 'e)))
+		     (arg)))
+	 (setq evalhook fcn-evalhook)      ;turn system hook to my function
+	 (setq funcallhook fcn-funcallhook)
+	 (sstatus translink nil)
+	 (*rset t)                            ;must be on for hook to work
+	 (sstatus evalhook t))           ;arm it
+	(t (setq evalhook* nil)
+	   (setq evalhook nil)
+	   (setq hookautolfcount 0)		; count if auto lfs at break
+	   (setq evalhook-switch nil)
+	   (sstatus evalhook nil))))
+
+
+;---- funcall-evalhook*
+;
+; common function to handle evalhook's and funcallhook's.
+; the form to be evaluated is given as form and the type (eval or funcall)
+; is given as type.
+;
+
+(defun funcall-evalhook* (form type)
+  (cond (evalhook*
+	 ;; see if selective feature kicks in here
+	 (and (not (atom form))
+	      (not (eq evalhook* t))
+	      (memq (car form) evalhook*)
+	      (setq evalhook* t))	; yes, begin stepping always
+
+	 (cond ((eq evalhook* t)
+		;; print out form before evaluation
+		(print*)
+
+		(cond ((atom form)
+		       ;; since form is atom, we just eval it and print
+		       ;; out its value, no need to ask user what to do
+		       (cond ((not (or (numberp form)(null form)(eq form t)))
+			      (princ '" = ")
+			      ((lambda (prinlevel prinlength)
+				       (setq form (evalhook form nil nil))
+				       (print form))	
+			       3 5)))
+		       (terpri))
+		      (t ; s-expression
+			 (prog (cmd ehookfn fhookfcn)
+
+			   cmdlp  (cond ((greaterp hookautolfcount 0)
+					 (setq hookautolfcount (sub1 hookautolfcount))
+					 (terpr)
+					 (setq cmd #\lf))
+					(t (setq cmd (let ((piport 
+							    Standard-Input))
+							  (drain piport)
+							  (tyi piport)))))
+
+			       ;; uppercase alphabetics
+			       ;; dispatch on command character
+			       (cond ((eq cmd #\lf)    
+				      ; \n so continue
+				      (setq ehookfn fcn-evalhook
+					    fhookfcn fcn-funcallhook))
+
+				     ((memq cmd '(#/p #/P))
+				      ; "P" print in full
+				      (print form)
+				      (go cmdlp))
+
+				     ; "G"
+				     ((memq cmd '(#/g #/G))
+				      (setq evalhook* nil  ;stop everything
+					    ehookfn nil
+					    fhookfcn nil))
+
+				     ((memq cmd '(#/c #/C))
+				      ;"C" no deeper
+				      (setq ehookfn nil
+					    fhookfcn nil))
+
+				     ((memq cmd '(#/d #/D))
+				      ;"D" call debug
+				      (setq evalhook-switch nil)
+				      (sstatus evalhook nil)
+				      (debug)
+				      (setq evalhook-switch t)
+				      (sstatus evalhook t)
+				      (go cmdlp))
+
+
+				     ((memq cmd '(#/b #/B))
+				      ; "B" give breakpoint
+				      (break step)
+				      (print*)
+				      (go cmdlp))
+
+				     ((memq cmd '(#/q #/Q))
+				      ; "Q" stop stepping
+				      (step nil)
+				      (reset))
+
+				     ((memq cmd '(#/n #/N))
+				      (setq hookautolfcount 
+					    (let ((piport Standard-Input))
+						 (read)))
+				      (cond ((not (numberp hookautolfcount))
+					     (patom "arg to n should be number")
+					     (terpr)
+					     (setq hookautolfcount 0))))
+
+				     ; "s" eval form
+				     ((memq cmd '(#/s #/S))
+				      (let ((piport Standard-Input)
+					    (fcns nil))
+					   (setq fcns (read))
+					   (cond ((dtpr fcns) 
+						  (setq evalhook* fcns))
+						 ((symbolp fcns)
+						  (setq evalhook* (list fcns))))))
+
+				     ; "e" step eval only
+				     ((memq cmd '(#/e #/E))
+				      (setq fcn-funcallhook nil))
+
+				     ; "?", "H" show the options
+				     ((memq cmd '(72 104 63.))
+				      #+cmu (ty /usr/lisp/doc/step\.ref)
+				      #-cmu(stephelpform)
+				      (terpri)
+				      (go cmdlp))
+				     ((eq cmd #\eof)
+				      (patom "EOF typed")
+				      (terpr))
+
+				     (t (princ '"Try one of ?BCDGMPQ or <cr>")
+					(go cmdlp)))
+
+			       ;; evaluate form
+			       (clear-input-buffer)
+			       ((lambda (|evalhook#|)
+					(setq form (continue-evaluation 
+						    form 
+						    type 
+						    ehookfn 
+						    fhookfcn)))
+				(1+ |evalhook#|))
+
+			       ;; print out evaluated form
+			       (cond ((and evalhook* 
+					   (or (eq type 'funcall)
+					       (not (zerop |evalhook#|))))
+				      (let ((type nil))
+					   (print*))
+				      (terpri)
+				      )))))
+		;;return evaluated form
+		form)
+	       (t ;  why was this here? (clear-input-buffer)
+		  (continue-evaluation form type fcn-evalhook fcn-funcallhook))))   
+	(t ;  why was this here? (clear-input-buffer)
+	   (continue-evaluation form type fcn-evalhook fcn-funcallhook))))
+
+;--- stephelpform 
+;
+; print a summary of the functions of step
+;
+(defun stephelpform nil
+  (patom "<cr> - single step;  n <number> - step <number> times")(terpr)
+  (patom "b - break;  q - quit stepping;  d - call debug;") (terpri)
+  (patom "c - turn off step for deeper levels; e - stop at eval forms only")
+  (terpri)
+  (patom "h,? - print this") (terpr))
+
+;--- funcallhook* 
+;
+; automatically called when a funcall is done and funcallhook*'s 
+; value is the name of this function (funcallhook*).  When this is
+; called, a function with n-1 args is being funcalled, the args
+; to the function are (arg 1) through (arg (sub1 n)), the name of
+; the function is (arg n)
+;
+(defun funcallhook* n
+  (let ((name (arg n))
+	(args (listify (sub1 n))))
+       (funcall-evalhook* (cons name args) 'funcall)))
+
+;--- evalhook* 
+;
+; called whenever an eval is done and evalhook*'s value is the 
+; name of this function (evalhook*).  arg is the thing being
+; evaluated.
+;
+(defun evalhook* (arg)
+  (funcall-evalhook* arg 'eval))
+
+(defun continue-evaluation (form type evalhookfcn funcallhookfcn)
+  (cond ((eq type 'eval) (evalhook form evalhookfcn funcallhookfcn))
+	(t (funcallhook form funcallhookfcn evalhookfcn))))
+
+
+(or (boundp 'prinlength) (setq prinlength nil))
+
+(or (boundp 'prinlevel) (setq prinlevel nil))
+
+; Standard-Input is a variable bound to the initial stdin port. It is 
+; bound in the auxfns0 package, but older lisps may not have that new
+; package, so in case they don't we approximate Standard-Inputnframe frame)) nil))
+                   (d (setq nframe
+                            (or (debug-iter (debug-dnframe frame)) frame))
+                      (debug-print1 nframe nil)
+                      (cond ((eq frame nframe)
+                             (terpri)
+                             (princ '|<bottom of stack>|))
+                            (t (setq frame nframe))))
+                   (up (setq nframe (debug-iter (debug-upfn frame)))
+                       (cond
+                        ((null nframe) (terpri) (princ '|top of stack|)))
+                       (setq frame (or nframe topframe))
+                       (debug-print1 frame nil))
+                   (dn (setq frame
+                             (or (debug-iter (debug-dnfn frame))
+                                 (car rframelist)))
+                       (debug-print1 frame nil)
+                       (cond
+                        ((not (eq frame nframe))
+                         (terpri)
+                         (princ '|<bottom of stack>|))))
+                   (ups (setq frame
+                              (debug-iter
+                               (debug-findcall item frame rframelist)))
+                        (and frame (debug-print1 frame nil)))
+                   (dns (setq frame
+                              (debug-iter
+                               (debug-findcall item frame framelist)))
+                        (and frame (debug-print1 frame nil)))
+		   (sys (setq debug-sysmode (not debug-sysmode))
+			(patom "sysmode now ")(patom debug-sysmode) (terpr))
+                   (cond ((not (dtpr (car cmd)))
+                          (*** should there also be a boundp test here)
+                          (debug-showvar (car cmd) frame))
+                         (t (setq frame (car cmd)))))
+          (return (or frame item)))))
+
+(def debug-replace-function-name 
+  (lambda (cmd frame)
+    (prog (oldname newname errorcall nframe)
+	  (setq errorcall (caddr frame))
+	  (cond ((eq (caddddr errorcall) '|eval: Undefined function |)
+		 (setq oldname (cadddddr errorcall))
+		 (setq newname (cadr cmd))
+		 (setq cnt 3.)
+		 (setq frame (debug-iter (debug-dnframe frame)))
+		 (dsubst newname oldname frame)
+		 (fretry (cadr frame) frame))
+		((eq (caddddr errorcall) '|Unbound Variable:|)
+		 (setq oldname (cadddddr errorcall))
+		 (setq newname (eval (cadr cmd)))
+		 (setq cnt 3.)
+		 (setq frame (debug-iter (debug-dnframe frame)))
+		 (dsubst newname oldname frame)
+		 (fretry (cadr frame) frame))
+		( t (return nil))))))
+
+(def debug-bktrace
+  (lambda (cmd oframe)
+    (prog (sel cnt item frame nframe)
+          (mapc '(lambda (x)
+                         (setq sel
+                               (cons (selectq x
+                                              (f 'fns)
+                                              (a 'sysp)
+                                              (v 'bind)
+                                              (e 'expr)
+                                              (c 'current)
+                                              'bogus)
+                                     sel)))
+                (cddr (explodec (car cmd))))
+          (setq item
+                (cond ((eq (typep (cadr cmd)) 'symbol) (cadr cmd))
+                      ((eq (typep (caddr cmd)) 'symbol) (caddr cmd))))
+          (cond ((debug-sysp item) (setq sel (cons 'sysp sel)))
+                ((not (memq 'sysp sel))
+                 (setq sel (cons 'user sel))))
+          (setq cnt
+                (cond ((fixp (cadr cmd)) (cadr cmd))
+                      ((fixp (caddr cmd)) (caddr cmd))
+                      (item 1)))
+          (cond ((null cnt)
+                 (setq frame
+                       (cond ((memq 'current sel) oframe)
+                             (t (car rframelist))))
+                 (go dbpr))
+                ((null item)
+                 (setq frame (car framelist))
+                 (and (or (not (memq 'user sel))
+                          (atom (caddr (car framelist)))
+                          (not (debug-sysp (caaddr (car framelist)))))
+                      (setq cnt (|1-| cnt)))
+                 (setq frame
+                       (cond ((zerop cnt) frame)
+                             ((memq 'user sel)
+                              (debug-iter (debug-dnfn frame)))
+                             (t (debug-iter (debug-dnframe frame)))))
+                 (setq frame (or frame (car rframelist)))
+                 (go dbpr))
+                (t (setq frame (car framelist))))
+          (setq frame
+                (cond ((and (= cnt 1)
+                            (not (atom (caddr (car framelist))))
+                            (eq item (caaddr (car framelist))))
+                       (car framelist))
+                      ((debug-iter (debug-findcall item frame framelist)))
+                      (t (car rframelist))))
+     dbpr (debug-print frame sel oframe)
+          (cond ((eq frame (car rframelist))
+                 (terpri)
+                 (princ '|<bottom of stack>|)
+                 (terpri))
+                (t (terpri)))
+          (cond
+           ((memq 'bogus sel)
+            (terpri)
+            (princ (car cmd))
+            (princ '| contains an invalid bk modifier|)))
+          (return oframe))))
+
+(def debug-print
+  (lambda (frame sel ptr)
+    (prog (curframe)
+          (setq curframe (car framelist))
+     loop (cond ((not
+                  (and (memq 'user sel)
+                       (not (atom (caddr curframe)))
+                       (debug-sysp (caaddr curframe))))
+                 (debug-print1 curframe sel)
+                 (and (eq curframe ptr) (princ '|   <--- you are here|)))
+                ((eq curframe ptr)
+                 (terpri)
+                 (princ '|  <--- you are somewhere in here|)))
+          (and (eq curframe frame) (return frame))
+          (setq curframe (debug-dnframe curframe))
+          (or curframe (return frame))
+          (go loop))))
+
+(def debug-print1
+  (lambda (frame sel)
+    (prog (prinlevel prinlength varlist)
+          (and (not (memq 'expr sel))
+               (setq prinlevel 2)
+               (setq prinlength 5))
+          (cond
+           ((atom (caddr frame))
+            (terpri)
+            (princ '|   |)
+            (fix-print (caddr frame))
+            (princ '| <- eval error|)
+            (return t)))
+          (and (memq 'bind sel)
+               (cond ((memq (caaddr frame) '(prog lambda))
+                      (setq varlist (cadr (caddr frame))))
+                     ((and (atom (caaddr frame)) (dtpr (getd (caaddr frame))))
+                      (setq varlist (cadr (getd (caaddr frame))))))
+               (mapc (function
+                      (lambda (v)
+                              (debug-showvar v
+                                             (or (debug-upframe frame)
+                                                 frame))))
+                     (cond ((and varlist (atom varlist)) (ncons varlist))
+                           (t varlist))))
+          (and (memq 'user sel)
+               (debug-sysp (caaddr frame))
+               (return nil))
+          (cond ((memq (caaddr frame) interrupt-handlers)
+                 (terpri)
+                 (princ '<------------)
+                 (fix-print (cadr (assq (caaddr frame) handler-labels)))
+                 (princ '-->))
+                ((eq (caaddr frame) 'debug)
+                 (terpri)
+                 (princ '<------debug------>))
+                ((memq 'fns sel)
+                 (terpri)
+                 (and (debug-sysp (caaddr frame)) (princ '|  |))
+                 (fix-print (caaddr frame)))
+                (t (terpri)
+                   (fix-print
+                    (cond ((eq (car frame) 'eval) (caddr frame))
+                          (t (cons (caaddr frame) (cadr (caddr frame))))))))
+          (or (not (symbolp (caaddr frame)))
+              (eq (caaddr frame) (concat (caaddr frame)))
+              (princ '|  <not interned>|))
+          (return t))))
+
+(def debug-findcall
+  (lambda (fn frame flist)
+    (prog nil
+     loop (setq frame (debug-nextframe frame flist nil))
+          (or frame (return nil))
+          (cond ((atom (caddr frame))
+                 (cond ((eq (caddr frame) fn) (retur;;; cmu file package.
+;;;
+(setq rcs-cmufile-
+   "$Header: /usr/lib/lisp/cmufile.l,v 1.1 83/01/29 18:34:10 jkf Exp $")
+
+(eval-when (compile eval)
+   (load 'cmumacs)
+   (load 'cmufncs)
+   )
+
+(declare (special $cur$ dc-switch piport %indent dc-switch
+		  vars body form var init label part incr limit
+		  getdeftable $outport$ tlmacros f tmp))
+
+(declare (nlambda msg))
+
+(declare
+ (special %changes
+          def-comment
+          filelst
+          found
+          getdefchan
+          getdefprops
+          history
+          historylength
+          args
+          i
+          l
+          lasthelp
+          prop
+          special
+          special
+          tlbuffer
+          z))
+
+(dv dc-switch dc-define)
+
+(dv %indent 0)
+
+(dv *digits ("0" "1" "2" "3" "4" "5" "6" "7" "8" "9"))
+
+(dv *letters (a b c d e f g h i j k l m n o p q r s t u v w x y z))
+
+(def changes
+  (lambda nil
+    (changes1)
+    (for-each f
+              filelst
+              (cond
+               ((get f 'changes)
+                (terpri)
+                (princ f)
+                (tab 15)
+                (princ (get f 'changes)))))
+    (cond
+     (%changes (terpri) (princ '<no-file>) (tab 15) (princ %changes)))
+    nil))
+
+(def changes1
+  (lambda nil
+    (cond ((null %changes) nil)
+          (t
+           (prog (found prop)
+                 (for-each f
+                           filelst
+                           (setq found
+                                 (cons (set-of fn
+                                               (cons (concat f 'fns)
+                                                     (eval
+                                                      (concat f
+                                                              'fns)))
+                                               (memq fn %changes))
+                                       found))
+                           (setq prop (get f 'changes))
+                           (for-each fn
+                                     (car found)
+                                     (setq prop (insert fn prop nil t)))
+                           (putprop f prop 'changes))
+                 (setq found (apply 'append found))
+                 (setq %changes (set-of fn %changes (not (memq fn found)))))))))
+
+(def dc
+  (nlambda (args)
+    (eval (cons dc-switch args]
+
+(def dc-define
+  (nlambda (args)
+    (msg "Enter comment followed by <esc>" (N 1))
+    (drain piport)
+    (eval (cons 'dc-dskin args]
+
+(def dc-help
+  (nlambda (args)
+    (cond
+     ((eval (cons 'helpfilter (cons (car args) (caddr args))))
+      (transprint getdefchan)))))
+
+(def dskin
+  (nlambda (files)
+    (mapc (function
+           (lambda (f)
+                   (prog nil
+                         (setq dc-switch 'dc-dskin)
+                         (file f)
+                         (load f)
+                         (changes1)
+                         (putprop f nil 'changes)
+			 (setq dc-switch 'dc-define)
+)))
+          files]
+
+(***
+The new version of dskout (7/26/80) tries to keep backup versions  It returns
+the setof its arguments that were successfully written  If it can not write
+a file (typically because of protection restrictions) it offers to (try to)
+write a copy to /tmp  A file written to /tmp is not considered to have been
+successfully written (and changes will not consider it to be up-to-date) )
+
+(def dskout
+  (nlambda (files)
+    (changes1)
+    (set-of f
+            files
+            (prog (ffns p tmp)
+                  (cond ((atom (errset (setq p (infile f)) nil))
+                         (msg "creating " f N D))
+                        (t (close p)
+                           (cond ((zerop
+                                   (eval
+                                    (list 'exec
+                                          'mv
+                                          f
+                                          (setq tmp
+                                                (concat f '|.back|)))))
+                                  (msg  "old version moved to " 
+					tmp N D))
+                                 (t (msg 
+                                         "Unable to back up "
+                                         f
+                                         " - continue? (y/n) " D)
+                                    (cond ((not (ttyesno)) (return nil)))))))
+                  (cond
+                   ((atom
+                     (errset (apply (function pp)
+                                    (cons (list 'F f)
+                                          (cons (setq ffns
+                                                      (concat f
+                                                              'fns))
+                                                (eval ffns))))
+                             nil))
+                    (msg
+                         "Unable to write "
+                         f
+                         " - try to put it on /tmp? (y/n) " D)
+                    (cond
+                     ((ttyesno)
+                      (setq f (explode f))
+                      (while (memq '/ f)
+                             (setq f (cdr (memq '/ f))))
+                      (setq f
+                            (apply (function concat)
+                                   (cons '/tmp/ f)))
+                      (cond ((atom
+                              (errset
+                               (apply (function pp)
+                                      (cons (list 'F f)
+                                            (cons ffns (eval ffns))))))
+                             (msg
+                                  "Unable to create "
+                                 f
+                                  " - I give up! " N D  ))
+                            (t (msg f " written " N D  )))))
+                    (return nil)))
+                  (putprop f nil 'changes)
+                  (return t)))))
+
+(def dskouts
+  (lambda nil
+    (changes1)
+    (apply (function dskout) (set-of f filelst (get f 'changes)))))
+
+(def evl-trace
+  (nlambda (exp)
+    (prog (val)
+          (tab %indent)
+          (prinlev (car exp) 2)
+          ((lambda (%indent) (setq val (eval (car exp)))) (+ 2 %indent))
+          (tab %indent)
+          (prinlev val 2)
+          (return val))))
+
+
+(def file
+  (lambda (name)
+    (setq filelst (insert name filelst nil t))
+    (cond
+     ((not (boundp (concat name 'fns)))
+      (set (concat name 'fns) nil)))
+    name))
+
+(def getdef
+  (nlambda (%%l)
+    (prog (x u getdefchan found)
+          (setq getdefchan (infile (car %%l)))
+     l    (cond ((atom
+                  (setq u
+                        (errset
+                         (prog (x y z)
+                               (cond
+                                ((eq (tyipeek getdefchan) -1)
+                                 (err 'EOF)))
+                               (cond
+                                ((memq (tyipeek getdefchan)
+                                       '(12 13))
+                                 (tyi getdefchan)))
+                               (return
+                                (cond
+                                 ((memq (tyipeek getdefchan)
+                                        '(40 91))
+                                  (tyi getdefchan)
+                                  (cond
+                                   ((and (symbolp
+                                          (setq y (ratom getdefchan)))
+                                         (cond (t (comment - what about
+                                                   intern?)
+                                                  (setq x y)
+                                                  t)
+                                               ((neq y
+                                                     (setq x
+                                                           (intern y)))
+                                                t)
+                                               (t (remob1 x) nil))
+                                         (assoc x getdeftable)
+                                         (or (setq z (ratom getdefchan))
+                                             t)
+                                         (some (cdr %%l)
+                                               (function frame)) (t (go loop))))
+                ((eq (caaddr frame) fn) (return frame))
+                (t (go loop))))))
+
+(def debug-scanflist
+  (lambda (frame fnset)
+    (prog nil
+     loop (or frame (return nil))
+          (and (not (atom (caddr frame)))
+               (memq (caaddr frame) fnset)
+               (return frame))
+          (setq frame (debug-dnframe frame))
+          (go loop))))
+
+(def debug-scanstk
+  (lambda (frame fnset)
+    (prog nil
+     loop (or frame (return nil))
+          (and (not (atom (caddr frame)))
+               (memq (caaddr frame) fnset)
+               (return frame))
+          (setq frame (evalframe (cadr frame)))
+          (go loop))))
+
+(def debug-getframes
+  (lambda nil
+    (prog (flist fnew)
+          (setq fnew
+                (debug-scanstk '(nil)
+                               (cons 'debug interrupt-handlers)))
+     loop (and (not debug-sysmode)
+	       (not (atom (caddr fnew)))
+               (eq (caaddr fnew) 'debug)
+               (eq (car (evalframe (cadr fnew))) 'apply)
+               (memq (caaddr (evalframe (cadr fnew))) interrupt-handlers)
+               (setq fnew (evalframe (cadr fnew))))
+          (and (not debug-sysmode)
+	       (null flist)
+               (eq (car fnew) 'apply)
+               (memq (caaddr fnew) interrupt-handlers)
+               (setq fnew (evalframe (cadr fnew))))
+          (and (not debug-sysmode)
+	       (eq (car fnew) 'apply)
+               (eq (typep (caaddr fnew)) 'symbol)
+               (not (eq (caaddr fnew) (concat (caaddr fnew))))
+               (setq fnew (evalframe (cadr fnew)))
+               (setq fnew (evalframe (cadr fnew)))
+               (setq fnew (evalframe (cadr fnew)))
+               (setq fnew (evalframe (cadr fnew)))
+               (go loop))
+          (and (not debug-sysmode)
+	       (not (atom (caddr fnew)))
+               (memq (caaddr fnew) '(evalhook* evalhook))
+               (setq fnew (evalframe (cadr fnew)))
+               (go loop))
+          (and (not debug-sysmode)
+	       (eq (car fnew) 'apply)
+               (eq (caaddr fnew) 'eval)
+               (cadadr (caddr fnew))
+               (or (not (fixp (cadadr (caddr fnew))))
+                   (= (cadadr (caddr fnew)) -1))
+               (setq fnew (evalframe (cadr fnew)))
+               (go loop))
+          (and fnew
+               (setq flist (cons fnew flist))
+               (setq fnew (evalframe (cadr fnew)))
+               (go loop))
+          (return (nreverse flist)))))
+
+(def debug-nextframe
+  (lambda (frame flist sel)
+    (prog nil
+          (setq flist (cdr (memq frame flist)))
+          (and (not (memq 'user sel)) (return (car flist)))
+     loop (or flist (return nil))
+          (cond
+           ((or (atom (caddr (car flist)))
+                (not (debug-sysp (caaddr (car flist)))))
+            (return (car flist))))
+          (setq flist (cdr flist))
+          (go loop))))
+
+(def debug-upframe
+  (lambda (frame)
+    (debug-nextframe frame rframelist nil)))
+
+(def debug-dnframe
+  (lambda (frame)
+    (debug-nextframe frame framelist nil)))
+
+(def debug-upfn
+  (lambda (frame)
+    (debug-nextframe frame rframelist '(user))))
+
+(def debug-dnfn
+  (lambda (frame)
+    (debug-nextframe frame framelist '(user))))
+
+(def debug-showvar
+  (lambda (var frame)
+    (terpri)
+    (princ '|   |)
+    (princ var)
+    (princ '| = |)
+    (fix-print
+     ((lambda (val) (cond ((atom val) '?) (t (car val))))
+      (errset (fix-eval var (cadddr frame)) nil)))))
+
+(def debug-nedit
+  (lambda (frame)
+    (prog (val body elem nframe)
+          (setq elem (caddr frame))
+          (setq val frame)
+     scan (setq val (debug-findusrfn val))
+          (or val (go nofn))
+          (setq body (getd (caaddr val)))
+          (cond ((debug-insidep elem body)
+                 (princ '=)
+                 (fix-print (caaddr val))
+                 (edite body
+                        (list 'f (cons '== elem) 'tty:)
+                        (caaddr val))
+                 (return frame))
+                ((or (eq elem (caddr val)) (debug-insidep elem (caddr val)))
+                 (setq val (debug-dnframe val))
+                 (go scan)))
+     nofn (setq nframe (debug-dnframe frame))
+          (or nframe (go doit))
+          (and (debug-insidep elem (caddr nframe))
+               (setq frame nframe)
+               (go nofn))
+     doit (edite (caddr frame)
+                 (and (debug-insidep elem (caddr frame))
+                      (list 'f (cons '== elem) 'tty:))
+                 nil)
+          (return frame))))
+
+(def debug-insidep
+  (lambda (elem expr)
+    (car (errset (edite expr (list 'f (cons '== elem)) nil)))))
+
+(def debug-findusrfn
+  (lambda (frame)
+    (cond ((null frame) nil)
+          ((and (dtpr (caddr frame))
+                (symbolp (caaddr frame))
+                (dtpr (getd (caaddr frame))))
+           frame)
+          (t (debug-findusrfn (debug-dnframe frame))))))
+
+(def debug-findexpr
+  (lambda (frame)
+    (cond ((null frame) nil)
+          ((and (eq (car frame) 'eval) (not (atom (caddr frame))))
+           frame)
+          (t (debug-findexpr (debug-dnframe frame))))))
+
+(def debug-pop
+  (lambda nil
+    (prog (frame)
+	  (setq frame (car framelist))
+     l    (cond ((null (setq frame (evalframe (cadr frame))))(reset)))
+	  (cond ((and (dtpr (caddr frame))(eq (caaddr frame) 'debug))
+		 (freturn (cadr frame) nil)))
+	  (go l))))
+
+(def debug-where
+  (lambda (frame)
+    (prog (lev diff nframe)
+          (setq lev (- (length framelist) (length (memq frame rframelist))))
+          (setq diff (- (length framelist) lev 1))
+          (debug-print1 frame nil)
+          (terpri)
+          (cond ((zerop diff) (princ '|you are at top of stack.|))
+                ((zerop lev) (princ '|you are at bottom of stack.|))
+                (t (princ '|you are |)
+                   (princ diff)
+                   (cond ((= diff 1) (princ '| frame from the top.|))
+                         (t (princ '| frames from the top.|)))))
+          (terpri)
+          (and (or (atom (caddr frame)) (not (eq (car frame) 'eval)))
+               (return nil))
+          (setq lev 0)
+          (setq nframe frame)
+     lp   (and (setq nframe (debug-findcall (caaddr nframe) nframe framelist))
+               (setq lev (|1+| lev))
+               (go lp))
+          (princ '|there are |)
+          (princ lev)
+          (princ '| |)
+          (princ (caaddr frame))
+          (princ '|'s below.|)
+          (terpri))))
+
+(def debug-sysp
+  (lambda (x)
+    (and (sysp x) (symbolp x) (not (dtpr (getd x))))))
+
+(dv interrupt-handlers (fixit))
+
+(dv handler-labels
+    ((fixit error)
+     (debug-ubv-handler ubv)
+     (debug-udf-handler udf)
+     (debug-fac-handler fac)
+     (debug-ugt-handler ugt)
+     (debug-wta-handler wta)
+     (debug-wna-handler wna)
+     (debug-iol-handler iol)
+     (debug-*rset-handler rst)
+     (debug-mer-handler mer)
+     (debug-gcd-handler gcd)
+     (debug-gcl-handler gcl)
+     (debug-gco-handler gco)
+     (debug-pdl-handler pdl)))
+
+
+(or (boundp 'traced-stuff) (setq traced-stuff nil))
+
+(or (boundp 'evalhook-switch) (setq evalhook-switch nil))
+
+(setq hush-debug nil)
+
+
+;; other functions grabbed from other cmu files to make this file complete
+;; unto i

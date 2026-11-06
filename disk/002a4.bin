@@ -1,0 +1,3319 @@
+evelation
+self-revelative
+self-revelatory
+self-reverence
+self-reverent
+self-reward
+self-rewarded
+self-rewarding
+self-right
+self-righteous
+self-righteously
+self-righteousness
+self-righter
+self-righting
+self-rigorous
+self-rising
+self-rolled
+self-roofed
+self-ruin
+self-ruined
+self-rule
+self-sacrifice
+self-sacrificer
+self-sacrificial
+self-sacrificing
+self-sacrificingly
+self-sacrificingness
+self-safety
+self-satirist
+self-satisfaction
+self-satisfied
+self-satisfying
+self-satisfyingly
+self-scanned
+self-schooled
+self-schooling
+self-science
+self-scorn
+self-scourging
+self-scrutinizing
+self-scrutiny
+self-sealer
+self-sealing
+self-searching
+self-secure
+self-security
+self-sedimented
+self-seeker
+self-seeking
+self-seekingness
+self-sent
+self-serve
+self-service
+self-serving
+self-set
+self-severe
+self-shadowing
+self-shelter
+self-shine
+self-shining
+self-shooter
+self-shot
+self-significance
+self-similar
+self-sinking
+self-slain
+self-slaughter
+self-slaughtered
+self-slayer
+self-society
+self-solicitude
+self-soothing
+self-sophistication
+srding parties can only be
+sent across to ships when the antagonists are either fouled or grappled.
+.PP
+Ships can grapple each other by throwing grapnels into the rigging of
+the other.
+.PP
+The number of fouls and grapples you have are displayed on the upper
+right of the screen.
+.SH BOARDING
+Boarding was a very costly venture in terms of human life.  Boarding parties
+may be formed in 
+.I Sail
+to either board an enemy ship or to defend your own ship against attack.
+Men organized as Defensive Boarding Parties fight twice as hard to save
+their ship as men left unorganized.
+.PP
+The boarding strength of a crew depends upon its quality and upon the
+number of men sent.
+.SH CREW QUALITY
+The British seaman was world renowned for his sailing abilities.  American
+sailors, however, were actually the best seamen in the world.  Because the
+American Navy offered twice the wages of the Royal Navy, British seamen 
+who liked the sea defected to America by the thousands.
+.PP
+In 
+.I Sail,
+crew quality is quantized into 5 energy levels.  "Elite" crews can outshoot
+and outfight all other sailors.  "Crack" crews are next.  "Mundane" crews
+are average, and "Green" and "Mutinous" crews are below average.  A good
+rule of thumb is that "Crack" or "Elite" crews get one extra hit
+per broadside compared to "Mundane" crews.  Don't expect too much from
+"Green" crews.
+.SH BROADSIDES
+Your two broadsides may be loaded with four kinds of shot: grape, chain,
+round, and double.  You have guns and carronades in both the port and starboard
+batteries.  Carronades only have a range of two, so you have to get in
+close to be able to fire them.  You have the choice of firing at the hull
+or rigging of another ship.  If the range of the ship is greater than 6,
+then you may only shoot at the rigging.
+.PP
+The types of shot and their advantages are:
+.SH ROUND
+Range of 10.  Good for hull or rigging hits.
+.SH DOUBLE
+Range of 1.  Extra good for hull or rigging hits.
+Double takes two turns to load.
+.SH CHAIN
+Range of 3.  Excellent for tearing down rigging.
+Cannot damage hull or guns, though.
+.SH GRAPE
+Range of 1.  Sometimes devastating against enemy crews.
+.PP
+On the side of the screen is displayed some vital information about your
+ship:
+.nf
+
+			Load  D! R!
+			Hull  9  
+			Crew  4  4  2
+			Guns  4  4  
+			Carr  2  2 
+			Rigg  5 5 5 5
+
+.fi
+"Load" shows what your port (left) and starboard (right) broadsides are
+loaded with.  A "!" after the type of shot indicates that it is an initial
+broadside.  Initial broadside were loaded with care before battle and before
+the decks ran red with blood.  As a consequence, initial broadsides are a
+little more effective than broadsides loaded later.  A "*" after the type of
+shot indicates that the gun
+crews are still loading it, and you cannot fire yet.  "Hull" shows how much
+hull you have left.  "Crew" shows your three sections of crew.  As your
+crew dies off, your ability to fire decreases.  "Guns" and "Carr" show
+your port and starboard guns.  As you lose guns, your ability to fire
+decreases.  "Rigg" shows how much rigging you have on your 3 or 4 masts.
+As rigging is shot away, you lose mobility.
+.SH EFFECTIVENESS OF FIRE
+It is very dramatic when a ship fires its thunderous broadsides, but the
+mere opportunity to fire them does not guarantee any hits.  Many factors
+influence the destructive force of a broadside.  First of all, and the chief
+factor, is distance.  It is harder to hit a ship at range ten than it is
+to hit one sloshing alongside.  Next is raking.  Raking fire, as
+mentioned before, 
+can sometimes dismast a ship at range ten.  Next, crew size and quality affects
+the damage done by a broadside.   The number of guns firing also bears on the
+point,
+so to speak.  Lastly, weather affects the accuracy of a broadside.  If the
+seas are high (5 or 6), then the lower gunports of ships of the line can't
+even be opened to run out the guns.  This gives frigates and other flush
+decked vessels an advantage in a storm.  The scenario 
+.I Pellew vs. The Droits de L'Homme
+takes advantage of this peculiar circumstance.
+.SH REPAIRS
+Repairs may be made to your Hull, Guns, and Rigging at the slow rate of
+two points per three turns.  The message "Repairs Completed" will be
+printed if no more repairs can be made.
+.SH PECULIARITIES OF COMPUTER SHIPS
+Computer ships in 
+.I Sail
+follow all the rules above with a few exceptions.  Computer ships never
+repair damage.  If they did, the players could never beat them.  They
+play well enough as it is.  As a consolation, the computer ships can fire double
+shot every turn.  That fluke is a good reason to keep your distance.  The
+.I
+Driver
+figures out the moves of the computer ships.   It computes them with a typical
+A.I. distance function and a depth first search to find the maximum "score."
+It seems to work fairly well, although I'll be the first to admit it isn't
+perfect.
+.SH HOW TO PLAY
+Commands are given to 
+.I Sail
+by typing a single character.  You will then be prompted for further
+input.  A brief summary of the commands follows.
+.bp
+.SH COMMAND SUMMARY
+.nf
+
+    'f'  Fire broadsides if they bear
+    'l'  Reload
+    'L'  Unload broadsides (to change ammo)
+    'm'  Move 
+    'i'  Print the closest ship
+    'I'  Print all ships
+    'F'  Find a particular ship or ships (e.g. "a?" for all Americans)
+    's'  Send a message around the fleet
+    'b'  Attempt to board an enemy ship
+    'B'  Recall boarding parties
+    'c'  Change set of sail
+    'r'  Repair
+    'u'  Attempt to unfoul
+    'g'  Grapple/ungrapple
+    'v'  Print version number of game
+   '^L'  Redraw screen
+    'Q'  Quit
+
+    'C'      Center your ship in the window
+    'U'	     Move window up
+    'D','N'  Move window down
+    'H'	     Move window left
+    'J'	     Move window right
+    'S'      Toggle window to follow your ship or stay where it is
+
+.fi
+.bg
+.SH SCENARIOS
+Here is a summary of the scenarios in 
+.I Sail:
+
+.br
+.SH Ranger vs. Drake:
+.nf
+Wind from the N, blowing a fresh breeze.
+
+(a) Ranger            19 gun Sloop (crack crew) (7 pts)
+(b) Drake             17 gun Sloop (crack crew) (6 pts)
+.SH The Battle of Flamborough Head:
+.nf
+Wind from the S, blowing a fresh breeze.
+
+.fi
+This is John Paul Jones' first famous battle.  Aboard the Bonhomme
+Richard, he was able to overcome the Serapis's greater firepower
+by quickly boarding her.
+.nf
+
+(a) Bonhomme Rich     42 gun Corvette (crack crew) (11 pts)
+(b) Serapis           44 gun Frigate (crack crew) (12 pts)
+.SH Arbuthnot and Des Touches:
+.nf
+Wind from the N, blowing a gale.
+
+(b) America           64 gun Ship of the Line (crack crew) (20 pts)
+(b) Befford           74 gun Ship of the Line (crack crew) (26 pts)
+(b) Adamant           50 gun Ship of the Line (crack crew) (17 pts)
+(b) London            98 gun 3 Decker SOL (crack crew) (28 pts)
+(b) Royal Oak         74 gun Ship of the Line (crack crew) (26 pts)
+(f) Neptune           74 gun Ship of the Line (average crew) (24 pts)
+(f) Duc Bougogne      80 gun 3 Decker SOL (average crew) (27 pts)
+(f) Conquerant        74 gun Ship of the Line (average crew) (24 pts)
+(f) Provence          64 gun Ship of the Line (average crew) (18 pts)
+(f) Romulus           44 gun Ship of the Line (average crew) (10 pts)
+.SH Suffren and Hughes:
+.nf
+
+Wind from the S, blowing a fresh breeze.
+
+(b) Monmouth          74 gun Ship of the Line (average crew) (24 pts)
+(b) Hero              74 gun Ship of the Line (crack crew) (26 pts)
+(b) Isis              50 gun Ship of the Line (crack crew) (17 pts)
+(b) Superb            74 gun Ship of the Line (crack crew) (27 pts)
+(b) Burford           74 gun Ship of the Line (average crew) (24 pts)
+(f) Flamband          50 gun Ship of the Line (average crew) (14 pts)
+(f) Annibal           74 gun Ship of the Line (average crew) (24 pts)
+(f) Severe            64 gun Ship of the Line (average crew) (18 pts)
+(f) Brilliant         80 gun Ship of the Line (crack crew) (31 pts)
+(f) Sphinx            80 gun Ship of the Line (average crew) (27 pts)
+.SH Nymphe vs. Cleopatre:
+.nf
+Wind from the S, blowing a fresh breeze.
+
+(b) Nymphe            36 gun Frigate (crack crew) (11 pts)
+(f) Cleopatre         36 gun Frigate (average crew) (10 pts)
+.SH Mars vs. Hercule:
+Wind from the S, blelf-sought
+self-sovereignty
+self-sow
+self-sowed
+self-sown
+self-spacing
+self-speech
+self-spitted
+self-sprung
+self-stability
+self-starter
+self-starting
+self-steered
+self-sterile
+self-sterility
+self-stimulated
+self-stowing
+self-strength
+self-stripper
+self-strong
+self-stuck
+self-study
+self-styled
+self-subdual
+self-subdued
+self-subjection
+self-subordination
+self-subsidation
+self-subsistence
+self-subsistency
+self-subsistent
+self-subsisting
+self-substantial
+self-subversive
+self-sufficed
+self-sufficience
+self-sufficiency
+self-sufficient
+self-sufficientness
+self-sufficing
+self-sufficingly
+self-sufficingness
+self-suggested
+self-suggester
+self-suggestion
+self-suggestive
+self-suppletive
+self-support
+self-supported
+self-supportedness
+self-supporting
+self-supportingly
+self-supportless
+self-suppression
+self-suppressive
+self-sure
+self-surrender
+self-surrendering
+self-survey
+self-surviving
+self-survivor
+self-suspended
+self-suspicion
+self-suspicious
+self-sustained
+self-sustaining
+self-sustainingly
+self-sustainment
+self-sustenance
+self-sustentation
+self-sway
+self-tapping
+self-taught
+self-taxation
+self-teacher
+self-tempted
+self-tenderness
+self-terminating
+self-terminative
+self-testing
+self-thinking
+self-thinning
+self-thought
+self-threading
+self-tightening
+self-tipping
+self-tire
+self-tolerantly
+self-toning
+self-torment
+self-tormented
+self-tormenter
+self-tormenting
+self-tormentor
+self-torture
+self-tortured
+self-torturing
+self-transformation
+self-treated
+self-treatment
+self-trial
+self-triturating
+self-troubling
+self-trust
+self-trusting
+self-tuition
+self-uncertain
+self-unconscious
+self-understand
+self-understanding
+self-undoing
+self-uniform
+self-union
+self-unity
+self-unloading
+self-unscabbarded
+self-unveiling
+self-unworthiness
+self-upbraiding
+self-usurp
+self-valuation
+self-valuing
+self-variance
+self-vaunted
+self-vaunting
+self-vendition
+self-ventilated
+self-vexation
+self-view
+self-vindicating
+self-vindication
+self-violence
+self-vivacious
+self-vivisector
+self-vulcanizing
+self-want
+self-wardness
+self-warranting
+self-watchfulness
+self-weariness
+self-weary
+self-weight
+self-weighted
+self-whipper
+self-whipping
+self-whole
+self-widowered
+self-will
+self-willed
+self-willedly
+self-willedness
+self-winding
+self-wine
+self-wisdom
+self-wise
+self-witness
+self-working
+self-worn
+self-worship
+self-worshiper
+self-worshiping
+self-worth
+self-worthiness
+self-wounding
+self-written
+self-wrong
+self-wrongly
+self-wrought
+Selkirk bannock
+seller four
+selling account
+selling agent
+selling-plater
+selling point
+selling price
+selling race
+Semal laut
+semantic tone
+semaphore plant
+semaphore telegraph
+semen cinae
+semen contra
+semester hour
+semiair-cooled
+Semi-apollinarism
+Semi-arian
+Semi-arianism
+semi-armor-piercing
+Semi-augustinian
+Semi-augustinianism
+Semi-bantu
+Semi-belgian
+Semi-bessemer
+Semi-bohemian
+Semi-bolsheviki
+semibreve rest
+Semi-christian
+Semi-christianized
+semicolon butterfly
+semico-operative
+Semi-darwinian
+semi-diesel
+Semi-dutch
+Semi-empire
+Semi-euclidean
+Semi-frenchified
+Semi-gnostic
+Semi-gothic
+semi-idiocy
+semi-idiotic
+semi-idleness
+semi-illiterate
+semi-imbricated
+semi-immersed
+semi-incandescent
+semi-independence
+semi-independent
+semi-independently
+semi-indirect
+semi-indurated
+semi-inertness
+semi-infidel
+semi-infinite
+semi-inhibition
+semi-insoluble
+semi-insular
+semi-intelligent
+semi-intercostal
+semi-internal
+semi-interosseous
+semi-intoxication
+semi-intrados
+semi-invalid
+semi-inverse
+semi-ironical
+Semi-jesuit
+Semi-judaizer
+semilatus rectum
+Semi-manichaeanism
+seminal duct
+Semi-norman
+Semi-patriot
+Semi-pelagian
+Semi-pelagianism
+Semi-pythagorean
+Semi-romanism
+Semi-romanized
+Semi-russian
+Semi-sadducee
+Semi-sadduceeism
+Semi-sadducism
+Semi-saxon
+Semi-slav
+Semi-southern
+Semi-tatar
+Semitico-hamitic
+Semito-hamite
+Semito-hamitic
+Semi-tory
+Semi-tychonic
+semiwater gas
+Semi-zionism
+Semo sancus
+senate house
+senator-elect
+senatorial courtesy
+sending set
+sending station
+send-off
+send-out
+senega root
+senega snakeroot
+seneka root
+seneka snakeroot
+sengreen saxifrage
+senility necrosis
+senior checker
+senior high school
+senna family
+senna tree
+sensation-proof
+sense-bereaving
+sense-bound
+sense-confounding
+sense-confusing
+sense datum
+sense-distracted
+sense faculty
+sense finder
+sense form
+sense group
+sense impression
+sense organ
+sense perception
+sense-ravishing
+sense stress
+sense survival
+sensitive fern
+sensitol green
+Sensitol green
+sensitometric curve
+sensum theory
+sensus communis
+Sen-tamil
+sentence accent
+sentence adverb
+sentence balance
+sentence building
+sentence making
+sentence method
+sentence monger
+sentence pattern
+sentence stress
+sentence structure
+sentence tone
+sentimental comedy
+sentiment-proof
+sentinel crab
+sentry board
+sentry box
+sentry-fashion
+sentry go
+separating funnel
+separating power
+separation allowance
+separation center
+separation layer
+separation theorem
+separatory funnel
+sepia-colored
+sepia-eyed
+sepia paper
+sepia-tinted
+septal cartilage
+septal neck
+sept chord
+September elm
+septifragal dehiscence
+sequence switch
+sequential system
+sequoia pitch moth
+Serb-croat-slovene
+Serbo-bulgarian
+Serbo-croat
+Serbo-croatian
+sergeant armorer
+Sergeant baker
+sergeant bugler
+sergeant clerk
+sergeant cook
+sergeant drummer
+sergeant fish
+sergeant footman
+sergeant instructor
+sergeant major
+sergeant-majorship
+sergeant painter
+sergeant porter
+sergeant saddler
+sergeant schoolmaster
+sergeants major
+sergeant tailor
+sergeant trumpet
+sergeant trumpeter
+serial right
+sericite gneiss
+sericite schist
+series dynamo
+series motor
+series parallel
+series resonance
+series spectra
+series turn
+series winding
+series-wound
+serin finch
+serious-minded
+serious-mindedly
+serious-mindedness
+sermon bell
+serous fluid
+serous gland
+serous membrane
+Serpent bearer
+serpent cucumber
+serpent cult
+serpent eagle
+serpent eater
+serpent fern
+serpent fish
+serpent-god
+serpent-goddess
+serpent gourd
+serpent grass
+serpentine green
+serpent melon
+serpent moss
+serpent radish
+serpent-shaped
+serpent star
+serpent stone
+Serpollet type
+serrana hispana
+serran imperial
+serrate-ciliate
+serrate-dentate
+serum albumin
+serum anaphylaxis
+serum disease
+serum globulin
+serum hepatitis
+serum jaundice
+serum sickness
+serum therapy
+servant girl
+serve-out
+service ace
+service battery
+service book
+service box
+service brake
+service buzzer
+service call
+service cap
+service ceiling
+service charge
+service clasp
+service club
+service company
+service court
+service door
+service engineer
+service entrance
+service flag
+service flat
+service hat
+service line
+service magazine
+service medal
+service pension
+service pipe
+service plate
+service side
+service side line
+service squadron
+service stair
+service station
+service stripe
+service switch
+service tree
+service troop
+service uniform
+service wall
+serving knife
+serving mallet
+serving pantry
+serving stuff
+serving table
+servo control
+Servo-croat
+Servo-croatian
+sesame grass
+sesame oil
+sessile-eyed
+sessile-flowered
+sessile-fruited
+sessile-leaved
+set-aside
+set bar
+set book
+set chisel
+set-fair
+set gauge
+set gun
+set hammer
+set-hands
+set hook
+set-in
+set iron
+set nut
+setoff sheet
+set piece
+set pin
+set point
+set pot
+set square
+set-stitched
+sett beater
+settee bed
+set temper
+setter-forth
+setter-in
+setter-on
+setter-out
+setter-to
+setter-up
+setting block
+setting board
+setting circle
+setting coat
+setting day
+setting gauge
+setting hen
+setting node
+setting-out
+setting point
+setting pole
+setting punch
+setting rule
+setting stake
+setting stick
+setting-to
+setting-up
+setting-up exercise
+settle bed
+settle-bench
+settle-brain
+settle-down
+settled production
+settled soap
+settlement day
+settlement house
+settlement lease
+settlement sheet
+settling clerk
+settling day
+settling price
+set-to
+set tub
+set up
+set-upness
+seven-banded
+seven-branched
+seven-caped
+seven-channeled
+seven-chorded
+seven-cornered
+seven-day
+seven-eyed
+seven-eyes
+seven-figure
+seven-foot
+seven-formed
+seven-gated
+seven-gilled
+seven-hand
+seven-headed
+seven-hilled
+seven-hilly
+seven-holes
+seven-horned
+seven-inch
+seven-league
+seven-leaved
+seven-line
+seven-masted
+seven-mouthed
+seven-nerved
+seven-ounce
+seven-part
+seven-part time
+seven-piled
+seven-ply
+seven-point
+seven-point circle
+seven-poled
+seven-pronged
+seven-quired
+seven-sealed
+seven-shilling
+seven-shooter
+seven-sided
+seven-spotted
+seven-syllabled
+seventeen-hundreds
+seventeeowing a fresh breeze.
+.nf
+(b) Mars              74 gun Ship of the Line (crack crew) (26 pts)
+(f) Hercule           74 gun Ship of the Line (average crew) (23 pts)
+.SH Ambuscade vs. Baionnaise:
+.nf
+Wind from the N, blowing a fresh breeze.
+
+(b) Ambuscade         32 gun Frigate (average crew) (9 pts)
+(f) Baionnaise        24 gun Corvette (average crew) (9 pts)
+.SH Constellation vs. Insurgent:
+.nf
+Wind from the S, blowing a gale.
+
+(a) Constellation     38 gun Corvette (elite crew) (17 pts)
+(f) Insurgent         36 gun Corvette (average crew) (11 pts)
+.SH Constellation vs. Vengeance:
+.nf
+Wind from the S, blowing a fresh breeze.
+
+(a) Constellation     38 gun Corvette (elite crew) (17 pts)
+(f) Vengeance         40 gun Frigate (average crew) (15 pts)
+.SH The Battle of Lissa:
+.nf
+Wind from the S, blowing a fresh breeze.
+
+(b) Amphion           32 gun Frigate (elite crew) (13 pts)
+(b) Active            38 gun Frigate (elite crew) (18 pts)
+(b) Volage            22 gun Frigate (elite crew) (11 pts)
+(b) Cerberus          32 gun Frigate (elite crew) (13 pts)
+(f) Favorite          40 gun Frigate (average crew) (15 pts)
+(f) Flore             40 gun Frigate (average crew) (15 pts)
+(f) Danae             40 gun Frigate (crack crew) (17 pts)
+(f) Bellona           32 gun Frigate (green crew) (9 pts)
+(f) Corona            40 gun Frigate (green crew) (12 pts)
+(f) Carolina          32 gun Frigate (green crew) (7 pts)
+.SH Constitution vs. Guerriere:
+.nf
+Wind from the SW, blowing a gale.
+
+(a) Constitution      44 gun Corvette (elite crew) (24 pts)
+(b) Guerriere         38 gun Frigate (crack crew) (15 pts)
+.SH United States vs. Macedonian:
+.nf
+Wind from the S, blowing a fresh breeze.
+
+(a) United States     44 gun Frigate (elite crew) (24 pts)
+(b) Macedonian        38 gun Frigate (crack crew) (16 pts)
+.SH Constitution vs. Java:
+.nf
+Wind from the S, blowing a fresh breeze.
+
+(a) Constitution      44 gun Corvette (elite crew) (24 pts)
+(b) Java              38 gun Corvette (crack crew) (19 pts)
+.SH Chesapeake vs. Shannon:
+.nf
+Wind from the S, blowing a fresh breeze.
+
+(a) Chesapeake        38 gun Frigate (average crew) (14 pts)
+(b) Shannon           38 gun Frigate (elite crew) (17 pts)
+.SH The Battle of Lake Erie:
+.nf
+Wind from the S, blowing a light breeze.
+
+(a) Lawrence          20 gun Sloop (crack crew) (9 pts)
+(a) Niagara           20 gun Sloop (elite crew) (12 pts)
+(b) Lady Prevost      13 gun Brig (crack crew) (5 pts)
+(b) Detroit           19 gun Sloop (crack crew) (7 pts)
+(b) Q. Charlotte      17 gun Sloop (crack crew) (6 pts)
+.SH Wasp vs. Reindeer:
+.nf
+Wind from the S, blowing a light breeze.
+
+(a) Wasp              20 gun Sloop (elite crew) (12 pts)
+(b) Reindeer          18 gun Sloop (elite crew) (9 pts)
+.SH Constitution vs. Cyane and Levant:
+.br
+Wind from the S, blowing a moderate breeze.
+
+(a) Constitution      44 gun Corvette (elite crew) (24 pts)
+(b) Cyane             24 gun Sloop (crack crew) (11 pts)
+(b) Levant            20 gun Sloop (crack crew) (10 pts)
+.br
+.SH Pellew vs. Droits de L'Homme:
+.nf
+Wind from the N, blowing a gale.
+
+(b) Indefatigable     44 gun Frigate (elite crew) (14 pts)
+(b) Amazon            36 gun Frigate (crack crew) (14 pts)
+(f) Droits L'Hom      74 gun Ship of the Line (average crew) (24 pts)
+.SH Algeciras:
+.nf
+Wind from the SW, blowing a moderate breeze.
+
+(b) Caesar            80 gun Ship of the Line (crack crew) (31 pts)
+(b) Pompee            74 gun Ship of the Line (crack crew) (27 pts)
+(b) Spencer           74 gun Ship of the Line (crack crew) (26 pts)
+(b) Hannibal          98 gun 3 Decker SOL (crack crew) (28 pts)
+(s) Real-Carlos       112 gun 3 Decker SOL (green crew) (27 pts)
+(s) San Fernando      96 gun 3 Decker SOL (green crew) (24 pts)
+(s) Argonauta         80 gun Ship of the Line (green crew) (23 pts)
+(s) San Augustine     74 gun Ship of the Line (green crew) (20 pts)
+(f) Indomptable       80 gun Ship of the Line (average crew) (27 pts)
+(f) Desaix            74 gun Ship of the Line (average crew) (24 pts)
+.SH Lake Champlain:
+.nf
+Wind from the N, blowing a fresh breeze.
+
+(a) Saratoga          26 gun Sloop (crack crew) (12 pts)
+(a) Eagle             20 gun Sloop (crack crew) (11 pts)
+(a) Ticonderoga       17 gun Sloop (crack crew) (9 pts)
+(a) Preble            7 gun Brig (crack crew) (4 pts)
+(b) Confiance         37 gun Frigate (crack crew) (14 pts)
+(b) Linnet            16 gun Sloop (elite crew) (10 pts)
+(b) Chubb             11 gun Brig (crack crew) (5 pts)
+.SH Last Voyage of the USS President:
+.nf
+Wind from the N, blowing a fresh breeze.
+
+(a) President         44 gun Frigate (elite crew) (24 pts)
+(b) Endymion          40 gun Frigate (crack crew) (17 pts)
+(b) Pomone            44 gun Frigate (crack crew) (20 pts)
+(b) Tenedos           38 gun Frigate (crack crew) (15 pts)
+.SH Hornblower and the Natividad:
+.nf
+Wind from the E, blowing a gale.
+
+.fi
+A scenario for you Horny fans.  Remember, he sank the Natividad
+against heavy odds and winds.  Hint: don't try to board the Natividad,
+her crew is much bigger, albeit green.
+.nf
+
+(b) Lydia             36 gun Frigate (elite crew) (13 pts)
+(s) Natividad         50 gun Ship of the Line (green crew) (14 pts)
+.SH Curse of the Flying Dutchman:
+.nf
+Wind from the S, blowing a fresh breeze.
+
+Just for fun, take the Piece of cake.
+
+(s) Piece of Cake     24 gun Corvette (average crew) (9 pts)
+(f) Flying Dutchy     120 gun 3 Decker SOL (elite crew) (43 pts)
+.SH The South Pacific:
+.nf
+Wind from the S, blowing a strong breeze.
+
+(a) USS Scurvy        136 gun 3 Decker SOL (mutinous crew) (27 pts)
+(b) HMS Tahiti        120 gun 3 Decker SOL (elite crew) (43 pts)
+(s) Australian        32 gun Frigate (average crew) (9 pts)
+(f) Bikini Atoll      7 gun Brig (crack crew) (4 pts)
+.SH Hornblower and the battle of Rosas bay:
+.nf
+Wind from the E, blowing a fresh breeze.
+
+The only battle Hornblower ever lost.  He was able to dismast one
+ship and stern rake the others though.  See if you can do as well.
+.nf
+
+(b) Sutherland        74 gun Ship of the Line (crack crew) (26 pts)
+(f) Turenne           80 gun 3 Decker SOL (average crew) (27 pts)
+(f) Nightmare         74 gun Ship of the Line (average crew) (24 pts)
+(f) Paris             112 gun 3 Decker SOL (green crew) (27 pts)
+(f) Napolean          74 gun Ship of the Line (green crew) (20 pts)
+.SH Cape Horn:
+.nf
+Wind from the NE, blowing a strong breeze.
+
+(a) Concord           80 gun Ship of the Line (average crew) (27 pts)
+(a) Berkeley          98 gun 3 Decker SOL (crack crew) (28 pts)
+(b) Thames            120 gun 3 Decker SOL (elite crew) (43 pts)
+(s) Madrid            112 gun 3 Decker SOL (green crew) (27 pts)
+(f) Musket            80 gun 3 Decker SOL (average crew) (27 pts)
+.SH New Orleans:
+.nf
+Wind from the SE, blowing a fresh breeze.
+
+Watch that little Cypress go!
+
+(a) Alligator         120 gun 3 Decker SOL (elite crew) (43 pts)
+(b) Firefly           74 gun Ship of the Line (crack crew) (27 pts)
+(b) Cypress           44 gun Frigate (elite crew) (14 pts)
+.SH Botany Bay:
+.nf
+Wind from the N, blowing a fresh breeze.
+
+(b) Shark             64 gun Ship of the Line (average crew) (18 pts)
+(f) Coral Snake       44 gun Corvette (elite crew) (24 pts)
+(f) Sea Lion          44 gun Frigate (elite crew) (24 pts)
+.SH Voyage to the Bottom of the Sea:
+.nf
+Wind from the NW, blowing a fresh breeze.
+
+This one is dedicated to Richard Basehart and David Hedison.
+
+(a) Seaview           120 gun 3 Decker SOL (elite crew) (43 pts)
+(a) Flying Sub        40 gun Frigate (crack crew) (17 pts)
+(b) Mermaid           136 gun 3 Decker SOL (mutinous crew) (27 pts)
+(s) Giant Squid       112 gun 3 Decker SOL (green crew) (27 pts)
+.SH Frigate Action:
+.nf
+Wind from the E, blowing a fresh breeze.
+
+(a) Killdeer          40 gun Frigate (average crew) (15 pts)
+(b) Sandpiper         40 gun Frigate (average crew) (15 pts)
+(s) Curlew            38 gun Frigate (crack crew) (16 pts)
+.SH The Battle of Midway:
+.nf
+Wind from the E, blowing a moderate breeze.
+
+(a) Enterprise        80 gun Ship of the Line (crack crew) (31 pts)
+(a) Yorktown          80 gun Ship of the Line (average crew) (27 pts)
+(a) Hornet            74 gun Ship of the Line (average crew) (24 pts)
+(j) Akagi             112 gun 3 Decker SOL (gn-year
+seventeen-year locust
+seventh chord
+seventh day
+seven-thirties
+seven-thirty
+seventh nerve
+seven-thorned
+seven-tined
+seven-toned
+seven-twined
+seven-twisted
+seventy-day
+seventy-dollar
+seventy-eight
+seventy-eighth
+seventy-fifth
+seventy-first
+seventy-five
+seventy-foot
+seventy-footer
+seventy-four
+seventy-fourth
+seventy-horse
+seventy-mile
+seventy-nine
+seventy-ninth
+seventy-odd
+seventy-one
+seventy-second
+seventy-seven
+seventy-seventh
+seventy-six
+seventy-sixth
+seventy-third
+seventy-three
+seventy-ton
+seventy-two
+seventy-year
+seven-up
+seven-year
+several-celled
+several-flowered
+several-lobed
+several-nerved
+several-ribbed
+sewage disposal
+sewee bean
+sewer brick
+sewer builder
+sewer pipe
+sewer rat
+sewing awl
+sewing basket
+sewing bench
+sewing bird
+sewing board
+sewing cabinet
+sewing circle
+sewing class
+sewing cotton
+sewing machine
+sewing needle
+sewing press
+sewing school
+sewing silk
+sewing society
+sewing table
+sewing teacher
+sewing thread
+sewing tray
+sewing twine
+sewing wire
+sewing woman
+sewing work
+sexagesimal scale
+sexagesimal system
+Sexagesima sunday
+sex appeal
+sex cell
+sex chromosome
+sex hormone
+sex hygiene
+sex-intergrade
+sex-limited
+sex-linkage
+sex-linked
+sex pervert
+sexton beetle
+sextuple press
+shabby-genteel
+shabby-gentility
+shab-rag
+shack bait
+shackle bar
+shackle bolt
+shackle insulator
+shackle joint
+shad-bellied
+shad-blow
+shade-bearing
+shade-enduring
+shade-giving
+shade-grown
+shade-loving
+shade pine
+shade plant
+shade-seeking
+shad fly
+shad frog
+shading coil
+shadow band
+shadow bird
+shadow box
+shadow compass
+shadow cone
+shadow dance
+shadow fight
+shadow figure
+shadow line
+shadow nucleus
+shadow pantomime
+shadow play
+shadow skirt
+shadow stitch
+shadow stop
+shad scale
+shad spirit
+shad tree
+shaft alley
+shaft efficiency
+shaft eye
+shaft feather
+shaftfoot man
+shaft furnace
+shaft governor
+shaft grave tomb
+shaft head
+shaft horsepower
+shaft house
+shafting lathe
+shaft key
+shaft-rubber
+shaft sinker
+shaft-straightener
+shaft tackle
+shaft tunnel
+shagbark hickory
+shaggy-barked
+shaggy-bearded
+shaggy-bodied
+shaggy-coated
+shaggy-dog story
+shaggy-fleeced
+shaggy-footed
+shaggy-haired
+shaggy-leaved
+shaggy-mane
+shaggy-maned
+shaggy-mane mushroom
+shag-haired
+shake-bag
+shakebag club
+shakebag match
+shake bolt
+shake-cabin
+shake culture
+shakedown cruise
+shake-hands
+Shaker flannel
+shake-up
+shaking palsy
+shaking pudding
+shaking table
+Shalako dancer
+shale green
+shale naphtha
+shale oil
+shale spirit
+shallow-draft
+shallow-footed
+shallow-forded
+shallow-headed
+shallow-hulled
+shallow-minded
+shallow-read
+shallow-rooted
+shallow-rooting
+shallow-sea
+shallow-searching
+shallow-sighted
+shallow-soiled
+shallow-thoughted
+shallow-toothed
+shallow-waisted
+shallow-water
+shallow-witted
+shalom alekhem
+shamalo grass
+shama millet
+shame brier
+shame-burnt
+shame child
+shame-crushed
+shame-eaten
+shame-shrunk
+shame-stricken
+shame-swollen
+shame vine
+sham object
+shamrock green
+shamrock pea
+sham subject
+Shang-ti
+shank bone
+shank cutter
+shank grass
+shank mill
+shank painter
+shanty boat
+shanty-boater
+shanty boy
+shape-knife
+shape shifting
+shape target
+shaping dies
+shaping planer
+shard beetle
+shard-born
+shard-borne
+share beam
+share crop
+share head
+share-out
+share register
+share tenant
+shark barrow
+shark-liver
+shark-liver oil
+shark moth
+shark oil
+shark pilot
+shark ray
+shark sucker
+sharp-angled
+sharp-ankled
+sharp-back
+sharp-backed
+sharp-back shark
+sharp-beaked
+sharp-bellied
+sharp-billed
+sharp-biting
+sharp-bottomed
+sharp-breasted
+sharp cash
+sharp cedar
+sharp-clawed
+sharp-cornered
+sharp-cut
+sharp-cutting
+sharp dock
+sharp-eared
+sharp-edged
+sharp-elbowed
+sharp-eyed
+sharp-eyes
+sharp-faced
+sharp-fanged
+sharp-featured
+sharp-flavored
+sharp-freeze
+sharp-freezer
+sharp-fruited
+sharp-gritted
+sharp-ground
+sharp-headed
+sharp-heeled
+sharp-horned
+sharp iron
+sharp-keeled
+sharp-leaved
+sharp-looking
+sharp-minded
+sharp mixture
+sharp-nebbed
+sharp-nosed
+sharp-nosedly
+sharp-nosedness
+sharp-nosed shark
+sharp-odored
+sharp-petaled
+sharp-piercing
+sharp-piled
+sharp-pointed
+sharp-quilled
+sharp-ridged
+sharp sand
+sharp-set
+sharp-setness
+sharp-shinned
+sharp-sighted
+sharp-sightedly
+sharp-sightedness
+sharp-smelling
+sharp-smitten
+sharp-snouted
+sharp-staked
+sharp-staring
+sharp-tailed
+sharp-tasted
+sharp-tasting
+sharp-tempered
+sharp-toed
+sharp-tongued
+sharp-toothed
+sharp-topped
+sharp-visaged
+sharp-whetted
+sharp-winged
+sharp-witted
+sharp-wittedly
+sharp-wittedness
+shave grass
+shave hook
+shave rush
+shaving basin
+shaving board
+shaving box
+shaving brush
+shaving case
+shaving cream
+shaving cup
+shaving dies
+shaving glass
+shaving horse
+shaving mill
+shaving mirror
+shaving mug
+shaving paper
+shaving paste
+shaving powder
+shaving set
+shaving soap
+shaving stand
+shaving stick
+shaving strop
+shaving towel
+shaving water
+shawl collar
+shawl goat
+shawl loom
+shawl material
+shawl pattern
+shawl strap
+shawl waistcoat
+Shawver truss
+shea butter
+she-actor
+she-adventurer
+sheaf arrow
+sheaf catalogue
+she all
+shea-nut
+shea-nut oil
+she-ape
+she-apostle
+shear angle
+shear boom
+shear hulk
+shearing deformation
+shearing dies
+shearing force
+shearing machine
+shearing plane
+shearing punch
+shearing stress
+shearing tool
+shear legs
+shear modulus
+shear pin
+shear plane
+shear skid
+shear steel
+shear strain
+shear stress
+shear structure
+shear zone
+she-ass
+sheath gown
+sheathing board
+sheathing copper
+sheathing felt
+sheathing lead
+sheathing lumber
+sheathing nail
+sheathing paper
+sheath knife
+sheath moth
+sheath-winged
+shea tree
+she-baker
+she-balsam
+she-bear
+she-beech
+she-captain
+she-chattel
+she-costermonger
+she-cousin
+shed-builder ant
+shed burn
+she-demon
+she-devil
+she-dragon
+shed roof
+sheeling hill
+sheep bar
+sheep barn
+sheep bell
+sheep bot
+sheep botfly
+sheep boy
+sheep breeder
+sheep breeding
+sheep bur
+sheep clipper
+sheep clipping
+sheep-dip
+sheep dipper
+sheep dipping
+sheep dog
+sheep fair
+sheep farm
+sheep farmer
+sheep farming
+sheep fescue grass
+sheep flake
+sheep fly
+sheep gadfly
+sheep-grazing
+sheep hound
+sheep-hued
+sheep husbandry
+sheep killer
+sheep killing
+sheep-kneed
+sheep land
+sheep laurel
+sheep-lice
+sheep louse
+sheep measles
+sheep oat grass
+sheep owner
+sheep owning
+sheep parsley
+sheep pelt
+sheep pest
+sheep plant
+sheep poison
+sheep pox
+sheep rack
+sheep raiser
+sheep raising
+sheep range
+sheep reeve
+sheep-root
+sheep rot
+sheep run
+sheep scab
+sheep scabious
+sheepshead minnow
+sheepshead porgy
+sheep shears
+sheep-sick
+sheep silver
+sheep sorrel
+sheep-spirited
+sheep station
+sheep tansy
+sheep tick
+sheep wash
+sheep washer
+sheep-white
+sheep-witted
+sheer batten
+sheer boom
+sheer-built
+sheer draft
+sheer drawing
+sheer hook
+sheer leg
+sheer legs
+sheer line
+sheer-off
+sheer plan
+sheer pole
+sheer ratline
+sheer strake
+sheet anchor
+sheet bend
+sheet-block
+sheet bundler
+sheet cable
+sheet chain
+sheet erosion
+sheeting pile
+sheet iron
+sheet lightning
+sheet metal
+sheet mill
+sheet mold
+sheet pavement
+sheet pile
+sheet piling
+sheet steel
+sheet tin
+sheet watermark
+sheet writer
+she-fish
+she-foal
+she-fool
+she-fox
+she-friend
+she-goat
+she-god
+She-greek
+she-gypsy
+Sheikh ul islam
+she-ironbark
+she-kind
+she-king
+shelf catalogue
+shelf fungus
+shelf ice
+shelf ladder
+shelf list
+shelf plate
+shelf warmer
+she-lion
+shell auger
+shell bark
+shell bean
+shell bit
+shell boiler
+shell button
+shell chuck
+shell couching
+shell crest
+shell dove
+shell down
+shell drill
+shell edging
+shell eye
+shell feed
+shell fire
+shell game
+shell gland
+shell gray
+shell heap
+shell hole
+shell hooks
+shell ibis
+shell ice
+shell jacket
+shell-leaf
+shell-less
+shell-like
+shell limestone
+shell marble
+shell money
+shell mound
+shell parakeet
+shell pear
+shell pink
+shell plating
+shell pump
+shell quail
+shell reamer
+shell reducer
+shell road
+shell room
+shell ruching
+shell sac
+shell-shaped
+shell-shock
+shell snail
+shell socket
+shell stitch
+shell strake
+shell transformer
+shell turtle
+shell-worker
+shelter belt
+shelter deck
+shelter-deck vessel
+shelter half
+shelter pit
+shelter tent
+shelter trench
+shelterwood method
+she-malady
+she-monster
+she-negro
+shenk beer
+she-oak
+she-page
+she-panther
+Shepard king
+she-peace
+shepherd god
+shepherd spider
+shepherds-staff
+she-pig
+she-pine
+she pitch pine
+she-poet
+she-poetry
+she-preacher
+she-priest
+sherbet powder
+shere khan
+she-relative
+sheriff depute
+sheriff-pink
+sheriff substitute
+sherry brown
+sherry cobbler
+she-saint
+she-salmon
+she-school
+she-scoundrel
+she-society
+she-sparrow
+sh.\" Hunt
+.\" Copyright (c) 1985 Conrad C. Huang, Gregory S. Couch, Kenneth C.R.C. Arnold
+.\" San Francisco, California
+.\"
+.\" Copyright (c) 1985 Regents of the University of California.
+.\" All rights reserved.  The Berkeley software License Agreement
+.\" specifies the terms and conditions for redistribution.
+.\"
+.\"	@(#)hunt.6	6.3 (Berkeley) 1/9/86
+.\"
+.TH HUNT 6 "January 9, 1986"
+.UC 6
+.SH NAME
+hunt \- a multi-player multi-terminal game
+.SH SYNOPSIS
+\fB/usr/games/hunt\fP [-q] [\fB-m\fP] [hostname] [\fB-l\fP name]
+.SH DESCRIPTION
+The object of the game
+.I hunt
+is to kill off the other players.
+There are no rooms, no treasures, and no monsters.
+Instead, you wander around a maze, find grenades, trip mines, and shoot down
+walls and players.
+The more players you kill before you die, the better your score is.
+If the
+.B \-m
+flag is given,
+you enter the game as a monitor
+(you can see the action but you cannot play).
+.PP
+.I Hunt
+normally looks for an active game on the local network; if none is found,
+it starts one up on the local host.  One may specify the location of the
+game by giving the \fIhostname\fP argument.  The player name may be specified
+on the command line by using the \fB-l\fP option.  This command syntax was
+chosen for \fIrlogin/rsh\fP compatibility.
+If the
+.B \-q
+flag is given,
+.I hunt
+queries the network and reports if an active game were found.
+This is useful for .login scripts.
+.PP
+.I Hunt
+only works on crt (vdt) terminals with at least 24 lines, 80 columns, and
+cursor addressing.
+The screen is divided in to 3 areas.
+On the right hand side is the status area.
+It shows you how much damage you've sustained,
+how many charges you have left,
+who's in the game,
+who's scanning (the asterisk in front of the name),
+who's cloaked (the plus sign in front of the name),
+and other players' scores.
+Most of the rest of the screen is taken up by your map of the maze,
+except for the 24th line,
+which is used for longer messages that don't fit in the status area.
+.PP
+.I Hunt
+uses the same keys to move as
+.I vi
+does,
+.IR i.e. ,
+.BR h , j , k ,
+and
+.B l
+for left, down, up, right respectively.
+To change which direction you're facing in the maze,
+use the upper case version of the movement key (\c
+.IR i.e. ,
+HJKL).
+.TP
+Other commands are:
+.sp
+.nf
+.ta
+.ta \w'>\|<\|^\|v\ \ 'u
+f	\- Fire (in the direction you're facing) (Takes 1 charge)
+g	\- Throw grenade (in the direction you're facing) (Takes 9 charges)
+F	\- Throw satchel charge (Takes 25 charges)
+G	\- Throw bomb (Takes 49 charges)
+o	\- Throw small slime bomb (Takes 15 charges)
+O	\- Throw big slime bomb (Takes 30 charges)
+s	\- Scan (show where other players are) (Takes 1 charge)
+c	\- Cloak (hide from scanners) (Takes 1 charge)
+
+^L	\- Redraw screen
+q	\- Quit
+.fi
+.TP
+Knowing what the symbols on the screen often helps:
+.sp
+.nf
+.ta
+.ta \w'>\|<\|^\|v\ \ 'u
+\-\||\|+	\- walls
+/\|\\	\- diagonal (deflecting) walls
+#	\- doors (dispersion walls)
+;	\- small mine
+g	\- large mine
+:	\- shot
+o	\- grenade
+O	\- satchel charge
+@	\- bomb
+s	\- small slime bomb
+$	\- big slime bomb
+>\|<\|^\|v	\- you facing right, left, up, or down
+}\|{\|i\|!	\- other players facing right, left, up, or down
+\(**	\- explosion
+.ne 3
+.cs R 24
+.cs I 24
+\fR\\|/\fP
+.cs R
+\fI\-\(**\-\fP	\- grenade and large mine explosion
+.fl
+.cs R 24
+\fR/|\\\fP
+.cs R
+.cs I
+.fi
+.TP
+Satchel and bomb explosions are larger than grenades (5x5, 7x7,
+and 3x3 respectively).
+.LP
+Other helpful hints:
+.sp
+.ie n .ds b []
+.el .ds b \(bu
+.ta
+.ta \w'\*b\ \|'u
+.nr In \n(.i
+.de MP
+.br
+.in \n(Inu+\w'\*b\ \|'u
+.ti \n(Inu
+\*b	\c
+..
+.MP
+You can only fire in the direction you are facing.
+.MP
+You can only fire three shots in a row, then the gun must cool.
+.MP
+A shot only affects the square it hits.
+.MP
+Shots and grenades move 5 times faster than you do.
+.MP
+To stab someone,
+you must face that player and move at them.
+.MP
+Stabbing does 2 points worth of damage and shooting does 5 points.
+.MP
+Slime does 5 points of damage each time it hits.
+.MP
+You start with 15 charges and get 5 more for every new player.
+.MP
+A grenade affects the nine squares centered about the square it hits.
+.MP
+A satchel affects the twenty-five squares centered about the square it hits.
+.MP
+A bomb affects the forty-nine squares centered about the square it hits.
+.MP
+Slime affects all squares it oozes over (15 or 30 respectively).
+.MP
+One small mine and one large mine is placed in the maze for every new player.
+A mine has a 5% probability of tripping when you walk directly at it;
+50% when going sideways on to it;
+95% when backing up on to it.
+Tripping a mine costs you 5 points or 10 points respectively.
+Defusing a mine is worth 1 charge or 9 charges respectively.
+.MP
+You cannot see behind you.
+.MP
+Scanning lasts for (20 times the number of players) turns.
+Scanning takes 1 ammo charge,
+so don't waste all your charges scanning.
+.MP
+Cloaking lasts for 20 turns.
+.MP
+Whenever you kill someone,
+you get 2 more damage capacity points and 2 damage points taken away.
+.MP
+Maximum typeahead is 5 characters.
+.MP
+A shot destroys normal (\c
+.IR i.e., 
+non-diagonal, non-door) walls.
+.MP
+Diagonal walls deflect shots and change orientation.
+.MP
+Doors disperse shots in random directions (up, down, left, right).
+.MP
+Diagonal walls and doors cannot be destroyed by direct shots but may
+be destroyed by an adjacent grenade explosion.
+.MP
+Slime goes around walls, not through them.
+.MP
+Walls regenerate, reappearing in the order they were destroyed.
+One percent of the regenerated walls will be diagonal walls or doors.
+When a wall is generated directly beneath a player, he is thrown in
+a random direction for a random period of time.  When he lands, he
+sustains damage (up to 20 percent of the amount of damage he had before
+impact); that is, the less damage he had, the more nimble he is and
+therefore less likely to hurt himself on landing.
+\".MP
+\"There is a volcano close to the center of the maze which goes off
+\"close to every 100 deaths.
+.MP
+The environment variable
+.B HUNT
+is checked to get the player name.
+If you don't have this variable set,
+.I hunt
+will ask you what name you want to play under.
+If it is set,
+you may also set up a single character keyboard map, but then you have to
+enumerate the options:
+.br
+.ti +1i
+\fIe.g.\fP setenv HUNT ``name=Sneaky,mapkey=zoFfGg1f2g3F4G''
+.br
+sets the player name to Sneaky,
+and the maps \fBz\fP to \fBo\fP, \fBF\fP to \fBf\fP, \fBG\fP to \fBg\fP,
+\fB1\fP to \fBf\fP,
+\fB2\fP to \fBg\fP, \fB3\fP to \fBF\fP, and \fB4\fP to \fBG\fP.
+The \fImapkey\fP option must be last.
+.MP
+It's a boring game if you're the only one playing.
+.PP
+Your score is the ratio of number of kills to number
+of times you entered the game and is only kept for the duration
+of a single session of \fIhunt\fP.
+.PP
+.I Hunt
+normally drives up the load average to be about
+(number_of_players + 0.5) greater than it would be without a
+.I hunt 
+game executing.  A limit of three players per host and nine players
+total is enforced by \fIhunt\fP.
+.SH FILES
+.nf
+.ta
+.ta \w'/usr/games/lib/hunt.driver\ \ \ 'u
+/usr/games/lib/hunt.driver	game coordinator
+.DT
+.fi
+.SH AUTHORS
+Conrad Huang,
+Ken Arnold,
+and Greg Couch;
+University of California, San Francisco, Computer Graphics Lab
+.SH ACKNOWLEDGEMENTS
+We thank Don Kneller,
+John Thomason, Eric Pettersen,
+and Scott Weiner for providing
+endless hours of play-testing to improve the character of the game.
+We hope their significant others will forgive them;
+we certainly don't.
+.SH BUGS
+To keep up the pace, not everything is as realistic as possible.
+.PP
+There were some bugs in early releases of 4.2 BSD that
+.I hunt
+helped discover;
+.I hunt
+will crash your system if those bugs haven't been fixed.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   e-sun
+she teak
+she-thief
+Shetland lace
+Shetland pony
+Shetland sheep dog
+Shetland wool
+she-tongue
+she-villain
+she-whale
+she-witch
+she-wolf
+she-woman
+shick-shack
+shield arm
+shield-back
+shield-bearer
+shield-bearing
+shield-breaking
+shield bud
+shield budding
+shield cell
+shield fern
+shield fungus
+shield-headed
+shield-leaved
+shield-maiden
+shield roots
+shield-scale fungus
+shield-shaped
+shield wall
+shiffle-shuffle
+shift bid
+shift boss
+shifter fork
+shifting pedal
+shift joint
+shift key
+shift lock
+shift  marriage
+shifty-eyed
+shilling shocker
+shilly-shally
+shilly-shallyer
+shim plow
+shim-sham
+Shinarump conglomerate
+shiner-up
+shingle-back
+shingle band
+shingle bolt
+shingle lap
+shingle oak
+shingle tree
+shingle weaver
+Shingon-shu
+shin guard
+shining flycatcher
+shining light
+shining oat grass
+shining willow
+shin oak
+Shin-shu
+shin-tangle
+shiny-backed
+ship auger
+ship biscuit
+ship boat
+ship borer
+ship breaker
+ship broker
+ship canal
+ship carpenter
+ship carpentry
+ship chandler
+ship chandlery
+ship control
+ship fever
+ship head
+ship-holder
+ship joiner
+ship ladder
+shiplapped lumber
+ship letter
+ship-minded
+ship-mindedly
+ship-mindedness
+ship money
+ship news
+ship pendulum
+shipper fork
+shipping articles
+shipping clerk
+shipping commissioner
+shipping-dry
+shipping fever
+shipping mark
+shipping master
+shipping note
+shipping office
+shipping order
+shipping room
+shipping ton
+ship pound
+ship railway
+ship rat
+ship-rigged
+ship rigger
+ship-shaped
+ship splice
+ship stuff
+ship time
+ship tire
+ship-to-shore
+ship writ
+shire borough
+shire day
+shire ground
+shire horse
+shire knight
+shire moot
+shire reeve
+shire town
+shirt board
+shirt dresser
+shirt frame
+shirt frill
+shirt front
+shirt ironer
+shirt sleeve
+shirt-sleeved
+shish kebab
+shittah tree
+shittim wood
+shiver spar
+shoal duck
+shoal water
+shock absorber
+shock action
+shock battalion
+shock-bucker
+shock bump
+shock cord
+shock corps
+shock dog
+shock force
+shock-head
+shock soldier
+shock tactics
+shock therapy
+shock troops
+shock wave
+shoe blacking
+shoeblack plant
+shoe block
+shoe board
+shoe boil
+shoe bolt
+shoe box
+shoe buckle
+shoe button
+shoe-button spider
+shoe cleaner
+shoe-cleaning
+shoe dauber
+shoe dealer
+shoe department
+shoe drill
+shoe dye
+shoe fastener
+shoe findings
+shoeing-horn
+shoe last
+shoe laster
+shoe leather
+shoeless horse
+shoe lifter
+shoe machinery
+shoe-make
+shoe mender
+shoe nail
+shoe peg
+shoe polish
+shoe polisher
+shoe repaired
+shoe shiner
+shoe silver
+shoe-spoon
+shoe stone
+shoe store
+shoestring catch
+Shoestring district
+shoestring fern
+shoestring fungus
+shoestring lily
+shoestring weed
+shoe tie
+shoe tree
+shoe trimmer
+shoggy-shoo
+S hook
+shook swarming
+shoot apex
+shooting board
+shooting box
+shooting coat
+shooting fish
+shooting gallery
+shooting glove
+shooting iron
+shooting lodge
+shooting match
+shooting range
+shooting stick
+shoot-off
+shoot-root ratio
+shop assistant
+shop bill
+shop chairman
+shop clerk
+shop committee
+shop deputy
+shop drawing
+shop fitter
+shop lumber
+shop-made
+shop paper
+shopping goods
+shop right
+shop rivet
+shop-soiled
+shop steward
+shore bird
+shore boat
+shore boulder
+shore cod
+shore cover
+shore crab
+shore dinner
+shore fast
+shore grape
+shore grass
+shore lark
+shore leave
+shore line
+shore onion
+shore patrol
+shore pay
+shore pine
+shore pipit
+shore snipe
+shore spurge
+shore terrace
+shore whiting
+short account
+short and
+short-arm
+short-armed
+short-awned
+short ballot
+short-barred
+short-barreled
+short-beaked
+short-bearded
+short bill
+short-billed
+short-bitten
+short-bladed
+short-bobbed
+short-bodied
+short-branched
+short-breasted
+short-breathed
+short-breathing
+short-celled
+short-chinned
+short-circuit
+short-circuiter
+short-clawed
+short-cloaked
+short column
+short-commons
+short-coupled
+short covering
+short-crested
+short-cropped
+short cross
+short-crowned
+short-cut
+short-cycle
+short-cycled
+short-dated
+short-day
+short demy
+short-distance
+short-docked
+short-drawn
+short-eared
+short end
+short-extend
+short extension
+short-eyed
+short-faced
+short-fed
+short-fingered
+short-finned
+short-footed
+short-fruited
+short game
+short-grained
+short-growing
+short-hair
+short-haired
+short-hair plume grass
+short-handled
+short haul
+short-headed
+short-headedness
+short-heeled
+short-horned
+short-jointed
+short-keeled
+short-laid
+short-landed
+short-lasting
+short-leaf
+shortleaf pine
+shortleaf yellow pine
+short-leaved
+short leg
+short-legged
+short-limbed
+short-lined
+short-lived
+short-livedness
+short-living
+short loin
+short-long
+short-lunged
+short-made
+short-manned
+short-measured
+short-mouthed
+short-nailed
+short-napped
+short-necked
+short-nighted
+short-nosed
+short order
+short out
+short particular meter
+short period
+short-period comet
+short-period variable
+short-pitch
+short-pitch winding
+short plate
+short-podded
+short-pointed
+short-quartered
+short-range
+short rib
+short-running
+short session
+short-set
+short-shafted
+short-shanked
+short-shelled
+short-shipped
+short-shouldered
+short-shucks
+short-skirted
+short-sleeved
+short-sloped
+short snorter
+short-snouted
+short-span
+short-spined
+short-spired
+short-spoken
+short-spurred
+short-stalked
+short-staple
+short-staple isinglass
+short-statured
+short-stemmed
+short step
+short-stepped
+short story
+short-styled
+short suit
+short-suiter
+short-sword
+short-tailed
+short-tempered
+short-term
+short-termed
+short-time
+short-time rating
+short-toed
+short-tongued
+short-toothed
+short-trunked
+short-trussed
+short-twisted
+short up
+short-waisted
+short-wall machine
+short wave
+short-weight
+short-weighter
+short-winded
+short-windedly
+short-windedness
+short-winged
+short-witted
+short-wool
+short-wooled
+short-wristed
+Shoshonean-nahuatlan
+shot borer
+shot cartridge
+shot-clog
+shot corn
+shot crossbow
+shot drill
+shot effect
+shot-free
+shot garland
+shot hoist
+shot hole
+shot-hole borer
+shot holing
+shot hooks
+shot lighter
+shot line
+shot locker
+shot-log
+shot metal
+shot plant
+shot-put
+shot-putter
+shot-putting
+shot rope
+shot samples
+shot-silk
+shot-stified
+shotten down
+shot tongs
+shot tower
+should-be
+shoulder angle
+shoulder arms
+shoulder bar
+shoulder belt
+shoulder blade
+shoulder block
+shoulder bone
+shoulder brace
+shoulder-clap
+shoulder-clapper
+shoulder clod
+shouldered arch
+shoulder girdle
+shoulder-high
+shoulder-hitter
+shoulder knot
+shoulder loop
+shoulder mark
+shoulder note
+shoulder point
+shoulder screw
+shoulder-shotten
+shoulder slip
+shoulder strap
+shoulder tuft
+shout song
+shove-hapenny
+shovel-beaked
+shovel-bladed
+shovel cultivator
+shovel-footed
+shovel-handed
+shovel hat
+shovel-hatted
+shovel-headed
+shovel-mouthed
+shovel-nosed
+shovel-nosed duck
+shovel-nosed ray
+shovel-nosed shark
+shovel-nosed sturgeon
+shovel plow
+shovel-shaped
+show bill
+show box
+show card
+show dahlia
+show end
+shower bath
+shower bouquet
+show girl
+show glass
+showing-off
+show-off
+show palce
+show pipe
+show ring
+show stone
+show-through
+show window
+show-worthy
+showy-flowered
+showy gaillardia
+showy-leaved
+showy mentzelia
+showy milkweed
+showy orchis
+showy portulaca
+showy primrose
+showy sunflower
+shrewd-brained
+shrewd-headed
+shrewd-looking
+shrewd-pated
+shrewd-tongued
+shrewd-witted
+shrew mole
+shriek owl
+shrike thrush
+shrike tit
+shrill-edged
+shrill-gorged
+shrill-toned
+shrill-tongued
+shrill-voiced
+shrimp catcher
+shrimp pink
+shrimp red
+shrinkage fit
+shrinkage rule
+shrinkage stope
+shrink fit
+shrinking fit
+shrinking head
+shrink link
+shrink rule
+shroud knot
+shroud-laid
+shroud plate
+Shrove cake
+shroving time
+shrub cinquefoil
+shrub mallow
+shrub oak
+shrub steppe
+shrub willow
+shrub yellowroot
+sh-sh
+shuck-bottom
+shuck spray
+shuffle scale
+shun-pike
+shunt circuit
+shunt dynamo
+shunt excitation
+shunt field
+shunt lamp
+shunt lead
+shunt valve
+shunt winding
+shunt-wound
+shut-away
+shut-eye
+shut-in
+shut-mouthed
+shut-out
+shut-out bid
+shutter box
+shutter dam
+shutter weir
+shutting-in
+shutting post
+shutting stile
+shuttle armature
+shuttle bone
+shuttle box
+shuttlecock-flower
+shuttle-core
+shuttle-core magneto
+shuttle loading
+shuttle race
+shuttle raid
+shuttle service
+shuttle shell
+shuttle train
+shuttle trip
+shuttle winding
+shuttle-witted
+shuttle-wound
+shut-up
+shutur sowar
+Siah posh
+sibber sauce
+sibby bean
+Siberian-americanoid
+siberian brown
+sicca rupee
+Sicilo-norman
+sick-abed
+sick bay
+sick berth
+sick-brained
+sick call
+sick-fallen
+sick-feathered
+sick flag
+sick headache
+sick leave
+sickle bar
+sickle bender
+sickle-billed
+sickle-billed curlew
+sickle-billed thrasher
+sickle cell
+si.\"	@(#)ching.6	6.1 (Berkeley) 5/20/85
+.\"
+.TH CHING 6  "May 20, 1985"
+.AT 3
+.SH NAME
+ching \- the book of changes and other cookies
+.SH SYNOPSIS
+.B /usr/games/ching
+[ hexagram ]
+.SH DESCRIPTION
+The
+.I "I Ching"
+or
+.I "Book of Changes"
+is an ancient Chinese oracle that has been in use for centuries
+as a source of wisdom and advice.
+.PP
+The text of the
+.I oracle
+(as it is sometimes known) consists of sixty-four
+.I hexagrams,
+each symbolized by a particular arrangement of six straight (\-\-\-)
+and broken (\-\ \-) lines.  These lines have values ranging
+from six through nine, with the even values indicating the broken lines.
+.PP
+Each hexagram consists of two major sections.  The
+.B  Judgement
+relates specifically to the matter at hand (E.g.,
+\*(lqIt furthers one to have somewhere to go.\*(rq) while the
+.B  Image
+describes the general attributes of the hexagram and how they apply
+to one's own life (\*(lqThus the superior man makes himself strong
+and untiring.\*(rq).
+.PP
+When any of the lines have the values six or nine, they are moving lines;
+for each there is an appended judgement which becomes significant.
+Furthermore, the moving lines are inherently unstable and
+change into their opposites; a second hexagram
+(and thus an additional judgement) is formed.
+.PP
+Normally, one consults the oracle by fixing the desired question
+firmly in mind and then casting a set of changes (lines)
+using yarrow\-stalks or tossed coins.  The resulting hexagram
+will be the answer to the question.
+.PP
+Using an algorithm suggested by S. C. Johnson, the UNIX
+.IR oracle " simply reads"
+a question from the standard input (up to an EOF)
+and hashes the individual characters in combination with the
+time of day, process id and any other magic numbers which happen to be lying
+around the system.  The resulting value is used as the seed
+of a random number generator which drives a simulated coin\-toss divination.
+The answer is then piped through
+.BR nroff " for formatting"
+and will appear on the standard output.
+.PP
+For those who wish to remain steadfast in the old traditions,
+the oracle will also accept the results of a personal divination using,
+for example, coins.  To do this, cast the change and then type the
+resulting line values as an argument.
+.PP
+The impatient modern may prefer to settle for Chinese cookies; try
+.IR fortune (6).
+.SH "SEE ALSO"
+It furthers one to see the great man.
+.SH DIAGNOSTICS
+The great prince issues commands,
+.br
+Founds states, vests families with fiefs.
+.br
+Inferior people should not be employed.
+.SH BUGS
+Waiting in the mud
+.br
+Brings about the arrival of the enemy.
+.PP
+If one is not extremely careful,
+.br
+Somebody may come up from behind and strike him.
+.br
+Misfortune.
+                                                                                                                                                                                                                                                                                                                                                                         .\" Copyright (c) 1980 Regents of the University of California.
+.\" All rights reserved.  The Berkeley software License Agreement
+.\" specifies the terms and conditions for redistribution.
+.\"
+.\"	@(#)banner.6	6.2 (Berkeley) 5/6/86
+.\"
+.TH BANNER 6 "May 6, 1986"
+.UC
+.SH NAME
+banner \- print large banner on printer
+.SH SYNOPSIS
+.B /usr/games/banner
+[
+.BI \-w n
+]
+message ...
+.SH DESCRIPTION
+.I Banner
+prints a large, high quality banner on the standard output.
+If the message is omitted, it prompts for and
+reads one line of its standard input.  If
+.B \-w
+is given, the output is scrunched down from a width of 132 to
+.I n ,
+suitable for a narrow terminal.  If
+.I n
+is omitted, it defaults to 80.
+.PP
+The output should be printed on a hard-copy device, up to 132 columns wide,
+with no breaks between the pages. The volume is great enough that you 
+may want
+a printer or a fast hardcopy terminal, but if you are patient, a
+decwriter or other 300 baud terminal will do.
+.SH BUGS
+Several ASCII characters are not defined, notably <, >, [, ], \\,
+^, _, {, }, |, and ~.  Also, the characters ", ', and & are funny
+looking (but in a useful way.)
+.PP
+The
+.B \-w
+option is implemented by skipping some rows and columns.
+The smaller it gets, the grainier the output.
+Sometimes it runs letters together.
+.SH AUTHOR
+Mark Horton
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          .\" Copyright (c) 1980 Regents of the University of California.
+.\" All rights reserved.  The Berkeley software License Agreement
+.\" specifies the terms and conditions for redistribution.
+.\"
+.\"	@(#)boggle.6	6.1 (Berkeley) 5/20/85
+.\"
+.TH BOGGLE 6 "May 20, 1985"
+.UC 4
+.SH NAME
+boggle \- play the game of boggle
+.SH SYNOPSIS
+.B /usr/games/boggle
+[
+.B +
+] [
+.B ++
+]
+.SH DESCRIPTION
+This program is intended for people wishing to sharpen their
+skills at Boggle (TM Parker Bros.).
+If you invoke the program with 4 arguments of 4 letters each,
+.RI ( e.g.
+.RB \*(lq "boggle appl epie moth erhd" \*(rq)
+the program forms the obvious Boggle grid and lists all the words from
+.B /usr/dict/words
+found therein. If you invoke the program without arguments, it will generate
+a board for you, let you enter words for 3 minutes, and then tell you
+how well you did relative to
+.BR /usr/dict/words .
+.PP
+The object of Boggle is to find, within 3
+minutes, as many words as possible in a 4 by 4 grid of letters. Words
+may be formed from any sequence of 3 or more adjacent letters in the
+grid. The letters may join horizontally, vertically, or diagonally.
+However, no position in the grid may be used more than once within any
+one word. In competitive play amongst humans, each player is given
+credit for those of his words which no other player has found.
+.PP
+In interactive play, enter your words separated by spaces, tabs,
+or newlines. A bell will ring when there is 2:00, 1:00, 0:10, 0:02,
+0:01, and 0:00 time left. You may complete any word started before the
+expiration of time. You can surrender before time is up by hitting
+\&'break'. While entering words, your erase character is only effective
+within the current word and your line kill character is ignored.
+.PP
+Advanced players may wish to invoke the program with 1 or 2 +'s as
+the first argument. The first + removes the restriction that positions
+can only be used once in each word. The second + causes a position to
+be considered adjacent to itself as well as its (up to) 8 neighbors.
+              .\" Copyright (c) 1980 Regents of the University of California.
+.\" All rights reserved.  The Berkeley software License Agreement
+.\" specifies the terms and conditions for redistribution.
+.\"
+.\"	@(#)doctor.6	6.1 (Berkeley) 5/20/85
+.\"
+.TH DOCTOR 6 "May 20, 1985"
+.UC 4
+.SH NAME
+doctor \- interact with a psychoanalyst
+.SH SYNOPSIS
+.B /usr/games/doctor
+.SH DESCRIPTION
+.I Doctor 
+is a lisp-language version of the legendary ELIZA program
+of Joseph Weizenbaum.  This script "simulates" a Rogerian psychoanalyst.
+Type in lower case, and when you get tired or bored, type 
+your interrupt character (either control-C or Rubout). 
+Remember to type two carriage returns when you want it to answer.
+.PP
+In order to run this you must have a Franz Lisp system in /usr/ucb/lisp.
+.SH AUTHORS
+Adapted for Lisp by Jon L White, moved to Franz by John Foderaro,
+from an original script by Joseph Weizenbaum.
+                                                                                                                                  ckle-cell anemia
+sickle feather
+sickle-grass
+sickle ham
+sickle-hammed
+sickle herb
+sickle hock
+sickle-hocked
+sickle-leaved
+sickle senna
+sickle-shaped
+sickle-tailed
+sick list
+sickly-born
+sickly-colored
+sickly-looking
+sickly-seeming
+sick market
+sick nurse
+sick-nursish
+sick-pale
+sick-thoughted
+Siculo-arabian
+Siculo-moresque
+Siculo-norman
+Siculo-phoenician
+Siculo-punic
+side action
+side aisle
+side arm
+side ax
+side band
+side bar
+side-bar keel
+side-bar rule
+side beam
+side-beam engine
+side bench
+side-bended
+side bet
+side box
+side boy
+side brake
+side-by-side
+side-by-sideness
+side-cast
+side chain
+side-chain theory
+side chair
+side chapel
+side chisel
+side-cut
+side cutting
+side delivery
+side door
+side-dress
+side-end
+side-end line
+side face
+side-flowing
+side-glance
+side-graft
+side-handed
+side-hanging
+side hatchet
+side jointer
+side-kick
+side-lever
+side line
+side-liner
+side-look
+side-looker
+side-lying
+side-necked
+side oats
+side-on
+side prime
+Sidera lodoicea
+siderin yellow
+side road
+sidesaddle flower
+side scene
+side-seen
+side-skip
+side-step
+side-stepper
+side stitch
+side-stitched
+side-taking
+sidewalk door
+sidewalk elevator
+side-wheel
+side-wheeler
+side whisker
+side-whiskered
+side-wind
+side-winded
+siding tool
+siding track
+siege artillery
+siege cannon
+siege carriage
+siege howitzer
+siege mortar
+siege train
+siege wagon
+Sienese school
+Sien-pi
+sierra brownbark pine
+sierra juniper
+sierra plum
+sierra redbark pine
+sieve cell
+sieve disk
+sieve maker
+sieve making
+sieve pit
+sieve plate
+sieve pore
+sieve tissue
+sieve tube
+sieve vessel
+sigh-born
+sighed-for
+sight bill
+sight draft
+sight edge
+sight-feed
+sighting angle
+sighting hood
+sighting shot
+sight point
+sight-read
+sight reader
+sight reading
+sight rhyme
+sight-see
+sight-seeing
+sight-seer
+sight setter
+sight-shot
+sight unseen
+signal alarm
+signal beacon
+signal bell
+signal board
+signal box
+signal fire
+signal flag
+signal gong
+signal gun
+signal halyard
+signal lamp
+signal lantern
+signal light
+signal mast
+signal noise ratio
+signal post
+signal red
+signal relay
+signal rocket
+signal service
+signal shot
+signal siren
+signal tower
+signal whistle
+signal wire
+signature mark
+signet ring
+sign factor
+significate form
+sign language
+sign manual
+sign painter
+sign painting
+silage cutter
+silence cloth
+silent area
+silica brick
+silica gel
+silicate cotton
+silicated soap
+silicate paint
+silica ware
+silicium bronze
+silicon bronze
+silicon carbide
+silicon copper
+silicon dioxide
+silicon fluoride
+silicon hydride
+silicon nitrimide
+silicon spiegel
+silicon star
+silicon steel
+silicon tetrachloride
+silicon tetraethyl
+silicon tetrafluoride
+silk-bark
+silk-bark oak
+silk cotton
+silk-cotton family
+silk-cotton tree
+silk coverer
+silk discharger
+silken-coated
+silken-fastened
+silken-leafed
+silken-sailed
+silken-sandaled
+silken-shining
+silken-soft
+silken-threaded
+silken-winged
+silk-family
+silk fowl
+silk gelatin
+silk gland
+silk glue
+silk gown
+silk grass
+silk green
+silk gum
+silk hat
+silk-hatted
+silking machine
+silk louse
+silk mercer
+silk mill
+silk moth
+silk muslin
+silk oak
+silk paper
+silk plant
+silk-robed
+silk-screen
+silk-screen process
+silk serge
+silk-skirted
+silk snapper
+silk-soft
+silk spider
+silk spinner
+silk-stocking
+silk-stockinged
+silk stretcher
+silk tartan
+silk-tassel tree
+silk tester
+silk thrower
+silk throwster
+silk tree
+silk vine
+silk weaver
+silk wire
+silkworm gut
+silkworm jaundice
+silkworm rot
+silkworm seed
+silky-barked
+silky-black
+silky grass
+silky-haired
+silky-leaved
+silky-looking
+silky oak
+silky-smooth
+silky-soft
+silky swallowwort
+silky-textured
+silky-voiced
+sill cock
+sill course
+Sillery sec
+sill floor
+sill-like
+silly-faced
+silly-facedly
+silo filler
+silt grass
+Siluro-cambrian
+silver-backed
+silver-bar
+silver-bar fish
+silver-barked
+silver-barred
+silver-bearded
+silver beard grass
+silver-bearing
+silver-bell
+silver-bell tree
+silverberry family
+silver-black
+silver-bordered
+silver-bright
+silver bromide
+silver-buskined
+silver-chased
+silver-chiming
+silver chloride
+silver citrate
+silver-clasped
+silver-clear
+silver-coated
+silver-colored
+silver-copper
+silver-corded
+silver-cupped
+silver cyanide
+silver-eddied
+silver-embroidered
+silver-eyed
+silver-feathered
+silver-fleeced
+silver-flowing
+silver-footed
+silver-fork
+silver-fronted
+silver fulminate
+silver gilt
+silver-glittering
+silver-golden
+silver grain
+silver-grained
+silver grass
+silver gray
+silver green
+silver-hafted
+silver-haired
+silver hake
+silver-handled
+silver-headed
+silver iodide
+silver lace
+silver-laced
+silver lactate
+silver-lead
+silverleaf boree
+silver-leafed
+silverleaf linden
+silverleaf maple
+silverleaf poplar
+silverleaf redwood
+silver-leaved
+silver-leaved linden
+silver-leaved nightshade
+silver-lined
+silver lining
+silver-mail
+silver-melting
+silver mill
+silver miner
+silver mining
+silver-mounted
+silver nitrate
+silver oxide
+silver-penciled
+silver-plated
+silver plater
+silver plating
+silver polish
+silver powder
+silver-print drawing
+silver-producing
+silver protein
+silver-rimmed
+silver salt
+silver-shafted
+silver-shedding
+silver-shining
+silver smelter
+silver-smitten
+silver-sounded
+silver-sounding
+silver-spangled
+silver-spoon
+silver-spoonism
+silver-spotted
+silver-streaming
+silver-striped
+silver-studded
+silver-sweet
+silver-swelling
+silver-thread
+silver-thread blight
+silver-thrilling
+silver-tipped
+silver-tongue
+silver-tongued
+silvertop palmetto
+silver-true
+silver-tuned
+silver-using
+silver-voiced
+silver-washed
+silver white
+silver-winged
+silverwing gray
+silver-wiry
+simblin cake
+Simhath torah
+simile mark
+Simnel sunday
+simon-pure
+simple-armed
+simple-faced
+simple-headed
+simple-leaved
+simple-life
+simple-lifer
+simple-mannered
+simple-minded
+simple-mindedly
+simple-mindedness
+simple-rooted
+simple-seeming
+simple-stemmed
+simple-toned
+simple-tuned
+simple-witted
+sin-absolved
+sin-absolving
+sin-afflicting
+Sinanthropus pekinensis
+sinay bean
+sin-black
+sin-born
+sin-bred
+sin-burdened
+sin-burthened
+sin-chastising
+sin-clouded
+sin-concealing
+sin-condemned
+sin-consuming
+sin-crushed
+sin-drowned
+sin eater
+sin eating
+sine bar
+sine curve
+sine die
+sine galvanometer
+sine law
+sine qua non
+sine-qua-nonical
+sine-qua-noniness
+sine wave
+sinew-backed
+sinew-grown
+sinew-shrunk
+singhara nut
+singing book
+singing lesson
+singing master
+singing psalm
+singing school
+singing teacher
+singing voice
+single-acting
+single-action
+single-banked
+single-barrel
+single-barreled
+single-beat
+single-bitted
+single-blossomed
+single-bodied
+single-branch
+single-breasted
+single-caped
+single-cell
+single-celled
+single-chamber
+single-colored
+single-combed
+single-crested
+single-crop
+single-cut
+single-cutting
+single-cylinder
+single-deck
+single-decker
+single-disk
+single-dotted
+single doubler
+single-driver
+single-edged
+single-ended
+single-entry
+single-eyed
+single-file
+single-filed
+single-finned
+single-fire
+single-flowered
+single-foot
+single-footer
+single-framed
+single-fringed
+single-gear
+single-grown
+single-hander
+single-headed
+single-hoofed
+single-hooked
+single-horned
+single-horsed
+single-hung
+single-layer
+single-layered
+single-leaded
+single-leaf
+single-leaf ash
+single-leaved
+single-letter
+single-lever
+single-light
+single-line
+single-living
+single-loader
+single-masted
+single-measure
+single-member
+single-minded
+single-mindedly
+single-mindedness
+single-motored
+single-mouthed
+single-name
+single-ner

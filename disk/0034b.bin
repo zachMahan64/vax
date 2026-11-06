@@ -1,0 +1,1763 @@
+u boot from \fI/dev/hp1a\fP, the kernel will use hp1a
+as its root file system.
+If \fI/dev/hp1b\fP is configured as a swap partition, 
+it will be used as the initial swap area,
+otherwise the normal primary swap area (\fI/dev/hp0b\fP) will be used.
+The \*(4B bootstrap is backward compatible with 4.2BSD,
+so you can replace your 4.2BSD bootstrap if you use it
+to boot your first \*(4B kernel.
+.PP
+Once you have extracted the \*(4B system and booted from it,
+you will have to build a kernel customized for your configuration.
+If you have any local device drivers,
+they will have to be incorporated into the new kernel.
+See section 4.2.3 and ``Building 4.3BSD UNIX Systems with Config.''
+.PP
+The disk partitions in \*(4B are the same as those in 4.2BSD,
+except for those on the DEC UDA50; see section 4.3.2 for details.
+If you have changed the disk partition sizes, be sure to
+make the necessary table changes and boot your custom kernel
+BEFORE trying to access any of your 4.2BSD file systems!
+After doing this if necessary, thsomething else happened, you may have a bad distribution
+cassette or floppy, or your hardware may be broken; refer to
+Appendix C for help in troubleshooting.  If you are unable to
+load programs off the distributed medium,
+consult Appendix B for an alternate (more painful) approach.
+.PP
+.I Format
+will create sector headers and verify the integrity of each
+sector formatted by using the disk controller's ``write check''
+command.  Remember 
+.I format
+runs only on the 
+.B up
+and
+.B hp
+drives listed above. 
+.I Format
+will prompt for the information required as shown below.
+Questions with default answers appear with the default in parentheses
+at the prompt; a carriage return will take the default.
+If you err in answering questions,
+``Delete'' erases the last character typed, and ``^U'' erases
+the current input line.
+.DS
+\fBEnable debugging (0=none, 1=bse, 2=ecc, 3=bse+ecc)?\fP
+\fBDevice to format?\fP \fIxx\|\fP(0,0)
+ ...(the old bad sector table is read; ignore any errors that occur here)...
+\fBFormatting drive \fIxx\fP0 on adaptor 0: verify (yes/no)?\fR yes
+\fBDevice data: #cylinders=842, #tracks=20, #sectors=48\fP
+\fBStarting cylinder (0):\fP
+\fBStarting track (0):\fP
+\fBEnding cylinder (841):\fP
+\fBEnding track (19):\fP
+\fBAvailable test patterns are:\fP
+.in +1.0i
+\fB1 - (f00f) RH750 worst case\fP
+\fB2 - (ec6d) media worst case\fP
+\fB3 - (a5a5) alternating 1's and 0's\fP
+\fB4 - (ffff) Severe burnin (up to 48 passes)\fP
+.in -1.0i
+\fBPattern (one of the above, other to restart)?\fP 2
+\fBMaximum number of bit errors to allow for soft ECC (3):\fP
+\fBStart formatting...make sure the drive is online\fP
+ ...(soft ecc's and other errors are reported as they occur)...
+ ...(if 4 write check errors were found, the program terminates like this)...
+\fBErrors:\fP
+\fBBad sector: 0\fP
+\fBWrite check: 4\fP
+\fBHard ECC: 0\fP
+\fBOther hard: 0\fP
+\fBMarked bad: 0\fP
+\fBSkipped: 0\fP
+\fBTotal of 4 hard errors revectored.\fP
+\fBWriting bad sector table at block 524256\fP
+ ...(524256 is the block # of the first block in the bad sector table)...
+\fBDone\fP
+.DE
+Once the root device has been formatted,
+.I format
+will prompt for another disk to format.  Halt the machine by
+typing ``control-P'' and ``H'' (the ``H'' is necessary only on
+an 11/785 or 11/780, but does not hurt on the other machines).
+.DS
+\fBEnable debugging (1=bse, 2=ecc, 3=bse+ecc)?\fP^P
+\fB>>>\|\fPH
+.DE
+.PP
+It may be necessary to format other drives before constructing
+file systems on them; this can be done at a later time with the
+steps just performed.
+.I Format
+can also be used in an extended test mode (pattern 4)
+that uses numerous test patterns
+in up to 48 passes to detect as many disk surface errors as possible;
+this test may be run for many hours, depending on the CPU and controller.
+On an 11/780, this can be sped up significantly by
+setting the clock fast.
+It may be run for some number of passes, then either terminated or continued
+according to the errors found to that point.
+.NH 3
+Step 2: copying the mini-root file system
+.PP
+The second step is to run a simple program,
+\fIcopy\fP, which copies a small root
+file system into the second partition of the disk.
+This file system will serve as the base for creating the actual root
+file system to be restored.  The version of the operating
+system maintained on the ``mini-root'' file system understands
+that it should not swap on top of itself, thereby allowing double use
+of the disk partition.  \fICopy\fP is loaded just as the
+\fIformat\fP program was loaded; for example, on an 8650 or 8600,
+one needs to enter the toggle and the bootstrap monitor
+as described in Appendix B and then:
+.DS
+.TS
+lw(2i) l.
+(copy mini root file system)
+\fB=\|\fPcopy
+\fBFrom: \fIyy\fP(\fIy\fP,1)\fR	(unit \fIy\fP, second tape file)
+\fBTo: \fIxx\fP(\fIx\fP,1)\fR	(mini root is on drive \fIx\fP; second partition)
+\fBCopy completed: 205 records copied\fP
+\fBFrom:\fP
+.TE
+.DE
+while for an 11/785 or 11/780:
+.DS
+.TS
+lw(2i) l.
+(copy mini root file system)
+\fB>>>\|\fPLOAD COPY
+\fB>>>\|\fPSTART 2
+\fBFrom: \fIyy\fP(\fIy\fP,1)\fR	(unit \fIy\fP, second tape file)
+\fBTo: \fIxx\fP(\fIx\fP,1)\fR	(mini root is on drive \fIx\fP; second partition)
+\fBCopy completed: 205 records copied\fP
+\fBFrom:\fP
+.TE
+.DE
+or for an 11/750:
+.DS
+.TS
+lw(2i) l.
+(copy mini root file system)
+\fB>>>\|\fPB DDA0
+\fB=\|\fPcopy
+\fBFrom: \fIyy\fP(\fIy\fP,1)\fR	(unit \fIy\fP, second tape file)
+\fBTo: \fIxx\fP(\fIx\fP,1)\fR	(mini root is on drive \fIx\fP; second partition)
+\fBCopy completed: 205 records copied\fP
+\fBFrom:\fP
+.TE
+.DE
+and for an 11/730:
+.DS
+.TS
+lw(2i) l.
+(copy mini root file system)
+\fB>>>\|\fPL DD0:COPY
+\fB>>>\|\fPS 2
+\fBFrom: \fIyy\fP(\fIy\fP,1)\fR	(unit \fIy\fP, second tape file)
+\fBTo: \fIxx\fP(\fIx\fP,1)\fR	(mini root is on drive \fIx\fP; second partition)
+\fBCopy completed: 205 records copied\fP
+\fBFrom:\fP
+.TE
+(As above, `delete' erases characters and `^U' erases lines.)
+.DE
+.NH 3
+Step 3: booting from the mini-root file system
+.PP
+You now have the minimal set of tools necessary to create a
+root file system and restore the file system contents from tape.
+To access this file system load the bootstrap program
+and boot the version of unix that has been placed in the
+``mini-root'':
+.DS
+(follow the procedure in Appendix B to load the bootstrap monitor)
+.TS
+lw(2i) l.
+(load bootstrap program)
+\fB=\|\fPboot
+\fBBoot\fP
+\fB: \fP\fIxx\fP(x,1)vmunix	(bring in \fIvmunix\fP off mini root)
+.TE
+.DE
+or, on an 11/780 or 11/785:
+.DS
+.TS
+lw(2i) l.
+(load bootstrap program)
+\fB>>>\|\fPBOOT ANY
+\fBBoot\fP
+\fB: \fP\fIxx\fP(x,1)vmunix	(bring in \fIvmunix\fP off mini root)
+.TE
+.DE
+or, on an 11/750:
+.DS
+.TS
+lw(2i) l.
+(load bootstrap program)
+\fB>>>\|\fPB DDA0
+\fB=\|\fPboot
+\fBBoot\fP
+\fB: \fP\fIxx\fP(x,1)vmunix	(bring in \fIvmunix\fP off mini root)
+.TE
+.DE
+or, on an 11/730:
+.DS
+.TS
+lw(2i) l.
+(load bootstrap program)
+\fB>>>\|\fPL DD0:BOOT
+\fB>>>\|\fPD RB 3
+\fB>>>\|\fPS 2
+\fBBoot\fP
+\fB: \fP\fIxx\fP(x,1)vmunix	(bring in \fIvmunix\fP off mini root)
+.TE
+(As above, `delete' erases characters and `^U' erases lines.)
+.DE
+.LP
+The standalone boot program should then read the system from
+the mini root file system you just created, and the system should boot:
+.DS
+.B
+271944+78848+92812 start 0x12e8
+4.3 BSD UNIX #1: Wed Apr  9 23:33:59 PST 1985
+    karels@monet.berkeley.edu:/usr/src/sys/GENERIC
+real mem  = \fIxxx\fP
+avail mem = \fIyyy\fP
+\fI\&... information about available devices ...\fP
+root device? 
+.R
+.DE
+.PP
+The first three numbers are printed out by the bootstrap
+programs and are the sizes of different
+parts of the system (text, initialized and uninitialized data).  The
+system also allocates several system data structures after it starts
+running.  The sizes of these structures are based on the amount of available
+memory and the maximum count of active users expected, as declared in a system
+configuration description.  This will be discussed later.
+.PP
+UNIX itself then runs for the first time and begins by printing out a banner
+identifying the release and
+version of the system that is in use and the date that it was compiled.  
+.PP
+Next the
+.I mem
+messages give the
+amount of real (physical) memory and the
+memory available to user programs
+in bytes.
+For example, if your machine has only 512K bytes of memory, then
+xxx will be 520192, 4096 bytes less than 512K.
+The system reserves the last 4096 bytes of memory for use in
+error logging and doesn't count it as part of real memory.
+.PP
+The messages that come out next show what devices were found on
+the current processor.  These messages are described in
+\fIautoconf\fP\|(4).
+The distributed system may not have
+found all the communications devices you have (dh's, dz's, etc.),
+or all the mass storage peripherals you have especially
+if you have more than
+two of anything.  You will correct this soon, when you create
+a description of your machine from which to configure UNIX.
+The messages printed at boot here contain much of the information
+that will be used in creating the configuration.
+In a correctly configured system most of the information
+present in the configuration description
+is printed out at boot time as the system verifies that each device
+is present.
+.PP
+The \*(lqroot device?\*(rq prompt wae remaining 4.2BSD filesystems
+may be converted in place.
+This is done by using the \*(4B version of
+.IR fsck (8)
+on each filesystem and allowing it to make the necessary corrections.
+The new version of \fIfsck\fP is more
+strict about the size of directories than the version supplied with 4.2BSD.
+Thus the first time that it is run on a 4.2BSD file system,
+it will produce messages of the form:
+.DS
+DIRECTORY ...: LENGTH xx NOT MULTIPLE OF 512 (ADJUSTED)
+.DE
+Length ``xx'' will be the size of the directory;
+it will be expanded to the next multiple of 512 bytes.
+Note that file systems are otherwise completely
+compatible between 4.2BSD and \*(4B,
+though running a \*(4B file system under 4.2BSD may cause more of the above
+messages to be generated the next time it is \fIfsck\fP'ed on \*(4B.
+.NH 2
+Merging your files from 4.2BSD into \*(4B
+.PP
+When your system is booting reliably and you have the \*(4B
+root and /usr file systems fully installed you will be ready
+to continue with the next step in the conversion process,
+merging your old files into the new system.
+.PP
+If you saved the files on a \fItar\fP tape, extract them
+into a scratch directory, say /usr/convert:
+.DS
+\fB#\fP mkdir /usr/convert
+\fB#\fP cd /usr/convert
+\fB#\fP tar x
+.DE
+.PP
+The data files marked in the previous table with a dagger (\(dg)
+may be used without change from the previous system.
+Those data files marked with a double dagger (\(dd) have syntax 
+changes or substantial enhancements.
+You should start with the \*(4B version and carefully
+integrate any local changes into the new file.
+Usually these local modifications can be incorporated
+without conflict into the new file;
+some exceptions are noted below.
+The files marked with an asterisk (*) require
+particular attention and are discussed below.
+.PP
+If you have any homegrown device drivers in /dev/MAKEDEV.local
+that use major device numbers reserved by the system you
+will have to modify the commands used to create the devices or alter
+the system device configuration tables in /sys/vax/conf.c.
+Otherwise /dev/MAKEDEV.local can be used without change
+from 4.2BSD.
+.PP
+System security changes require adding several new ``well-known'' groups 
+to /etc/group.
+The groups that are needed by the system as distributed are:
+.DS
+.TS
+l c.
+name	number
+_
+wheel	0
+daemon	1
+kmem	2
+sys	3
+tty	4
+operator	5
+staff	10
+.TE
+.DE
+Only users in the ``wheel'' group are permitted to \fIsu\fP to ``root''.
+Most programs that manage directories in /usr/spool
+now run set-group-id to ``daemon'' so that users cannot
+directly access the files in the spool directories.
+The special files that access kernel memory, /dev/kmem
+and /dev/mem, are made readable only by group ``kmem''.
+Standard system programs that require this access are
+made set-group-id to that group.
+The group ``sys'' is intended to control access to system sources,
+and other sources belong to group ``staff.''
+Rather than make user's terminals writable by all users,
+they are now placed in group ``tty'' and made only group writable.
+Programs that should legitimately have access to write on user's terminals
+such as \fItalk\fP and \fIwrite\fP now run set-group-id to ``tty''.
+The ``operator'' group controls access to disks.
+By default, disks are readable by group ``operator'',
+so that programs such as \fIdf\fP can access the file system
+information without being set-user-id to ``root''.
+.PP
+Several new users have also been added to the group of ``well-known'' users 
+in /etc/passwd.
+The current list is:
+.DS
+.TS
+l c.
+name	number
+_
+root	0
+daemon	1
+operator	2
+uucp	66
+nobody	32767
+.TE
+.DE
+The ``daemon'' user is used for daemon processes that
+do not need root privileges.
+The ``operator'' user-id is used as an account for dumpers
+so that they can log in without having the root password.
+By placing them in the ``operator'' group, 
+they can get read access to the disks.
+The ``uucp'' login has existed long before \*(4B,
+and is noted here just to provide a common user-id.
+The password entry ``nobody'' has been added to specify
+the user with least privilege.
+.PP
+After installing your updated password file,
+you must run \fImkpasswd\fP\|(8) to create the \fIndbm\fP
+password database.
+Note that \fImkpasswd\fP is run whenever \fIvipw\fP\|(8) is run.
+.PP
+The format of the cron table, /usr/lib/crontab, has been changed
+to specify the user-id that should be used to run a process.
+The userid ``nobody'' is frequently useful for non-privileged programs.
+.PP
+Some of the commands previously in /etc/rc.local have been 
+moved to /etc/rc;
+several new functions are now handled by /etc/rc.local.
+You should look closely at the prototype version of /etc/rc.local
+and read the manual pages for the commands contained in it
+before trying to merge your local copy.
+Note in particular that \fIifconfig\fP has had many changes,
+and that host names are now fully specified as domain-style names
+(e.g, monet.Berkeley.EDU) for the benefit of the name server.
+.PP
+The C library and system binaries on the distribution tape
+are compiled with new versions of
+\fIgethostbyname\fP and \fIgethostbyaddr\fP which use
+the name server,
+.IR named (8).
+If you have only a small network and are not connected
+to a large network, you can use the distributed library routines without
+any problems; they use a linear scan of the host table \fI/etc/hosts\fP
+if the name server is not running.
+If you are on the DARPA Internet or have a large local network,
+it is recommend that you set up
+and use the name server.
+For instructions on how to set up the necessary configuration files,
+refer to ``Name Server Operations Guide for BIND''.
+Several programs rely on the host name returned by \fIgethostname\fP
+to determine the local domain name.
+.PP
+If you want to compile your system to use the
+host table lookup routines instead of the name server, you will
+need to modify /usr/src/lib/libc/Makefile according to the instructions there
+and then recompile all of the system and local programs (see section 6.6).
+Next, you must run \fImkhosts\fP\|(8) to create the \fIndbm\fP
+host table database from \fI/etc/hosts\fP.
+.PP
+The format of /etc/ttys has changed, see \fIttys\fP\|(5)
+for details.
+It now includes the terminal type and security options that were previously
+placed in /etc/ttytype and /etc/securettys.
+.PP
+There is a new version of \fIsyslog\fP that uses a more generalized
+facility/priority scheme.
+This has changed the format of the syslog.conf file.
+See \fIsyslogd\fP\|(8) for details.
+\fISyslog\fP now logs kernel errors, 
+allowing events such
+as soft disk errors, filesystem-full messages, and other such error messages
+to be logged without slowing down the system
+while the messages print on the console.
+It is also used by many of the system daemons
+to monitor system problems more closely, for example
+network routing changes.
+.PP
+If you are using the name server, 
+your \fIsendmail\fP configuration file will need some minor
+updates to accommodate it.
+See the ``Sendmail Installation and Operation Guide'' and the sample
+\fIsendmail\fP configuration files in /usr/src/usr.lib/sendmail/nscf.
+Be sure to regenerate your sendmail frozen configuration file after
+installation of your updated configuration file.
+.PP
+The spooling directories saved on tape may be restored in their
+eventual resting places without too much concern.  Be sure to
+use the `p' option to \fItar\fP so that files are recreated with the
+same file modes:
+.DS
+\fB#\fP cd /usr
+\fB#\fP tar xp msgs spool/mail spool/uucp spool/uucppublic spool/news
+.DE
+.PP
+The ownership and modes of two of these directories
+\fIat\fP now runs set-user-id ``daemon'' instead of root.
+Also, the uucp directory no longer needs to be publicly writable,
+as \fItip\fP reverts to priveleged status to remove its lock files.
+After copying your version of /usr/spool, you should do:
+.DS
+\fB#\fP chown \-R daemon /usr/spool/at
+\fB#\fP chown \-R root /usr/spool/uucp
+\fB#\fP chgrp \-R daemon /usr/spool/uucp
+\fB#\fP chmod \-R o\-w /usr/spool/uucp
+.DE
+.PP
+Whatever else is left is likely to be site specific or require
+careful scrutiny before placing in its eventual resting place.
+Refer to the documentation and source code 
+before arbitrarily overwriting a file.
+.NH 2
+Hints on s printed by the system 
+and is now asking you for the name of the root file system to use.
+This happens because the distribution system is a \fIgeneric\fP
+system.  It can be bootstrapped on any VAX cpu and with its root device
+and paging area on any available disk drive.  You should respond
+to the root device question with \fIxx\fP0*.  This response
+supplies two pieces of information:
+first, \fIxx\fP0 shows that the disk it is running on is drive
+0 of type \fIxx\fP, secondly the \*(lq*\*(rq shows that the system is
+running \*(lqatop\*(rq the paging area.  The latter is most important,
+otherwise the system will attempt to page on top of itself and
+chaos will ensue.
+You will later build a system tailored to your configuration that
+will not ask this question when it is bootstrapped.
+.DS
+\fBroot device?\fP \fIxx\fP0*
+WARNING: preposterous time in file system \-\- CHECK AND RESET THE DATE!
+\fBerase ^?, kill ^U, intr ^C\fP
+\fB#\fP
+.DE
+.PP
+The \*(lqerase ...\*(rq message is part of /.profile
+that was executed by the root shell when it started.  This message
+is present to remind you that the line character erase,
+line erase, and interrupt characters are set to be what
+is standard on DEC systems; this insures that things are
+consistent with the DEC console interface characters.
+.NH 3
+Step 4: restoring the root file system
+.PP
+UNIX is now running,
+and the `UNIX Programmer's manual' applies.
+The `#' is the prompt from the shell,
+and lets you know that you are the super-user,
+whose login name is \*(lqroot\*(rq.  To complete installation
+of the bootstrap system two steps remain.  First, the root
+file system must be created, and second a boot floppy or
+cassette must be constructed.
+.PP
+To create the root file system the shell script \*(lqxtr\*(rq
+should be run as follows:
+.DS
+\fB#\|\fPdisk=\fIxx0\fP  type=\fItt\fP  tape=\fIyy\fP  xtr
+.DE
+where \fIxx0\fP is the name of the disk on which the root
+file system is to be restored (unit 0), \fItt\fP is the type of
+drive on which the root file system is to be restored
+(see the table below),
+and \fIyy\fP is the name
+of the tape drive on which the distribution tape is mounted.
+.PP
+If the root file system is to reside on a disk other than
+unit 0 (as the information printed out
+during autoconfiguration shows), you will
+have to create the necessary special files in /dev and use
+the appropriate value. For example, if the root should be
+placed on hp1, you must create /dev/rhp1a and /dev/hp1a using 
+\fImknod\fP(8).
+.DS
+.TS
+l l | l l.
+Drive	Type	Drive	Type
+_
+DEC RM03	type=rm03	DEC RM05	type=rm05
+DEC RM80	type=rm80	DEC RP06	type=rp06
+DEC RP07	type=rp07	DEC RK07	type=rk07
+DEC RA80	type=ra80	DEC RA60	type=ra60
+DEC RA81	type=ra81	DEC R80	type=rb80
+CDC 9766	type=9766	CDC 9775	type=9775
+AMPEX 300M	type=9300	AMPEX 330M	type=capricorn
+FUJITSU 160M	type=fuji160	FUJITSU 330M	type=capricorn
+FUJITSU 404M	type=eagle
+.TE
+.DE
+This will generate many messages regarding the construction
+of the file system and the restoration of the tape contents,
+but should eventually stop with the messages:
+.DS
+ ...
+\fBRoot filesystem extracted\fP
+
+\fBIf this is an 8650 or 8600, update the console RL02\fP
+\fBIf this is a 780 or 785, update the floppy\fP
+\fBIf this is a 730, update the cassette\fP
+\fB#\fP
+.DE
+.NH 3
+Step 5: creating a boot floppy or cassette
+.PP
+If the machine is an 8650, 8600, 11/785, 11/780 or 11/730, a boot floppy,
+cassette, or console RL02 should be constructed according to the
+instructions in chapter 4.  For 11/750's, bootstrapping is performed by
+using a boot prom and special code located in sectors 0-15 of the
+root file system.  The 
+.I newfs
+program automatically installs the needed code, so you may continue
+with the next step.
+On an 11/785 or 11/780 with interleaved memory, or other
+configurations that
+require alteration of the standard boot files, this step may
+be left for later.
+.NH 3
+Step 6: rebooting the completed root file system
+.PP
+With the above work completed, all that is left is to reboot:
+.DS
+.ta 3.5i
+\fB#\|\fPsync	(synchronize file system state)
+\fB#\|\fP^P	(halt machine)
+\fB>>>\|\fPHALT	(for 11/785's or 11/780's only)
+\fB>>>\|\fPUNJAM	(for 8650's, 8600's, 11/785's or 11/780's only)
+\fB>>>\|\fPI	(initialize processor state)
+\fB>>>\|\fPB \fIxx\fPS	(on an 11/750, use B/2)
+\fI\&...(boot program is eventually loaded)...\fP
+\fBBoot\fP
+\fB: xx(x,0)vmunix\fP	(\fIvmunix\fP brought in off root)
+\fB271944+78848+92812 start 0x12e8
+\fB4.3 BSD UNIX #1: Wed Apr  9 23:33:59 PST 1985
+\fB    karels@monet.berkeley.edu:/usr/src/sys/GENERIC
+\fBreal mem  = \fIxxx\fR
+\fBavail mem = \fIyyy\fR
+\fI\&... information about available devices ...\fP
+\fBroot on xx0\fP
+WARNING: preposterous time in file system \-\- CHECK AND RESET THE DATE!
+\fBerase ^?, kill ^U, intr ^C\fP
+\fB#\fP
+
+.DE
+.PP
+If the root device selected by the kernel is not correct,
+it is necessary to reboot again using the option to ask for the root
+device.
+On the 11/750, use B/3; on the other processors, use BOOT ANY.
+At the prompt from the bootstrap, use the same device specification
+above: \fIxx\fP(x,0)vmunix.
+Then, to the question ``root device?,''
+respond with \fIxx\fP0.
+See section 6.1 and appendix C if the system does not reboot properly.
+.PP
+The system is now running single user on the installed
+root file system.  The next section tells how to complete
+the installation of distributed software on the /usr file system.
+.NH 3
+Step 7: setting up the /usr file system
+.PP
+First set a shell variable to the name of your disk, so
+the commands we give will work regardless of the disk you
+have; do one of the following:
+.DS
+.TS
+l l.
+\fB#\fP disk=hp	(if you have an RP06, RM03, RM05, RM80, or other MASSBUS drive)
+\fB#\fP disk=hk	(if you have RK07s)
+\fB#\fP disk=ra	(if you have UDA50 storage module drives)
+\fB#\fP disk=up	(if you have UNIBUS storage module drives)
+\fB#\fP disk=rb	(if you have IDC storage module drives)
+.TE
+.DE
+.PP
+The next thing to do is to extract the rest of the data from
+the tape.
+You might wish to review the disk configuration information in section 4.4
+before continuing; the partitions used below are those most appropriate
+in size.
+Find the disk you have in the following table and execute
+the commands in the right hand portion of the table:
+.DS
+.TS
+l l.
+DEC RM03	\fB#\fP name=hp0g; type=rm03
+DEC RM05	\fB#\fP name=hp0g; type=rm05
+DEC RM80	\fB#\fP name=hp0g; type=rm80
+DEC RP06	\fB#\fP name=hp0g; type=rp06
+DEC RP07	\fB#\fP name=hp0h; type=rp07
+DEC RK07	\fB#\fP name=hk0g; type=rk07
+DEC RA80	\fB#\fP name=ra0h; type=ra80
+DEC RA60	\fB#\fP name=ra0h; type=ra60
+DEC RA81	\fB#\fP name=ra0h; type=ra81
+DEC R80	\fB#\fP name=rb0h; type=rb80
+UNIBUS CDC 9766	\fB#\fP name=up0g; type=9766
+UNIBUS AMPEX 300M	\fB#\fP name=up0g; type=9300
+UNIBUS AMPEX 330M	\fB#\fP name=up0g; type=capricorn
+UNIBUS FUJITSU 160M	\fB#\fP name=up0g; type=fuji160
+UNIBUS FUJITSU 330M	\fB#\fP name=up0g; type=capricorn
+UNIBUS FUJITSU 404M	\fB#\fP name=up0h; type=eagle
+MASSBUS CDC 9766	\fB#\fP name=hp0g; type=9766
+MASSBUS AMPEX 300M	\fB#\fP name=hp0g; type=9300
+MASSBUS AMPEX 330M	\fB#\fP name=hp0g; type=capricorn
+MASSBUS FUJITSU 330M	\fB#\fP name=hp0g; type=capricorn
+MASSBUS FUJITSU 404M	\fB#\fP name=hp0h; type=eagle
+.TE
+.DE
+Find the tape you have in the following table and execute the
+commands in the right hand portion of the table:
+.DS
+.TS
+l l.
+DEC TE16/TU45/TU77	\fB#\fP cd /dev; MAKEDEV ht0; sync
+DEC TU78	\fB#\fP cd /dev; MAKEDEV mt0; sync
+DEC TS11	\fB#\fP cd /dev; MAKEDEV ts0; sync
+EMULEX TC11	\fB#\fP cd /dev; MAKEDEV tm0; sync
+SI 9700	\fB#\fP cd /dev; MAKEDEV ut0; sync
+.TE
+.DE
+Then execute the following commands:
+.br
+.ne 5
+.sp
+.DS
+.TS
+lw(2i) l.
+\fB#\fP date \fIyymmddhhmm\fP	(set date, see \fIdate\fP\|(1))
+\&....
+\fB#\fP passwd root	(set password for super-user)
+\fBNew password:\fP	(password will not echo)
+\fBRetype new password:\fP
+\fB#\fP hostname \fImysitename\fP	(set your hostname)
+\fB#\fP newfs ${name} ${type}	(create empty user file system)
+(this takes a few minutes)
+\fB#\fP mount /dev/${name} /usr	(mount the usr file system)
+\fB#\fP cd /usr	(make /usr the current directory)
+\fB#\fP mt fsf
+\fB#\fP tar xpbf 20 /dev/rmt12 	(extract all of usr except usr/src)
+(this takes about 15-20 minutes)
+.TE
+.DE
+If the converting from 4.2BSD to \*(4B
+.PP
+This section summarizes the most significant changes between
+4.2BSD and \*(4B, particularly those that are likely to 
+cause difficulty in doing the conversion.
+It does not include changes in the network;
+see chapter 5 for information on setting up the network.
+.PP
+The mailbox locking protocol has changed;
+it now uses the advisory locking facility to avoid concurrent
+update of users' mail boxes.
+If you have your own mail interface, be sure to update its locking protocol.
+.PP
+The kernel's limit on the number of open files has been
+increased from 20 to 64.  It is now possible to change this limit almost
+arbitrarily (there used to be a hard limit of 30).  The standard I/O library
+autoconfigures to the kernel limit.
+Note that file (``_iob'') entries may be allocated
+by \fImalloc\fP from \fIfopen\fP;
+this allocation has been known to cause problems with programs
+that use their own memory allocators.
+This does not occur until after 20 files have been opened
+by the standard I/O library.
+.PP
+\fISelect\fP can be used with more than 32 descriptors
+by using arrays of \fBint\fPs for the bit fields rather than single \fBint\fPs.
+Programs that used \fIgetdtablesize\fP as their first argument to \fIselect\fP
+will no longer work correctly.
+Usually the program can be modified to correctly specify the number
+of bits in an \fBint\fP.
+Alternatively the program can be modified to use an array of \fBint\fPs.
+There are a set of macros available in \fI<sys/types.h>\fP to simplify this.
+See
+.IR select (2).
+.PP
+Old core files will not be intelligible by the current debuggers
+because of numerous changes to the user structure
+and because the kernel stack has been enlarged.
+The \fIa.out\fP header that was in the user structure is no longer present.
+Locally-written debuggers that try to check the magic number
+will need modification.
+.PP
+\fIFind\fP now has a database of file names,
+constructed once a week from \fIcron\fP.
+To find a file by name only,
+the command \fIfind name\fP will look in the database for
+files that match the name.  This is much faster than
+\fIfind / \-name name \-print\fP.
+.PP
+Files may not be deleted from directories having the ``sticky'' (ISVTX) bit
+set in their modes
+except by the owner of the file or of the directory, or by the superuser.
+This is primarily to protect users' files in publicly-writable directories
+such as \fI/tmp\fP and \fI/usr/tmp\fP.
+All publicly-writable directories should have their ``sticky'' bits set
+with ``chmod +t.''
+.PP
+The include file \fI<time.h>\fP has returned to \fI/usr/include\fP,
+and again contains the definitions for the C library time routines of
+\fIctime\fP\|(3).
+.PP
+The \fIcompact\fP and \fIuncompact\fP programs have been supplanted
+by the faster \fIcompress\fP.
+If your user population has \fIcompact\fPed files, you will want
+to install \fIuncompact\fP found in /usr/src/old/compact.
+.PP
+The configuration of the virtual memory limits has been simplified.
+A MAXDSIZ option, specified in bytes in the machine configuration file,
+may be used to raise the maximum process region size from
+the default of 17Mb to 32Mb or 64Mb.
+The initial per-process limit is still 6Mb,
+but can be raised up to MAXDSIZ with the \fIcsh limit\fP command.
+.PP
+Some \*(4B binaries will not run with a 4.2BSD kernel because
+they take advantage of new functionality in \*(4B.
+One noticeable example of this problem is \fIcsh\fP.
+.PP
+If you want to use \fIps\fP after booting a new kernel,
+and before going multiuser, you must initialize its name list
+database by running \fIps \-U\fP.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  ‰                          ˇ        (               ‡  ‚  ‰  Á  Ó  ı  ˜  ¯  ˘  ˚  ˛           	                !  $  '  *  -  0  3  6  9  <  ?  B  E  H  K  N  Q  T  W  Z  ]  `  c  f  i  l  o  r  u  x  {  ~  Å  Ñ  á  ä  ç  ê  ì  ñ  ô  ú  ü  ¢  •  ®  ´  Æ  ±  ¥  ∑  ∫  Ω  ¿  √  ∆  …  Ã  œ  “  ’  ÿ  €  ﬁ  ·  ‰  Á  Í  Ì    Û  ˆ  ˘  ¸  ˇ                         #  &  )  .  2  5  8  =  B  G  J  N  R  V  [  `  e  k  q  t  w  z  }  Ä  É  Ü  ç  ñ  ù  §  ©  ¥  Ω  ¬  ≈  »  ‘  €  ‚  Ò  Ù  ˝          "  %  1  8  C  N  S  Z  b  n  w  z  }  Ñ  ë  ú  •  ≠  ≤  ∑  º  ¡  ƒ  …  Œ  ”  ‹  Â  Í    Û  ˆ  ˇ          )  7  D  J  Y  d  m  {  Å  Ü  è  í  ó  ú  ü  §  ™  Æ  ≤  µ  ∫  Ω  ¿  √  ∆  …  Ã  œ  “  ’  ÿ  €  ﬁ                                                            
+  
+
+
+
+       
+      ! " # $ % & ' ( ) * + , - . / Å0 Å1 Å2 Å3 Å4 Å5 Å6 Å7 Å8 Å9 : ; < = > ? @ ÅA ÅB ÅC ÅD ÅE ÅF ÅG ÅH ÅI ÅJ ÅK ÅL ÅM ÅN ÅO ÅP ÅQ ÅR ÅS ÅT ÅU ÅV ÅW ÅX ÅY ÅZ [ \ ] ^ _ ` Åa Åb Åc Åd Åe Åf Åg Åh Åi Åj Åk Ål Åm Ån Åo Åp Åq År Ås Åt Åu Åv Åw Åx Åy Åz { | } ~    - o+ [] - _ 1/4 1/2 3/4 - Çfi Çfl Çff Éffi Éffl ‰oƒ ‚-¬| ‚s¬s ' ' ` _ /      °cÇ(° ÄB¢¬|Ç‚ Ä)Å/° Äo‚<¬ <- ÄcÅ¡,°„<¬ ÄnÇ¬|¢‚ O- i k Ä\ƒ°'¡°'ÂÇ Äu¢,Ç °(É/¢ ÄcÅ¡,°„c°¡`Å¡ o ·-√"¡"„ Äo¢¬|‚Ç Äo¡Ç~·¢ Ät¡Ç~£~Å· v o/ x Ä/-¬Ç'§'Ç‚ °uÉu¢ ¢|Ç„-√Ç`¢ ¢/√-Ñ-„\¢ O= ¢/Ñ\¢ ·_Ê_«- ¢[]Ñ[]¢„-√ Ä>¬-Â-√    Y o[] Ä[]-¬Ç'§`Ç‚ ÄO¬°-Ç-°‚ -¢ƒ`Ç‰/ ·s¡É`£ „-√ >_ <_ =_ - =~ ¡~· =/  •-Ñ->Å  •<-Ñ-Å |^ ¡v·| = x Ä.·-„.ƒ +_ U ¢|Ç^Ç|¢  ¢•(·Ñ_Ê_É«  £·_Ê_«Ñ)°  ¢•(·Ñ_Ê_«_É  £_·_Ê_«Ñ)° o¢oÇ ÄoÅ¡`°·`°·`Å¡ ¢\„-Ñ-√/¢ Ä-Ç·,¡¢ Ä|'Ç`£∆'°`ÇÊ o¢cÇ 0/ Ä(Å·-¡° + (r) (c) | c/ ·=¡| *> <* * (b) | O | | | | | | | | | | |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                .\" Copyright (c) 1983 Regents of the University of California.
+.\" All rights reserved.  The Berkeley software License Agreement
+.\" specifies the terms and conditions for redistribution.
+.\"
+.\"	@(#)fastboot.8	6.1 (Berkeley) 4/27/85
+.\"
+.TH FASTBOOT 8 "April 27, 1985"
+.UC 5
+.SH NAME
+fastboot, fasthalt \- reboot/halt the system without checking the disks
+.SH SYNOPSIS
+.B /etc/fastboot
+[
+.I boot-options
+]
+.br
+.B /etc/fasthalt
+[
+.I halt-options
+]
+.SH DESCRIPTION
+.I Fastboot
+and
+.I fasthalt
+are shell scripts which reboot and halt the system without
+checking the file systems.  This is done by creating a
+file 
+.IR /fastboot ,
+then invoking the 
+.I reboot
+program.  The system startup script,
+.IR /etc/rc ,
+looks for this file and, if present, skips the normal
+invocation of
+.IR fsck (8).
+.SH "SEE ALSO"
+halt(8),
+reboot(8),
+rc(8)
+                                                                                                                                                                                                tape had been rewound or positioned incorrectly before the \fItar\fP,
+it may be repositioned by the following commands.
+.DS
+\fB#\fP mt rew
+\fB#\fP mt fsf 3
+.DE
+The data on the fourth tape file has now been extracted.
+If you are using 1600bpi tapes,
+the first reel of the distribution is no longer needed;
+the remainder of the installation procedure uses the second
+reel of tape that should be mounted in place of the first.
+The first instruction below is ignored if using 1600bpi tapes.
+The installation procedure continues from this point on the 6250bpi tape.
+.DS
+.TS
+lw(2i) l.
+\fB#\fP mt fsf		(do not do on 1600bpi tapes)
+\fB#\fP mkdir src	(make directory for source)
+\fB#\fP mkdir src/sys	(make directory for system source)
+\fB#\fP cd src/sys	(make /usr/sys the current directory)
+\fB#\fP tar xpbf 20 /dev/rmt12 	(extract the system source)
+(this takes about 5-10 minutes)
+\fB#\fP cd /	(back to root)
+\fB#\fP chmod 755  /  /usr  /usr/src /usr/src/sys
+\fB#\fP rm \-f sys
+\fB#\fP ln \-s usr/src/sys sys	(make a symbolic link to the system source)
+\fB#\fP umount /dev/${name}	(unmount /usr)
+.TE
+.DE
+.PP
+You can check the consistency of the /usr file system by doing
+.DS
+\fB#\fP fsck /dev/r${name}
+.DE
+The output from
+.I fsck
+should look something like:
+.DS
+.B
+** /dev/r\fIxx\fP0h
+** Last Mounted on /usr
+** Phase 1 - Check Blocks and Sizes
+** Phase 2 - Check Pathnames
+** Phase 3 - Check Connectivity
+** Phase 4 - Check Reference Counts
+** Phase 5 - Check Cyl groups
+671 files, 3497 used, 137067 free (75 frags, 34248 blocks)
+.R
+.DE
+.PP
+If there are inconsistencies in the file system, you may be prompted
+to apply corrective action; see the document describing
+.I fsck
+for information.
+.PP
+To use the /usr file system, you should now remount it by
+saying
+.DS
+\fB#\fP /etc/mount /dev/${name} /usr
+.DE
+You can then extract the source code for the commands
+(except on RK07's and RM03's this will fit in the /usr file system):
+.DS
+\fB#\fP cd /usr/src
+\fB#\fP mt fsf
+\fB#\fP tar xpb 20
+.DE
+If you get an error at this point, most likely it was
+a problem with tape positioning.
+You can reposition the tape by rewinding it and
+then skipping over the files already read (see \fImt\fP\|(1)).
+.NH 3
+Additional software
+.PP
+There are three extra tape files on the distribution tape(s)
+which have not been installed to this point.  They are
+a font library for use with Varian and Versatec printers,
+the Ingres database system, and user contributed software.
+All three tape files are in \fItar\fP\|(1) format and
+can be installed by positioning the tape 
+using \fImt\fP\|(1) and reading
+in the files as was done for /usr/src above.  As distributed,
+the fonts should be placed in a directory /usr/lib/vfont, the
+Ingres system should be placed in /usr/ingres, and the user
+contributed software should be placed in /usr/src/new.  The
+exact contents of the user contributed software is given in
+a separate document.
+.NH 2
+Additional conversion information
+.PP
+After setting up the new \*(4B filesystems,
+you may restore the user files that were saved on tape before beginning
+the conversion.
+Note that the \*(4B \fIrestore\fP program does
+its work on a mounted file system using normal system operations
+(unlike the older \fIrestor\fP that accessed the raw file
+system device and deposited inodes in the appropriate locations
+on disk).  This means that file system dumps may be restored even
+if the characteristics of the file system changed.  To restore
+a dump tape for, say, the /a file system something like the following
+would be used:
+.DS
+\fB#\fP mkdir /a
+\fB#\fP newfs hp1g eagle
+\fB#\fP mount /dev/hp1g /a
+\fB#\fP cd /a
+\fB#\fP restore r
+.DE
+If you chose to convert filesystems while copying to a new disk area,
+do so by piping the output of \fIdump.4.1\fP directly into \fIrestore\fP 
+after bringing up \*(4B.
+.PP
+If \fItar\fP images were written instead of doing a dump, you should
+be sure to use the `p' option when reading the files back.
+No matter how you restore a file system, be sure and check its
+integrity with \fIfsck\fP when the job is complete.
+.PP
+To convert a compiler from 4.1BSD
+to \*(4B you should simply have to recompile and relink the
+various parts.  If the processor is written in itself, for instance
+a PASCAL compiler written in PASCAL, the important step in
+converting is to save a working copy of the 4.1BSD binary before
+converting to \*(4B.  Then, once the system has been changed over,
+the 4.1BSD binary should be used in the rebuilding process. 
+To do this, you should enable the 4.1 compatibility
+option when you configure the kernel (see section 4.3).
+.PP
+If no working 4.1BSD binary exists, or the language processor
+uses some nonstandard system call, you will likely have to compile
+the language processor into an intermediate form, such as assembly
+language, on a 4.1BSD system, then bring the intermediate form
+to \*(4B for assembly and loading.
+                                                                                                                                                                                                                                                       ing an MRSP prom on an 11/750 and think you
+can ignore the instructions in this document.  The
+problem here is that the generic system only supports
+the MRSP prom on an 11/730.  Using it on an 11/750 requires
+a special system configuration; consult
+.IR tu (4)
+for more information.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      #
+# Copyright (c) 1986 Regents of the University of California.
+# All rights reserved.  The Berkeley software License Agreement
+# specifies the terms and conditions for redistribution.
+#
+#	@(#)Makefile	6.1 (Berkeley) 5/13/86
+#
+PRINTER=-Pdp
+TROFF=	ditroff ${PRINTER}
+EQN=	deqn ${PRINTER}
+TBL=	dtbl ${PRINTER}
+LPR=	lpr -n ${PRINTER}
+
+SRC=	0.t 1.t 2.t 3.t 4.t 5.t 6.t a.t b.t c.t
+
+setup: setup.out
+	${LPR} setup.out
+
+setup.out: ${SRC}
+	${EQN} ${SRC} | ${TBL} | ${TROFF} -t -msU > setup.out
+
+clean:
+	rm -f setup.out ?.t.spell errs Errs
+
+spell:	${SRC}
+	@for i in ${SRC}; do \
+		echo $$i; spell $$i | sort | comm -23 - spell.ok > $$i.spell; \
+	done
+                                                                                                                                                                                                                                                                                                                                                                                             B    .   &    ..  C    Makefile t oD  ‘
+ network.ms o                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                .\" Copyright (c) 1980 Regents of the University of California.
+.\" All rights reserved.  The Berkeley software License Agreement
+.\" specifies the terms and conditions for redistribution.
+.\"
+.\"	@(#)4.t	6.1 (Berkeley) 5/14/86
+.\"
+.de IR
+\fI\\$1\fP\|\\$2
+..
+.ds LH "Installing/Operating \*(4B
+.nr H1 4
+.nr H2 0
+.ds CF \*(DY
+.ds RH "System setup
+.bp
+.LG
+.B
+.ce
+4. SYSTEM SETUP
+.sp 2
+.R
+.NL
+.PP
+This section describes procedures used to set up a VAX UNIX system.
+These procedures are used when a system is first installed
+or when the system configuration changes.  Procedures for normal
+system operation are described in the next section.
+.NH 2
+Creating UNIX boot media
+.PP
+The procedures for making the various UNIX boot media are described in this
+section.  If you have an 11/785 or 11/780, you will need to make a floppy.
+For an 11/730, you will need to make a cassette.  While for an 8650
+or 8600, you will need to make a console RL02 pack.
+.PP
+The boot command files are all set up for booting off of the first
+UNIBUS or MASSBUS.  If you are booting off of a different UNIBUS
+or MASSBUS, you will need to modify the boot command files appropriately.
+.NH 3
+Making a UNIX boot console RL02 pack
+.PP
+If you have an 8650 or 8600 you will want to create a
+.UX
+boot console RL02 pack by adding some files to your current DEC
+console pack, using
+\fIarff\fP\|(8).
+If you do not want to modify your current DEC console pack, you may
+make a copy of it first using
+\fIdd\fP\|(1).
+This pack will make standalone system operations such as
+bootstrapping much easier.
+.PP
+First change into the directory where the console RL02
+information is stored:
+.DS
+\fB#\fP cd /sys/consolerl
+.DE
+then set up the default boot device.
+If you have an RK07 as your primary root do:
+.DS
+\fB#\fP cp defboo.hk defboo.com
+.DE
+If you have a drive on a UDA50 (e.g. an RA81) as your
+primary root do:
+.DS
+\fB#\fP cp defboo.ra defboo.com
+.DE
+If you have a second vendor
+UNIBUS storage module as your primary root do:
+.DS
+\fB#\fP cp defboo.up defboo.com
+.DE
+Otherwise:
+.DS
+\fB#\fP cp defboo.hp defboo.com
+.DE
+The final step in updating the console RL02 pack is:
+.DS
+\fB#\fP make update
+.DE
+More copies of this console RL02 pack can be made using
+.IR dd (1).
+.NH 3
+Making a UNIX boot floppy
+.PP
+If you have an 11/785 or 11/780 you will want to create a
+.UX
+boot floppy by adding some files to a copy of your current DEC
+console floppy, using
+.IR flcopy (8)
+and
+\fIarff\fP\|(8).
+This floppy will make standalone system operations such as
+bootstrapping much easier.
+.PP
+First change into the directory where the console floppy
+information is stored:
+.DS
+\fB#\fP cd /sys/floppy
+.DE
+then set up the default boot device.
+If you have an RK07 as your primary root do:
+.DS
+\fB#\fP cp defboo.hk defboo.cmd
+.DE
+If you have a drive on a UDA50 (e.g. an RA81) as your
+primary root do:
+.DS
+\fB#\fP cp defboo.ra defboo.cmd
+.DE
+If you have a second vendor
+UNIBUS storage module as your primary root do:
+.DS
+\fB#\fP cp defboo.up defboo.cmd
+.DE
+Otherwise:
+.DS
+\fB#\fP cp defboo.hp defboo.cmd
+.DE
+If the local configuration requires any changes in restar.cmd
+or defboo.cmd (e.g., for interleaved memory controllers see
+defboo.MS780C-interleaved),
+these should be made now.
+The following command will then copy your DEC local console floppy,
+updating the copy appropriately.
+.DS
+\fB#\fP make update
+\fBChange Floppy, Hit return when done.\fP
+(waits for you to put clean floppy in console)
+\fBAre you sure you want to clobber the floppy?\fP yes
+.DE
+More copies of this floppy can be made using
+.IR flcopy (8).
+.NH 3
+Making a UNIX boot cassette
+.PP
+If you have an 11/730 you will want to create a
+.UX
+boot cassette by adding some files to a copy of
+your current DEC console cassette, using
+\fIflcopy\fP\|(8) and \fIarff\fP\|(8).
+This cassette will make standalone system operations such as
+bootstrapping much easier.
+.PP
+First change into the directory where the console cassette
+information is stored:
+.DS
+\fB#\fP cd /sys/cassette
+.DE
+then set up the default boot device.
+If you have an IDC storage module as your primary root do:
+.DS
+\fB#\fP cp defboo.rb defboo.cmd
+.DE
+If you have an RK07 as your primary root do:
+.DS
+\fB#\fP cp defboo.hk defboo.cmd
+.DE
+If you have a drive on a UDA50 as your primary root do:
+.DS
+\fB#\fP cp defboo.ra defboo.cmd
+.DE
+Otherwise:
+.DS
+\fB#\fP cp defboo.up defboo.cmd
+.DE
+To complete the procedure place your DEC local
+console cassette in 
+drive 0 (the drive at front of the CPU);
+the following command will then copy it,
+updating the copy appropriately.
+.DS
+\fB#\fP make update
+\fBChange Floppy, Hit return when done.\fP
+(waits for you to put clean cassette in console drive 0)
+\fBAre you sure you want to clobber the floppy?\fP yes
+.DE
+More copies of this cassette can best be made using
+.IR dd (1).
+.NH 2
+Kernel configuration
+.PP
+This section briefly describes the layout of the kernel code and
+how files for devices are made.
+For a full discussion of configuring
+and building system images, consult the document ``Building
+\*(4B UNIX Systems with Config''.
+.NH 3
+Kernel organization
+.PP
+As distributed, the kernel source is in a 
+separate tar image.  The source may be physically
+located anywhere within any file system so long as
+a symbolic link to the location is created for the
+file /sys
+(many files in /usr/include are normally symbolic links
+relative to /sys).  In further discussions of the
+system source all path names will be given relative to
+/sys.
+.PP
+The directory /sys/sys
+contains the mainline machine independent
+operating system code.
+Files within this directory are conventionally
+named with the following prefixes:
+.DS
+.TS
+lw(1.0i) l.
+init_	system initialization
+kern_	kernel (authentication, process management, etc.)
+quota_	disk quotas
+sys_	system calls and similar
+tty_	terminal handling
+ufs_	file system
+uipc_	interprocess communication
+vm_	virtual memory
+.TE
+.DE
+.PP
+The remaining directories are organized as follows:
+.DS
+.TS
+lw(1.0i) l.
+/sys/h	machine independent include files
+/sys/conf	site configuration files and basic templates
+/sys/net	network independent, but network related code
+/sys/netinet	DARPA Internet code
+/sys/netimp	IMP support code
+/sys/netns	Xerox NS support code
+/sys/vax	VAX specific mainline code
+/sys/vaxif	VAX network interface code
+/sys/vaxmba	VAX MASSBUS device drivers and related code
+/sys/vaxuba	VAX UNIBUS device drivers and related code
+.TE
+.DE
+.PP
+Many of these directories are referenced through /usr/include with
+symbolic links.  For example, /usr/include/sys is a symbolic
+link to /sys/h.  The system code, as distributed, is totally
+independent of the include files in /usr/include.  This allows
+the system to be recompiled from scratch without the /usr file
+system mounted.
+.NH 3
+Devices and device drivers
+.PP
+Devices supported by UNIX are implemented in the kernel
+by drivers whose source is kept in /sys/vax, /sys/vaxuba,
+or /sys/vaxmba.  These drivers are loaded
+into the system when included in a cpu specific configuration file
+kept in the conf directory.  Devices are accessed through special
+files in the file system, made by the
+.IR mknod (8)
+program and normally kept in the /dev directory.
+For all the devices supported by the distribution system, the
+files in /dev are created by the /dev/MAKEDEV
+shell script.
+.PP
+Determine the set of devices that you have and create a new /dev
+directory by running the MAKEDEV script.
+First create a new directory
+/newdev, copy MAKEDEV into it, edit the file MAKEDEV.local
+to provide an entry for local needs,
+and run it to generate a /newdev directory.
+For instance, if your machine has a single DZ11, a single
+DH11, a single DMF32, an RM03 disk, an EMULEX UNIBUS SMD disk controller, an
+AMPEX 9300 disk, and a TE16 tape drive you would do:
+.DS
+\fB#\fP cd /
+\fB#\fP mkdir newdev
+\fB#\fP cp dev/MAKEDEV newdev/MAKEDEV
+\fB#\fP cd newdev
+\fB#\fP MAKEDEV dz0 dh0 dmf0 hp0 up0 ht0 std LOCAL
+.DE
+Note the ``std'' argument causes standard devices
+such as \fI/dev/console\fP, the machine console, \fI/dev/floppy\fP,
+the console floppy disk interface for the 11/780 and 11/785, and
+\fI/dev/tu0\fP and \fI/dev/tu1\fP, the console cassette interfaces
+for the 11/750 and 11/730, to be created.
+.PP
+You can then do
+.DS.\" Copyright (c) 1980 Regents of the University of California.
+.\" All rights reserved.  The Berkeley software License Agreement
+.\" specifies the terms and conditions for redistribution.
+.\"
+.\"	@(#)a.t	6.1 (Berkeley) 5/14/86
+.\"
+.de IR
+\fI\\$1\fP\|\\$2
+..
+.ds LH "Installing/Operating \*(4B
+.nr H1 6
+.nr H2 0
+.ds RH "Appendix A \- bootstrap details
+.ds CF \*(DY
+.bp
+.LG
+.B
+.ce
+APPENDIX A \- BOOTSTRAP DETAILS
+.sp 2
+.R
+.NL
+.PP
+This appendix contains pertinent files and numbers regarding the
+bootstrapping procedure for \*(4B.  You should never have to
+look at this appendix.  However, if there are problems in installing
+the distribution on your machine, the material contained here may
+prove useful.
+.SH
+Contents of the distribution tape(s)
+.PP
+The distribution normally consists of three 1600bpi 2400' magnetic
+tapes or one 6250bpi 2400' magnetic tape.
+The layout of the 1600bpi tapes is listed below.  The 6250bpi
+tape is in the same order, but is only on one tape.
+The first tape contains the following files on it.  All
+tape files are blocked in 10 kilobytes records, except for the
+first file on the first tape that has 512 byte records.
+.DS L
+.TS
+l l l.
+Tape file	Records*	Contents
+_
+one	210	8 bootstrap monitor programs and a
+		\fItp\fP\|(1) file containing \fIboot\fP, \fIformat\fP, and \fIcopy\fP
+two	205	``mini root'' file system
+three	430	\fIdump\fP\|(8) of distribution root file system
+four	3000	\fItar\fP\|(1) image of binaries and libraries in /usr
+.TE
+.FS
+* The number of records in each tape file are approximate
+and do not correspond to the actual tape.
+.FE
+.DE
+The second tape contains the following files:
+.DS L
+.TS
+l l l.
+Tape file	# Records	Contents
+_
+one	720	\fItar\fP\|(1) image of /sys, including GENERIC system
+two	2500	\fItar\fP\|(1) image of /usr/src
+three	580	\fItar\fP\|(1) image of /usr/lib/vfont
+.TE
+.DE
+The third tape contains the following files:
+.DS L
+.TS
+l l l.
+Tape file	# Records	Contents
+_
+one	3660	\fItar\fP\|(1) image of user contributed software
+two	250	\fItar\fP\|(1) image of /usr/ingres
+.TE
+.DE
+.PP
+The distribution tape is made with the shell scripts located
+in the directory /sys/dist.  To build a distribution tape
+one must first create a mini root file system with the \fIbuildmini\fP
+shell script.
+.DS
+#!/bin/sh
+#	@(#)buildmini	4.7 (Berkeley) 6/23/85
+#
+miniroot=hp0d
+minitype=rm80
+#
+date
+umount /dev/${miniroot}
+newfs -s 4096 ${miniroot} ${minitype}
+fsck /dev/r${miniroot}
+mount /dev/${miniroot} /mnt
+cd /mnt; sh /sys/dist/get
+cd /sys/dist; sync
+umount /dev/${miniroot}
+fsck /dev/${miniroot}
+date
+.DE
+The \fIbuildmini\fP
+script uses the \fIget\fP script to build the
+file system.
+.ID
+#!/bin/sh
+#
+#	@(#)get	4.23 (Berkeley) 4/9/86
+#
+# Shell script to build a mini-root file system
+# in preparation for building a distribution tape.
+# The file system created here is image copied onto
+# tape, then image copied onto disk as the "first"
+# step in a cold boot of 4.2 systems.
+#
+DISTROOT=/nbsd
+#
+if [ `pwd` = '/' ]
+then
+	echo You just '(almost)' destroyed the root
+	exit
+fi
+cp $DISTROOT/sys/GENERIC/vmunix .
+rm -rf bin; mkdir bin
+rm -rf etc; mkdir etc
+rm -rf a; mkdir a
+rm -rf tmp; mkdir tmp
+rm -rf usr; mkdir usr usr/mdec
+rm -rf sys; mkdir sys sys/floppy sys/cassette sys/consolerl
+cp $DISTROOT/etc/disktab etc
+cp $DISTROOT/etc/newfs etc; strip etc/newfs
+cp $DISTROOT/etc/mkfs etc; strip etc/mkfs
+cp $DISTROOT/etc/restore etc; strip etc/restore
+cp $DISTROOT/etc/init etc; strip etc/init
+cp $DISTROOT/etc/mount etc; strip etc/mount
+cp $DISTROOT/etc/mknod etc; strip etc/mknod
+cp $DISTROOT/etc/fsck etc; strip etc/fsck
+cp $DISTROOT/etc/umount etc; strip etc/umount
+cp $DISTROOT/etc/arff etc; strip etc/arff
+cp $DISTROOT/etc/flcopy etc; strip etc/flcopy
+cp $DISTROOT/bin/mt bin; strip bin/mt
+cp $DISTROOT/bin/ls bin; strip bin/ls
+cp $DISTROOT/bin/sh bin; strip bin/sh
+cp $DISTROOT/bin/mv bin; strip bin/mv
+cp $DISTROOT/bin/sync bin; strip bin/sync
+cp $DISTROOT/bin/cat bin; strip bin/cat
+cp $DISTROOT/bin/mkdir bin; strip bin/mkdir
+cp $DISTROOT/bin/stty bin; strip bin/stty; ln bin/stty bin/STTY
+cp $DISTROOT/bin/echo bin; strip bin/echo
+cp $DISTROOT/bin/rm bin; strip bin/rm
+cp $DISTROOT/bin/cp bin; strip bin/cp
+cp $DISTROOT/bin/expr bin; strip bin/expr
+cp $DISTROOT/bin/[ bin; strip bin/[
+cp $DISTROOT/bin/awk bin; strip bin/awk
+cp $DISTROOT/bin/make bin; strip bin/make
+cp $DISTROOT/usr/mdec/* usr/mdec
+cp $DISTROOT/sys/floppy/[Ma-z0-9]* sys/floppy
+cp $DISTROOT/sys/consolerl/[Ma-z0-9]* sys/consolerl
+cp -r $DISTROOT/sys/cassette/[Ma-z0-9]* sys/cassette
+cp $DISTROOT/sys/stand/boot boot
+cp $DISTROOT/sys/stand/pcs750.bin pcs750.bin
+cp $DISTROOT/.profile .profile
+cat >etc/passwd <<EOF
+root::0:10::/:/bin/sh
+EOF
+cat >etc/group <<EOF
+wheel:*:0:
+staff:*:10:
+EOF
+cat >etc/fstab <<EOF
+/dev/hp0a:/a:xx:1:1
+/dev/up0a:/a:xx:1:1
+/dev/hk0a:/a:xx:1:1
+/dev/ra0a:/a:xx:1:1
+/dev/rb0a:/a:xx:1:1
+EOF
+cat >xtr <<'EOF'
+: ${disk?'Usage: disk=xx0 type=tt tape=yy xtr'}
+: ${type?'Usage: disk=xx0 type=tt tape=yy xtr'}
+: ${tape?'Usage: disk=xx0 type=tt tape=yy xtr'}
+echo 'Build root file system'
+newfs ${disk}a ${type}
+sync
+echo 'Check the file system'
+fsck /dev/r${disk}a
+mount /dev/${disk}a /a
+cd /a
+echo 'Rewind tape'
+mt -f /dev/${tape}0 rew
+echo 'Restore the dump image of the root'
+restore rsf 3 /dev/${tape}0
+cd /
+sync
+umount /dev/${disk}a
+sync
+fsck /dev/r${disk}a
+echo 'Root filesystem extracted'
+echo
+echo 'If this is an 8650 or 8600, update the console rl02'
+echo 'If this is a 780 or 785, update the floppy'
+echo 'If this is a 730, update the cassette'
+EOF
+chmod +x xtr
+rm -rf dev; mkdir dev
+cp $DISTROOT/sys/dist/MAKEDEV dev
+chmod +x dev/MAKEDEV
+cp /dev/null dev/MAKEDEV.local
+cd dev
+\&./MAKEDEV std hp0 hk0 up0 ra0 rb0
+\&./MAKEDEV ts0; mv rmt12 ts0; rm *mt*;
+\&./MAKEDEV tm0; mv rmt12 tm0; rm *mt*;
+\&./MAKEDEV ht0; mv rmt12 ht0; rm *mt*;
+\&./MAKEDEV ut0; mv rmt12 ut0; rm *mt*;
+\&./MAKEDEV mt0; mv rmt4 xt0; rm *mt*; mv xt0 mt0
+cd ..
+sync
+.DE
+The mini root file system must have enough space to hold the
+files found on a floppy or cassette.
+.PP
+Once a mini root file system is constructed, the \fImaketape\fP
+script makes a distribution tape.  
+.ID
+#!/bin/sh
+#
+#	@(#)maketape	4.27 (Berkeley) 10/17/85
+#
+#	maketape [ 6250 | 1600 [ tapename [ remotetapemachine ] ] ]
+miniroot=hp0d
+tape=/dev/rmt12
+type=6250
+if [ $# -gt 0 ]; then type=$1; fi
+if [ $# -gt 1 ]; then tape=$2; fi
+tartape=$tape
+if [ $# -gt 2 ]; then remote=$3; tartape='-'; fi
+#
+trap "rm -f /tmp/tape.$$; exit" 0 1 2 3 13 15
+$remote mt -t ${tape} rew
+date
+umount /dev/hp2g
+umount /dev/hp2a
+mount -r /dev/hp2a /c/nbsd
+mount -r /dev/hp2g /c/nbsd/usr
+cd tp
+tp cmf /tmp/tape.$$ boot copy format
+cd /nbsd/sys/mdec
+echo "Build 1st level boot block file"
+cat tsboot htboot tmboot mtboot utboot noboot noboot /tmp/tape.$$ | \e
+	$remote dd of=${tape} obs=512 conv=sync
+cd /nbsd
+sync
+echo "Add dump of mini-root file system"
+eval dd if=/dev/r${miniroot} count=205 bs=20b conv=sync ${remote+'|'} \e
+	${remote-"of=$tape"} ${remote+'/usr/local/20b ">" $tape'}
+echo "Add full dump of real file system"
+/etc/${remote+r}dump 0uf $remote${remote+:}${tape} /c/nbsd
+echo "Add tar image of /usr"
+cd /nbsd/usr; eval tar cf ${tartape} adm bin dict doc games \e
+	guest hosts include lib local man mdec msgs new \e
+	preserve pub spool tmp ucb \e
+		${remote+'| $remote /usr/local/20b ">" $tape'}
+if [ ${type} != '6250' ]
+then
+	echo "Done, rewinding first tape"
+	$remote mt -t ${tape} rew &
+	echo "Mount second tape and hit return when ready"
+	echo "(or type name of next tape drive)"
+	read x
+	if [ "$x" != "" ]
+	then	tape=$x
+	fi
+fi
+echo "Add tar image of system sources"
+cd /nbsd/sys; eval tar cf ${tartape} . \e
+	${remote+'| $remote /usr/local/20b ">" $tape'}
+echo "Add user source code"
+cd /nbsd/usr/src; eval tar cf ${tartape} Makefile bin etc games \e
+	include lib local old ucb undoc usr.bin usr.lib \e
+	${remote+'| $remote /usr/local/20b ">" $tape'}
+echo "Add varian fonts"
+cd /usr/lib/vfont; eval tar cf ${tartape} . \e
+	${remote+'| $remote /usr/local/20b ">" $tape'}
+if [ ${type} != '6250' ]
+then
+	echo "Done, rewinding second tape"
+	$remote mt -t ${tape} rew &
+	echo "Mount third tape and hit return when ready"
+	echo "(or type name of next tape drive)"
+	read x
+	if [ "$x" != "" ]
+	then	tape=$x
+	fi
+fi
+echo 
+\fB#\fP cd /
+\fB#\fP mv dev olddev ; mv newdev dev
+\fB#\fP sync
+.DE
+to install the new device directory.
+.NH 3
+Building new system images
+.PP
+The kernel configuration of each UNIX system is described by
+a single configuration file, stored in the \fI/sys/conf\fP directory.
+To learn about the format of this file and the procedure used
+to build system images,
+start by reading ``Building \*(4B UNIX Systems with Config'',
+look at the manual pages in section 4
+of the UNIX manual for the devices you have,
+and look at the sample configuration files in the /sys/conf
+directory.
+.PP
+The configured system image ``vmunix'' should be
+copied to the root, and then booted to try it out.
+It is best to name it /newvmunix so as not to destroy
+the working system until you're sure it does work:
+.DS
+\fB#\fP cp vmunix /newvmunix
+\fB#\fP sync
+.DE
+It is also a good idea to keep the previous system around under some other
+name.  In particular, we recommend that you save the generic distribution
+version of the system permanently as \fI/genvmunix\fP for use in emergencies.
+To boot the new version of the system you should follow the
+bootstrap procedures outlined in section 6.1.
+After having booted and tested the new system, it should be installed
+as \fI/vmunix\fP before going into multiuser operation.
+A systematic scheme for numbering and saving old versions
+of the system may be useful.
+.NH 2
+Disk configuration
+.PP
+This section describes how to layout file systems to make use
+of the available space and to balance disk load for better system
+performance.
+.NH 3
+Initializing /etc/fstab
+.PP
+Change into the directory /etc and copy the appropriate file from:
+.DS
+fstab.rm03
+fstab.rm05
+fstab.rm80
+fstab.ra60
+fstab.ra80
+fstab.ra81
+fstab.rb80
+fstab.rp06
+fstab.rp07
+fstab.rk07
+fstab.up160m (160Mb up drives)
+fstab.hp400m (400Mb hp drives)
+fstab.up (other up drives)
+fstab.hp (other hp drives)
+.DE
+to the file /etc/fstab, i.e.:
+.DS
+\fB#\fP cd /etc
+\fB#\fP cp \fIfstab.xxx\fP fstab
+.DE
+.PP
+This will set up the default information about the usage of disk
+partitions, which we see how to update more below.
+.NH 3
+Disk naming and divisions
+.PP
+Each physical disk drive can be divided into up to 8 partitions;
+UNIX typically
+uses only 3 or 4 partitions.
+For instance, on an RM03
+or RP06, the first partition, hp0a,
+is used for a root file system, a backup thereof,
+or a small file system like, /tmp;
+the second partition, hp0b,
+is used for paging and swapping; and
+the third partition hp0g
+holds a user file system.  On an RM05, the first three partitions
+are used as for the RM03, and the fourth partition, hp0h,
+holds the /usr file system, including source code.
+.PP
+The disk partition sizes for a drive are based on a
+set of four prototype partition tables; c.f. \fIdiskpart\fP\|(8). 
+The particular
+table used is dependent on the size of the drive.
+The ``a'' partition is the same size across all drives,
+15884 sectors.  The ``b'' partition, used for paging and
+swapping, is sized according to the total space on the disk.
+For drives less than about 400 megabytes the partition
+is 33440 sectors, while for larger drives the partition size
+is doubled to 66880 sectors.  The ``c'' partition is always
+used to access the entire physical disk, including the space
+at the back of the disk reserved for the bad sector
+forwarding table.  If the disk is larger than about 250 megabytes,
+an ``h'' partition is created with size 291346 sectors, and
+no matter whether the ``h'' partition is created or not, the
+remainder of the drive is allocated to the ``g'' partition.
+Sites that want to split up the ``g'' partition into several
+smaller file systems may use the ``d'', ``e'', and ``f''
+partitions that overlap the ``g'' partition.  The default
+sizes for these partitions are 15884, 55936, and the remainder
+of the disk, respectively*.
+.FS
+* These rules are, unfortunately not evenly applied to all
+disks.  Drives on DEC UDA50 and IDC controllers do not
+completely follow these rules;
+in particular,
+no ``d'', ``e'', or ``f'' partitions are available on an
+RA60 and RA80.  Consult \fIuda\fP\|(4) for more information.
+.FE
+.PP
+The disk partition sizes for DEC RA60, RA80, and RA81 have
+changed since 4.2BSD.  If upgrading from 4.2BSD,
+you will need to decide if you want
+to use the new partitions or the old partitions.  If you 
+desire to use the old partitions, you will need to update
+/etc/disktab and the device driver for the UDA50.  Any
+other partition sizes that were modified at your site, will
+require the same consideration.
+.PP
+The space available on a disk varies per device.  The amount of space
+available on the common disk partitions is listed in the following table.
+Not shown in the table are the partitions of each drive devoted
+to the root file system and the paging area.
+.DS
+.TS
+center;
+l l n l n.
+Type	Name	Size	Name	Size
+_
+rk07	hk?g	13 Mb
+rm03	hp?g	41 Mb
+rp06	hp?g	145 Mb
+rm05	hp?g	80 Mb	hp?h	145 Mb
+rm80	hp?g	96 Mb
+ra60	ra?g	78 Mb	ra?h	96 Mb
+ra80	ra?g	96 Mb
+ra81	ra?g	257 Mb	ra?h	145 Mb
+rb80	rb?g	41 Mb	rb?h	56 Mb
+rp07	hp?g	315 Mb	hp?h	145 Mb
+up300	up?g	80 Mb	up?h	145 Mb
+up330	up?g	90 Mb	up?h	145 Mb
+up400	hp?g	216 Mb	hp?h	145 Mb
+up160	up?g	106 Mb
+.TE
+.DE
+.LP
+Here up300 refers to either an AMPEX or CDC 300 Megabyte disk on a
+MASSBUS or UNIBUS disk controller, up330 refers to either an AMPEX
+or FUJITSU 330 Megabyte disk on a MASSBUS or UNIBUS controller,
+up160 refers to a FUJITSU 160 Megabyte disk
+on the UNIBUS, and up400 refers to a FUJITSU Eagle 400 Megabyte
+disk on a MASBUS or UNIBUS disk controller.  ``hp'' should be
+substituted for ``up'' above if the disk is on the MASSBUS.
+Consult the manual pages for the specific controllers for other
+supported disks or other partitions.
+.PP
+Each disk also has a paging area, typically of 16 Megabytes, and
+a root file system of 8 Megabytes.
+The distributed system binaries occupy about 34 Megabytes
+while the major sources occupy another 32 Megabytes.
+This overflows dual RK07, dual RL02 and single RM03 systems,
+but fits easily on most other hardware configurations.
+.PP
+Be aware that the disks have their sizes
+measured in disk sectors (512 bytes), while the UNIX file
+system blocks are variable sized.  All user programs report
+disk space in kilobytes and, where needed, disk sizes are always
+specified in units of
+sectors.  The /etc/disktab file used in making file systems
+specifies disk partition sizes in sectors; the default sector size
+may be overridden with the ``se'' attribute.  Note that the only
+sector size currently supported is DEV_BSIZE as defined in 
+\fI/sys/h/param.h\fP.
+.NH 3
+Layout considerations
+.PP
+There are several considerations in deciding how
+to adjust the arrangement of things on your disks.
+The most important is making sure that there is adequate space
+for what is required; secondarily, throughput should be maximized.
+Paging space is an important parameter.
+The system, as distributed, sizes the configured
+paging areas each time the system is booted.  Further,
+multiple paging areas of different size may be interleaved.
+Drives smaller than 400 megabytes have swap partitions of 16 megabytes
+while drives larger than 400 megabytes have 32 megabytes.  These
+values may be change

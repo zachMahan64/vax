@@ -1,0 +1,1922 @@
+         where _w_h_e_n is either a symbol or  an  expression
+            involving symbols and the functions _a_n_d, _o_r, and
+            _n_o_t.  The meaning is that _w_h_a_t will only be read
+            in  if  _w_h_e_n  is true.  A symbol in _w_h_e_n is true
+            only if  it  appears  in  the  (_s_t_a_t_u_s _f_e_a_t_u_r_e_s)
+            list.
+
+
+    ____________________________________________________
+
+    ; suppose we want to write a program which references a file
+    ; and which can run at ucb, ucsd and cmu where the file naming conventions
+    ; are different.
+    ;
+    -> (_d_e_f_u_n _h_o_w_o_l_d (_n_a_m_e)
+          (_t_e_r_p_r)
+          (_l_o_a_d #+(_o_r _u_c_b _u_c_s_d) "/_u_s_r/_l_i_b/_l_i_s_p/_a_g_e_s._l"
+                 #+_c_m_u "/_u_s_r/_l_i_s_p/_d_o_c/_a_g_e_s._l")
+          (_p_a_t_o_m _n_a_m_e)
+          (_p_a_t_o_m " _i_s ")
+          (_p_r_i_n_t (_c_d_re (_l_i_s_t _v_a_l_u_e))
+                     (_t _n_i_l)))
+           (_c_d_r (_a_s_s_q (_r_e_a_d) '((_c_a_l_i_f_o_r_n_i_a . _c_a) (_p_e_n_n_s_y_l_v_a_n_i_a . _p_a))))))
+    -> (_s_e_t_s_y_n_t_a_x '! '_v_s_p_l_i_c_i_n_g-_m_a_c_r_o '_s_t_a_t_e_a_b_b_r_e_v)
+    -> '(!_p_e_n_n_s_y_l_v_a_n_i_a ! _f_o_o !_c_a_l_i_f_o_r_n_i_a)
+    (pa ca)
+    -> '!_f_o_o !_b_a_r !_p_e_n_n_s_y_l_v_a_n_i_a
+    pa
+    ->
+    ____________________________________________________
+
+
+
+
+
+
+         7.6.1.3.  Infix
+
+                 Infix macros are passed  a  _c_o_n_c  structure
+            representing   what   has   been  read  so  far.
+            Briefly, a tconc structure is a single list cell
+            whose  car points to a list and whose cdr points
+            to  the  last  list  cell  in  that  list.   The
+            interpretation   by  the  reader  of  the  value
+
+
+                                   Printed: January 31, 1984
+
+
+
+
+
+
+
+The Lisp Reader                                         7-11
+
+
+            returned by  an infix macro depends  on  whether
+            the  macro  is  called  while the reader is con-
+            structing a list or whether it is called at  the
+            top level of the reader.  If the macro is called
+            while a list  is  being  constructed,  then  the
+            value  returned  should  be   a tconc structure.
+            The car of that structure replaces the  list  of
+            elements  that  the  reader has been collecting.
+            If the macro is called at  top  level,  then  it
+            will  be  passed the value nil, and the value it
+            returns should either be nil or a  tconc  struc-
+            ture.   If the macro returns nil, then the value
+            is ignored and the reader continues to read.  If
+            the  macro returns a tconc structure of one ele-
+            ment (i.e. whose car is a list of one  element),
+            then  that  single  element  is  returned as the
+            value of _r_e_a_d.  If the  macro  returns  a  tconc
+            structure  of  more  than one element, then that
+            list of elements is returned  as  the  value  of
+            read.
+
+
+    ____________________________________________________
+
+    -> (_d_e_f_u_n _p_l_u_s_o_p (_x)
+          (_c_o_n_d ((_n_u_l_l _x) (_t_c_o_n_c _n_i_l '_\+))
+                (_t (_l_c_o_n_c _n_i_l (_l_i_s_t '_p_l_u_s (_c_a_a_r _x) (_r_e_a_d))))))
+
+    plusop
+    -> (_s_e_t_s_y_n_t_a_x '_\+ '_v_i_n_f_i_x-_m_a_c_r_o '_p_l_u_s_o_p)
+    t
+    -> '(_a + _b)
+    (plus a b)
+    -> '+
+    |+|
+    ->
+    ____________________________________________________
+
+
+
+
+
+
+      7.6.2.  Invocations
+
+              There are  three  different  circumstances  in
+         which  you  would like a macro function to be trig-
+         gered.
+
+         _A_l_w_a_y_s -
+              Whenever the  macro  character  is  seen,  the
+              macro should be invoked.  This is accomplished
+              by  using  the   character   classes   _c_m_a_c_r_o,
+
+
+                                   Printed: January 31, 1984
+
+
+
+
+
+
+
+The Lisp Reader                                         7-12
+
+
+              _c_s_p_l_i_c_i_n_g-_m_a_c_r_o, or _c_i_n_f_i_x-_m_a_c_r_o, and by using
+              the _s_e_p_a_r_a_t_o_r property.   The  syntax  classes
+              vmacro, vsplicing-macro, and vsingle-macro are
+              defined this way.
+
+         _W_h_e_n _f_i_r_s_t -
+              The macro should only be  triggered  when  the
+              macro  character  is the first character found
+              after the scanning process.   A  syntax  class
+              for  a _w_h_e_n _f_i_r_s_t macro would be defined using
+              _c_m_a_c_r_o, _c_s_p_l_i_c_i_n_g-_m_a_c_r_o, or  _c_i_n_f_i_x-_m_a_c_r_o  and
+              not including the _s_e_p_a_r_a_t_o_r property.
+
+         _W_h_e_n _u_n_i_q_u_e -
+              The macro should only be  triggered  when  the
+              macro  character  is  the  only character col-
+              lected in the token collection  phase  of  the
+              reader,  i.e  the macro character is preceeded
+              by zero or more _c_s_e_p_a_r_a_t_o_rs and followed by  a
+              _s_e_p_a_r_a_t_o_r.   A  syntax class for a _w_h_e_n _u_n_i_q_u_e
+              macro would be  defined  using  _c_s_i_n_g_l_e-_m_a_c_r_o,
+              _c_s_i_n_g_l_e-_s_p_l_i_c_i_n_g-_m_a_c_r_o, or _c_s_i_n_g_l_e-_i_n_f_i_x-_m_a_c_r_o
+              and not including the _s_e_p_a_r_a_t_o_r property.  The
+              syntax  classes  so defined are vsingle-macro,
+              vsingle-splicing-macro,   and   vsingle-infix-
+              macro.
+
+
+
+   7.7.  Functions
+
+(setsyntax 's_symbol 's_synclass ['ls_func])
+
+     WHERE:   ls_func is the name of a function or a  lambda
+              body.
+
+     RETURNS: t
+
+     SIDE EFFECT: S_symbol should be a  symbol  whose  print
+                  name  is  only  one character.  The syntax
+                  class  for  that  character  is   set   to
+                  s_synclass  in  the current readtable.  If
+                  s_synclass is  a  class  that  requires  a
+                  character macro, then ls_func must be sup-
+                  plied.
+
+     NOTE: The symbolic syntax codes are  new  to  Opus  38.
+           For  compatibility,  s_synclass can be one of the
+           fixnum syntax codes which appeared in older  ver-
+           sions of the FRANZ LISP Manual.  This compatibil-
+           ity is only temporary: existing code  which  uses
+           the fixnum syntax codes should be converted.
+9
+
+9                                   Printed: January 31, 1984
+
+
+
+
+
+
+
+The Lisp Reader                                         7-13
+
+
+(getsyntax 's_symbol)
+
+     RETURNS: the syntax class of  the  first  character  of
+              s_symbol's  print name.  s_symbol's print name
+              must be exactly one character long.
+
+     NOTE: This function is new to Opus 38.   It  supercedes
+           (_s_t_a_t_u_s _s_y_n_t_a_x) which no longer exists.
+
+(add-syntax-class 's_synclass 'l_properties)
+
+     RETURNS: s_synclass
+
+     SIDE EFFECT: Defines the  syntax  class  s_synclass  to
+                  have  properties  l_properties.   The list
+                  l_properties should  contain  a  character
+                  classes mentioned above.  l_properties may
+                  contain  one  of  the  escape  properties:
+                  _e_s_c_a_p_e-_a_l_w_a_y_s,    _e_s_c_a_p_e-_w_h_e_n-_u_n_i_q_u_e,   or
+                  _e_s_c_a_p_e-_w_h_e_n-_f_i_r_s_t.  l_properties may  con-
+                  tain the _s_e_p_a_r_a_t_o_r property.  After a syn-
+                  tax  class  has  been  defined  with  _a_d_d-
+                  _s_y_n_t_a_x-_c_l_a_s_s,  the  _s_e_t_s_y_n_t_a_x function can
+                  be used to  give  characters  that  syntax
+                  class.
+
+
+    ____________________________________________________
+
+    ; Define a non-separating macro character.
+    ; This type of macro character is used in UCI-Lisp, and
+    ; it corresponds to a  FIRST MACRO in Interlisp
+    -> (_a_d_d-_s_y_n_t_a_x-_c_l_a_s_s '_v_u_c_i-_m_a_c_r_o '(_c_m_a_c_r_o _e_s_c_a_p_e-_w_h_e_n-_f_i_r_s_t))
+    vuci-macro
+    ->
+    ____________________________________________________
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+9
+
+9                                   Printed: January 31, 1984
+
+
+
+                                                                                                                                                                                                                                                                                          (_a_s_s_o_c _n_a_m_e _a_g_e_f_i_l_e)))
+          (_p_a_t_o_m "_y_e_a_r_s _o_l_d")
+          (_t_e_r_p_r))
+    ____________________________________________________
+
+
+
+The form
+
+
+                                   Printed: January 31, 1984
+
+
+
+
+
+
+
+Functions, Fclosures, and Macros                         8-7
+
+
+                        _#_-_w_h_e_n _w_h_a_t
+is equivalent to
+                     _#_+_(_n_o_t _w_h_e_n_) _w_h_a_t
+
+
+
+         8.3.4.2.  fixnum character equivalents
+
+            When working with fixnum equivalents of  charac-
+            ters,  it  is  often hard to remember the number
+            corresponding to a character.  The form
+                            _#_/_c
+            is equivalent to the  fixnum  representation  of
+            character c.
+
+
+    ____________________________________________________
+
+    ; a function which returns t if the user types y else it returns nil.
+    ;
+    -> (_d_e_f_u_n _y_e_s_o_r_n_o _n_i_l
+          (_p_r_o_g_n (_a_n_s)
+                 (_s_e_t_q _a_n_s (_t_y_i))
+                 (_c_o_n_d ((_e_q_u_a_l _a_n_s #/_y) _t)
+                       (_t _n_i_l))))
+    ____________________________________________________
+
+
+
+
+
+
+         8.3.4.3.  read time evaluation
+
+            Occasionally you want to express a constant as a
+            Lisp  expression,  yet you don't want to pay the
+            penalty of evaluating this expression each  time
+            it is referenced.  The form
+                        _#_._e_x_p_r_e_s_s_i_o_n
+            evaluates  the  expression  at  read  time   and
+            returns its value.
+
+
+
+
+
+
+
+
+
+
+
+9
+
+9                                   Printed: January 31, 1984
+
+
+
+
+
+
+
+Functions, Fclosures, and Macros                         8-8
+
+
+
+    ____________________________________________________
+
+    ; a function to test if any of bits 1 3 or 12 are set in a fixnum.
+    ;
+    -> (_d_e_f_u_n _t_e_s_t_i_t (_n_u_m)
+          (_c_o_n_d ((_z_e_r_o_p (_b_o_o_l_e _1 _n_u_m #.(+ (_l_s_h _1 _1) (_l_s_h _1 _3) (_l_s_h _1 _1_2))))
+                 _n_i_l)
+                (_t _t)))
+    ____________________________________________________
+
+
+
+
+
+
+   8.4.  fclosures
+
+           Fclosures are a type of functional  object.   The
+      purpose  is  to  remember the values of some variables
+      between invocations of the functional  object  and  to
+      protect this data from being inadvertently overwritten
+      by other Lisp  functions.   Fortran  programs  usually
+      exhibit  this behavior for their variables.  (In fact,
+      some versions of Fortran would require  the  variables
+      to  be  in COMMON).  Thus it is easy to write a linear
+      congruent random number generator in  Fortran,  merely
+      by keeping the seed as a variable in the function.  It
+      is much more risky to do so in Lisp, since any special
+      variable you picked, might be used by some other func-
+      tion.  Fclosures are an attempt to provide most of the
+      same  functionality  as closures in Lisp Machine Lisp,
+      to users of FRANZ LISP.  Fclosures are related to clo-
+      sures in this way:
+      (fclosure '(a b) 'foo) <==>
+              (let ((a a) (b b)) (closure '(a b) 'foo))
+
+
+
+      8.4.1.  an example
+
+____________________________________________________________
+
+% lisp
+Franz Lisp, Opus 38.60
+->(defun code (me count)
+  (print (list 'in x))
+  (setq x (+ 1 x))
+  (cond ((greaterp count 1) (funcall me me (sub1 count))))
+  (print (list 'out x)))
+code
+->(defun tester (object count)
+  (funcall object object count) (terpri))
+
+
+                                   Printed: January 31, 1984
+
+
+
+
+
+
+
+Functions, Fclosures, and Macros                         8-9
+
+
+tester
+->(setq x 0)
+0
+->(setq z (fclosure '(x) 'code))
+fclosure[8]
+-> (tester z 3)
+(in 0)(in 1)(in 2)(out 3)(out 3)(out 3)
+nil
+->x
+0
+____________________________________________________________
+
+
+
+
+
+              The function _f_c_l_o_s_u_r_e  creates  a  new  object
+         that  we  will  call  an  fclosure, (although it is
+         actually a vector).  The fclosure contains a  func-
+         tional  object, and a set of symbols and values for
+         the symbols.  In the above  example,  the  fclosure
+         functional object is the function code.  The set of
+         symbols and values just contains the symbol `x' and
+         zero,  the  value  of  `x'  when  the  fclosure was
+         created.
+
+         When an fclosure is funcall'ed:
+
+         1)   The Lisp system lambda binds  the  symbols  in
+              the fclosure to their values in the fclosure.
+
+         2)   It continues the  funcall  on  the  functional
+              object of the fclosure.
+
+         3)   Finally, it un-lambda binds the symbols in the
+              fclosure  and  at  the  same  time  stores the
+              current values of the symbols in the fclosure.
+
+
+              Notice that the fclosure is saving  the  value
+         of  the  symbol  `x'.   Each  time  a  fclosure  is
+         created, new space  is  allocated  for  saving  the
+         values  of the symbols. Thus if we execute fclosure
+         again, over the same  function,  we  can  have  two
+         independent counters:
+
+____________________________________________________________
+
+-> (setq zz (fclosure '(x) 'code))
+fclosure[1]
+-> (tester zz 2)
+(in 0)(in 1)(out 2)(out 2)
+-> (tester zz 2)
+
+
+                                   Printed: January 31, 1984
+
+
+
+
+
+
+
+Functions, Fclosures, and Macros                        8-10
+
+
+(in 2)(in 3)(out 4)(out 4)
+-> (tester z 3)
+(in 3)(in 4)(in 5)(out 6)(out 6)(out 6)
+____________________________________________________________
+
+
+
+
+
+
+
+      8.4.2.  useful functions
+
+              Here are some quick some  summaries  of  func-
+         tions  dealing  with  closures.  They are more for-
+         mally defined in 2.8.4.  To  recap,  fclosures  are
+         made by (_f_c_l_o_s_u_r_e '_l__v_a_r_s '_g__f_u_n_c_o_b_j).  l_vars is a
+         list of symbols (not containing nil), g_funcobj  is
+         any  object  that can be funcalled.  (Objects which
+         can be funcalled, include compiled Lisp  functions,
+         lambda  expressions,  symbols,  foreign  functions,
+         etc.) In general, if you want a  compiled  function
+         to  be closed over a variable, you must declare the
+         variable  to  be  special  within   the   function.
+         Another example would be:
+
+                     (fclosure '(a b) #'(lambda (x) (plus x a)))
+
+         Here, the #' construction will  make  the  compiler
+         compile the lambda expression.
+
+              There are times when you want to  share  vari-
+         ables  between  fclosures.  This can be done if the
+         fclosures  are  created  at  the  same  time  using
+         _f_c_l_o_s_u_r_e-_l_i_s_t.  The function _f_c_l_o_s_u_r_e-_a_l_i_s_t returns
+         an assoc list giving the symbols and values in  the
+         fclosure.   The  predicate  _f_c_l_o_s_u_r_e_p returns t iff
+         its  argument  is  a  fclosure.   Other   functions
+         imported  from  Lisp  Machine  Lisp are _s_y_m_e_v_a_l-_i_n-
+         _f_c_l_o_s_u_r_e,   _l_e_t-_f_c_l_o_s_e_d,    and    _s_e_t-_i_n-_f_c_l_o_s_u_r_e.
+         Lastly,  the function _f_c_l_o_s_u_r_e-_f_u_n_c_t_i_o_n returns the
+         function argument.
+
+
+
+      8.4.3.  internal structure
+
+              Currently, closures are  implemented  as  vec-
+         tors, with property being the symbol fclosure.  The
+         functional object is the first entry.  The  remain-
+         ing  entries are structures which point to the sym-
+         bols and values for the closure, (with a  reference
+         count  to  determine  if  a  recursive  closure  is
+
+
+                                   Printed: January 31, 1984
+
+
+
+
+
+
+
+Functions, Fclosures, and Macros                        8-11
+
+
+         active).
+
+
+
+   8.5.  foreign subroutines and functions
+
+          
+
+
+
+
+
+
+                         CHAPTER  9
+
+
+                     Arrays and Vectors
+
+
+
+
+     Arrays and vectors are two means of  expressing  aggre-
+gate  data objects in FRANZ LISP.  Vectors may be thought of
+as sequences of data.  They are intended as  a  vehicle  for
+user-defined  data  types.   This  use  of  vectors is still
+experimental and subject to  revision.   As  a  simple  data
+structure,  they  are similar to hunks and strings.  Vectors
+are used to implement closures, and are useful  to  communi-
+cate with foreign functions.  Both of these topics were dis-
+cussed in Chapter 8.  Later in this chapter, we describe the
+current  implementation of vectors, and will advise the user
+what is most likely to change.
+
+     Arrays in FRANZ LISP provide a programmable data struc-
+ture  access  mechanism.   One  possible  use for FRANZ LISP
+arrays is to implement Maclisp style arrays which are simple
+vectors of fixnums, flonums or general lisp values.  This is
+described in more detail in 9.3 but first we  will  describe
+how array references are handled by the lisp system.
+
+     The structure of an array object is given in 1.3.10 and
+reproduced here for your convenience.
+
+
+8_______________________________________________________________
+  Subpart name     Get value   Set value          Type
+
+8______________________________________________________________________________________________________________________________
+ access function   getaccess   putaccess      binary, list
+                                                or symbol
+8_______________________________________________________________
+    auxiliary       getaux      putaux           lispval
+8_______________________________________________________________
+      data         arrayref     replace    block of contiguous
+                                  set            lispval
+8_______________________________________________________________
+     length        getlength   putlength         fixnum
+8_______________________________________________________________
+      delta        getdelta    putdelta          fixnum
+8_______________________________________________________________
+7|7|7|7|7|7|7|7|7|7|7|7|
+
+
+
+
+
+
+
+
+
+
+                |7|7|7|7|7|7|7|7|7|7|7|
+
+
+
+
+
+
+
+
+
+
+                            |7|7|7|7|7|7|7|7|7|7|7|
+
+
+
+
+
+
+
+
+
+
+                                        |7|7|7|7|7|7|7|7|7|7|7|
+
+
+
+
+
+
+
+
+
+
+                                                              |7|7|7|7|7|7|7|7|7|7|7|
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   9.1.  general arrays   Suppose the evaluator is  told  to
+      evaluate (_f_o_o _a _b) and the function cell of the symbol
+      foo contains an  array  object  (which  we  will  call
+      foo_arr_obj).   First  the evaluator will evaluate and
+      stack the values of _a and _b.  Next it will  stack  the
+
+
+9Arrays and Vectors                                       9-1
+
+
+
+
+
+
+
+Arrays and Vectors                                       9-2
+
+
+      array  object  foo_arr_obj.   Finally it will call the
+      access function of foo_arr_obj.  The  access  function
+      should  be  a  lexpr[] or a symbol whose function cell
+      contains a lexpr.  The access function is  responsible
+      for  locating  and  returning  a value from the array.
+      The array access function is  free  to  interpret  the
+      arguments  as it wishes.  The Maclisp compatible array
+      access function which  is  provided  in  the  standard
+      FRANZ  LISP  system  interprets  the arguments as sub-
+      scripts in the same way as languages like Fortran  and
+      Pascal.
+
+           The array access function  will  also  be  called
+      upon  to  store  elements  in the array.  For example,
+      (_s_t_o_r_e (_f_o_o _a _b) _c) will automatically expand to  (foo
+      c  a  b)  and when the evaluator is called to evaluate
+      this, it will evaluate the arguments _c, _b and _a.  Then
+      it will stack the array object (which is stored in the
+      function cell of foo) and call the array access  func-
+      tion  with  (now)  four  arguments.   The array access
+      function must be able to tell this is a  store  opera-
+      tion,  which it can do by checking the number of argu-
+      ments it has been given (a  lexpr  can  do  this  very
+      easily).
+
+
+
+   9.2.  subparts of an array object   An array  is  created
+      by allocating an array object with _m_a_r_r_a_y and  filling
+      in the fields.  Certain lisp functions  interpret  the
+      values  of the subparts of the array object in special
+      ways as described  in  the  following  text.   Placing
+      illegal  values  in  these subparts may cause the lisp
+      system to fail.
+
+
+
+      9.2.1.  access function   The purpose  of  the  access
+         function has been described above.  The contents of
+         the access function should be  a  lexpr,  either  a
+         binary  (compiled  function) or a list (interpreted
+         function).  It may also be a symbol whose  function
+         cell  contains a function definition.  This subpart
+         is used by _e_v_a_l, _f_u_n_c_a_l_l, and _a_p_p_l_y when evaluating
+         array references.
+
+
+
+____________________
+9   []A lexpr is a function which accepts any number of argu-
+ments which are evaluated before the function is called.
+
+
+
+9                                      Printed: July 21, 1983
+
+
+
+
+
+
+
+Arrays and Vectors                                       9-3
+
+
+      9.2.2.  auxiliary   This can be used for any  purpose.
+         If  it is a list and the first element of that list
+         is the symbol unmarked_array then the data  subpart
+         will  not  be marked by the garbage collector (this
+         is used in the Maclisp compatible array package and
+         has  the  potential  for  causing strange errors if
+         used incorrectly).
+
+
+
+      9.2.3.  data   This is either nil or points to a block
+         of  data  space  allocated  by  _s_e_g_m_e_n_t  or  _s_m_a_l_l-
+         _s_e_g_m_e_n_t.
+
+
+
+      9.2.4.  length   This is a fixnum whose value  is  the
+         number of elements in the data block.  This is used
+         by the garbage collector and by _a_r_r_a_y_r_e_f to  deter-
+         mine if your index is in bounds.
+
+
+
+      9.2.5.  delta   This is a fixnum whose  value  is  the
+         number  of bytes in each element of the data block.
+         This will be four for an array of fixnums or  value
+         cells,  and eight for an array of flonums.  This is
+         used by the garbage collector and _a_r_r_a_y_r_e_f as well.
+
+
+
+   9.3.  The Maclisp compatible array package
+
+           A Maclisp style array is similar to what is known
+      as  arrays  in other languages: a block of homogeneous
+      data elements which is indexed by one or more integers
+      called  subscripts.  The data elements can be all fix-
+      nums, flonums or general lisp objects.   An  array  is
+      created  by  a  call  to the function _a_r_r_a_y or *_a_r_r_a_y.
+      The only difference is that *_a_r_r_a_y evaluates its argu-
+      ments.   This call: (_a_r_r_a_y _f_o_o _t _3 _5) sets up an array
+      called foo of dimensions 3 by 5.  The  subscripts  are
+      zero  based.  The first element is (_f_o_o _0 _0), the next
+      is (_f_o_o _0 _1) and so on up to (_f_o_o _2 _4).  The  t  indi-
+      cates  a  general  lisp  object array which means each
+      element of foo can be any type.  Each element  can  be
+      any  type  since  all that is stored in the array is a
+      pointer to a  lisp  object,  not  the  object  itself.
+      _A_r_r_a_y  does  this  by  allocating an array object with
+      _m_a_r_r_a_y and then allocating a segment of 15 consecutive
+      value  cells  with _s_m_a_l_l-_s_e_g_m_e_n_t and storing a pointer
+      to that segment in  the  data  subpart  of  the  array
+      object.   The  length  and  delta subpart of the array
+
+
+          FRANZ LISP has the ability  to  dynamically  load
+      object  files  produced by other compilers and to call
+      functions defined in those files.  These functions are
+      called _f_o_r_e_i_g_n functions.* There are  seven  types  of
+      foreign functions.  They are characterized by the type
+      of result they  return,  and  by  differences  in  the
+      interpretation of their arguments.  They come from two
+      families: a group  suited  for  languages  which  pass
+      arguments  by  reference  (e.g.  Fortran), and a group
+      suited for languages which  pass  arguments  by  value
+      (e.g. C).
+
+
+      There are four types in the first group:
+
+      subroutine
+           This does not return anything.  The  Lisp  system
+           always returns t after calling a subroutine.
+
+      function
+           This returns whatever the function returns.  This
+           must  be  a valid Lisp object or it may cause the
+           Lisp system to fail.
+
+      integer-function
+           This returns an integer  which  the  Lisp  system
+           makes into a fixnum and returns.
+
+      real-function
+           This returns a double precision real number which
+           the Lisp system makes into a flonum and returns.
+
+
+      There are three types in the second group:
+
+      c-function
+           This is like an integer function, except for  its
+           different interpretation of arguments.
+
+
+____________________
+9   *This topic is also discussed in Report  PAM-124  of  the
+Center  for  Pure  and  Applied  Mathematics,  UCB, entitled
+``Parlez-Vous Franz?  An Informal Introduction to  Interfac-
+ing Foreign Functions to Franz LISP'', by James R. Larus
+
+
+
+9                                   Printed: January 31, 1984
+
+
+
+
+
+
+
+Functions, Fclosures, and Macros                        8-12
+
+
+      double-c-function
+           This is like a real-function.
+
+      vector-c-function
+           This is for C functions which return a structure.
+           The  first  argument  to such functions must be a
+           vector (of type vectori), into which  the  result
+           is  stored.  The second Lisp argument becomes the
+           first argument to the C function, and so on
+
+      A foreign function is accessed through a binary object
+      just like a compiled Lisp function.  The difference is
+      that the discipline field of a  binary  object  for  a
+      foreign  function is a string whose first character is
+      given in the following table:
+
+
+8                   ____________________________
+                    letter         type
+8                   ________________________________________________________
+                      s         subroutine
+8                   ____________________________
+                      f          function
+8                   ____________________________
+                      i      integer-function
+8                   ____________________________
+                      r       real-function.
+8                   ____________________________
+                      c         c-function
+8                   ____________________________
+                      v      vector-c-function
+8                   ____________________________
+                      d      double-c-function
+8                   ____________________________
+7                  |7|7|7|7|7|7|7|7|7|7|7|
+
+
+
+
+
+
+
+
+
+
+                          |7|7|7|7|7|7|7|7|7|7|7|
+
+
+
+
+
+
+
+
+
+
+                                              |7|7|7|7|7|7|7|7|7|7|7|
+
+
+
+
+
+
+
+
+
+
+
+
+      Two functions  are  provided  for  setting-up  foreign
+      functions.   _C_f_a_s_l  loads an object file into the Lisp
+      system and sets up one foreign function binary object.
+      If there are more than one function in an object file,
+      _g_e_t_a_d_d_r_e_s_s can be used to set  up  additional  foreign
+      function objects.
+
+           Foreign  functions are  called  just  like  other
+      functions,  e.g  (_f_u_n_n_a_m_e _a_r_g_1 _a_r_g_2).  When a function
+      in the Fortran group  is  called,  the  arguments  are
+      evaluated  and  then  examined.  List, hunk and symbol
+      arguments are passed unchanged to  the  foreign  func-
+      tion.   Fixnum  and flonum arguments are copied into a
+      temporary location and  a  pointer  to  the  value  is
+      passed (this is because Fortran uses call by reference
+      and it is dangerous to modify the contents of a fixnum
+      or  flonum  which  something else might point to).  If
+      the argument is an array object, the data field of the
+      array  object  is passed to the foreign function (This
+      is the easiest way to send large amounts  of  data  to
+      and receive large amounts of data from a foreign func-
+      tion).  If a binary object is an argument,  the  entry
+
+
+9                                   Printed: January 31, 1984
+
+
+
+
+
+
+
+Functions, Fclosures, and Macros                        8-13
+
+
+      field of that object is passed to the foreign function
+      (the entry field is the address of a function, so this
+      amounts to passing a function as an argument).
+
+           When a function in the C group is called,  fixnum
+      and flownum arguments are passed by value.  For almost
+      all other arguments, the address is merely provided to
+      the  C  routine.   The  only exception arises when you
+      want to invoke a C routine which  expects  a  ``struc-
+      ture''  argument.  Recall that a (rarely used) feature
+      of the C language is the ability to pass structures by
+      value.   This  copies  the  structure  onto the stack.
+      Since the Franz's nearest equivalent to a C  structure
+      is  a  vector, we provide an escape clause to copy the
+      contents of an immediate-type vector by value.  If the
+      property  field  of  a vectori argument, is the symbol
+      "value-structure-argument", then the  binary  data  of
+      this immediate-type vector is copied into the argument
+      list of the C routine.
+
+           The method a foreign function uses to access  the
+      arguments   provided  by  Lisp  is  dependent  on  the
+      language  of  the  foreign  function.   The  following
+      scripts  demonstrate  how  how  Lisp can interact with
+      three languages: C, Pascal and Fortran.  C and  Pascal
+      have  pointer  types and the first script shows how to
+      use pointers to extract information from Lisp objects.
+      There  are  two  functions  defined for each language.
+      The first (cfoo in C, pfoo in Pascal)  is  given  four
+      arguments,  a  fixnum, a flonum-block array, a hunk of
+      at least two fixnums and a list of at least  two  fix-
+      nums.   To  demonstrate  that  the values were passed,
+      each ?foo function prints its arguments (or  parts  of
+      them).   The  ?foo  function  then modifies the second
+      element of the flonum-block array and returns a  3  to
+      Lisp.   The second function (cmemq in C, pmemq in Pas-
+      cal) acts just like the Lisp _m_e_m_q function (except  it
+      won't work for fixnums whereas the lisp _m_e_m_q will work
+      for small fixnums).  In the script, typed input is  in
+      bold,  computer output is in roman and comments are in
+      _i_t_a_l_i_c.
+
+
+____________________________________________________________
+
+_T_h_e_s_e _a_r_e _t_h_e _C _c_o_d_e_d _f_u_n_c_t_i_o_n_s
+% cat ch8auxc.c
+/* demonstration of c coded foreign integer-function */
+
+/* the following will be used to extract fixnums out of a list of fixnums */
+struct listoffixnumscell
+{    struct listoffixnumscell *cdr;
+     int *fixnum;
+
+
+                                   Printed: January 31, 1984
+
+
+
+
+
+
+
+Functions, Fclosures, and Macros                        8-14
+
+
+};
+
+struct listcell
+{       struct listcell *cdr;
+        int car;
+};
+
+cfoo(a,b,c,d)
+int *a;
+double b[];
+int *c[];
+struct listoffixnumscell *d;
+{
+    printf("a: %d, b[0]: %f, b[1]: %f0, *a, b[0], b[1]);
+    printf(" c (first): %d   c (second): %d0,
+               *c[0],*c[1]);
+    printf("                              Printed: July 21, 1983
+
+
+
+
+
+
+
+Arrays and Vectors                                       9-4
+
+
+      object are filled in (with 15 and 4 respectively)  and
+      the  access  function  subpart  is set to point to the
+      appropriate  array  access  function.   In  this  case
+      there is a special access function for two dimensional
+      value cell arrays called arrac-twoD, and  this  access
+      function  is  used.   The  auxiliary subpart is set to
+      (t 3 5) which describes the  type  of  array  and  the
+      bounds of the subscripts. Finally this array object is
+      placed in the function cell of the  symbol  foo.   Now
+      when (_f_o_o _1 _3) is evaluated, the array access function
+      is invoked with three arguments: 1, 3  and  the  array
+      object.   From the auxiliary field of the array object
+      it gets a description of  the  particular  array.   It
+      then determines which element (_f_o_o _1 _3) refers to  and
+      uses arrayref to extract that element.  Since this  is
+      an  array  of  value cells, what arrayref returns is a
+      value cell whose value is what we want, so we evaluate
+      the   value  cell  and  return  it  as  the  value  of
+      (_f_o_o _1 _3).
+
+           In Maclisp the call (_a_r_r_a_y _f_o_o _f_i_x_n_u_m _2_5) returns
+      an  array  whose  data  object is a block of 25 memory
+      words.  When fixnums are stored  in  this  array,  the
+      actual  numbers  are stored instead of pointers to the
+      numbers as is done  in  general  lisp  object  arrays.
+      This  is  efficient  under  Maclisp but inefficient in
+      FRANZ LISP since every time  a  value  was  referenced
+      from an array it had to be copied and a pointer to the
+      copy returned to prevent aliasing[].  Thus  t,  fixnum
+      and  flonum  arrays  are  all  implemented in the same
+      manner.  This should not affect the  compatibility  of
+      Maclisp  and  FRANZ  LISP.  If there is an application
+      where a block of fixnums or flonums is required,  then
+      the  exact  same effect of fixnum and flonum arrays in
+      Maclisp can be  achieved  by  using  fixnum-block  and
+      flonum-block  arrays.  Such arrays are required if you
+      want to pass a large number of arguments to a  Fortran
+      or C coded function and then get answers back.
+
+           The Maclisp compatible array package is just  one
+      example  of  how  a general array scheme can be imple-
+      mented.  Another type of  array  you  could  implement
+      would  be  hashed  arrays.   The  subscript  could  be
+____________________
+9   []Aliasing is when  two  variables  are  share  the  same
+storage  location.   For  example  if  the copying mentioned
+weren't done then after (_s_e_t_q _x (_f_o_o _2)) was done, the value
+of x and (foo 2) would share the same location.  Then should
+the value of (foo 2) change, x's value would change as well.
+This  is  considered  dangerous and as a result pointers are
+never returned into the data space of arrays.
+
+
+
+9                                      Printed: July 21, 1983
+
+
+
+
+
+
+
+Arrays and Vectors                                       9-5
+
+
+      anything, not just  a  number.   The  access  function
+      would  hash the subscript and use the result to select
+      an array element.  With the generality of arrays  also
+      comes  extra cost; if you just want a simple aggregate
+      of (less than 128) general lisp objects you  would  be
+      wise to look into using hunks.
+
+
+
+   9.4.   vectors    Vectors  were  invented  to   fix   two
+      shortcommings with hunks.  They can be longer than 128
+      elements.  They also have a tag associated with  them,
+      which is intended to say, for example, "Think of me as
+      an _B_l_o_b_i_t."  Thus a vector is an arbitrary sized  hunk
+      with a property list.
+
+           Continuing the example, the lisp kernel  may  not
+      know how to print out or evaluate _b_l_o_b_i_t_s, but this is
+      information which will be common to all  _b_l_o_b_i_t_s.   On
+      the  other hand, for each individual blobits there are
+      particulars  which  are  likely  to  change,  (height,
+      weight,  eye-color).  This is the part that would pre-
+      viously have been stored in the individual entries  in
+      the hunk, and are stored in the data slots of the vec-
+      tor.  Once again we summarize the structure of a  vec-
+      tor in tabular form:
+
+
+8         ________________________________________________
+          Subpart name   Get value   Set value    Type
+
+8         ________________________________________________________________________________________________
+            datum[_i]       vref        vset      lispval
+8         ________________________________________________
+            property       vprop     vsetprop    lispval
+                                     vputprop
+8         ________________________________________________
+              size         vsize         -       fixnum
+8         ________________________________________________
+7        |7|7|7|7|7|7|7|
+
+
+
+
+
+
+                      |7|7|7|7|7|7|7|
+
+
+
+
+
+
+                                  |7|7|7|7|7|7|7|
+
+
+
+
+
+
+                                              |7|7|7|7|7|7|7|
+
+
+
+
+
+
+                                                        |7|7|7|7|7|7|7|
+
+
+
+
+
+
+
+
+      Vectors are created specifying size and optional  fill
+      value using the function (_n_e_w-_v_e_c_t_o_r  'x_size ['g_fill
+      ['g_prop]]), or by  initial  values:  (_v_e_c_t_o_r  ['g_val
+      ...]).
+
+
+
+   9.5.  anatomy  of  vectors    There  are  some  technical
+      details about vectors, that the user should know:
+
+
+
+
+
+
+
+
+9                                      Printed: July 21, 1983
+
+
+
+
+
+
+
+Arrays and Vectors                                       9-6
+
+
+      9.5.1.  size   The user is not free to alter this.  It
+         is noted when the vector is created, and is used by
+         the garbage collector.  The garbage collector  will
+         coallesce  two free vectors, which are neighbors in
+         the heap.  Internally, this is kept as  the  number
+         of  bytes of data.  Thus, a vector created by (_v_e_c_-
+         _t_o_r 'foo), has a size of 4.
+
+
+
+      9.5.2.  property   Currently, we expect  the  property
+         to  be either a symbol, or a list whose first entry
+         is a symbol.  The symbols fclosure  and  structure-
+         value-argument  are  magic,  and  their  effect  is
+         described in Chapter  8.   If  the  property  is  a
+         (non-null)  symbol,  the vector will be printed out
+         as <symbol>[<size>]. Another case is  if  the  pro-
+         perty  is  actually  a (disembodied) property-list,
+         which contains a value  for  the  indicator  print.
+         The value is taken to be a Lisp function, which the
+         printer will invoke with two arguments:  the vector
+         and the current output port.  Otherwise, the vector
+         will be printed as vector[<size>].  We  have  vague
+         (as  yet unimplemented) ideas about similar mechan-
+         isms for evaluation  properties.   Users  are  cau-
+         tioned  against  putting anything other than nil in
+         the property entry of a vector.
+
+
+
+      9.5.3.  internal order   In memory, vectors start with
+         a  longword containing the size (which is immediate
+         data within the vector).  The next cell contains  a
+         pointer  to  the property.  Any remaining cells (if
+         any) are for data.  Vectors are handled differently
+         from  any  other  object  in  FRANZ LISP, in that a
+         pointer to a vector is pointer to  the  first  data
+         cell,  i.e.  a pointer to the _t_h_i_r_d longword of the
+         structure.  This was done for  efficiency  in  com-
+         piled   code  and  for  uniformity  in  referencing
+         immediate-vectors  (described  below).   The   user
+         should  never return a pointer to ( %d %d ... ) ", *(d->fixnum), *(d->cdr->fixnum));
+    b[1] = 3.1415926;
+    return(3);
+}
+
+struct listcell *
+cmemq(element,list)
+int element;
+struct listcell *list;
+{
+   for( ; list && element != list->car ;  list = list->cdr);
+   return(list);
+}
+
+
+_T_h_e_s_e _a_r_e _t_h_e _P_a_s_c_a_l _c_o_d_e_d _f_u_n_c_t_i_o_n_s
+% cat ch8auxp.p
+type    pinteger = ^integer;
+        realarray = array[0..10] of real;
+        pintarray = array[0..10] of pinteger;
+        listoffixnumscell = record
+                                cdr  : ^listoffixnumscell;
+                                fixnum : pinteger;
+                            end;
+        plistcell = ^listcell;
+        listcell = record
+                      cdr : plistcell;
+                      car : integer;
+                   end;
+
+function pfoo ( var a : integer ;
+                var b : realarray;
+                var c : pintarray;
+                var d : listoffixnumscell) : integer;
+begin
+   writeln(' a:',a, ' b[0]:', b[0], ' b[1]:', b[1]);
+   writeln(' c (first):', c[0]^,' c (second):', c[1]^);
+
+
+                                   Printed: January 31, 1984
+
+
+
+
+
+
+
+Functions, Fclosures, and Macros                        8-15
+
+
+   writeln(' ( ', d.fixnum^, d.cdr^.fixnum^, ' ...) ');
+   b[1] := 3.1415926;
+   pfoo := 3
+end ;
+
+{ the function pmemq looks for the Lisp pointer given as the first argument
+  in the list pointed to by the second argument.
+  Note that we declare " a : integer " instead of " var a : integer " since
+  we are interested in the pointer value instead of what it points to (which
+  could be any Lisp object)
+}
+function pmemq( a : integer; list : plistcell) : plistcell;
+begin
+ while (list <> nil) and (list^.car <> a) do list := list^.cdr;
+ pmemq := list;
+end ;
+
+
+_T_h_e _f_i_l_e_s _a_r_e _c_o_m_p_i_l_e_d
+% cc -c ch8auxc.c
+1.0u 1.2s 0:15 14% 30+39k 33+20io 147pf+0w
+% pc -c ch8auxp.p
+3.0u 1.7s 0:37 12% 27+32k 53+32io 143pf+0w
+
+
+% lisp
+Franz Lisp, Opus 38.60
+_F_i_r_s_t _t_h_e _f_i_l_e_s _a_r_e _l_o_a_d_e_d _a_n_d _w_e _s_e_t _u_p _o_n_e  _f_o_r_e_i_g_n  _f_u_n_c_-
+_t_i_o_n  _b_i_n_a_r_y.  _W_e _h_a_v_e _t_w_o _f_u_n_c_t_i_o_n_s _i_n _e_a_c_h _f_i_l_e _s_o _w_e _m_u_s_t
+_c_h_o_o_s_e _o_n_e _t_o _t_e_l_l _c_f_a_s_l _a_b_o_u_t.  _T_h_e _c_h_o_i_c_e _i_s _a_r_b_i_t_r_a_r_y.
+-> (cfasl 'ch8auxc.o '_cfoo 'cfoo "integer-function")
+/usr/lib/lisp/nld -N -A /usr/local/lisp -T 63000 ch8auxc.o -e _cfoo -o /tmp/Li7055.0  -lc
+#63000-"integer-function"
+-> (cfasl 'ch8auxp.o '_pfoo 'pfoo "integer-function" "-lpc")
+/usr/lib/lisp/nld -N -A /tmp/Li7055.0 -T 63200 ch8auxp.o -e _pfoo -o /tmp/Li7055.1 -lpc -lc
+#63200-"integer-function"
+_H_e_r_e _w_e _s_e_t _u_p _t_h_e _o_t_h_e_r _f_o_r_e_i_g_n _f_u_n_c_t_i_o_n _b_i_n_a_r_y _o_b_j_e_c_t_s
+-> (getaddress '_cmemq 'cmemq "function" '_pmemq 'pmemq "function")
+#6306c-"function"
+_W_e _w_a_n_t _t_o _c_r_e_a_t_e _a_n_d _i_n_i_t_i_a_l_i_z_e _a_n _a_r_r_a_y  _t_o  _p_a_s_s  _t_o  _t_h_e
+_c_f_o_o  _f_u_n_c_t_i_o_n.  _I_n _t_h_i_s _c_a_s_e _w_e _c_r_e_a_t_e _a_n _u_n_n_a_m_e_d _a_r_r_a_y _a_n_d
+_s_t_o_r_e _i_t _i_n _t_h_e _v_a_l_u_e _c_e_l_l _o_f _t_e_s_t_a_r_r.  _W_h_e_n  _w_e  _c_r_e_a_t_e  _a_n
+_a_r_r_a_y  _t_o  _p_a_s_s  _t_o  _t_h_e  _P_a_s_c_a_l _p_r_o_g_r_a_m _w_e _w_i_l_l _u_s_e _a _n_a_m_e_d
+_a_r_r_a_y _j_u_s_t _t_o _d_e_m_o_n_s_t_r_a_t_e _t_h_e _d_i_f_f_e_r_e_n_t _w_a_y _t_h_a_t  _n_a_m_e_d  _a_n_d
+_u_n_n_a_m_e_d _a_r_r_a_y_s _a_r_e _c_r_e_a_t_e_d _a_n_d _a_c_c_e_s_s_e_d.
+-> (setq testarr (array nil flonum-block 2))
+array[2]
+-> (store (funcall testarr 0) 1.234)
+1.234
+-> (store (funcall testarr 1) 5.678)
+5.678
+-> (cfoo 385 testarr (hunk 10 11 13 14) '(15 16 17))
+a: 385, b[0]: 1.234000, b[1]: 5.678000
+
+
+                                   Printed: January 31, 1984
+
+
+
+
+
+
+
+Functions, Fclosures, and Macros                        8-16
+
+
+ c (first): 10   c (second): 11
+ ( 15 16 ... )
+ 3
+_N_o_t_e _t_h_a_t _c_f_o_o _h_a_s _r_e_t_u_r_n_e_d _3 _a_s _i_t _s_h_o_u_l_d.  _I_t _a_l_s_o _h_a_d _t_h_e
+_s_i_d_e  _e_f_f_e_c_t  _o_f  _c_h_a_n_g_i_n_g  _t_h_e _s_e_c_o_n_d _v_a_l_u_e _o_f _t_h_e _a_r_r_a_y _t_o
+_3._1_4_1_5_9_2_6  _w_h_i_c_h _c_h_e_c_k _n_e_x_t.
+-> (funcall testarr 1)
+3.1415926
+
+
+_I_n _p_r_e_p_a_r_a_t_i_o_n _f_o_r _c_a_l_l_i_n_g _p_f_o_o _w_e _c_r_e_a_t_e _a_n _a_r_r_a_y.
+-> (array test flonum-block 2)
+array[2]
+-> (store (test 0) 1.234)
+1.234
+-> (store (test 1) 5.678)
+5.678
+-> (pfoo 385 (getd 'test) (hunk 10 11 13 14) '(15 16 17))
+ a:       385 b[0]:  1.23400000000000E+00 b[1]:  5.67800000000000E+00
+ c (first):        10 c (second):        11
+ (         15        16 ...)
+3
+-> (test 1)
+3.1415926
+
+ _N_o_w _t_o _t_e_s_t _o_u_t _t_h_e _m_e_m_q'_s
+-> (cmemq 'a '(b c a d e f))
+(_a _d _e _f)
+-> (pmemq 'e '(a d f g a x))
+_n_i_l
+____________________________________________________________
+
+
+
+
+
+           The Fortran example will be much shorter since in
+      Fortran  you can't follow pointers as you can in other
+      languages.  The Fortran function ffoo is  given  three
+      arguments:  a  fixnum, a fixnum-block array and a flo-
+      num.  These arguments are printed out to  verify  that
+      they  made it and then the first value of the array is
+      modified.  The function  returns  a  double  precision
+      value  which  is  converted  to  a  flonum by lisp and
+      printed.  Note that the entry point  corresponding  to
+      the  Fortran function ffoo is _ffoo_ as opposed to the
+      C and Pascal convention of preceding the name with  an
+      underscore.
+
+____________________________________________________________
+
+
+% cat ch8auxf.f
+
+
+                                   Printed: January 31, 1984
+
+
+
+
+
+
+
+Functions, Fclosures, and Macros                        8-17
+
+
+        double precision function ffoo(a,b,c)
+        integer a,b(10)
+        double precision c
+        print 2,a,b(1),b(2),c
+2       format(' a=',i4,', b(1)=',i5,', b(2)=',i5,' c=',f6.4)
+        b(1) = 22
+        ffoo = 1.23456
+        return
+        end
+% f77 -c ch8auxf.f
+ch8auxf.f:
+   ffoo:
+0.9u 1.8s 0:12 22% 20+22k 54+48io 158pf+0w
+% lisp
+Franz Lisp, Opus 38.60
+-> (cfasl 'ch8auxf.o '_ffoo_ 'ffoo "real-function" "-lF77 -lI77")
+/usr/lib/lisp/nld -N -A /usr/local/lisp -T 63000 ch8auxf.o -e _ffoo_
+-o /tmp/Li11066.0 -lF77 -lI77 -lc
+#6307c-"real-function"
+
+-> (array test fixnum-block 2)
+array[2]
+-> (store (test 0) 10)
+10
+-> (store (test 1) 11)
+11
+-> (ffoo 385 (getd 'test) 5.678)
+ a= 385, b(1)=   10, b(2)=   11 c=5.6780
+1.234559893608093
+-> (test 0)
+22
+
+____________________________________________________________
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+9
+
+9                                   Printed: January 31, 1984
+
+
+
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       
+
+
+
+
+
+
+                        CHAPTER  10
+
+
+                     Exception Handling
+
+
+
+
+
+
+   10.1.  Errset and Error Handler Functions
+
+           FRANZ LISP allows the user to handle in a  number
+      of  ways  the  errors  which arise during computation.
+      One way is through the use of the _e_r_r_s_e_t function.  If
+      an  error occurs during the evaluation of the _e_r_r_s_e_t's
+      first argument, then the locus of control will  return
+      to the errset which will return nil (except in special
+      cases, such as _e_r_r).  The other method of  error  han-
+      dling  is  through an error handler function.  When an
+      error occurs, the error handler is called and is given
+      as  an argument a description  of the error which just
+      occurred.  The error handler may take one of the  fol-
+      lowing actions:
+
+      (1)  it could take some drastic action like a _r_e_s_e_t or
+           a _t_h_r_o_w.
+
+      (2)  it could, assuming that the error is continuable,
+           return  to  the function which noticed the error.
+           The error handler  indicates  that  it  wants  to
+           return a value from the error by returning a list
+           whose _c_a_r is the value it wants to return.
+
+      (3)  it could decide  not  to  handle  the  error  and
+           return a non-list to indicate this fact.
+
+
+
+   10.2.  The Anatomy of an error
+
+           Each error is described by a list of these items:
+
+      (1)  error type - This is a symbol which indicates the
+           general  classification of the error.  This clas-
+           sification may determine which  function  handles
+           this error.
+
+      (2)  unique id - This  is  a  fixnum  unique  to  this
+           error.
+
+      (3)  continuable - If this is non-nil then this  error
+           is  continuable.   There  are  some who feel that
+
+
+Exception Handling                                      10-1
+
+
+
+
+
+
+
+Exception Handling                                      10-2
+
+
+           every error should be continuable and the  reason
+           that some (in fact most) errors in FRANZ LISP are
+           not continuable is due to  the  laziness  of  the
+           programmers.
+
+      (4)  message string - This is  a  symbol  whose  print
+           name is  a message describing the error.
+
+      (5)  data - There may  be  from  zero  to  three  lisp
+           values   which   help  describe  this  particular
+           error.  For example, the unbound  variable  error
+           contains  one datum value, the symbol whose value
+           is unbound.  The list describing that error might
+           look like:
+               (ER%misc 0 t |Unbound Variable:| foobar)
+
+
+
+   10.3.  Error handling algorithm
+
+           This is the sequence of operations which is  done
+      when an error occurs:
+
+      (1)  If the symbol ER%all has a  non  nil  value  then
+           this  value is the name of an error handler func-
+           tion.  That function is called with a description
+           of  the  error.  If that function returns (and of
+           course it may choose not to) and the value  is  a
+           list  and  this  error  is  continuable,  then we
+           return the _c_a_r of the list to the function  which
+           called  the error.  Presumably the function  will
+           use this value to retry the  operation.   On  the
+           other  hand,  if  the error handler returns a non
+           list, then it  has  chosen  not  to  handle  this
+           error,  so  we go on to step (2).  Something spe-
+           cial happens before  we  call  the  ER%all  error
+           handler which does not happen in any of the other
+           cases we will describe  below.   To  help  insure
+           that we don't get infinitely recursive errors  if
+           ER%all is set to a bad value, the value of ER%all
+           is set to nil before the handler is called.  Thus
+           it is the responsibility of the ER%all handler to
+           `reenable' itself by storing its name in ER%all.
+
+      (2)  Next the specific error handler for the  type  of
+           error  which  just  occurred  is  called  (if one
+           exists) to see if it wants to handle  the  error.
+           The  names of the handlers for the specific types
+           of errors are stored as the values of the symbols
+           whose  names  are  the  types.   For  example the
+           handler for miscellaneous errors is stored as the
+           value  of  ER%misc.   Of course, if ER%misc has a
+           value of nil, then there is no error handler  for
+
+
+                                      Printed: July 21, 1983
+
+
+
+
+
+
+
+Exception Handling                                      10-3
+
+
+           this  type of error.  Appendix B contains list of
+           all error types.  The process of classifying  the
+           errors  is  not complete and thus most errors are
+           lumped into the ER%misc  category.   Just  as  in
+           step  (1),  the error handler function may choose
+           not to handle the error by returning a  non-list,
+           and then we go to step (3).
+
+      (3)  Next a check is made to see if there is an _e_r_r_s_e_t
+           surrounding  this  error.  If so the second argu-
+           ment to the  _e_r_r_s_e_t  call  is  examined.  If  the
+           second  argument was not given or is non nil then
+           the error message associated with this  error  is
+           printed.   Finally   the  stack  is popped to the
+           context of the _e_r_r_s_e_t and then the _e_r_r_s_e_t returns
+           nil.  If there was no _e_r_r_s_e_t we go to step (4).
+
+      (4)  If the symbol ER%tpl has a value then it  is  the
+           name  of  an  error  handler which is called in a
+           manner similar to that discussed  above.   If  it
+           chooses  not  to  handle the error, we go to step
+           (5).
+
+      (5)  At this point it has  been  determined  that  the
+           user doesn't want to handle this error.  Thus the
+           error message is printed out and a _r_e_s_e_t is  done
+           to send the flow of control to the top-level.
+
+           To summarize the error handling system:  When  an
+      error occurs, you have two chances to handle it before
+      the search for an _e_r_r_s_e_t is done.  Then, if  there  is
+      no  _e_r_r_s_e_t,  you  have  one  more chance to handle the
+      error before control jumps to the  top  level.   Every
+      error  handler  works  in  the same way: It is given a
+      description of the error (as described in the previous
+      section).   It  may or may not return.  If it returns,
+      then it returns either a list or a  non-list.   If  it
+      returns  a list and the error is continuable, then the
+      _c_a_r of the list is  returned  to  the  function  which
+      noticed  the  error.   Otherwise the error handler has
+      decided not to handle the error and we go on to  some-
+      thing else.
+
+
+
+   10.4.  Default aids
+
+           There are two standard error handlers  which will
+      probably handle the needs of most users.  One of these
+      is the lisp coded function _b_r_e_a_k-_e_r_r-_h_a_n_d_l_e_r which  is
+      the  default  value  of  ER%tpl.   Thus when all other
+      handlers have ignored an error, _b_r_e_a_k-_e_r_r-_h_a_n_d_l_e_r will
+      take over.  It will print out the error message and go
+
+
+                                      Printed: July 21, 1983
+
+
+
+
+
+
+
+Exception Handling                                      10-4
+
+
+      into a read-eval-print loop.  The other standard error
+      handler   is   _d_e_b_u_g-_e_r_r-_h_a_n_d_l_e_r.    This  handler  is
+      designed to be connected to  ER%alland  is  useful  if
+      your  program  uses _e_r_r_s_e_t and you want to look at the
+      error  before it is thrown up to the _e_r_r_s_e_t.
+
+
+
+   10.5.  Autoloading
+
+           When _e_v_a_l, _a_p_p_l_y or _f_u_n_c_a_l_l are told to  call  an
+      undefined  function,  an  ER%undef  error is signaled.
+      
+
+
+
+
+
+
+                        CHAPTER  11
+
+
+              The Joseph Lister Trace Package
+
+
+
+
+     The Joseph Lister[] Trace package is an important  tool
+for the interactive debugging of a Lisp program.  It  allows
+you  to  examine selected  calls to a function or functions,
+and optionally to stop execution  of  the  Lisp  program  to
+examine the values of variables.
+
+     The trace package is a set of Lisp programs located  in
+the    Lisp   program   library   (usually   in   the   file
+/usr/lib/lisp/trace.l).  Although not normally loaded in the
+Lisp  system,  the  package will be loaded in when the first
+call to _t_r_a_c_e is made.
+
+(trace [ls_arg1 ...])
+
+     WHERE:   the form of the ls_arg_i is described below.
+
+     RETURNS: a list of the  function  sucessfully  modified
+              for  tracing.   If  no  arguments are given to
+              _t_r_a_c_e, a list of all functions currently being
+              traced is returned.
+
+     SIDE EFFECT: The function definitions of the  functions
+                  to trace are modified.
+
+
+The ls_arg_i can have one of the following forms:
+
+
+  foo - when foo is entered and exited, the  trace  informa-
+       tion will be printed.
+
+
+  (foo break) - when foo is entered  and  exited  the  trace
+       information  will  be  printed.  Also, just after the
+       trace information for foo is printed upon entry,  you
+       will  be put in  a special break loop.  The prompt is
+       `T>' and you may type any Lisp  expression,  and  see
+       its  value printed.  The _ith argument to the function
+       just called can be accessed as (arg _i).  To leave the
+       trace   loop,  just  type  ^D  or  (tracereturn)  and
+____________________
+9   []_L_i_s_t_e_r, _J_o_s_e_p_h     1st  Baron  Lister  of  Lyme  Regis,
+1827-1912; English surgeon: introduced antiseptic surgery.
+
+
+
+9The Joseph Lister Trace Package                         11-1
+
+
+
+
+
+
+
+The Joseph Lister Trace Package                         11-2
+
+
+       execution will continue.  Note that ^D will work only
+       on UNIX systems.
+
+
+  (foo if expression) - when foo is entered and the  expres-
+       sion evaluates to non-nil, then the trace information
+       will be printed for both exit and entry.  If  expres-
+       sion evaluates to nil, then no trace information will
+       be printed.
+
+
+  (foo ifnot expression) -  when  foo  is  entered  and  the
+       expression  evaluates to nil, then the trace informa-
+       tion will be printed for both  entry  and  exit.   If
+       both  if and ifnot are specified, then the if expres-
+       sion must evaluate to non nil AND the  ifnot  expres-
+       sion  must  evaluate to nil for the trace information
+       to be printed out.
+
+
+  (foo evalin expression) - when foo is  entered  and  after
+       the  entry  trace  information is printed, expression
+       will be evaluated. Exit  trace  information  will  be
+       printed when foo exits.
+
+
+  (foo evalout expression) -  when  foo  is  entered,  entry
+       trace  information  will be printed.  When foo exits,
+       and before the exit  trace  information  is  printed,
+       expression will be evaluated.
+
+
+  (foo evalinout expression) - this has the same  effect  as
+       (trace (foo evalin expression evalout expression)).
+
+
+  (foo lprint) - this tells _t_r_a_c_e to use the  level  printer
+       when  printing  the arguments to and the result of  a
+       call to foo.  The level printer prints only  the  top
+       levels  of  list structure. Any structure below three
+       levels is printed as a &.  This allows you  to  trace
+       functions with massive arguments or results.
+
+
+
+          The following trace options  permit  one  to  have
+     greater control over each action which takes place when
+     a function is traced.  These options are only meant  to
+     be used by people who need special hooks into the trace
+     package.  Most people should skip reading this section.
+
+
+  (foo traceenter  tefunc)  -  this  tells  _t_r_a_c_e  that  the
+
+
+                                      Printed: July 27, 1983
+
+
+
+
+
+
+
+The Joseph Lister Trace Package                         11-3
+
+
+       function  to be called when foo is entered is tefunc.
+       tefunc should be a lambda of two arguments, the first
+       argument  will  be  bound to the name of the function
+       being traced, foo in this case.  The second  argument
+       will  be  bound to the list of arguments to which foo
+       should be applied.  The function tefunc should  print
+       some  sort  of "entering foo" message.  It should not
+       apply foo to the arguments,  however.  That  is  done
+       later on.
+
+
+  (foo traceexit txfunc) - this tells _t_r_a_c_e that  the  func-
+       tion  to  be  called  when  foo  is exited is txfunc.
+       txfunc should be a lambda of two arguments, the first
+       argument  will  be  bound to the name of the function
+       being traced, foo in this case.  The second  argument
+       will  be bound to the result of the call to foo.  The
+       function txfunc should print some  sort  of  "exiting
+       foo" message.
+
+
+  (foo evfcn evfunc) - this tells _t_r_a_c_e that the form evfunc
+       should  be  evaluated to get the value of foo applied
+       to its arguments. This option is a bit different from
+       the  other  special options since evfunc will usually
+       be an expression, not just the name  of  a  function,
+       and  that  expression will be specific to the evalua-
+       tion of  function  foo.   The  argument  list  to  be
+       applied will be available as T-arglist.
+
+
+  (foo printargs prfunc) - this tells _t_r_a_c_e to  used  prfunc
+       to print the arguments  to be applied to the function
+       foo.  prfunc should be a lambda of one argument.  You
+       might  want  to use this option if you wanted a print
+       function which could  handle  circular  lists.   This
+       option  will work only if you do not specify your own
+       traceenter function.  Specifying the option lprint is
+       just  a simple way of changing the printargs function
+       to the level printer.
+
+
+  (foo printres prfunc) - this tells _t_r_a_c_e to use prfunc  to
+       print the result of evaluating foo.  prfunc should be
+       a lambda of one argument.  This option will work only
+       if  you  do  not specify your own traceexit function.
+       Specifying the option lprint changes printres to  the
+       level printer.
+
+
+
+          You may specify more  than  one  option  for  each
+     function traced. For example:
+
+
+                                      Printed: July 27, 1983
+
+
+
+
+
+
+
+The Joseph Lister Trace Package                         11-4
+
+
+     (_t_r_a_c_e (_f_o_o _i_f (_e_q _3 (_a_r_g _1)) _b_r_e_a_k _l_p_r_i_n_t) (_b_a_r _e_v_a_l_i_n
+     (_p_r_i_n_t _x_y_z_z_y)))
+
+     This tells _t_r_a_c_e to trace two more functions,  foo  and
+     bar.   Should  foo be called with the first argument _e_q
+     to 3, then the entering foo  message  will  be  printed
+     with  the  level  printer.   Next it will en

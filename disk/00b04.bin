@@ -1,0 +1,4608 @@
+astronosus
+gastropancreatic
+gastropancreatitis
+gastroparalysis
+gastroparesis
+gastroparietal
+gastropathic
+gastropathy
+gastroperiodynia
+gastropexy
+gastrophile
+gastrophilism
+gastrophilist
+gastrophilite
+Gastrophilus
+gastrophrenic
+gastrophthisis
+gastroplasty
+gastroplenic
+gastropleuritis
+gastroplication
+gastropneumatic
+gastropneumonic
+gastropod
+Gastropoda
+gastropodan
+gastropodous
+gastropore
+gastroptosia
+gastroptosis
+gastropulmonary
+gastropulmonic
+gastropyloric
+gastrorrhagia
+gastrorrhaphy
+gastrorrhea
+gastroschisis
+gastroscope
+gastroscopic
+gastroscopy
+gastrosoph
+gastrosopher
+gastrosophy
+gastrospasm
+gastrosplenic
+gastrostaxis
+gastrostegal
+gastrostege
+gastrostenosis
+gastrostomize
+Gastrostomus
+gastrostomy
+gastrosuccorrhea
+gastrotheca
+gastrothecal
+gastrotome
+gastrotomic
+gastrotomy
+Gastrotricha
+gastrotrichan
+gastrotubotomy
+gastrotympanites
+gastrovascular
+gastroxynsis
+gastrozooid
+gastrula
+gastrular
+gastrulate
+gastrulation
+gasworker
+gasworks
+gat
+gata
+gatch
+gatchwork
+gate
+gateado
+gateage
+gated
+gatehouse
+gatekeeper
+gateless
+gructed in one of two ways depending on the setting of
+the
+.I magic
+option.
+The
+.I ex
+and
+.I vi
+default setting of
+.I magic
+gives quick access to a powerful set of regular expression
+metacharacters.
+The disadvantage of
+.I magic
+is that the user must remember that these metacharacters are
+.I magic
+and precede them with the character `\e'
+to use them as ``ordinary'' characters.
+With
+.I nomagic,
+the default for
+.I edit,
+regular expressions are much simpler,
+there being only two metacharacters.
+The power of the other metacharacters is still available by preceding
+the (now) ordinary character with a `\e'.
+Note that `\e' is thus always a metacharacter.
+.PP
+The remainder of the discussion of regular expressions assumes
+that
+that the setting of this option is
+.I magic.\(dg
+.FS
+\(dg To discern what is true with
+.I nomagic
+it suffices to remember that the only
+special characters in this case will be `\(ua' at the beginning
+of a regular expression,
+`$' at the end of a regular expression,
+and `\e'.
+With
+.I nomagic
+the characters `\s+2~\s0' and `&' also lose their special meanings
+related to the replacement pattern of a substitute.
+.FE
+.NH 2
+Basic regular expression summary
+.PP
+The following basic constructs are used to construct
+.I magic
+mode regular expressions.
+.IP \fIchar\fR 15
+An ordinary character matches itself.
+The characters `\(ua' at the beginning of a line,
+`$' at the end of line,
+`*' as any character other than the first,
+`.', `\e', `[', and `\s+2~\s0' are not ordinary characters and
+must be escaped (preceded) by `\e' to be treated as such.
+.IP \fB\(ua\fR
+At the beginning of a pattern
+forces the match to succeed only at the beginning of a line.
+.IP \fB$\fR
+At the end of a regular expression forces the match to
+succeed only at the end of the line.
+.IP \&\fB.\fR
+Matches any single character except
+the new-line character.
+.IP \fB\e<\fR
+Forces the match
+to occur only at the beginning of a ``variable'' or ``word'';
+that is, either at the beginning of a line, or just before
+a letter, digit, or underline and after a character not one of
+these.
+.IP \fB\e>\fR
+Similar to `\e<', but matching the end of a ``variable''
+or ``word'', i.e. either the end of the line or before character
+which is neither a letter, nor a digit, nor the underline character.
+.IP \fB[\fIstring\fR]\fR
+Matches any (single) character in the class defined by
+.I string.
+Most characters in
+.I string
+define themselves.
+A pair of characters separated by `\-' in
+.I string
+defines the set of characters collating between the specified lower and upper
+bounds, thus `[a\-z]' as a regular expression matches
+any (single) lower-case letter.
+If the first character of
+.I string
+is an `\(ua' then the construct
+matches those characters which it otherwise would not;
+thus `[\(uaa\-z]' matches anything but a lower-case letter (and of course a
+newline).
+To place any of the characters
+`\(ua', `[', or `\-' in
+.I string
+you must escape them with a preceding `\e'.
+.NH 2
+Combining regular expression primitives
+.PP
+The concatenation of two regular expressions matches the leftmost and
+then longest string
+which can be divided with the first piece matching the first regular
+expression and the second piece matching the second.
+Any of the (single character matching) regular expressions mentioned
+above may be followed by the character `*' to form a regular expression
+which matches any number of adjacent occurrences (including 0) of characters
+matched by the regular expression it follows.
+.PP
+The character `\s+2~\s0' may be used in a regular expression,
+and matches the text which defined the replacement part
+of the last
+.I substitute
+command.
+A regular expression may be enclosed between the sequences
+`\e(' and `\e)' with side effects in the
+.I substitute
+replacement patterns.
+.NH 2
+Substitute replacement patterns
+.PP
+The basic metacharacters for the replacement pattern are
+`&' and `~'; these are
+given as `\e&' and `\e~' when
+.I nomagic
+is set.
+Each instance of `&' is replaced by the characters
+which the regular expression matched.
+The metacharacter `~' stands, in the replacement pattern,
+for the defining text of the previous replacement pattern.
+.PP
+Other metasequences possible in the replacement pattern
+are always introduced by the escaping character `\e'.
+The sequence `\e\fIn\fR' is replaced by the text matched
+by the \fIn\fR-th regular subexpression enclosed between
+`\e(' and `\e)'.\(dg
+.FS
+\(dg When nested, parenthesized subexpressions are present,
+\fIn\fR is determined by counting occurrences of `\e(' starting from the left.
+.FE
+The sequences `\eu' and `\el' cause the immediately following character in
+the replacement to be converted to upper- or lower-case respectively
+if this character is a letter.
+The sequences `\eU' and `\eL' turn such conversion on, either until
+`\eE' or `\ee' is encountered, or until the end of the replacement pattern.
+.de LC
+.br
+.sp .1i
+.ne 4
+.LP
+.ta 3i
+..
+.NH 1
+Option descriptions
+.PP
+.LC
+\fBautoindent\fR, \fBai\fR	default: noai
+.ZP
+Can be used to ease the preparation of structured program text.
+At the beginning of each
+.I append ,
+.I change
+or
+.I insert
+command
+or when a new line is
+.I opened
+or created by an
+.I append ,
+.I change ,
+.I insert ,
+or
+.I substitute
+operation within
+.I open
+or
+.I visual
+mode,
+.I ex
+looks at the line being appended after,
+the first line changed
+or the line inserted before and calculates the amount of white space
+at the start of the line.
+It then aligns the cursor at the level of indentation so determined.
+.IP
+If the user then types lines of text in,
+they will continue to be justified at the displayed indenting level.
+If more white space is typed at the beginning of a line,
+the following line will start aligned with the first non-white character
+of the previous line.
+To back the cursor up to the preceding tab stop one can hit
+\fB^D\fR.
+The tab stops going backwards are defined at multiples of the
+.I shiftwidth
+option.
+You
+.I cannot
+backspace over the indent,
+except by sending an end-of-file with a \fB^D\fR.
+.IP
+Specially processed in this mode is a line with no characters added
+to it, which turns into a completely blank line (the white
+space provided for the
+.I autoindent
+is discarded.)
+Also specially processed in this mode are lines beginning with
+an `\(ua' and immediately followed by a \fB^D\fR.
+This causes the input to be repositioned at the beginning of the line,
+but retaining the previous indent for the next line.
+Similarly, a `0' followed by a \fB^D\fR
+repositions at the beginning but without
+retaining the previous indent.
+.IP
+.I Autoindent
+doesn't happen in
+.I global
+commands or when the input is not a terminal.
+.LC
+\fBautoprint\fR, \fBap\fR	default: ap
+.ZP
+Causes the current line to be printed after each
+.I delete ,
+.I copy ,
+.I join ,
+.I move ,
+.I substitute ,
+.I t ,
+.I undo
+or
+shift command.
+This has the same effect as supplying a trailing `p'
+to each such command.
+.I Autoprint
+is suppressed in globals,
+and only applies to the last of many commands on a line.
+.LC
+\fBautowrite\fR, \fBaw\fR	default: noaw
+.ZP
+Causes the contents of the buffer to be written to the current file
+if you have modified it and give a
+.I next,
+.I rewind,
+.I stop,
+.I tag,
+or
+.I !
+command, or a \fB^\(ua\fR (switch files) or \fB^]\fR (tag goto) command
+in
+.I visual.
+Note, that the
+.I edit
+and
+.I ex
+commands do
+.B not
+autowrite.
+In each case, there is an equivalent way of switching when autowrite
+is set to avoid the
+.I autowrite
+(\fIedit\fR
+for
+.I next ,
+.I rewind!
+for .I rewind ,
+.I stop!
+for
+.I stop ,
+.I tag!
+for
+.I tag ,
+.I shell
+for
+.I ! ,
+and
+\fB:e\ #\fR and a \fB:ta!\fR command from within
+.I visual).
+.LC
+\fBbeautify\fR, \fBbf\fR	default: nobeautify
+.ZP
+Causes all control characters except tab, newline and form-feed
+to be discarded from the input.
+A complaint is registered the first time a
+backspace character is discarded.
+.I Beautify
+does not apply to command input.
+.LC
+\fBdirectory\fR, \fBdir\fR	default: dir=/tmp
+.ZP
+Specifies the directory in which
+.I ex
+places its buffer file.
+If this directory in not
+writable, then the editor will exit abruptly when it fails to be
+able to create its buffer there.
+.LC
+\fBedcompatible\fR	default: noedcompatible
+.ZP
+Causes the presence oatelike
+gatemaker
+gateman
+gatepost
+gater
+gatetender
+gateward
+gatewards
+gateway
+gatewayman
+gatewise
+gatewoman
+gateworks
+gatewright
+Gatha
+gather
+gatherable
+gatherer
+gathering
+Gathic
+gating
+gator
+gatter
+gatteridge
+gau
+gaub
+gauby
+gauche
+gauchely
+gaucheness
+gaucherie
+Gaucho
+gaud
+gaudery
+Gaudete
+gaudful
+gaudily
+gaudiness
+gaudless
+gaudsman
+gaudy
+gaufer
+gauffer
+gauffered
+gauffre
+gaufre
+gaufrette
+gauge
+gaugeable
+gauger
+gaugership
+gauging
+Gaul
+gaulding
+gauleiter
+Gaulic
+gaulin
+Gaulish
+Gaullism
+Gaullist
+Gault
+gault
+gaulter
+gaultherase
+Gaultheria
+gaultherin
+gaum
+gaumish
+gaumless
+gaumlike
+gaumy
+gaun
+gaunt
+gaunted
+gauntlet
+gauntleted
+gauntly
+gauntness
+gauntry
+gaunty
+gaup
+gaupus
+gaur
+Gaura
+Gaurian
+gaus
+gauss
+gaussage
+gaussbergite
+Gaussian
+gauster
+gausterer
+gaut
+gauteite
+gauze
+gauzelike
+gauzewing
+gauzily
+gauziness
+gauzy
+gavall
+gave
+gavel
+gaveler
+gavelkind
+gavelkinder
+gavelman
+gavelock
+Gavia
+Gaviae
+gavial
+Gavialis
+gavialoid
+Gaviiformes
+gavotte
+gavyuti
+gaw
+gawby
+gawcie
+gawk
+gawkhammer
+gawkihood
+gawkily
+gawkiness
+gawkish
+gawkishly
+gawkishness
+gawky
+gawm
+gawn
+gawney
+gawsie
+gay
+gayal
+gayatri
+gaybine
+gaycat
+gaydiang
+gayish
+Gaylussacia
+gaylussite
+gayment
+gayness
+Gaypoo
+gaysome
+gaywings
+gayyou
+gaz
+gazabo
+gazangabin
+Gazania
+gaze
+gazebo
+gazee
+gazehound
+gazel
+gazeless
+Gazella
+gazelle
+gazelline
+gazement
+gazer
+gazettal
+gazette
+gazetteer
+gazetteerage
+gazetteerish
+gazetteership
+gazi
+gazing
+gazingly
+gazingstock
+gazogene
+gazon
+gazophylacium
+gazy
+gazzetta
+Ge
+ge
+Geadephaga
+geadephagous
+geal
+gean
+geanticlinal
+geanticline
+gear
+gearbox
+geared
+gearing
+gearksutite
+gearless
+gearman
+gearset
+gearshift
+gearwheel
+gease
+geason
+Geaster
+Geat
+geat
+Geatas
+gebang
+gebanga
+gebbie
+gebur
+Gecarcinidae
+Gecarcinus
+geck
+gecko
+geckoid
+geckotian
+geckotid
+Geckotidae
+geckotoid
+Ged
+ged
+gedackt
+gedanite
+gedder
+gedeckt
+gedecktwork
+Gederathite
+Gederite
+gedrite
+Gee
+gee
+geebong
+geebung
+Geechee
+geejee
+geek
+geelbec
+geeldikkop
+geelhout
+geepound
+geerah
+geest
+geet
+Geez
+geezer
+Gegenschein
+gegg
+geggee
+gegger
+geggery
+Geheimrat
+Gehenna
+gehlenite
+Geikia
+geikielite
+gein
+geira
+Geisenheimer
+geisha
+geison
+geisotherm
+geisothermal
+Geissoloma
+Geissolomataceae
+Geissolomataceous
+Geissorhiza
+geissospermin
+geissospermine
+geitjie
+geitonogamous
+geitonogamy
+Gekko
+Gekkones
+gekkonid
+Gekkonidae
+gekkonoid
+Gekkota
+gel
+gelable
+gelada
+gelandejump
+gelandelaufer
+gelandesprung
+Gelasian
+Gelasimus
+gelastic
+Gelastocoridae
+gelatification
+gelatigenous
+gelatin
+gelatinate
+gelatination
+gelatined
+gelatiniferous
+gelatiniform
+gelatinify
+gelatinigerous
+gelatinity
+gelatinizability
+gelatinizable
+gelatinization
+gelatinize
+gelatinizer
+gelatinobromide
+gelatinochloride
+gelatinoid
+gelatinotype
+gelatinous
+gelatinously
+gelatinousness
+gelation
+gelatose
+geld
+geldability
+geldable
+geldant
+gelder
+gelding
+Gelechia
+gelechiid
+Gelechiidae
+Gelfomino
+gelid
+Gelidiaceae
+gelidity
+Gelidium
+gelidly
+gelidness
+gelignite
+gelilah
+gelinotte
+gell
+Gellert
+gelly
+gelogenic
+gelong
+geloscopy
+gelose
+gelosin
+gelotherapy
+gelotometer
+gelotoscopy
+gelototherapy
+gelsemic
+gelsemine
+gelseminic
+gelseminine
+Gelsemium
+gelt
+gem
+Gemara
+Gemaric
+Gemarist
+gematria
+gematrical
+gemauve
+gemel
+gemeled
+gemellione
+gemellus
+geminate
+geminated
+geminately
+gemination
+geminative
+Gemini
+Geminid
+geminiflorous
+geminiform
+geminous
+Gemitores
+gemitorial
+gemless
+gemlike
+Gemma
+gemma
+gemmaceous
+gemmae
+gemmate
+gemmation
+gemmative
+gemmeous
+gemmer
+gemmiferous
+gemmiferousness
+gemmification
+gemmiform
+gemmily
+gemminess
+Gemmingia
+gemmipara
+gemmipares
+gemmiparity
+gemmiparous
+gemmiparously
+gemmoid
+gemmology
+gemmula
+gemmulation
+gemmule
+gemmuliferous
+gemmy
+gemot
+gemsbok
+gemsbuck
+gemshorn
+gemul
+gemuti
+gemwork
+gen
+gena
+genal
+genapp
+genapper
+genarch
+genarcha
+genarchaship
+genarchship
+gendarme
+gendarmery
+gender
+genderer
+genderless
+Gene
+gene
+genealogic
+genealogical
+genealogically
+genealogist
+genealogize
+genealogizer
+genealogy
+genear
+geneat
+genecologic
+genecological
+genecologically
+genecologist
+genecology
+geneki
+genep
+genera
+generability
+generable
+generableness
+general
+generalate
+generalcy
+generale
+generalia
+Generalidad
+generalific
+generalism
+generalissima
+generalissimo
+generalist
+generalistic
+generality
+generalizable
+generalization
+generalize
+generalized
+generalizer
+generall
+generally
+generalness
+generalship
+generalty
+generant
+generate
+generating
+generation
+generational
+generationism
+generative
+generatively
+generativeness
+generator
+generatrix
+generic
+generical
+generically
+genericalness
+generification
+generosity
+generous
+generously
+generousness
+Genesee
+geneserine
+Genesiac
+Genesiacal
+genesial
+genesic
+genesiology
+genesis
+Genesitic
+genesiurgic
+genet
+genethliac
+genethliacal
+genethliacally
+genethliacon
+genethliacs
+genethlialogic
+genethlialogical
+genethlialogy
+genethlic
+genetic
+genetical
+genetically
+geneticism
+geneticist
+genetics
+genetmoil
+genetous
+Genetrix
+genetrix
+Genetta
+Geneura
+Geneva
+geneva
+Genevan
+Genevese
+Genevieve
+Genevois
+genevoise
+genial
+geniality
+genialize
+genially
+genialness
+genian
+genic
+genicular
+geniculate
+geniculated
+geniculately
+geniculation
+geniculum
+genie
+genii
+genin
+genioglossal
+genioglossi
+genioglossus
+geniohyoglossal
+geniohyoglossus
+geniohyoid
+geniolatry
+genion
+genioplasty
+genip
+Genipa
+genipa
+genipap
+genipapada
+genisaro
+Genista
+genista
+genistein
+genital
+genitalia
+genitals
+genitival
+genitivally
+genitive
+genitocrural
+genitofemoral
+genitor
+genitorial
+genitory
+genitourinary
+geniture
+genius
+genizah
+genizero
+Genny
+Genoa
+genoblast
+genoblastic
+genocidal
+genocide
+Genoese
+genoese
+genom
+genome
+genomic
+genonema
+genos
+genotype
+genotypic
+genotypical
+genotypically
+Genoveva
+genovino
+genre
+genro
+gens
+genson
+gent
+genteel
+genteelish
+genteelism
+genteelize
+genteelly
+genteelness
+gentes
+genthite
+gentian
+Gentiana
+Gentianaceae
+gentianaceous
+Gentianales
+gentianella
+gentianic
+gentianin
+gentianose
+gentianwort
+gentile
+gentiledom
+gentilesse
+gentilic
+gentilism
+gentilitial
+gentilitian
+gentilitious
+gentility
+gentilization
+gentilize
+gentiobiose
+gentiopicrin
+gentisein
+gentisic
+gentisin
+gentle
+gentlefolk
+gentlehearted
+gentleheartedly
+gentleheartedness
+gentlehood
+gentleman
+gentlemanhood
+gentlemanism
+gentlemanize
+gentlemanlike
+gentlemanlikeness
+gentlemanliness
+gentlemanly
+gentlemanship
+gentlemens
+gentlemouthed
+gentleness
+gentlepeople
+gentleship
+gentlewoman
+gentlewomanhood
+gentlewomanish
+gentlewomanlike
+gentlewomanliness
+gentlewomanly
+gently
+gentman
+Gentoo
+gentrice
+gentry
+genty
+genu
+genua
+genual
+genuclast
+genuflect
+genuflection
+genuflector
+genuflectory
+genuflex
+genuflexuous
+genuine
+genuinely
+genuineness
+genus
+genyantrum
+Genyophrynidae
+genyoplasty
+genys
+geo
+geoaesthesia
+geoagronomic
+geobiologic
+geobiology
+geobiont
+geobios
+geoblast
+geobotanic
+geobotanical
+geobotanist
+geobotany
+geocarpic
+geocentric
+geocentrical
+geocentrically
+geocentricism
+geocerite
+geochemical
+geochemist
+geochemistry
+geochronic
+geochronology
+geochrony
+Geococcyx
+geocoronium
+geocratic
+geocronite
+geocyclic
+geodaesia
+geodal
+geode
+geodesic
+geodesical
+geodesist
+geodesy
+geodete
+geodetic
+geodetical
+geodetically
+geodetician
+geodetics
+geodiatropism
+geodic
+geodiferous
+geodist
+geoduck
+geodynamic
+geodynamical
+geodynamics
+geoethnic
+Geoffrey
+geoffroyin
+geoffroyine
+geoform
+geogenesis
+geogenetic
+geogenic
+geogenous
+geogeny
+Geoglossaceae
+Geoglossum
+geoglyphic
+geognosis
+geognosist
+geognost
+geognostic
+geognostical
+geognostically
+geognosy
+geogonic
+geogonical
+geogony
+geographer
+geographic
+geographical
+geographically
+geographics
+geographism
+geographize
+geography
+geohydrologist
+geohydrology
+geoid
+geoidal
+geoisotherm
+geolatry
+geologer
+geologian
+geologic
+geological
+geologically
+geologician
+geologist
+geologize
+geology
+geomagnetic
+geomagnetician
+geomagnetics
+geomagnetist
+geomalic
+geomalism
+geomaly
+geomance
+geomancer
+geomancy
+geomant
+geomantic
+geomantical
+geomantically
+geometer
+geometric
+geometrical
+geometrically
+geometrician
+geometricize
+geometrid
+Geometridae
+geometriform
+Geometrina
+geometrine
+geometrize
+geometroid
+Geometroidea
+geometry
+geomoroi
+geomorphic
+geomorphist
+geomorphogenic
+geomorphogenist
+geomorphogeny
+geomorphological
+geomorphology
+geomorphy
+geomyid
+Geomyidae
+Geomys
+Geon
+geonavigation
+geonegative
+Geonic
+Geonim
+Geonoma
+geonoma
+geonyctinastic
+geonyctitropic
+geoparallelotropic
+geophagia
+geophagism
+geophagist
+geophagous
+geophagy
+Geophila
+geophilid
+Geophilidae
+geophilous
+Geophilus
+Geophone
+geophone
+geophysical
+geophysicisf absence of
+.B g
+and
+.B c
+suffixes on substitute commands to be remembered, and to be toggled
+by repeating the suffices.  The suffix
+.B r
+makes the substitution be as in the
+.I ~
+command, instead of like
+.I &.
+.LC
+\fBerrorbells\fR, \fBeb\fR	default: noeb
+.ZP
+Error messages are preceded by a bell.*
+.FS
+* Bell ringing in
+.I open
+and
+.I visual
+on errors is not suppressed by setting
+.I noeb.
+.FE
+If possible the editor always places the error message in a standout mode of the
+terminal (such as inverse video) instead of ringing the bell.
+.LC
+\fBhardtabs\fR, \fBht\fR	default: ht=8
+.ZP
+Gives the boundaries on which terminal hardware tabs are set (or
+on which the system expands tabs).
+.LC
+\fBignorecase\fR, \fBic\fR	default: noic
+.ZP
+All upper case characters in the text are mapped to lower case in regular
+expression matching.
+In addition, all upper case characters in regular expressions are mapped
+to lower case except in character class specifications.
+.LC
+\fBlisp\fR	default: nolisp
+.ZP
+\fIAutoindent\fR indents appropriately for
+.I lisp
+code, and the \fB( ) { } [[\fR and \fB]]\fR commands in
+.I open
+and
+.I visual
+are modified to have meaning for \fIlisp\fR.
+.LC
+\fBlist\fR	default: nolist
+.ZP
+All printed lines will be displayed (more) unambiguously,
+showing tabs and end-of-lines as in the
+.I list
+command.
+.LC
+\fBmagic\fR	default: magic for \fIex\fR and \fIvi\fR\(dg
+.FS
+\(dg \fINomagic\fR for \fIedit\fR.
+.FE
+.ZP
+If
+.I nomagic
+is set, the number of regular expression metacharacters is greatly reduced,
+with only `\(ua' and `$' having special effects.
+In addition the metacharacters
+`~'
+and
+`&'
+of the replacement pattern are treated as normal characters.
+All the normal metacharacters may be made
+.I magic
+when
+.I nomagic
+is set by preceding them with a `\e'.
+.LC
+\fBmesg\fR	default: mesg
+.ZP
+Causes write permission to be turned off to the terminal
+while you are in visual mode, if
+.I nomesg
+is set.
+.LC
+\fBmodeline\fR	default: nomodeline
+.ZP
+If
+.I modeline
+is set, then the first 5 lines and the last five lines of the file
+will be checked for ex command lines and the comands issued.
+To be recognized as a command line, the line must have the string
+.B ex:
+or
+.B vi:
+preceeded by a tab or a space.  This string may be anywhere in the
+line and anything after the 
+.I :
+is interpeted as editor commands.  This option defaults to off because
+of unexpected behavior when editting files such as
+.I /etc/passwd.
+.LC
+\fBnumber, nu\fR	default: nonumber
+.ZP
+Causes all output lines to be printed with their
+line numbers.
+In addition each input line will be prompted for by supplying the line number
+it will have.
+.LC
+\fBopen\fR	default: open
+.ZP
+If \fInoopen\fR, the commands
+.I open
+and
+.I visual
+are not permitted.
+This is set for
+.I edit
+to prevent confusion resulting from accidental entry to 
+open or visual mode.
+.LC
+\fBoptimize, opt\fR	default: optimize
+.ZP
+Throughput of text is expedited by setting the terminal
+to not do automatic carriage returns
+when printing more than one (logical) line of output,
+greatly speeding output on terminals without addressable
+cursors when text with leading white space is printed.
+.LC
+\fBparagraphs,\ para\fR	default: para=IPLPPPQPP\0LIbp
+.ZP
+Specifies the paragraphs for the \fB{\fR and \fB}\fR operations in
+.I open
+and 
+.I visual.
+The pairs of characters in the option's value are the names
+of the macros which start paragraphs.
+.LC
+\fBprompt\fR	default: prompt
+.ZP
+Command mode input is prompted for with a `:'.
+.LC
+\fBredraw\fR	default: noredraw
+.ZP
+The editor simulates (using great amounts of output), an intelligent
+terminal on a dumb terminal (e.g. during insertions in
+.I visual
+the characters to the right of the cursor position are refreshed
+as each input character is typed.)
+Useful only at very high speed.
+.LC
+\fBremap\fP	default: remap
+.ZP
+If on, macros are repeatedly tried until they are unchanged.
+For example, if
+.B o
+is mapped to
+.B O ,
+and
+.B O
+is mapped to
+.B I ,
+then if
+.I remap
+is set,
+.B o
+will map to
+.B I ,
+but if
+.I noremap
+is set, it will map to
+.B O .
+.LC
+\fBreport\fR	default: report=5\(dg
+.FS
+\(dg 2 for \fIedit\fR.
+.FE
+.ZP
+Specifies a threshold for feedback from commands.
+Any command which modifies more than the specified number of lines
+will provide feedback as to the scope of its changes.
+For commands such as
+.I global ,
+.I open ,
+.I undo ,
+and
+.I visual
+which have potentially more far reaching scope,
+the net change in the number of lines in the buffer is
+presented at the end of the command, subject to this same threshold.
+Thus notification is suppressed during a
+.I global
+command on the individual commands performed.
+.LC
+\fBscroll\fR	default: scroll=\(12 window
+.ZP
+Determines the number of logical lines scrolled when an end-of-file
+is received from a terminal input in command mode,
+and the number of lines printed by a command mode
+.I z
+command (double the value of
+.I scroll ).
+.LC
+\fBsections\fR	default: sections=SHNHH\0HU
+.ZP
+Specifies the section macros for the \fB[[\fR and \fB]]\fR operations
+in
+.I open
+and
+.I visual.
+The pairs of characters in the options's value are the names
+of the macros which start paragraphs.
+.LC
+\fBshell\fR, \fBsh\fR	default: sh=/bin/sh
+.ZP
+Gives the path name of the shell forked for 
+the shell escape command `!', and by the
+.I shell
+command.
+The default is taken from SHELL in the environment, if present.
+.LC
+\fBshiftwidth\fR, \fBsw\fR	default: sw=8
+.ZP
+Gives the width a software tab stop,
+used in reverse tabbing with \fB^D\fR when using
+.I autoindent
+to append text,
+and by the shift commands.
+.LC
+\fBshowmatch, sm\fR	default: nosm
+.ZP
+In
+.I open
+and
+.I visual
+mode, when a \fB)\fR or \fB}\fR is typed, move the cursor to the matching
+\fB(\fR or \fB{\fR for one second if this matching character is on the
+screen.  Extremely useful with
+.I lisp.
+.LC
+\fBslowopen, slow\fR	terminal dependent
+.ZP
+Affects the display algorithm used in
+.I visual
+mode, holding off display updating during input of new text to improve
+throughput when the terminal in use is both slow and unintelligent.
+See
+.I "An Introduction to Display Editing with Vi"
+for more details.
+.LC
+\fBtabstop,\ ts\fR	default: ts=8
+.ZP
+The editor expands tabs in the input file to be on
+.I tabstop
+boundaries for the purposes of display.
+.LC
+\fBtaglength,\ tl\fR	default: tl=0
+.ZP
+Tags are not significant beyond this many characters.
+A value of zero (the default) means that all characters are significant.
+.LC
+\fBtags\fR	default: tags=tags /usr/lib/tags
+.ZP
+A path of files to be used as tag files for the
+.I tag
+command.
+A requested tag is searched for in the specified files, sequentially.
+By default, files called
+.B tags
+are searched for in the current directory and in /usr/lib
+(a master file for the entire system).
+.LC
+\fBterm\fR	from environment TERM
+.ZP
+The terminal type of the output device.
+.LC
+\fBterse\fR	default: noterse
+.ZP
+Shorter error diagnostics are produced for the experienced user.
+.LC
+\fBwarn\fR	default: warn
+.ZP
+Warn if there has been `[No write since last change]' before a `!'
+command escape.
+.LC
+\fBwindow\fR	default: window=speed dependent
+.ZP
+The number of lines in a text window in the
+.I visual
+command.
+The default is 8 at slow speeds (600 baud or less),
+16 at medium speed (1200 baud),
+and the full screen (minus one line) at higher speeds.
+.LC
+\fBw300,\ w1200\, w9600\fR
+.ZP
+These are not true options but set
+.B window
+only if the speed is slow (300), medium (1200), or high (9600),
+respectively.
+They are suitable for an EXINIT
+and make it easy to change the 8/16/full screen rule.
+.LC
+\fBwrapscan\fR, \fBws\fR	default: ws
+.ZP
+Searches using the regular expressions in addressing
+will wrap around past the end of the file.
+.LC
+\fBwrapmargin\fR, \fBwm\fR	default: wm=0
+.ZP
+Defines a margin for automatic wrapover of text during input in
+.I open
+and
+.I visual
+modes.  See
+.I "An Introduction to Text Editing with Vi"
+for details.
+.LC
+\fBwriteany\fR, \fBwa\fR	default: nowa
+.IP
+Inhibit the checks normally made before
+.I write
+commands, allowing a write to any file which the system protection
+mechanism will allow.
+.NH 1
+Limitations
+.PP
+Editor limits that the user is likely to encounter are as follows:
+1024 characters per line,
+256 characters per globalt
+geophysics
+geophyte
+geophytic
+geoplagiotropism
+Geoplana
+Geoplanidae
+geopolar
+geopolitic
+geopolitical
+geopolitically
+geopolitician
+geopolitics
+Geopolitik
+geoponic
+geoponical
+geoponics
+geopony
+geopositive
+Geoprumnon
+georama
+Geordie
+George
+Georgemas
+Georgette
+Georgia
+georgiadesite
+Georgian
+Georgiana
+georgic
+Georgie
+geoscopic
+geoscopy
+geoselenic
+geosid
+geoside
+geosphere
+Geospiza
+geostatic
+geostatics
+geostrategic
+geostrategist
+geostrategy
+geostrophic
+geosynclinal
+geosyncline
+geotactic
+geotactically
+geotaxis
+geotaxy
+geotechnic
+geotechnics
+geotectology
+geotectonic
+geotectonics
+Geoteuthis
+geotherm
+geothermal
+geothermic
+geothermometer
+Geothlypis
+geotic
+geotical
+geotilla
+geotonic
+geotonus
+geotropic
+geotropically
+geotropism
+geotropy
+geoty
+Gepeoo
+Gephyrea
+gephyrean
+gephyrocercal
+gephyrocercy
+Gepidae
+ger
+gerah
+Gerald
+Geraldine
+Geraniaceae
+geraniaceous
+geranial
+Geraniales
+geranic
+geraniol
+Geranium
+geranium
+geranomorph
+Geranomorphae
+geranomorphic
+geranyl
+Gerard
+gerardia
+Gerasene
+gerastian
+gerate
+gerated
+geratic
+geratologic
+geratologous
+geratology
+geraty
+gerb
+gerbe
+Gerbera
+Gerberia
+gerbil
+Gerbillinae
+Gerbillus
+gercrow
+gereagle
+gerefa
+gerenda
+gerendum
+gerent
+gerenuk
+gerfalcon
+gerhardtite
+geriatric
+geriatrician
+geriatrics
+gerim
+gerip
+germ
+germal
+German
+german
+germander
+germane
+germanely
+germaneness
+Germanesque
+Germanhood
+Germania
+Germanic
+germanic
+Germanical
+Germanically
+Germanics
+Germanification
+Germanify
+germanious
+Germanish
+Germanism
+Germanist
+Germanistic
+germanite
+Germanity
+germanity
+germanium
+Germanization
+germanization
+Germanize
+germanize
+Germanizer
+Germanly
+Germanness
+Germanocentric
+Germanomania
+Germanomaniac
+Germanophile
+Germanophilist
+Germanophobe
+Germanophobia
+Germanophobic
+Germanophobist
+germanous
+Germantown
+germanyl
+germarium
+germen
+germfree
+germicidal
+germicide
+germifuge
+germigenous
+germin
+germina
+germinability
+germinable
+Germinal
+germinal
+germinally
+germinance
+germinancy
+germinant
+germinate
+germination
+germinative
+germinatively
+germinator
+germing
+germinogony
+germiparity
+germless
+germlike
+germling
+germon
+germproof
+germule
+germy
+gernitz
+gerocomia
+gerocomical
+gerocomy
+geromorphism
+Geronomite
+geront
+gerontal
+gerontes
+gerontic
+gerontine
+gerontism
+geronto
+gerontocracy
+gerontocrat
+gerontocratic
+gerontogeous
+gerontology
+gerontophilia
+gerontoxon
+Gerres
+gerrhosaurid
+Gerrhosauridae
+Gerridae
+gerrymander
+gerrymanderer
+gers
+gersdorffite
+Gershom
+Gershon
+Gershonite
+gersum
+Gertie
+Gertrude
+gerund
+gerundial
+gerundially
+gerundival
+gerundive
+gerundively
+gerusia
+Gervais
+gervao
+Gervas
+Gervase
+Gerygone
+gerygone
+Geryonia
+geryonid
+Geryonidae
+Geryoniidae
+Ges
+Gesan
+Geshurites
+gesith
+gesithcund
+gesithcundman
+Gesnera
+Gesneraceae
+gesneraceous
+Gesneria
+gesneria
+Gesneriaceae
+gesneriaceous
+Gesnerian
+gesning
+gessamine
+gesso
+gest
+Gestalt
+gestalter
+gestaltist
+gestant
+Gestapo
+gestate
+gestation
+gestational
+gestative
+gestatorial
+gestatorium
+gestatory
+geste
+gested
+gesten
+gestening
+gestic
+gestical
+gesticulacious
+gesticulant
+gesticular
+gesticularious
+gesticulate
+gesticulation
+gesticulative
+gesticulatively
+gesticulator
+gesticulatory
+gestion
+gestning
+gestural
+gesture
+gestureless
+gesturer
+get
+geta
+Getae
+getah
+getaway
+gether
+Gethsemane
+gethsemane
+Gethsemanic
+gethsemanic
+Getic
+getling
+getpenny
+Getsul
+gettable
+getter
+getting
+getup
+Geullah
+Geum
+geum
+gewgaw
+gewgawed
+gewgawish
+gewgawry
+gewgawy
+gey
+geyan
+geyerite
+geyser
+geyseral
+geyseric
+geyserine
+geyserish
+geyserite
+gez
+ghafir
+ghaist
+ghalva
+Ghan
+gharial
+gharnao
+gharry
+Ghassanid
+ghastily
+ghastlily
+ghastliness
+ghastly
+ghat
+ghatti
+ghatwal
+ghatwazi
+ghazi
+ghazism
+Ghaznevid
+Gheber
+ghebeta
+Ghedda
+ghee
+Gheg
+Ghegish
+gheleem
+Ghent
+gherkin
+ghetchoo
+ghetti
+ghetto
+ghettoization
+ghettoize
+Ghibelline
+Ghibellinism
+Ghilzai
+Ghiordes
+ghizite
+ghoom
+ghost
+ghostcraft
+ghostdom
+ghoster
+ghostess
+ghostfish
+ghostflower
+ghosthood
+ghostified
+ghostily
+ghostish
+ghostism
+ghostland
+ghostless
+ghostlet
+ghostlify
+ghostlike
+ghostlily
+ghostliness
+ghostly
+ghostmonger
+ghostology
+ghostship
+ghostweed
+ghostwrite
+ghosty
+ghoul
+ghoulery
+ghoulish
+ghoulishly
+ghoulishness
+ghrush
+ghurry
+Ghuz
+Gi
+Giansar
+giant
+giantesque
+giantess
+gianthood
+giantish
+giantism
+giantize
+giantkind
+giantlike
+giantly
+giantry
+giantship
+Giardia
+giardia
+giardiasis
+giarra
+giarre
+Gib
+gib
+gibaro
+gibbals
+gibbed
+gibber
+Gibberella
+gibbergunyah
+gibberish
+gibberose
+gibberosity
+gibbet
+gibbetwise
+Gibbi
+gibblegabble
+gibblegabbler
+gibbles
+gibbon
+gibbose
+gibbosity
+gibbous
+gibbously
+gibbousness
+gibbsite
+gibbus
+gibby
+gibe
+gibel
+gibelite
+Gibeonite
+giber
+gibing
+gibingly
+gibleh
+giblet
+giblets
+Gibraltar
+Gibson
+gibstaff
+gibus
+gid
+giddap
+giddea
+giddify
+giddily
+giddiness
+giddy
+giddyberry
+giddybrain
+giddyhead
+giddyish
+Gideon
+Gideonite
+gidgee
+gie
+gied
+gien
+Gienah
+gieseckite
+gif
+giffgaff
+Gifola
+gift
+gifted
+giftedly
+giftedness
+giftie
+giftless
+giftling
+giftware
+gig
+gigantean
+gigantesque
+gigantic
+gigantical
+gigantically
+giganticidal
+giganticide
+giganticness
+gigantism
+gigantize
+gigantoblast
+gigantocyte
+gigantolite
+gigantological
+gigantology
+gigantomachy
+Gigantopithecus
+Gigantosaurus
+Gigantostraca
+gigantostracan
+gigantostracous
+Gigartina
+Gigartinaceae
+gigartinaceous
+Gigartinales
+gigback
+gigelira
+gigeria
+gigerium
+gigful
+gigger
+giggish
+giggit
+giggle
+giggledom
+gigglement
+giggler
+gigglesome
+giggling
+gigglingly
+gigglish
+giggly
+giglet
+gigliato
+giglot
+gigman
+gigmaness
+gigmanhood
+gigmania
+gigmanic
+gigmanically
+gigmanism
+gigmanity
+gignate
+gignitive
+gigolo
+gigot
+gigsman
+gigster
+gigtree
+gigunu
+Gil
+Gila
+Gilaki
+Gilbert
+gilbert
+gilbertage
+Gilbertese
+Gilbertian
+Gilbertianism
+gilbertite
+gild
+gildable
+gilded
+gilden
+gilder
+gilding
+Gileadite
+Gileno
+Giles
+gilguy
+Gilia
+gilia
+Giliak
+gilim
+gill
+gillaroo
+gillbird
+gilled
+Gillenia
+giller
+gillflirt
+gillhooter
+Gillian
+gillie
+gilliflirt
+gilling
+gilliver
+gillotage
+gillotype
+gillstoup
+gilly
+gillyflower
+gillygaupus
+gilo
+gilpy
+gilravage
+gilravager
+gilse
+gilsonite
+gilt
+giltcup
+gilthead
+gilttail
+gim
+gimbal
+gimbaled
+gimbaljawed
+gimberjawed
+gimble
+gimcrack
+gimcrackery
+gimcrackiness
+gimcracky
+gimel
+Gimirrai
+gimlet
+gimleteyed
+gimlety
+gimmal
+gimmer
+gimmerpet
+gimmick
+gimp
+gimped
+gimper
+gimping
+gin
+ging
+ginger
+gingerade
+gingerberry
+gingerbread
+gingerbready
+gingerin
+gingerleaf
+gingerline
+gingerliness
+gingerly
+gingerness
+gingernut
+gingerol
+gingerous
+gingerroot
+gingersnap
+gingerspice
+gingerwork
+gingerwort
+gingery
+gingham
+ginghamed
+gingili
+gingiva
+gingivae
+gingival
+gingivalgia
+gingivectomy
+gingivitis
+gingivoglossitis
+gingivolabial
+ginglyform
+ginglymoarthrodia
+ginglymoarthrodial
+Ginglymodi
+ginglymodian
+ginglymoid
+ginglymoidal
+Ginglymostoma
+ginglymostomoid
+ginglymus
+ginglyni
+ginhouse
+gink
+Ginkgo
+ginkgo
+Ginkgoaceae
+ginkgoaceous
+Ginkgoales
+ginned
+ginner
+ginners
+ginnery
+ginney
+ginning
+ginnle
+ginny
+ginseng
+ginward
+gio
+giobertite
+giornata
+giornatate
+Giottesque
+Giovanni
+gip
+gipon
+gipper
+Gippy
+gipser
+gipsire
+gipsyweed
+Giraffa
+giraffe
+giraffesque
+Giraffidae
+giraffine
+giraffoid
+girandola
+girandole
+girasol
+girasole
+girba
+gird
+girder
+girderage
+girderless
+girding
+girdingly
+girdle
+girdlecake
+girdlelike
+girdler
+girdlestead
+girdling
+girdlingly
+Girella
+Girellidae
+Girgashite
+Girgasite
+girl
+girleen
+girlery
+girlfully
+girlhood
+girlie
+girliness
+girling
+girlish
+girlishly
+girlishness
+girlism
+girllike
+girly
+girn
+girny
+giro
+giroflore
+Girondin
+Girondism
+Girondist
+girouette
+girouettism
+girr
+girse
+girsh
+girsle
+girt
+girth
+girtline
+gisarme
+gish
+gisla
+gisler
+gismondine
+gismondite
+gist
+git
+gitaligenin
+gitalin
+Gitanemuck
+gith
+Gitksan
+gitonin
+gitoxigenin
+gitoxin
+gittern
+Gittite
+gittith
+Giuseppe
+giustina
+give
+giveable
+giveaway
+given
+givenness
+giver
+givey
+giving
+gizz
+gizzard
+gizzen
+gizzern
+glabella
+glabellae
+glabellar
+glabellous
+glabellum
+glabrate
+glabrescent
+glabrous
+glace
+glaceed
+glaceing
+glaciable
+glacial
+glacialism
+glacialist
+glacialize
+glacially
+glaciaria
+glaciarium
+glaciate
+glaciation
+glacier
+glaciered
+glacieret
+glacierist
+glacification
+glacioaqueous
+glaciolacustrine
+glaciological
+glaciologist
+glaciology
+glaciomarine
+glaciometer
+glacionatant
+glacis
+glack
+glad
+gladden
+gladdener
+gladdon
+gladdy
+glade
+gladelike
+gladeye
+gladful
+gladfully
+gladfulness
+gladhearted
+gladiate
+gladiator
+gladiatorial
+gladiatorism
+gladiatorship
+gladiatrix
+gladify
+gladii
+gladiola
+gladiolar
+gladiole
+gladioli
+gladiolus
+gladius
+gladkaite
+gladless
+gladly
+gladness
+gladsome
+gladsomely
+gladsomeness
+Gladstone
+Gl.\" Copyright (c) 1980 Regents of the University of California.
+.\" All rights reserved.  The Berkeley software License Agreement
+.\" specifies the terms and conditions for redistribution.
+.\"
+.\"	@(#)rogue.me	6.2 (Berkeley) 4/28/86
+.\"
+.ds E \s-2<ESCAPE>\s0
+.ds R \s-2<RETURN>\s0
+.ds U \s-2UNIX\s0
+.ie t .ds _ \d\(mi\u
+.el .ds _ _
+.de Cs
+\&\\$3\*(lq\\$1\*(rq\\$2
+..
+.sp 5
+.ce 1000
+.ps +4
+.vs +4p
+.b
+A Guide to the Dungeons of Doom
+.r
+.vs
+.ps
+.sp 2
+.i
+Michael C. Toy
+Kenneth C. R. C. Arnold
+.r
+.sp 2
+Computer Systems Research Group
+Department of Electrical Engineering and Computer Science
+University of California
+Berkeley, California  94720
+.sp 4
+.i ABSTRACT
+.ce 0
+.(b I F
+.bi Rogue
+is a visual CRT based fantasy game
+which runs under the \*U\(dg timesharing system.
+.(f
+\fR\(dg\*U is a trademark of Bell Laboratories\fP
+.)f
+This paper describes how to play rogue,
+and gives a few hints
+for those who might otherwise get lost in the Dungeons of Doom.
+.)b
+\".he '''\fBA Guide to the Dungeons of Doom\fP'
+\" .fo ''- % -''
+.eh 'USD:33-%''A Guide to the Dungeons of Doom'
+.oh 'A Guide to the Dungeons of Doom''USD:33-%'
+.sh 1 Introduction
+.pp
+You have just finished your years as a student at the local fighter's guild.
+After much practice and sweat you have finally completed your training
+and are ready to embark upon a perilous adventure.
+As a test of your skills,
+the local guildmasters have sent you into the Dungeons of Doom.
+Your task is to return with the Amulet of Yendor.
+Your reward for the completion of this task
+will be a full membership in the local guild.
+In addition,
+you are allowed to keep all the loot you bring back from the dungeons.
+.pp
+In preparation for your journey,
+you are given an enchanted mace,
+a bow, and a quiver of arrows
+taken from a dragon's hoard in the far off Dark Mountains.
+You are also outfitted with elf-crafted armor
+and given enough food to reach the dungeons.
+You say goodbye to family and friends for what may be the last time
+and head up the road.
+.pp
+You set out on your way to the dungeons
+and after several days of uneventful travel,
+you see the ancient ruins
+that mark the entrance to the Dungeons of Doom.
+It is late at night,
+so you make camp at the entrance
+and spend the night sleeping under the open skies.
+In the morning you gather your weapons,
+put on your armor,
+eat what is almost your last food,
+and enter the dungeons.
+.sh 1 "What is going on here?"
+.pp
+You have just begun a game of rogue.
+Your goal is to grab as much treasure as you can,
+find the Amulet of Yendor,
+and get out of the Dungeons of Doom alive.
+On the screen,
+a map of where you have been
+and what you have seen on the current dungeon level is kept.
+As you explore more of the level,
+it appears on the screen in front of you.
+.pp
+Rogue differs from most computer fantasy games in that it is screen oriented.
+Commands are all one or two keystrokes\**
+.(f
+\** As opposed to pseudo English sentences.
+.)f
+and the results of your commands
+are displayed graphically on the screen rather
+than being explained in words.\**
+.(f
+\** A minimum screen size of 24 lines by 80 columns is required.
+If the screen is larger, only the 24x80 section will be used
+for the map.
+.)f
+.pp
+Another major difference between rogue and other computer fantasy games
+is that once you have solved all the puzzles in a standard fantasy game,
+it has lost most of its excitement and it ceases to be fun.
+Rogue,
+on the other hand,
+generates a new dungeon every time you play it
+and even the author finds it an entertaining and exciting game.
+.sh 1 "What do all those things on the screen mean?"
+.pp
+In order to understand what is going on in rogue
+you have to first get some grasp of what rogue is doing with the screen.
+The rogue screen is intended
+to replace the \*(lqYou can see ...\*(rq descriptions
+of standard fantasy games.
+Figure 1 is a sample of what a rogue screen might look like.
+.(z
+.hl
+.nf
+.TS
+center;
+ce0 ce0 ce0 ce0 ce0 ce0 ce0 ce0 ce0 ce0 ce0 ce.
+-	-	-	-	-	-	-	-	-	-	-	-
+|	.	.	.	.	.	.	.	.	.	.	+
+|	.	.	@	.	.	.	.	]	.	.	|
+|	.	.	.	.	B	.	.	.	.	.	|
+|	.	.	.	.	.	.	.	.	.	.	|
+-	-	-	-	-	+	-	-	-	-	-	-
+.TE
+
+
+.ce 1000
+Level: 1  Gold: 0      Hp: 12(12)  Str: 16(16)  Arm: 4  Exp: 1/0
+
+Figure 1
+.ce
+.hl
+.)z
+.sh 2 "The bottom line"
+.pp
+At the bottom line of the screen
+are a few pieces of cryptic information
+describing your current status.
+Here is an explanation of what these things mean:
+.ip Level \w'Level\ \ 'u
+This number indicates how deep you have gone in the dungeon.
+It starts at one and goes up as you go deeper into the dungeon.
+.ip Gold \w'Level\ \ 'u
+The number of gold pieces you have managed to find
+and keep with you so far.
+.ip Hp \w'Level\ \ 'u
+Your current and maximum health points.
+Health points indicate how much damage you can take before you die.
+The more you get hit in a fight,
+the lower they get.
+You can regain health points by resting.
+The number in parentheses
+is the maximum number your health points can reach.
+.ip Str \w'Level\ \ 'u
+Your current strength and maximum ever strength.
+This can be any integer less than or equal to 31,
+or greater than or equal to three.
+The higher the number,
+the stronger you are.
+The number in the parentheses
+is the maximum strength you have attained so far this game.
+.ip Arm \w'Level\ \ 'u
+Your current armor protection.
+This number indicates how effective your armor is
+in stopping blows from unfriendly creatures.
+The higher this number is,
+the more effective the armor.
+.ip Exp \w'Level\ \ 'u
+These two numbers give your current experience level
+and experience points.
+As you do things,
+you gain experience points.
+At certain experience point totals,
+you gain an experience level.
+The more experienced you are,
+the better you are able to fight and to withstand magical attacks.
+.sh 2 "The top line"
+.pp
+The top line of the screen is reserved
+for printing messages that describe things
+that are impossible to represent visually.
+If you see a \*(lq--More--\*(rq on the top line,
+this means that rogue wants to print another message on the screen,
+but it wants to make certain
+that you have read the one that is there first.
+To read the next message,
+just type a space.
+.sh 2 "The rest of the screen"
+.pp
+The rest of the screen is the map of the level
+as you have explored it so far.
+Each symbol on the screen represents something.
+Here is a list of what the various symbols mean:
+.ip @
+This symbol represents you, the adventurer.
+.ip "-\^|"
+These symbols represent the walls of rooms.
+.ip +
+A door to/from a room.
+.ip .
+The floor of a room.
+.ip #
+The floor of a passage between rooms.
+.ip *
+A pile or pot of gold.
+.ip )
+A weapon of some sort.
+.ip ]
+A piece of armor.
+.ip !
+A flask containing a magic potion.
+.ip ?
+A piece of paper, usually a magic scroll.
+.ip =
+A ring with magic properties
+.ip /
+A magical staff or wand
+.ip ^
+A trap, watch out for these.
+.ip %
+A staircase to other levels
+.ip :
+A piece of food.
+.ip A-Z
+The uppercase letters
+represent the various inhabitants of the Dungeons of Doom.
+Watch out, they can be nasty and vicious.
+.sh 1 Commands
+.pp
+Commands are given to rogue by typing one or two characters.
+Most commands can be preceded by a count to repeat them
+(e.g. typing 
+.Cs 10s
+will do ten searches).
+Commands for which counts make no sense
+have the count ignored.
+To cancel a count or a prefix,
+type \*E.
+The list of commands is rather long,
+but it can be read at any time during the game with the
+.Cs ?
+command.
+Here it is for reference,
+with a short explanation of each command.
+.ip ?
+The help command.
+Asks for a character to give help on.
+If you type a
+.Cs * ,
+it will list all the commands,
+otherwise it will explain what the character you typed does.
+.ip /
+This is the \*(lqWhat is that on the screen?\*(rq command.
+A
+.Cs /
+followed by any character that you see on the level,
+will tell you what that character is.
+For instance,
+typing
+.Cs /@
+will tell you that the
+.Cs @
+symbol represents you, the player.
+.ip "h, H, ^H"
+Move left.
+You move one space to the left.
+If you use upper case
+.Cs h ,
+you will continue to move left until you run into something.
+This works for all movement commands
+(e.g.
+.Cs L
+means run in direction 
+.Cs l )
+If you use the \*(lqcontrol\*(rq
+.Cs h ,
+you will continueadstonian
+Gladstonianism
+glady
+Gladys
+glaga
+Glagol
+Glagolic
+Glagolitic
+Glagolitsa
+glaieul
+glaik
+glaiket
+glaiketness
+glair
+glaireous
+glairiness
+glairy
+glaister
+glaive
+glaived
+glaked
+glaky
+glam
+glamberry
+glamorize
+glamorous
+glamorously
+glamour
+glamoury
+glance
+glancer
+glancing
+glancingly
+gland
+glandaceous
+glandarious
+glandered
+glanderous
+glanders
+glandes
+glandiferous
+glandiform
+glandless
+glandlike
+glandular
+glandularly
+glandule
+glanduliferous
+glanduliform
+glanduligerous
+glandulose
+glandulosity
+glandulous
+glandulousness
+Glaniostomi
+glans
+glar
+glare
+glareless
+Glareola
+glareole
+Glareolidae
+glareous
+glareproof
+glareworm
+glarily
+glariness
+glaring
+glaringly
+glaringness
+glarry
+glary
+Glaserian
+glaserite
+glashan
+glass
+glassen
+glasser
+glasses
+glassfish
+glassful
+glasshouse
+glassie
+glassily
+glassine
+glassiness
+Glassite
+glassless
+glasslike
+glassmaker
+glassmaking
+glassman
+glassophone
+glassrope
+glassteel
+glassware
+glassweed
+glasswork
+glassworker
+glassworking
+glassworks
+glasswort
+glassy
+Glaswegian
+Glathsheim
+Glathsheimr
+glauberite
+glaucescence
+glaucescent
+Glaucidium
+glaucin
+glaucine
+Glaucionetta
+Glaucium
+glaucochroite
+glaucodot
+glaucolite
+glaucoma
+glaucomatous
+Glaucomys
+Glauconia
+glauconiferous
+Glauconiidae
+glauconite
+glauconitic
+glauconitization
+glaucophane
+glaucophanite
+glaucophanization
+glaucophanize
+glaucophyllous
+Glaucopis
+glaucosuria
+glaucous
+glaucously
+Glauke
+glaum
+glaumrie
+glaur
+glaury
+Glaux
+glaver
+glaze
+glazed
+glazen
+glazer
+glazework
+glazier
+glaziery
+glazily
+glaziness
+glazing
+glazy
+gleam
+gleamily
+gleaminess
+gleaming
+gleamingly
+gleamless
+gleamy
+glean
+gleanable
+gleaner
+gleaning
+gleary
+gleba
+glebal
+glebe
+glebeless
+glebous
+Glecoma
+glede
+Gleditsia
+gledy
+glee
+gleed
+gleeful
+gleefully
+gleefulness
+gleeishly
+gleek
+gleemaiden
+gleeman
+gleesome
+gleesomely
+gleesomeness
+gleet
+gleety
+gleewoman
+gleg
+glegly
+glegness
+glen
+Glengarry
+glenohumeral
+glenoid
+glenoidal
+glent
+glessite
+gleyde
+glia
+gliadin
+glial
+glib
+glibbery
+glibly
+glibness
+glidder
+gliddery
+glide
+glideless
+glideness
+glider
+gliderport
+glidewort
+gliding
+glidingly
+gliff
+gliffing
+glime
+glimmer
+glimmering
+glimmeringly
+glimmerite
+glimmerous
+glimmery
+glimpse
+glimpser
+glink
+glint
+glioma
+gliomatous
+gliosa
+gliosis
+Glires
+Gliridae
+gliriform
+Gliriformia
+glirine
+Glis
+glisk
+glisky
+glissade
+glissader
+glissando
+glissette
+glisten
+glistening
+glisteningly
+glister
+glisteringly
+Glitnir
+glitter
+glitterance
+glittering
+glitteringly
+glittersome
+glittery
+gloam
+gloaming
+gloat
+gloater
+gloating
+gloatingly
+global
+globally
+globate
+globated
+globe
+globed
+globefish
+globeflower
+globeholder
+globelet
+Globicephala
+globiferous
+Globigerina
+globigerine
+Globigerinidae
+globin
+Globiocephalus
+globoid
+globose
+globosely
+globoseness
+globosite
+globosity
+globosphaerite
+globous
+globously
+globousness
+globular
+Globularia
+Globulariaceae
+globulariaceous
+globularity
+globularly
+globularness
+globule
+globulet
+globulicidal
+globulicide
+globuliferous
+globuliform
+globulimeter
+globulin
+globulinuria
+globulite
+globulitic
+globuloid
+globulolysis
+globulose
+globulous
+globulousness
+globulysis
+globy
+glochid
+glochideous
+glochidia
+glochidial
+glochidian
+glochidiate
+glochidium
+glochis
+glockenspiel
+gloea
+gloeal
+Gloeocapsa
+gloeocapsoid
+gloeosporiose
+Gloeosporium
+Gloiopeltis
+Gloiosiphonia
+Gloiosiphoniaceae
+glom
+glome
+glomerate
+glomeration
+Glomerella
+glomeroporphyritic
+glomerular
+glomerulate
+glomerule
+glomerulitis
+glomerulonephritis
+glomerulose
+glomerulus
+glommox
+glomus
+glonoin
+glonoine
+gloom
+gloomful
+gloomfully
+gloomily
+gloominess
+glooming
+gloomingly
+gloomless
+gloomth
+gloomy
+glop
+gloppen
+glor
+glore
+Gloria
+Gloriana
+gloriation
+gloriette
+glorifiable
+glorification
+glorifier
+glorify
+gloriole
+Gloriosa
+gloriosity
+glorious
+gloriously
+gloriousness
+glory
+gloryful
+glorying
+gloryingly
+gloryless
+gloss
+glossa
+glossagra
+glossal
+glossalgia
+glossalgy
+glossanthrax
+glossarial
+glossarially
+glossarian
+glossarist
+glossarize
+glossary
+Glossata
+glossate
+glossator
+glossatorial
+glossectomy
+glossed
+glosser
+glossic
+glossily
+Glossina
+glossiness
+glossing
+glossingly
+Glossiphonia
+Glossiphonidae
+glossist
+glossitic
+glossitis
+glossless
+glossmeter
+glossocarcinoma
+glossocele
+glossocoma
+glossocomon
+glossodynamometer
+glossodynia
+glossoepiglottic
+glossoepiglottidean
+glossograph
+glossographer
+glossographical
+glossography
+glossohyal
+glossoid
+glossokinesthetic
+glossolabial
+glossolabiolaryngeal
+glossolabiopharyngeal
+glossolalia
+glossolalist
+glossolaly
+glossolaryngeal
+glossological
+glossologist
+glossology
+glossolysis
+glossoncus
+glossopalatine
+glossopalatinus
+glossopathy
+glossopetra
+Glossophaga
+glossophagine
+glossopharyngeal
+glossopharyngeus
+Glossophora
+glossophorous
+glossophytia
+glossoplasty
+glossoplegia
+glossopode
+glossopodium
+Glossopteris
+glossoptosis
+glossopyrosis
+glossorrhaphy
+glossoscopia
+glossoscopy
+glossospasm
+glossosteresis
+Glossotherium
+glossotomy
+glossotype
+glossy
+glost
+glottal
+glottalite
+glottalize
+glottic
+glottid
+glottidean
+glottis
+glottiscope
+glottogonic
+glottogonist
+glottogony
+glottologic
+glottological
+glottologist
+glottology
+Gloucester
+glout
+glove
+gloveless
+glovelike
+glovemaker
+glovemaking
+glover
+gloveress
+glovey
+gloving
+glow
+glower
+glowerer
+glowering
+gloweringly
+glowfly
+glowing
+glowingly
+glowworm
+Gloxinia
+gloy
+gloze
+glozing
+glozingly
+glub
+glucase
+glucemia
+glucid
+glucide
+glucidic
+glucina
+glucine
+glucinic
+glucinium
+glucinum
+gluck
+glucofrangulin
+glucokinin
+glucolipid
+glucolipide
+glucolipin
+glucolipine
+glucolysis
+glucosaemia
+glucosamine
+glucosan
+glucosane
+glucosazone
+glucose
+glucosemia
+glucosic
+glucosid
+glucosidal
+glucosidase
+glucoside
+glucosidic
+glucosidically
+glucosin
+glucosine
+glucosone
+glucosuria
+glucuronic
+glue
+glued
+gluemaker
+gluemaking
+gluepot
+gluer
+gluey
+glueyness
+glug
+gluish
+gluishness
+glum
+gluma
+Glumaceae
+glumaceous
+glumal
+Glumales
+glume
+glumiferous
+Glumiflorae
+glumly
+glummy
+glumness
+glumose
+glumosity
+glump
+glumpily
+glumpiness
+glumpish
+glumpy
+glunch
+Gluneamie
+glusid
+gluside
+glut
+glutamic
+glutamine
+glutaminic
+glutaric
+glutathione
+glutch
+gluteal
+glutelin
+gluten
+glutenin
+glutenous
+gluteofemoral
+gluteoinguinal
+gluteoperineal
+gluteus
+glutin
+glutinate
+glutination
+glutinative
+glutinize
+glutinose
+glutinosity
+glutinous
+glutinously
+glutinousness
+glutition
+glutoid
+glutose
+glutter
+gluttery
+glutting
+gluttingly
+glutton
+gluttoness
+gluttonish
+gluttonism
+gluttonize
+gluttonous
+gluttonously
+gluttonousness
+gluttony
+glyceraldehyde
+glycerate
+Glyceria
+glyceric
+glyceride
+glycerin
+glycerinate
+glycerination
+glycerine
+glycerinize
+glycerite
+glycerize
+glycerizin
+glycerizine
+glycerogel
+glycerogelatin
+glycerol
+glycerolate
+glycerole
+glycerolize
+glycerophosphate
+glycerophosphoric
+glycerose
+glyceroxide
+glyceryl
+glycid
+glycide
+glycidic
+glycidol
+Glycine
+glycine
+glycinin
+glycocholate
+glycocholic
+glycocin
+glycocoll
+glycogelatin
+glycogen
+glycogenesis
+glycogenetic
+glycogenic
+glycogenize
+glycogenolysis
+glycogenous
+glycogeny
+glycohaemia
+glycohemia
+glycol
+glycolaldehyde
+glycolate
+glycolic
+glycolide
+glycolipid
+glycolipide
+glycolipin
+glycolipine
+glycoluric
+glycoluril
+glycolyl
+glycolylurea
+glycolysis
+glycolytic
+glycolytically
+Glyconian
+Glyconic
+glyconic
+glyconin
+glycoproteid
+glycoprotein
+glycosaemia
+glycose
+glycosemia
+glycosin
+glycosine
+glycosuria
+glycosuric
+glycuresis
+glycuronic
+glycyl
+glycyphyllin
+Glycyrrhiza
+glycyrrhizin
+glyoxal
+glyoxalase
+glyoxalic
+glyoxalin
+glyoxaline
+glyoxim
+glyoxime
+glyoxyl
+glyoxylic
+glyph
+glyphic
+glyphograph
+glyphographer
+glyphographic
+glyphography
+glyptic
+glyptical
+glyptician
+Glyptodon
+glyptodont
+Glyptodontidae
+glyptodontoid
+glyptograph
+glyptographer
+glyptographic
+glyptography
+glyptolith
+glyptological
+glyptologist
+glyptology
+glyptotheca
+Glyptotherium
+glyster
+Gmelina
+gmelinite
+gnabble
+Gnaeus
+gnaphalioid
+Gnaphalium
+gnar
+gnarl
+gnarled
+gnarliness
+gnarly
+gnash
+gnashingly
+gnat
+gnatcatcher
+gnatflower
+gnathal
+gnathalgia
+gnathic
+gnathidium
+gnathion
+gnathism
+gnathite
+gnathitis
+Gnatho
+gnathobase
+gnathobasic
+Gnathobdellae
+Gnathobdellida
+gnathometer
+gnathonic
+gnathonical
+gnathonically
+gnathonism
+gnathonize
+gnathophorous
+gnathoplasty
+gnathopod
+Gnathopoda
+gnathopodite
+gnathopodous
+gnathostegite
+Gnathostoma
+Gnathostomata
+gnathostomatous
+gnathostome
+Gnathostomi
+gnathostomous
+gnathotheca
+gnatling
+gnatproof
+gnatsnap
+gnatsnapper
+gnatter
+gnatty
+gnatworm
+gnaw
+gnawable
+gnawer
+gnawing
+gnawingly
+gnawn
+gneiss
+gneissic
+gneissitic
+gneissoid
+gneissose
+gnei moving in the specified direction
+until you pass something interesting or run into a wall.
+You should experiment with this,
+since it is a very useful command,
+but very difficult to describe.
+This also works for all movement commands.
+.ip j
+Move down.
+.ip k
+Move up.
+.ip l
+Move right.
+.ip y
+Move diagonally up and left.
+.ip u
+Move diagonally up and right.
+.ip b
+Move diagonally down and left.
+.ip n
+Move diagonally down and right.
+.ip t
+Throw an object.
+This is a prefix command.
+When followed with a direction
+it throws an object in the specified direction.
+(e.g. type
+.Cs th
+to throw
+something to the left.)
+.ip f
+Fight until someone dies.
+When followed with a direction
+this will force you to fight the creature in that direction
+until either you or it bites the big one.
+.ip m
+Move onto something without picking it up.
+This will move you one space in the direction you specify and,
+if there is an object there you can pick up,
+it won't do it.
+.ip z
+Zap prefix.
+Point a staff or wand in a given direction
+and fire it.
+Even non-directional staves must be pointed in some direction
+to be used.
+.ip ^
+Identify trap command.
+If a trap is on your map
+and you can't remember what type it is,
+you can get rogue to remind you
+by getting next to it and typing
+.Cs ^
+followed by the direction that would move you on top of it.
+.ip s
+Search for traps and secret doors.
+Examine each space immediately adjacent to you
+for the existence of a trap or secret door.
+There is a large chance that even if there is something there,
+you won't find it,
+so you might have to search a while before you find something.
+.ip >
+Climb down a staircase to the next level.
+Not surprisingly, this can only be done if you are standing on staircase.
+.ip <
+Climb up a staircase to the level above.
+This can't be done without the Amulet of Yendor in your possession.
+.ip "."
+Rest.
+This is the \*(lqdo nothing\*(rq command.
+This is good for waiting and healing.
+.ip ,
+Pick up something.
+This picks up whatever you are currently standing on,
+if you are standing on anything at all.
+.ip i
+Inventory.
+List what you are carrying in your pack.
+.ip I
+Selective inventory.
+Tells you what a single item in your pack is.
+.ip q
+Quaff one of the potions you are carrying.
+.ip r
+Read one of the scrolls in your pack.
+.ip e
+Eat food from your pack.
+.ip w
+Wield a weapon.
+Take a weapon out of your pack and carry it for use in combat,
+replacing the one you are currently using (if any).
+.ip W
+Wear armor.
+You can only wear one suit of armor at a time.
+This takes extra time.
+.ip T
+Take armor off.
+You can't remove armor that is cursed.
+This takes extra time.
+.ip P
+Put on a ring.
+You can wear only two rings at a time
+(one on each hand).
+If you aren't wearing any rings,
+this command will ask you which hand you want to wear it on,
+otherwise, it will place it on the unused hand.
+The program assumes that you wield your sword in your right hand.
+.ip R
+Remove a ring.
+If you are only wearing one ring,
+this command takes it off.
+If you are wearing two,
+it will ask you which one you wish to remove,
+.ip d
+Drop an object.
+Take something out of your pack and leave it lying on the floor.
+Only one object can occupy each space.
+You cannot drop a cursed object at all
+if you are wielding or wearing it.
+.ip c
+Call an object something.
+If you have a type of object in your pack
+which you wish to remember something about,
+you can use the call command to give a name to that type of object.
+This is usually used when you figure out what a
+potion, scroll, ring, or staff is
+after you pick it up,
+or when you want to remember
+which of those swords in your pack you were wielding.
+.ip D
+Print out which things you've discovered something about.
+This command will ask you what type of thing you are interested in.
+If you type the character for a given type of object
+(\fIe.g.\fP
+.Cs !
+for potion)
+it will tell you which kinds of that type of object you've discovered
+(\fIi.e.\fP, figured out what they are).
+This command works for potions, scrolls, rings, and staves and wands.
+.ip o
+Examine and set options.
+This command is further explained in the section on options.
+.ip ^R
+Redraws the screen.
+Useful if spurious messages or transmission errors
+have messed up the display.
+.ip ^P
+Print last message.
+Useful when a message disappears before you can read it.
+This only repeats the last message
+that was not a mistyped command
+so that you don't loose anything by accidentally typing
+the wrong character instead of ^P.
+.ip \*E
+Cancel a command, prefix, or count.
+.ip !
+Escape to a shell for some commands.
+.ip Q
+Quit.
+Leave the game.
+.ip S
+Save the current game in a file.
+It will ask you whether you wish to use the default save file.
+.i Caveat :
+Rogue won't let you start up a copy of a saved game,
+and it removes the save file as soon as you start up a restored game.
+This is to prevent people from saving a game just before a dangerous position
+and then restarting it if they die.
+To restore a saved game,
+give the file name as an argument to rogue.
+As in
+.ti +1i
+.nf
+% rogue \fIsave\*_file\fP
+.ip
+To restart from the default save file (see below),
+run
+.ti +1i
+.nf
+% rogue \-r
+.ip v
+Prints the program version number.
+.ip )
+Print the weapon you are currently wielding
+.ip ]
+Print the armor you are currently wearing
+.ip =
+Print the rings you are currently wearing
+.ip @
+Reprint the status line on the message line
+.sh 1 Rooms
+.pp
+Rooms in the dungeons are either lit or dark.
+If you walk into a lit room,
+the entire room will be drawn on the screen as soon as you enter.
+If you walk into a dark room,
+it will only be displayed as you explore it.
+Upon leaving a room,
+all monsters inside the room
+are erased from the screen.
+In the darkness you can only see one space
+in all directions around you.
+A corridor is always dark.
+.sh 1 Fighting
+.pp
+If you see a monster and you wish to fight it,
+just attempt to run into it.
+Many times a monster you find will mind its own business
+unless you attack it.
+It is often the case that discretion is the better part of valor.
+.sh 1 "Objects you can find"
+.pp
+When you find something in the dungeon,
+it is common to want to pick the object up.
+This is accomplished in rogue by walking over the object
+(unless you use the
+.Cs m
+prefix, see above).
+If you are carrying too many things,
+the program will tell you and it won't pick up the object,
+otherwise it will add it to your pack
+and tell you what you just picked up.
+.pp
+Many of the commands that operate on objects must prompt you
+to find out which object you want to use.
+If you change your mind and don't want to do that command after all,
+just type an \*E and the command will be aborted.
+.pp
+Some objects, like armor and weapons,
+are easily differentiated.
+Others, like scrolls and potions,
+are given labels which vary according to type.
+During a game,
+any two of the same kind of object
+with the same label
+are the same type.
+However,
+the labels will vary from game to game.
+.pp
+When you use one of these labeled objects,
+if its effect is obvious,
+rogue will remember what it is for you.
+If it's effect isn't extremely obvious
+you will be asked what you want to scribble on it
+so you will recognize it later,
+or you can use the
+.Cs call
+command
+(see above).
+.sh 2 Weapons
+.pp
+Some weapons,
+like arrows,
+come in bunches,
+but most come one at a time.
+In order to use a weapon,
+you must wield it.
+To fire an arrow out of a bow,
+you must first wield the bow,
+then throw the arrow.
+You can only wield one weapon at a time,
+but you can't change weapons if the one
+you are currently wielding is cursed.
+The commands to use weapons are
+.Cs w
+(wield)
+and
+.Cs t
+(throw).
+.sh 2 Armor
+.pp
+There are various sorts of armor lying around in the dungeon.
+Some of it is enchanted,
+some is cursed,
+and some is just normal.
+Different armor types have different armor protection.
+The higher the armor protection,
+the more protection the armor affords against the blows of monsters.
+Here is a list of the various armor types and their normal armor protection:
+.(b
+.TS
+box center;
+l r.
+\ \ \fIType	Protection\fP
+None	0
+Leather armor	2
+Studded leather / Ring mail	3
+Scale mail	4
+Chain mail	5
+Banded mail / Splint mail	6
+Plate mail	7
+.TE
+.)b
+.lp
+If a piece of armor is enchantssy
+Gnetaceae
+gnetaceous
+Gnetales
+Gnetum
+gnocchetti
+gnome
+gnomed
+gnomesque
+gnomic
+gnomical
+gnomically
+gnomide
+gnomish
+gnomist
+gnomologic
+gnomological
+gnomologist
+gnomology
+gnomon
+Gnomonia
+Gnomoniaceae
+gnomonic
+gnomonical
+gnomonics
+gnomonological
+gnomonologically
+gnomonology
+gnosiological
+gnosiology
+gnosis
+Gnostic
+gnostic
+gnostical
+gnostically
+Gnosticism
+gnosticity
+gnosticize
+gnosticizer
+gnostology
+gnu
+go
+goa
+goad
+goadsman
+goadster
+goaf
+Goajiro
+goal
+Goala
+goalage
+goalee
+goalie
+goalkeeper
+goalkeeping
+goalless
+goalmouth
+Goan
+Goanese
+goanna
+Goasila
+goat
+goatbeard
+goatbrush
+goatbush
+goatee
+goateed
+goatfish
+goatherd
+goatherdess
+goatish
+goatishly
+goatishness
+goatland
+goatlike
+goatling
+goatly
+goatroot
+goatsbane
+goatsbeard
+goatsfoot
+goatskin
+goatstone
+goatsucker
+goatweed
+goaty
+goave
+gob
+goback
+goban
+gobang
+gobbe
+gobber
+gobbet
+gobbin
+gobbing
+gobble
+gobbledygook
+gobbler
+gobby
+Gobelin
+gobelin
+gobernadora
+gobi
+Gobia
+Gobian
+gobiesocid
+Gobiesocidae
+gobiesociform
+Gobiesox
+gobiid
+Gobiidae
+gobiiform
+Gobiiformes
+Gobinism
+Gobinist
+Gobio
+gobioid
+Gobioidea
+Gobioidei
+goblet
+gobleted
+gobletful
+goblin
+gobline
+goblinesque
+goblinish
+goblinism
+goblinize
+goblinry
+gobmouthed
+gobo
+gobonated
+gobony
+gobstick
+goburra
+goby
+gobylike
+gocart
+Goclenian
+God
+god
+godchild
+Goddam
+Goddard
+goddard
+goddaughter
+godded
+goddess
+goddesshood
+goddessship
+goddikin
+goddize
+gode
+godet
+Godetia
+godfather
+godfatherhood
+godfathership
+Godforsaken
+Godfrey
+Godful
+godhead
+godhood
+Godiva
+godkin
+godless
+godlessly
+godlessness
+godlet
+godlike
+godlikeness
+godlily
+godliness
+godling
+godly
+godmaker
+godmaking
+godmamma
+godmother
+godmotherhood
+godmothership
+godown
+godpapa
+godparent
+Godsake
+godsend
+godship
+godson
+godsonship
+Godspeed
+Godward
+Godwin
+Godwinian
+godwit
+goeduck
+goel
+goelism
+Goemagot
+Goemot
+goer
+goes
+Goetae
+Goethian
+goetia
+goetic
+goetical
+goety
+goff
+goffer
+goffered
+gofferer
+goffering
+goffle
+gog
+gogga
+goggan
+goggle
+goggled
+goggler
+gogglers
+goggly
+goglet
+Gogo
+gogo
+Gohila
+goi
+goiabada
+Goidel
+Goidelic
+going
+goitcho
+goiter
+goitered
+goitral
+goitrogen
+goitrogenic
+goitrous
+Gokuraku
+gol
+gola
+golach
+goladar
+golandaas
+golandause
+Golaseccan
+Golconda
+Gold
+gold
+goldbeater
+goldbeating
+Goldbird
+goldbrick
+goldbricker
+goldbug
+goldcrest
+goldcup
+golden
+goldenback
+goldeneye
+goldenfleece
+goldenhair
+goldenknop
+goldenlocks
+goldenly
+Goldenmouth
+goldenmouthed
+goldenness
+goldenpert
+goldenrod
+goldenseal
+goldentop
+goldenwing
+golder
+goldfielder
+goldfinch
+goldfinny
+goldfish
+goldflower
+goldhammer
+goldhead
+Goldi
+Goldic
+goldie
+goldilocks
+goldin
+goldish
+goldless
+goldlike
+Goldonian
+goldseed
+goldsinny
+goldsmith
+goldsmithery
+goldsmithing
+goldspink
+goldstone
+goldtail
+goldtit
+goldwater
+goldweed
+goldwork
+goldworker
+Goldy
+goldy
+golee
+golem
+golf
+golfdom
+golfer
+Golgi
+Golgotha
+goli
+goliard
+goliardery
+goliardic
+Goliath
+goliath
+goliathize
+golkakra
+Goll
+golland
+gollar
+golliwogg
+golly
+Golo
+goloe
+golpe
+Goma
+gomari
+Gomarian
+Gomarist
+Gomarite
+gomart
+gomashta
+gomavel
+gombay
+gombeen
+gombeenism
+gombroon
+Gomeisa
+gomer
+gomeral
+gomlah
+gommelin
+Gomontia
+Gomorrhean
+Gomphocarpus
+gomphodont
+Gompholobium
+gomphosis
+Gomphrena
+gomuti
+gon
+Gona
+gonad
+gonadal
+gonadial
+gonadic
+gonadotropic
+gonadotropin
+gonaduct
+gonagra
+gonakie
+gonal
+gonalgia
+gonangial
+gonangium
+gonapod
+gonapophysal
+gonapophysial
+gonapophysis
+gonarthritis
+Gond
+gondang
+Gondi
+gondite
+gondola
+gondolet
+gondolier
+gone
+goneness
+goneoclinic
+gonepoiesis
+gonepoietic
+goner
+Goneril
+gonesome
+gonfalcon
+gonfalonier
+gonfalonierate
+gonfaloniership
+gonfanon
+gong
+gongman
+Gongoresque
+Gongorism
+Gongorist
+gongoristic
+gonia
+goniac
+gonial
+goniale
+Goniaster
+goniatite
+Goniatites
+goniatitic
+goniatitid
+Goniatitidae
+goniatitoid
+gonid
+gonidangium
+gonidia
+gonidial
+gonidic
+gonidiferous
+gonidiogenous
+gonidioid
+gonidiophore
+gonidiose
+gonidiospore
+gonidium
+gonimic
+gonimium
+gonimolobe
+gonimous
+goniocraniometry
+Goniodoridae
+Goniodorididae
+Goniodoris
+goniometer
+goniometric
+goniometrical
+goniometrically
+goniometry
+gonion
+Goniopholidae
+Goniopholis
+goniostat
+goniotropous
+gonitis
+Gonium
+gonium
+gonnardite
+gonne
+gonoblast
+gonoblastic
+gonoblastidial
+gonoblastidium
+gonocalycine
+gonocalyx
+gonocheme
+gonochorism
+gonochorismal
+gonochorismus
+gonochoristic
+gonococcal
+gonococcic
+gonococcoid
+gonococcus
+gonocoel
+gonocyte
+gonoecium
+Gonolobus
+gonomere
+gonomery
+gonophore
+gonophoric
+gonophorous
+gonoplasm
+gonopoietic
+gonorrhea
+gonorrheal
+gonorrheic
+gonosomal
+gonosome
+gonosphere
+gonostyle
+gonotheca
+gonothecal
+gonotokont
+gonotome
+gonotype
+gonozooid
+gony
+gonyalgia
+gonydeal
+gonydial
+gonyocele
+gonyoncus
+gonys
+Gonystylaceae
+gonystylaceous
+Gonystylus
+gonytheca
+Gonzalo
+goo
+goober
+good
+Goodenia
+Goodeniaceae
+goodeniaceous
+Goodenoviaceae
+goodhearted
+goodheartedly
+goodheartedness
+gooding
+goodish
+goodishness
+goodlihead
+goodlike
+goodliness
+goodly
+goodman
+goodmanship
+goodness
+goods
+goodsome
+goodwife
+goodwill
+goodwillit
+goodwilly
+goody
+goodyear
+Goodyera
+goodyish
+goodyism
+goodyness
+goodyship
+goof
+goofer
+goofily
+goofiness
+goofy
+googly
+googol
+googolplex
+googul
+gook
+gool
+goolah
+gools
+gooma
+goon
+goondie
+goonie
+Goop
+goosander
+goose
+goosebeak
+gooseberry
+goosebill
+goosebird
+goosebone
+gooseboy
+goosecap
+goosefish
+gooseflower
+goosefoot
+goosegirl
+goosegog
+gooseherd
+goosehouse
+gooselike
+goosemouth
+gooseneck
+goosenecked
+gooserumped
+goosery
+goosetongue
+gooseweed
+goosewing
+goosewinged
+goosish
+goosishly
+goosishness
+goosy
+gopher
+gopherberry
+gopherroot
+gopherwood
+gopura
+Gor
+gor
+gora
+goracco
+goral
+goran
+gorb
+gorbal
+gorbellied
+gorbelly
+gorbet
+gorble
+gorblimy
+gorce
+gorcock
+gorcrow
+Gordiacea
+gordiacean
+gordiaceous
+Gordian
+Gordiidae
+Gordioidea
+Gordius
+gordolobo
+Gordonia
+gordunite
+Gordyaean
+gore
+gorer
+gorevan
+gorfly
+gorge
+gorgeable
+gorged
+gorgedly
+gorgelet
+gorgeous
+gorgeously
+gorgeousness
+gorger
+gorgerin
+gorget
+gorgeted
+gorglin
+Gorgon
+Gorgonacea
+gorgonacean
+gorgonaceous
+gorgonesque
+gorgoneum
+Gorgonia
+Gorgoniacea
+gorgoniacean
+gorgoniaceous
+Gorgonian
+gorgonian
+gorgonin
+gorgonize
+gorgonlike
+Gorgonzola
+Gorgosaurus
+gorhen
+goric
+gorilla
+gorillaship
+gorillian
+gorilline
+gorilloid
+gorily
+goriness
+goring
+Gorkhali
+Gorkiesque
+gorlin
+gorlois
+gormandize
+gormandizer
+gormaw
+gormed
+gorra
+gorraf
+gorry
+gorse
+gorsebird
+gorsechat
+gorsedd
+gorsehatch
+gorsy
+Gortonian
+Gortonite
+gory
+gos
+gosain
+goschen
+gosh
+goshawk
+Goshen
+goshenite
+goslarite
+goslet
+gosling
+gosmore
+gospel
+gospeler
+gospelist
+gospelize
+gospellike
+gospelly
+gospelmonger
+gospelwards
+Gosplan
+gospodar
+gosport
+gossamer
+gossamered
+gossamery
+gossampine
+gossan
+gossaniferous
+gossard
+gossip
+gossipdom
+gossipee
+gossiper
+gossiphood
+gossipiness
+gossiping
+gossipingly
+gossipmonger
+gossipred
+gossipry
+gossipy
+gossoon
+gossy
+gossypine
+Gossypium
+gossypol
+gossypose
+got
+gotch
+gote
+Goth
+Gotha
+Gotham
+Gothamite
+Gothic
+Gothically
+Gothicism
+Gothicist
+Gothicity
+Gothicize
+Gothicizer
+Gothicness
+Gothish
+Gothism
+gothite
+Gothlander
+Gothonic
+Gotiglacial
+gotra
+gotraja
+gotten
+Gottfried
+Gottlieb
+gouaree
+Gouda
+Goudy
+gouge
+gouger
+goujon
+goulash
+goumi
+goup
+Goura
+gourami
+gourd
+gourde
+gourdful
+gourdhead
+gourdiness
+gourdlike
+gourdworm
+gourdy
+Gourinae
+gourmand
+gourmander
+gourmanderie
+gourmandism
+gourmet
+gourmetism
+gourounut
+goustrous
+gousty
+gout
+goutify
+goutily
+goutiness
+goutish
+goutte
+goutweed
+goutwort
+gouty
+gove
+govern
+governability
+governable
+governableness
+governably
+governail
+governance
+governess
+gov

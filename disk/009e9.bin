@@ -1,0 +1,673 @@
+ to a file,
+the allocation routines calculate the number of blocks to
+skip over so that the next block in the file will
+come into position under the disk head in the expected
+amount of time that it takes to start a new
+disk transfer operation.
+For programs that sequentially access large amounts of data,
+this strategy minimizes the amount of time spent waiting for
+the disk to position itself.
+.PP
+To ease the calculation of finding rotationally optimal blocks,
+the cylinder group summary information includes
+a count of the available blocks in a cylinder
+group at different rotational positions.
+Eight rotational positions are distinguished,
+so the resolution of the
+summary information is 2 milliseconds for a typical 3600
+revolution per minute drive.
+The super-block contains a vector of lists called
+.I "rotational layout tables".
+The vector is indexed by rotational position.
+Each component of the vector
+lists the index into the block map for every data block contained
+in its rotational position.
+When looking for an.\" Copyright (c) 1986 Regents of the University of California.
+.\" All rights reserved.  The Berkeley software License Agreement
+.\" specifies the terms and conditions for redistribution.
+.\"
+.\"	@(#)5.t	6.1 (Berkeley) 5/14/86
+.\"
+.ds RH Functional enhancements
+.NH 
+File system functional enhancements
+.PP
+The performance enhancements to the
+UNIX file system did not require
+any changes to the semantics or
+data structures visible to application programs.
+However, several changes had been generally desired for some 
+time but had not been introduced because they would require users to 
+dump and restore all their file systems.
+Since the new file system already
+required all existing file systems to
+be dumped and restored, 
+these functional enhancements were introduced at this time.
+.NH 2
+Long file names
+.PP
+File names can now be of nearly arbitrary length.
+Only programs that read directories are affected by this change.
+To promote portability to UNIX systems that
+are not running the new file system, a set of directory
+access routines have been introduced to provide a consistent
+interface to directories on both old and new systems.
+.PP
+Directories are allocated in 512 byte units called chunks.
+This size is chosen so that each allocation can be transferred
+to disk in a single operation.
+Chunks are broken up into variable length records termed
+directory entries.  A directory entry
+contains the information necessary to map the name of a
+file to its associated inode.
+No directory entry is allowed to span multiple chunks.
+The first three fields of a directory entry are fixed length
+and contain: an inode number, the size of the entry, and the length
+of the file name contained in the entry.
+The remainder of an entry is variable length and contains
+a null terminated file name, padded to a 4 byte boundary.
+The maximum length of a file name in a directory is
+currently 255 characters.
+.PP
+Available space in a directory is recorded by having
+one or more entries accumulate the free space in their
+entry size fields.  This results in directory entries
+that are larger than required to hold the
+entry name plus fixed length fields.  Space allocated
+to a directory should always be completely accounted for
+by totaling up the sizes of its entries.
+When an entry is deleted from a directory,
+its space is returned to a previous entry
+in the same directory chunk by increasing the size of the
+previous entry by the size of the deleted entry.
+If the first entry of a directory chunk is free, then 
+the entry's inode number is set to zero to indicate
+that it is unallocated.
+.NH 2
+File locking
+.PP
+The old file system had no provision for locking files.
+Processes that needed to synchronize the updates of a
+file had to use a separate ``lock'' file.
+A process would try to create a ``lock'' file. 
+If the creation succeeded, then the process
+could proceed with its update;
+if the creation failed, then the process would wait and try again.
+This mechanism had three drawbacks.
+Processes consumed CPU time by looping over attempts to create locks.
+Locks left lying around because of system crashes had
+to be manually removed (normally in a system startup command script).
+Finally, processes running as system administrator
+are always permitted to create files,
+so were forced to use a different mechanism.
+While it is possible to get around all these problems,
+the solutions are not straight forward,
+so a mechanism for locking files has been added.
+.PP
+The most general schemes allow multiple processes
+to concurrently update a file.
+Several of these techniques are discussed in [Peterson83].
+A simpler technique is to serialize access to a file with locks.
+To attain reasonable efficiency,
+certain applications require the ability to lock pieces of a file.
+Locking down to the byte level has been implemented in the
+Onyx file system by [Bass81].
+However, for the standard system applications,
+a mechanism that locks at the granularity of a file is sufficient.
+.PP
+Locking schemes fall into two classes,
+those using hard locks and those using advisory locks.
+The primary difference between advisory locks and hard locks is the
+extent of enforcement.
+A hard lock is always enforced when a program tries to
+access a file;
+an advisory lock is only applied when it is requested by a program.
+Thus advisory locks are only effective when all programs accessing
+a file use the locking scheme.
+With hard locks there must be some override
+policy implemented in the kernel.
+With advisory locks the policy is left to the user programs.
+In the UNIX system, programs with system administrator
+privilege are allowed override any protection scheme.
+Because many of the programs that need to use locks must
+also run as the system administrator,
+we chose to implement advisory locks rather than 
+create an additional protection scheme that was inconsistent
+with the UNIX philosophy or could
+not be used by system administration programs.
+.PP
+The file locking facilities allow cooperating programs to apply
+advisory
+.I shared
+or
+.I exclusive
+locks on files.
+Only one process may have an exclusive
+lock on a file while multiple shared locks may be present.
+Both shared and exclusive locks cannot be present on
+a file at the same time.
+If any lock is requested when
+another process holds an exclusive lock,
+or an exclusive lock is requested when another process holds any lock,
+the lock request will block until the lock can be obtained.
+Because shared and exclusive locks are advisory only,
+even if a process has obtained a lock on a file,
+another process may access the file.
+.PP
+Locks are applied or removed only on open files.
+This means that locks can be manipulated without
+needing to close and reopen a file.
+This is useful, for example, when a process wishes
+to apply a shared lock, read some information
+and determine whether an update is required, then
+apply an exclusive lock and update the file.
+.PP
+A request for a lock will cause a process to block if the lock
+can not be immediately obtained.
+In certain instances this is unsatisfactory.
+For example, a process that
+wants only to check if a lock is present would require a separate
+mechanism to find out this information.
+Consequently, a process may specify that its locking
+request should return with an error if a lock can not be immediately
+obtained.
+Being able to conditionally request a lock
+is useful to ``daemon'' processes
+that wish to service a spooling area.
+If the first instance of the
+daemon locks the directory where spooling takes place,
+later daemon processes can
+easily check to see if an active daemon exists.
+Since locks exist only while the locking processes exist,
+lock files can never be left active after
+the processes exit or if the system crashes.
+.PP
+Almost no deadlock detection is attempted.
+The only deadlock detection done by the system is that the file
+to which a lock is applied must not already have a
+lock of the same type (i.e. the second of two successive calls
+to apply a lock of the same type will fail).
+.NH 2
+Symbolic links
+.PP
+The traditional UNIX file system allows multiple
+directory entries in the same file system
+to reference a single file.  Each directory entry
+``links'' a file's name to an inode and its contents.
+The link concept is fundamental;
+inodes do not reside in directories, but exist separately and
+are referenced by links.
+When all the links to an inode are removed,
+the inode is deallocated.
+This style of referencing an inode does
+not allow references across physical file
+systems, nor does it support inter-machine linkage. 
+To avoid these limitations
+.I "symbolic links"
+similar to the scheme used by Multics [Feiertag71] have been added.
+.PP
+A symbolic link is implemented as a file that contains a pathname.
+When the system encounters a symbolic link while
+interpreting a component of a pathname,
+the contents of the symbolic link is prepended to the rest
+of the pathname, and this name is interpreted to yield the
+resulting pathname.
+In UNIX, pathnames are specified relative to the root
+of the file system hierarchy, or relative to a process's
+current working directory.  Pathnames specified relative
+to the root are called absolute pathnames.  Pathnames
+specified relati allocatable block,
+the system first looks through the summary counts for a rotational
+position with a non-zero block count.
+It then uses the index of the rotational position to find the appropriate
+list to use to index through
+only the relevant parts of the block map to find a free block.
+.PP
+The parameter that defines the
+minimum number of milliseconds between the completion of a data
+transfer and the initiation of
+another data transfer on the same cylinder
+can be changed at any time,
+even when the file system is mounted and active.
+If a file system is parameterized to lay out blocks with
+a rotational separation of 2 milliseconds,
+and the disk pack is then moved to a system that has a
+processor requiring 4 milliseconds to schedule a disk operation,
+the throughput will drop precipitously because of lost disk revolutions
+on nearly every block.
+If the eventual target machine is known, 
+the file system can be parameterized for it
+even though it is initially created on a different processor.
+Even if the move is not known in advance,
+the rotational layout delay can be reconfigured after the disk is moved
+so that all further allocation is done based on the
+characteristics of the new host.
+.NH 2
+Layout policies
+.PP
+The file system layout policies are divided into two distinct parts.
+At the top level are global policies that use file system
+wide summary information to make decisions regarding
+the placement of new inodes and data blocks.
+These routines are responsible for deciding the
+placement of new directories and files.
+They also calculate rotationally optimal block layouts,
+and decide when to force a long seek to a new cylinder group
+because there are insufficient blocks left
+in the current cylinder group to do reasonable layouts.
+Below the global policy routines are
+the local allocation routines that use a locally optimal scheme to
+lay out data blocks.
+.PP
+Two methods for improving file system performance are to increase
+the locality of reference to minimize seek latency 
+as described by [Trivedi80], and
+to improve the layout of data to make larger transfers possible
+as described by [Nevalainen77].
+The global layout policies try to improve performance
+by clustering related information.
+They cannot attempt to localize all data references,
+but must also try to spread unrelated data
+among different cylinder groups.
+If too much localization is attempted,
+the local cylinder group may run out of space
+forcing the data to be scattered to non-local cylinder groups.
+Taken to an extreme,
+total localization can result in a single huge cluster of data
+resembling the old file system.
+The global policies try to balance the two conflicting
+goals of localizing data that is concurrently accessed
+while spreading out unrelated data.
+.PP
+One allocatable resource is inodes.
+Inodes are used to describe both files and directories.
+Inodes of files in the same directory are frequently accessed together.
+For example, the ``list directory'' command often accesses 
+the inode for each file in a directory.
+The layout policy tries to place all the inodes of
+files in a directory in the same cylinder group.
+To ensure that files are distributed throughout the disk,
+a different policy is used for directory allocation.
+A new directory is placed in a cylinder group that has a greater
+than average number of free inodes,
+and the smallest number of directories already in it.
+The intent of this policy is to allow the inode clustering policy
+to succeed most of the time.
+The allocation of inodes within a cylinder group is done using a
+next free strategy.
+Although this allocates the inodes randomly within a cylinder group,
+all the inodes for a particular cylinder group can be read with
+8 to 16 disk transfers.
+(At most 16 disk transfers are required because a cylinder
+group may have no more than 2048 inodes.)
+This puts a small and constant upper bound on the number of
+disk transfers required to access the inodes
+for all the files in a directory.
+In contrast, the old file system typically requires
+one disk transfer to fetch the inode for each file in a directory.
+.PP
+The other major resource is data blocks.
+Since data blocks for a file are typically accessed together,
+the policy routines try to place all data
+blocks for a file in the same cylinder group,
+preferably at rotationally optimal positions in the same cylinder.
+The problem with allocating all the data blocks
+in the same cylinder group is that large files will
+quickly use up available space in the cylinder group,
+forcing a spill over to other areas.
+Further, using all the space in a cylinder group
+causes future allocations for any file in the cylinder group
+to also spill to other areas.
+Ideally none of the cylinder groups should ever become completely full.
+The heuristic solution chosen is to
+redirect block allocation
+to a different cylinder group
+when a file exceeds 48 kilobytes,
+and at every megabyte thereafter.*
+.FS
+* The first spill over point at 48 kilobytes is the point
+at which a file on a 4096 byte block file system first
+requires a single indirect block.  This appears to be
+a natural first point at which to redirect block allocation.
+The other spillover points are chosen with the intent of
+forcing block allocation to be redirected when a
+file has used about 25% of the data blocks in a cylinder group.
+In observing the new file system in day to day use, the heuristics appear
+to work well in minimizing the number of completely filled
+cylinder groups.
+.FE
+The newly chosen cylinder group is selected from those cylinder
+groups that have a greater than average number of free blocks left.
+Although big files tend to be spread out over the disk,
+a megabyte of data is typically accessible before
+a long seek must be performed,
+and the cost of one long seek per megabyte is small.
+.PP
+The global policy routines call local allocation routines with 
+requests for specific blocks.
+The local allocation routines will
+always allocate the requested block 
+if it is free, otherwise it
+allocates a free block of the requested size that is
+rotationally closest to the requested block.
+If the global layout policies had complete information,
+they could always request unused blocks and
+the allocation routines would be reduced to simple bookkeeping.
+However, maintaining complete information is costly;
+thus the implementation of the global layout policy 
+uses heuristics that employ only partial information.
+.PP
+If a requested block is not available, the local allocator uses
+a four level allocation strategy:
+.IP 1)
+Use the next available block rotationally closest
+to the requested block on the same cylinder.  It is assumed
+here that head switching time is zero.  On disk 
+controllers where this is not the case, it may be possible
+to incorporate the time required to switch between disk platters
+when constructing the rotational layout tables.  This, however,
+has not yet been tried.
+.IP 2)
+If there are no blocks available on the same cylinder,
+use a block within the same cylinder group.
+.IP 3)
+If that cylinder group is entirely full, 
+quadratically hash the cylinder group number to choose
+another cylinder group to look for a free block.
+.IP 4)
+Finally if the hash fails, apply an exhaustive search
+to all cylinder groups.
+.PP
+Quadratic hash is used because of its speed in finding
+unused slots in nearly full hash tables [Knuth75].
+File systems that are parameterized to maintain at least
+10% free space rarely use this strategy.
+File systems that are run without maintaining any free
+space typically have so few free blocks that almost any
+allocation is random;
+the most important characteristic of
+the strategy used under such conditions is that the strategy be fast.
+.ds RH Performance
+.sp 2
+.ne 1i
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        ve to the current working directory are
+termed relative pathnames.
+If a symbolic link contains an absolute pathname,
+the absolute pathname is used,
+otherwise the contents of the symbolic link is evaluated
+relative to the location of the link in the file hierarchy.
+.PP
+Normally programs do not want to be aware that there is a
+symbolic link in a pathname that they are using.
+However certain system utilities
+must be able to detect and manipulate symbolic links.
+Three new system calls provide the ability to detect, read, and write
+symbolic links; seven system utilities required changes
+to use these calls.
+.PP
+In future Berkeley software distributions
+it may be possible to reference file systems located on
+remote machines using pathnames.  When this occurs,
+it will be possible to create symbolic links that span machines.
+.NH 2
+Rename
+.PP
+Programs that create a new version of an existing
+file typically create the
+new version as a temporary file and then rename the temporary file
+with the name of the target file.
+In the old UNIX file system renaming required three calls to the system.
+If a program were interrupted or the system crashed between these calls,
+the target file could be left with only its temporary name.
+To eliminate this possibility the \fIrename\fP system call
+has been added.  The rename call does the rename operation
+in a fashion that guarantees the existence of the target name.
+.PP
+Rename works both on data files and directories.
+When renaming directories,
+the system must do special validation checks to insure
+that the directory tree structure is not corrupted by the creation
+of loops or inaccessible directories.
+Such corruption would occur if a parent directory were moved
+into one of its descendants.
+The validation check requires tracing the descendents of the target
+directory to insure that it does not include the directory being moved.
+.NH 2
+Quotas
+.PP
+The UNIX system has traditionally attempted to share all available
+resources to the greatest extent possible.
+Thus any single user can allocate all the available space
+in the file system.
+In certain environments this is unacceptable.
+Consequently, a quota mechanism has been added for restricting the
+amount of file system resources that a user can obtain.
+The quota mechanism sets limits on both the number of inodes
+and the number of disk blocks that a user may allocate.
+A separate quota can be set for each user on each file system.
+Resources are given both a hard and a soft limit.
+When a program exceeds a soft limit,
+a warning is printed on the users terminal;
+the offending program is not terminated
+unless it exceeds its hard limit.
+The idea is that users should stay below their soft limit between
+login sessions,
+but they may use more resources while they are actively working.
+To encourage this behavior,
+users are warned when logging in if they are over
+any of their soft limits.
+If users fails to correct the problem for too many login sessions,
+they are eventually reprimanded by having their soft limit
+enforced as their hard limit.
+.ds RH Acknowledgements
+.sp 2
+.ne 1i
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      /*
+ * Copyright (c) 1980 Regents of the University of California.
+ * All rights reserved.  The Berkeley software License Agreement
+ * specifies the terms and conditions for redistribution.
+ *
+ *	@(#)dumprestore.h	5.1 (Berkeley) 6/5/85
+ */
+
+/*
+ * TP_BSIZE is the size of file blocks on the dump tapes.
+ * Note that TP_BSIZE must be a multiple of DEV_BSIZE.
+ *
+ * NTREC is the number of TP_BSIZE blocks that are written
+ * in each tape record. HIGHDENSITYTREC is the number of
+ * TP_BSIZE blocks that are written in each tape record on
+ * 6250 BPI or higher density tapes.
+ *
+ * TP_NINDIR is the number of indirect pointers in a TS_INODE
+ * or TS_ADDR record. Note that it must be a power of two.
+ */
+#define TP_BSIZE	1024
+#define NTREC   	10
+#define HIGHDENSITYTREC	32
+#define TP_NINDIR	(TP_BSIZE/2)
+
+#define TS_TAPE 	1
+#define TS_INODE	2
+#define TS_BITS 	3
+#define TS_ADDR 	4
+#define TS_END  	5
+#define TS_CLRI 	6
+#define OFS_MAGIC   	(int)60011
+#define NFS_MAGIC   	(int)60012
+#define CHECKSUM	(int)84446
+
+union u_spcl {
+	char dummy[TP_BSIZE];
+	struct	s_spcl {
+		int	c_type;
+		time_t	c_date;
+		time_t	c_ddate;
+		int	c_volume;
+		daddr_t	c_tapea;
+		ino_t	c_inumber;
+		int	c_magic;
+		int	c_checksum;
+		struct	dinode	c_dinode;
+		int	c_count;
+		char	c_addr[TP_NINDIR];
+	} s_spcl;
+} u_spcl;
+
+#define spcl u_spcl.s_spcl
+
+#define	DUMPOUTFMT	"%-16s %c %s"		/* for printf */
+						/* name, incno, ctime(date) */
+#define	DUMPINFMT	"%16s %c %[^\n]\n"	/* inverse for scanf */
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        @¨    .   dX  ô ..                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          /*
+ * Copyright (c) 1983 Regents of the University of California.
+ * All rights reserved.  The Berkeley software License Agreement
+ * specifies the terms and conditions for redistribution.
+ */
+
+/*	@(#)timed.h	1.6	(Berkeley)	5/28/86	*/
+
+/*
+ * Time Synchronization Protocol
+ */
+
+#define	TSPVERSION	1
+#define ANYADDR 	NULL
+
+struct tsp {
+	u_char	tsp_type;
+	u_char	tsp_vers;
+	u_short	tsp_seq;
+	union {
+		struct timeval tspu_time;
+		char tspu_hopcnt;
+	} tsp_u;
+	char tsp_name[MAXHOSTNAMELEN];
+};
+
+#define	tsp_time	tsp_u.tspu_time
+#define	tsp_hopcnt	tsp_u.tspu_hopcnt
+ 
+/*
+ * Command types.
+ */
+#define	TSP_ANY			0	/* match any types */
+#define	TSP_ADJTIME		1	/* send adjtime */
+#define	TSP_ACK			2	/* generic acknowledgement */
+#define	TSP_MASTERREQ		3	/* ask for master's name */ 
+#define	TSP_MASTERACK		4	/* acknowledge master request */
+#define	TSP_SETTIME		5	/* send network time */
+#define	TSP_MASTERUP		6	/* inform slaves that master is up */
+#define	TSP_SLAVEUP		7	/* slave is up but not polled */
+#define	TSP_ELECTION		8	/* advance candidature for master */
+#define	TSP_ACCEPT		9	/* support candidature of master */
+#define	TSP_REFUSE		10	/* reject candidature of master */
+#define	TSP_CONFLICT		11	/* two or more masters present */
+#define	TSP_RESOLVE		12	/* masters' conflict resolution */
+#define	TSP_QUIT		13	/* reject candidature if master is up */
+#define	TSP_DATE		14	/* reset the time (date command) */
+#define	TSP_DATEREQ		15	/* remote request to reset the time */
+#define	TSP_DATEACK		16	/* acknowledge time setting  */
+#define	TSP_TRACEON		17	/* turn tracing on */
+#define	TSP_TRACEOFF		18	/* turn tracing off */
+#define	TSP_MSITE		19	/* find out master's site */
+#define	TSP_MSITEREQ		20	/* remote master's site request */
+#define	TSP_TEST		21	/* for testing election algo */
+#define	TSP_SETDATE		22	/* New from date command */
+#define	TSP_SETDATEREQ		23	/* New remote for above */
+#define	TSP_LOOP		24	/* loop detection packet */
+
+#define	TSPTYPENUMBER		25
+
+#ifdef TSPTYPES
+char *tsptype[TSPTYPENUMBER] =
+  { "ANY", "ADJTIME", "ACK", "MASTERREQ", "MASTERACK", "SETTIME", "MASTERUP", 
+  "SLAVEUP", "ELECTION", "ACCEPT", "REFUSE", "CONFLICT", "RESOLVE", "QUIT", 
+  "DATE", "DATEREQ", "DATEACK", "TRACEON", "TRACEOFF", "MSITE", "MSITEREQ",
+  "TEST", "SETDATE", "SETDATEREQ", "LOOP" };
+#endif
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                /*
+ * Copyright (c) 1983 Regents of the University of California.
+ * All rights reserved.  The Berkeley software License Agreement
+ * specifies the terms and conditions for redistribution.
+ *
+ *	@(#)talkd.h	5.2 (Berkeley) 3/13/86
+ */
+
+#include <sys/types.h>
+#include <sys/socket.h>
+/*
+ * This describes the protocol used by the talk server and clients.
+ *
+ * The talk server acts a repository of invitations, responding to
+ * requests by clients wishing to rendezvous for the purpose of
+ * holding a conversation.  In normal operation, a client, the caller,
+ * initiates a rendezvous by sending a CTL_MSG to the server of
+ * type LOOK_UP.  This causes the server to search its invitation
+ * tables to check if an invitation currently exists for the caller
+ * (to speak to the callee specified in the message).  If the lookup
+ * fails, the caller then sends an ANNOUNCE message causing the server
+ * to broadcast an announcement on the callee's login ports requesting
+ * contact.  When the callee responds, the local server uses the
+ * recorded invitation to respond with the appropriate rendezvous
+ * address and the caller and callee client programs establish a
+ * stream connection through which the conversation takes place.
+ */
+
+/*
+ * Client->server request message format.
+ */
+typedef struct {
+	u_char	vers;		/* protocol version */
+	u_char	type;		/* request type, see below */
+	u_char	answer;		/* not used */
+	u_char	pad;
+	u_long	id_num;		/* message id */
+	struct	sockaddr addr;
+	struct	sockaddr ctl_addr;
+	long	pid;		/* caller's process id */
+#define	NAME_SIZE	12
+	char	l_name[NAME_SIZE];/* caller's name */
+	char	r_name[NAME_SIZE];/* callee's name */
+#define	TTY_SIZE	16
+	char	r_tty[TTY_SIZE];/* callee's tty name */
+} CTL_MSG;
+
+/*
+ * Server->client response message format.
+ */
+typedef struct {
+	u_char	vers;		/* protocol version */
+	u_char	type;		/* type of request message, see below */
+	u_char	answer;		/* respose to request message, see below */
+	u_char	pad;
+	u_long	id_num;		/* message id */
+	struct	sockaddr addr;	/* address for establishing conversation */
+} CTL_RESPONSE;
+
+#define	TALK_VERSION	1		/* protocol version */
+
+/* message type values */
+#define LEAVE_INVITE	0	/* leave invitation with server */
+#define LOOK_UP		1	/* check for invitation by callee */
+#define DELETE		2	/* delete invitation by caller */
+#define ANNOUNCE	3	/* announce invitation by caller */
+
+/* answer values */
+#define SUCCESS		0	/* operation completed properly */
+#define NOT_HERE	1	/* callee not logged in */
+#define FAILED		2	/* operation failed for unexplained reason */
+#define MACHINE_UNKNOWN	3	/* caller's machine name unknown */
+#define PERMISSION_DENIED 4	/* callee's tty doesn't permit announce */
+#define UNKNOWN_REQUEST	5	/* request has invalid type value */
+#define	BADVERSION	6	/* request has invalid protocol version */
+#define	BADADDR		7	/* request has invalid addr value */
+#define	BADCTLADDR	8	/* request has invalid ctl_addr value */
+
+/*
+ * Operational parameters.
+ */
+#define MAX_LIFE	60	/* max time daemon saves invitations */
+/* RING_WAIT should be 10's of seconds less than MAX_LIFE */
+#define RING_WAIT	30	/* time to wait before resending invitation */
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             ?¨    .   :À  ô ..                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          

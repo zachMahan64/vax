@@ -1,0 +1,2146 @@
+as no directories pointing to it,
+then the file is removed and the i-node is freed.
+This delayed removal of files prevents
+problems arising from removing active files.
+A file may be removed while still open.
+The resulting unnamed file vanishes
+when the file is closed.
+This is a method of obtaining temporary files.
+.PP
+There is a type of unnamed
+.UC  FIFO
+file called a
+.UL pipe.
+Implementation of
+.UL pipe s
+consists of implied
+.UL seek s
+before each
+.UL read
+or
+.UL write
+in order to implement
+first-in-first-out.
+There are also checks and synchronization
+to prevent the
+writer from grossly outproducing the
+reader and to prevent the reader from
+overtaking the writer.
+.NH 2
+Mounted file systems
+.PP
+The file system of a
+.UX
+system
+starts with some designated block device
+formatted as described above to contain
+a hierarchy.
+The root of this structure is the root of
+the
+.UX
+file system.
+A second formatted block device may be
+mounted
+at any leaf of
+the current hierarchy.
+This logically extends the current hierarchy.
+Tth; int owner, group;
+
+fchown(fd, owner, group);
+int fd, owner, group;
+.DE
+.PP
+In addition to ownership, each file has three levels of access
+protection associated with it.  These levels are owner relative,
+group relative, and global (all users and groups).  Each level
+of access has separate indicators for read permission, write
+permission, and execute permission.
+The protection bits associated with a file may be set by either
+of the calls:
+.DS
+chmod(path, mode);
+char *path; int mode;
+
+fchmod(fd, mode);
+int fd, mode;
+.DE
+where \fImode\fP is a value indicating the new protection
+of the file, as listed in section 2.2.3.2.
+.PP
+Finally, the access and modify times on a file may be set by the call:
+.DS
+utimes(path, tvp)
+char *path; struct timeval *tvp[2];
+.DE
+This is particularly useful when moving files between media, to
+preserve relationships between the times the file was modified.
+.NH 3
+Links and renaming
+.PP
+Links allow multiple names for a file
+to exist.  Links exist independently of the file linked to.
+.PP
+Two types of links exist, \fIhard\fP links and \fIsymbolic\fP
+links.  A hard link is a reference counting mechanism that
+allows a file to have multiple names within the same file
+system.  Symbolic links cause string substitution
+during the pathname interpretation process.
+.PP
+Hard links and symbolic links have different
+properties.  A hard link insures the target
+file will always be accessible, even after its original
+directory entry is removed; no such guarantee exists for a symbolic link.
+Symbolic links can span file systems boundaries.
+.PP
+The following calls create a new link, named \fIpath2\fP,
+to \fIpath1\fP:
+.DS
+link(path1, path2);
+char *path1, *path2;
+
+symlink(path1, path2);
+char *path1, *path2;
+.DE
+The \fIunlink\fP primitive may be used to remove
+either type of link. 
+.PP
+If a file is a symbolic link, the ``value'' of the
+link may be read with the \fIreadlink\fP call,
+.DS
+len = readlink(path, buf, bufsize);
+result int len; result char *path, *buf; int bufsize;
+.DE
+This call returns, in \fIbuf\fP, the null-terminated string
+substituted into pathnames passing through \fIpath\fP\|.
+.PP
+Atomic renaming of file system resident objects is possible
+with the \fIrename\fP call:
+.DS
+rename(oldname, newname);
+char *oldname, *newname;
+.DE
+where both \fIoldname\fP and \fInewname\fP must be
+in the same file system.
+If \fInewname\fP exists and is a directory, then it must be empty.
+.NH 3
+Extension and truncation
+.PP
+Files are created with zero length and may be extended
+simply by writing or appending to them.  While a file is
+open the system maintains a pointer into the file
+indicating the current location in the file associated with
+the descriptor.  This pointer may be moved about in the
+file in a random access fashion.
+To set the current offset into a file, the \fIlseek\fP
+call may be used,
+.DS
+oldoffset = lseek(fd, offset, type);
+result off_t oldoffset; int fd; off_t offset; int type;
+.DE
+where \fItype\fP is given in \fI<sys/file.h>\fP as one of:
+.DS
+._d
+#define	L_SET	0	/* set absolute file offset */
+#define	L_INCR	1	/* set file offset relative to current position */
+#define	L_XTND	2	/* set offset relative to end-of-file */
+.DE
+The call ``lseek(fd, 0, L_INCR)''
+returns the current offset into the file.
+.PP
+Files may have ``holes'' in them.  Holes are void areas in the
+linear extent of the file where data has never been
+written.  These may be created by seeking to
+a location in a file past the current end-of-file and writing.
+Holes are treated by the system as zero valued bytes.
+.PP
+A file may be truncated with either of the calls:
+.DS
+truncate(path, length);
+char *path; int length;
+
+ftruncate(fd, length);
+int fd, length;
+.DE
+reducing the size of the specified file to \fIlength\fP bytes.
+.NH 3
+Checking accessibility
+.PP
+A process running with
+different real and effective user ids
+may interrogate the accessibility of a file to the
+real user by using
+the \fIaccess\fP call:
+.DS
+accessible = access(path, how);
+result int accessible; char *path; int how;
+.DE
+Here \fIhow\fP is constructed by or'ing the following bits, defined
+in \fI<sys/file.h>\fP:
+.DS
+._d
+#define	F_OK	0	/* file exists */
+#define	X_OK	1	/* file is executable */
+#define	W_OK	2	/* file is writable */
+#define	R_OK	4	/* file is readable */
+.DE
+The presence or absence of advisory locks does not affect the
+result of \fIaccess\fP\|.
+.NH 3
+Locking
+.PP
+The file system provides basic facilities that allow cooperating processes
+to synchronize their access to shared files.  A process may
+place an advisory \fIread\fP or \fIwrite\fP lock on a file,
+so that other cooperating processes may avoid interfering
+with the process' access.  This simple mechanism
+provides locking with file granularity.  More granular
+locking can be built using the IPC facilities to provide a lock
+manager.
+The system does not force processes to obey the locks;
+they are of an advisory nature only.
+.PP
+Locking is performed after an \fIopen\fP call by applying the
+\fIflock\fP primitive,
+.DS
+flock(fd, how);
+int fd, how;
+.DE
+where the \fIhow\fP parameter is formed from bits defined in \fI<sys/file.h>\fP:
+.DS
+._d
+#define	LOCK_SH	1	/* shared lock */
+#define	LOCK_EX	2	/* exclusive lock */
+#define	LOCK_NB	4	/* don't block when locking */
+#define	LOCK_UN	8	/* unlock */
+.DE
+Successive lock calls may be used to increase or
+decrease the level of locking.  If an object is currently
+locked by another process when a \fIflock\fP call is made,
+the caller will be blocked until the current lock owner
+releases the lock; this may be avoided by including LOCK_NB
+in the \fIhow\fP parameter.
+Specifying LOCK_UN removes all locks associated with the descriptor.
+Advisory locks held by a process are automatically deleted when
+the process terminates.
+.NH 3
+Disk quotas
+.PP
+As an optional facility, each file system may be requested to
+impose limits on a user's disk usage.
+Two quantities are limited: the total amount of disk space which
+a user may allocate in a file system and the total number of files
+a user may create in a file system.  Quotas are expressed as
+\fIhard\fP limits and \fIsoft\fP limits.  A hard limit is
+always imposed; if a user would exceed a hard limit, the operation
+which caused the resource request will fail.  A soft limit results
+in the user receiving a warning message, but with allocation succeeding.
+Facilities are provided to turn soft limits into hard limits if a
+user has exceeded a soft limit for an unreasonable period of time.
+.PP
+To enable disk quotas on a file system the \fIsetquota\fP call
+is used:
+.DS
+setquota(special, file)
+char *special, *file;
+.DE
+where \fIspecial\fP refers to a structured device file where
+a mounted file system exists, and
+\fIfile\fP refers to a disk quota file (residing on the file
+system associated with \fIspecial\fP) from which user quotas
+should be obtained.  The format of the disk quota file is 
+implementation dependent.
+.PP
+To manipulate disk quotas the \fIquota\fP call is provided:
+.DS
+#include <sys/quota.h>
+
+quota(cmd, uid, arg, addr)
+int cmd, uid, arg; caddr_t addr;
+.DE
+The indicated \fIcmd\fP is applied to the user ID \fIuid\fP.
+The parameters \fIarg\fP and \fIaddr\fP are command specific.
+The file \fI<sys/quota.h>\fP contains definitions pertinent to the
+use of this call.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      .\" Copyright (c) 1983 Regents of the University of California.
+.\" All rights reserved.  The Berkeley software License Agreement
+.\" specifies the terms and conditions for redistribution.
+.\"
+.\"	@(#)1.7.t	6.3 (Berkeley) 5/12/86
+.\"
+.sh "System operation support
+.PP
+Unless noted otherwise,
+the calls in this section are permitted only to a privileged user.
+.NH 3
+Bootstrap operations
+.PP
+The call
+.DS
+mount(blkdev, dir, ronly);
+char *blkdev, *dir; int ronly;
+.DE
+extends the UNIX name space.  The \fImount\fP call specifies
+a block device \fIblkdev\fP containing a UNIX file system
+to be made available starting at \fIdir\fP.  If \fIronly\fP is
+set then the file system is read-only; writes to the file system
+will not be permitted and access times will not be updated
+when files are referenced.
+\fIDir\fP is normally a name in the root directory.
+.PP
+The call
+.DS
+swapon(blkdev, size);
+char *blkdev; int size;
+.DE
+specifies a device to be made available for paging and swapping.
+.PP
+.NH 3
+Shutdown operations
+.PP
+The call
+.DS
+unmount(dir);
+char *dir;
+.DE
+unmounts the file system mounted on \fIdir\fP.
+This call will succeed only if the file system is
+not currently being used.
+.PP
+The call
+.DS
+sync();
+.DE
+schedules input/output to clean all system buffer caches.
+(This call does not require privileged status.)
+.PP
+The call
+.DS
+reboot(how)
+int how;
+.DE
+causes a machine halt or reboot.  The call may request a reboot
+by specifying \fIhow\fP as RB_AUTOBOOT, or that the machine be halted
+with RB_HALT.  These constants are defined in \fI<sys/reboot.h>\fP.
+.NH 3
+Accounting
+.PP
+The system optionally keeps an accounting record in a file
+for each process that exits on the system.
+The format of this record is beyond the scope of this document.
+The accounting may be enabled to a file \fIname\fP by doing
+.DS
+acct(path);
+char *path;
+.DE
+If \fIpath\fP is null, then accounting is disabled.  Otherwise,
+the named file becomes the accounting file.
+                                                                                                     .\" Copyright (c) 1983 Regents of the University of California.
+.\" All rights reserved.  The Berkeley software License Agreement
+.\" specifies the terms and conditions for redistribution.
+.\"
+.\"	@(#)2.0.t	6.2 (Berkeley) 5/12/86
+.\"
+.ds ss 1
+.sh "System facilities
+This section discusses the system facilities that
+are not considered part of the kernel.
+.PP
+The system abstractions described are:
+.IP "Directory contexts
+.br
+A directory context is a position in the UNIX file system name
+space.  Operations on files and other named objects in a file system are
+always specified relative to such a context.
+.IP "Files
+.br
+Files are used to store uninterpreted sequence of bytes on which
+random access \fIreads\fP and \fIwrites\fP may occur.
+Pages from files may also be mapped into process address space.\(dg
+A directory may be read as a file.
+.FS
+\(dg Support for mapping files is not included in the 4.3 release.
+.FE
+.IP "Communications domains
+.br
+A communications domain represents
+an interprocess communications environment, such as the communications
+facilities of the UNIX system,
+communications in the INTERNET, or the resource sharing protocols
+and access rights of a resource sharing system on a local network.
+.IP "Sockets
+.br
+A socket is an endpoint of communication and the focal
+point for IPC in a communications domain.  Sockets may be created in pairs,
+or given names and used to rendezvous with other sockets
+in a communications domain, accepting connections from these
+sockets or exchanging messages with them.  These operations model
+a labeled or unlabeled communications graph, and can be used in a
+wide variety of communications domains.  Sockets can have different
+\fItypes\fP\| to provide different semantics of communication,
+increasing the flexibility of the model.
+.IP "Terminals and other devices
+.br
+Devices include
+terminals, providing input editing and interrupt generation
+and output flow control and editing, magnetic tapes,
+disks and other peripherals.  They often support the generic
+\fIread\fP and \fIwrite\fP operations as well as a number of \fIioctl\fP\|s.
+.IP "Processes
+.br
+Process descriptors provide facilities for control and debugging of
+other processes.
+.ds ss 2
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                AF
+ANON
+AUTOBOOT
+Behav
+CLR
+DEF
+DGRAM
+DONTNEED
+Datagram
+Datagrams
+EINPROGRESS
+EWOULDBLOCK
+EXCL
+FD
+FSIZE
+Fabry
+GETFL
+GETOWN
+HASSEMAPHORE
+HASSEMPHORE
+IGN
+INCR
+INET
+IP
+IPC
+ISSET
+ITIMER
+Karels
+Leffler
+MADV
+MAXHOSTNAMELEN
+MSG
+Manual''PS1:6
+McKusick
+Mclear
+Mset
+NB
+NDELAY
+NGROUPS
+NLIMITS
+NOEXTEND
+NS
+OOB
+PGRP
+PRIO
+PROT
+PS1:6
+RB
+RDM
+RDONLY
+RDWR
+RH
+RLIM
+RLIMIT
+RSS
+RUSAGE
+SEQPACKET
+SETFL
+SETOWN
+SIG
+SIGALRM
+SIGBUS
+SIGCHLD
+SIGCONT
+SIGEMT
+SIGFPE
+SIGHUP
+SIGILL
+SIGINT
+SIGIO
+SIGIOT
+SIGKILL
+SIGPROF
+SIGQUIT
+SIGSEGV
+SIGSTOP
+SIGTERM
+SIGTRAP
+SIGTSTP
+SIGTTIN
+SIGTTOU
+SIGURG
+SIGUSR1
+SIGUSR2
+SIGVTALRM
+SIGXCPU
+SIGXFSZ
+Sem
+Sv
+TCP
+TRUNC
+UDP
+VAX
+WILLNEED
+WRONLY
+XTND
+accessor
+accrights
+accrightslen
+addr
+anamelen
+arg
+argv
+arusage
+astatus
+behav
+blkdev
+brkc
+bu
+buf
+buflen
+bufsize
+caddr
+cbreak
+chroot
+cmd
+datagram
+datagrams
+dev
+dopt
+dprop
+ds
+dst
+dsttime
+dsuspc
+dtype
+dup2
+egid
+envp
+eofc
+erasec
+errno
+euid
+fchmod
+fchown
+fcntl
+fd
+fdset
+file.h
+filename
+filesystem
+flushc
+fromlenaddr
+fs
+fstat
+ftruncate
+getdtablesize
+getegid
+geteuid
+getgid
+getgroups
+gethostid
+gethostname
+getitimer
+getpagesize
+getpeername
+getpriority
+getprotobyname
+getrlimit
+getrusage
+getsockname
+getsockopt
+gettimeofday
+gid
+gidset
+gidsetsize
+hostid
+idrss
+iflags
+inblock
+incr
+intrc
+ioctl.h
+iov
+iovec
+iovlen
+ispeed
+isrss
+itimerval
+ixrss
+kbytes
+killc
+killpgrp
+len
+linefeed
+lnextc
+lstat
+maddr
+madvise
+majflt
+maxrss
+mclear
+mincore
+minflt
+minuteswest
+mman.h
+mmap
+mprotect
+mremap
+mset
+msg
+msghdr
+msglen
+msgrcv
+msgsnd
+msleep
+msync
+munmap
+mwakeup
+namelen
+nbytes
+nd
+nds
+newname
+ngroups
+nivcsw
+nl
+nsignals
+nswap
+nvcsw
+oflag
+oflags
+oldmask
+oldname
+oldoffset
+onstack
+optlen
+optname
+optval
+or'ed
+or'ing
+ospeed
+oss
+osv
+oublock
+ovalue
+pagesize
+param
+param.h
+path1
+path2
+pathname
+pathnames
+pgrp
+pid
+pos
+prio
+prot
+proto
+pv
+quitc
+quota.h
+readlink
+readv
+reboot.h
+recv
+recvfrom
+recvmsg
+resource.h
+rgid
+rlim
+rlimit
+rlp
+ronly
+rprntc
+ru
+ruid
+rusage
+sbrk
+scp
+sem
+sendmsg
+sendto
+setgroups
+sethostid
+sethostname
+setitimer
+setpriority
+setquota
+setregid
+setreuid
+setrlimit
+setsockopt
+settimeofday
+sigblock
+sigcontext
+sigmask
+signal.h
+signo
+sigpause
+sigsetmask
+sigstack
+sigvec
+sockaddr
+socket.h
+socketpair
+socktype
+sp
+ss
+sstk
+startc
+stat.h
+stb
+stopc
+suspc
+sv
+sw
+symlink
+ta
+time.h
+timeval
+timezone
+tolen
+tt
+ttychars
+ttymode
+tv
+tvp
+tvsec
+types.h
+tz
+tzp
+uid
+uio.h
+umount
+usec
+vec
+wait.h
+waitstatus
+werasc
+writeable
+writev
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        .\" Copyright (c) 1983 Regents of the University of California.
+.\" All rights reserved.  The Berkeley software License Agreement
+.\" specifies the terms and conditions for redistribution.
+.\"
+.\"	@(#)a.t	6.5 (Berkeley) 5/12/86
+.\"
+.ds RH Summary of facilities
+.bp
+.SH
+\s+2I.  Summary of facilities\s0
+.PP
+.de h
+.br
+.if n .ne 8
+\fB\\$1 \\$2\fP
+.br
+..
+.nr H1 0
+.NH
+Kernel primitives
+.LP
+.h 1.1. "Process naming and protection
+.in +5
+.TS
+lw(1.6i) aw(3i).
+sethostid	set UNIX host id
+gethostid	get UNIX host id
+sethostname	set UNIX host name
+gethostname	get UNIX host name
+getpid	get process id
+fork	create new process
+exit	terminate a process
+execve	execute a different process
+getuid	get user id
+geteuid	get effective user id
+setreuid	set real and effective user id's
+getgid	get accounting group id
+getegid	get effective accounting group id
+getgroups	get access group set
+setregid	set real and effective group id's
+setgroups	set access group set
+getpgrp	get process group
+setpgrp	set process group
+.TE
+.in -5
+.h 1.2 "Memory management
+.in +5
+.TS
+lw(1.6i) aw(3i).
+<sys/mman.h>	memory management definitions
+sbrk	change data section size
+sstk\(dg	change stack section size
+.FS
+\(dg Not supported in 4.3BSD.
+.FE
+getpagesize	get memory page size
+mmap\(dg	map pages of memory
+msync\(dg	flush modified mapped pages to filesystem
+munmap\(dg	unmap memory
+mprotect\(dg	change protection of pages
+madvise\(dg	give memory management advice
+mincore\(dg	determine core residency of pages
+msleep\(dg	sleep on a lock
+mwakeup\(dg	wakeup process sleeping on a lock
+.TE
+.in -5
+.h 1.3 "Signals
+.in +5
+.TS
+lw(1.6i) aw(3i).
+<signal.h>	signal definitions
+sigvec	set handler for signal
+kill	send signal to process
+killpgrp	send signal to process group
+sigblock	block set of signals
+sigsetmask	restore set of blocked signals
+sigpause	wait for signals
+sigstack	set software stack for signals
+.TE
+.in -5
+.h 1.4 "Timing and statistics
+.in +5
+.TS
+lw(1.6i) aw(3i).
+<sys/time.h>	time-related definitions
+gettimeofday	get current time and timezone
+settimeofday	set current time and timezone
+getitimer	read an interval timer
+setitimer	get and set an interval timer
+profil	profile process
+.TE
+.in -5
+.h 1.5 "Descriptors
+.in +5
+.TS
+lw(1.6i) aw(3i).
+getdtablesize	descriptor reference table size
+dup	duplicate descriptor
+dup2	duplicate to specified index
+close	close descriptor
+select	multiplex input/output
+fcntl	control descriptor options
+wrap\(dg	wrap descriptor with protocol
+.FS
+\(dg Not supported in 4.3BSD.
+.FE
+.TE
+.in -5
+.h 1.6 "Resource controls
+.in +5
+.TS
+lw(1.6i) aw(3i).
+<sys/resource.h>	resource-related definitions
+getpriority	get process priority
+setpriority	set process priority
+getrusage	get resource usage
+getrlimit	get resource limitations
+setrlimit	set resource limitations
+.TE
+.in -5
+.h 1.7 "System operation support
+.in +5
+.TS
+lw(1.6i) aw(3i).
+mount	mount a device file system
+swapon	add a swap device
+umount	umount a file system
+sync	flush system caches
+reboot	reboot a machine
+acct	specify accounting file
+.TE
+.in -5
+.NH
+System facilities
+.LP
+.h 2.1 "Generic operations
+.in +5
+.TS
+lw(1.6i) aw(3i).
+read	read data
+write	write data
+<sys/uio.h>	scatter-gather related definitions
+readv	scattered data input
+writev	gathered data output
+<sys/ioctl.h>	standard control operations
+ioctl	device control operation
+.TE
+.in -5
+.h 2.2 "File system
+.PP
+Operations marked with a * exist in two forms: as shown,
+operating on a file name, and operating on a file descriptor,
+when the name is preceded with a ``f''.
+.in +5
+.TS
+lw(1.6i) aw(3i).
+<sys/file.h>	file system definitions
+chdir	change directory
+chroot	change root directory
+mkdir	make a directory
+rmdir	remove a directory
+open	open a new or existing file
+mknod	make a special file
+portal\(dg	make a portal entry
+unlink	remove a link
+stat*	return status for a file	
+lstat	returned status of link
+chown*	change owner
+chmod*	change mode
+utimes	change access/modify times
+link	make a hard link
+symlink	make a symbolic link
+readlink	read contents of symbolic link
+rename	change name of file
+lseek	reposition within file
+truncate*	truncate file
+access	determine accessibility
+flock	lock a file
+.TE
+.in -5
+.h 2.3 "Communications
+.in +5
+.TS
+lw(1.6i) aw(3i).
+<sys/socket.h>	standard definitions
+socket	create socket
+bind	bind socket to name
+getsockname	get socket name
+listen	allow queuing of connections
+accept	accept a connection
+connect	connect to peer socket
+socketpair	create pair of connected sockets
+sendto	send data to named socket
+send	send data to connected socket
+recvfrom	receive data on unconnected socket
+recv	receive data on connected socket
+sendmsg	send gathered data and/or rights
+recvmsg	receive scattered data and/or rights
+shutdown	partially close full-duplex connection
+getsockopt	get socket option
+setsockopt	set socket option
+.TE
+.in -5
+.h 2.4 "Terminals, block and character devices
+.in +5
+.TS
+lw(1.6i) aw(3i).
+.TE
+.in -5
+.h 2.5 "Processes and kernel hooks
+.in +5
+.TS
+lw(1.6i) aw(3i).
+.TE
+.in -5
+                                                                                                                                                                                    .PS
+.ps 9
+[
+    PT: [
+	T: box invis ht .2i "Process Table"; move down .125i
+	A: box ht .25i; down
+	PTE: box "Process" "Table" "Entry"; down
+	C: box ht .25i
+    ]
+    move right 1.5i
+    TT: [
+	T: box invis ht .2i "Text Table"; move down .125i
+	A: box ht .25i; down
+	TTE: box "Text" "Table" "Entry"; down
+	C: box ht .25i
+    ]
+    move down 1i from TT.C.s
+    move right 0.5i
+    UTS: [
+	box ht 0.75i wid 0.75i "User" "Text" "Segment"
+    ]
+    move left 1.5i from UTS.w
+    DS: [
+    	SDS: box "System" "Data" "Segment" ; move down .5i from SDS.n ;
+    	UDS: box ht 0.75i "User" "Data" "Segment"
+    ]
+    move left 1i from DS.UDS.w
+    move down 0.25i
+    UAS: [
+	box invis "User" "Address" "Space"
+    ]
+    line from UAS.ne to UAS.se
+    line from UAS.nw to UAS.sw
+    line right 0.15i from UAS.nw
+    line right 0.15i from UAS.sw
+    line left 0.15i from UAS.ne
+    line left 0.15i from UAS.se
+    arrow from 1/4 of the way between PT.PTE.ne and PT.PTE.se right 1.875i
+    arrow from TT.TTE.e right .5i then down to UTS.n
+    arrow from PT.PTE.e right .875i then down to DS.SDS.n
+    arrow from 3/4 of the way between PT.PTE.ne and PT.PTE.se right .25i then down 1.5i then right .25i
+    arrow from 1/4 of the way between UAS.ne and UAS.se right .375i then up .25i then right .25i
+    arrow from 3/4 of the way between UAS.ne and UAS.se right 2.375i then up .875i then right .5i
+    move up 1.3175i from UAS.nw
+    move left .75i
+    line right 5.625i
+    move left 5.25i
+    move up .3125i
+    RS: [
+    	box invis ht 0.2i "Resident"
+    ]
+    move down .8i
+    SW: [
+    	box invis ht 0.2i "Swapped"
+    ]
+    arrow <-> from RS.s to SW.n
+]
+.PE
+                                                                                                                                                                                                                                                                                                                                                                                                              #°    .   #(    ..  $°   
+ vi.apwh.ms  %°    vi.chars s  &°    vi.in rs'°   
+ vi.summary  (°  œ Makefile y                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          he value of hardware tabs in your terminal, or
+of software tabs expanded by the Unix system.
+.IP ignorecase\ ic 16
+Default: noic Type: toggle
+.br
+All upper case characters are mapped to lower case in regular expression
+matching.
+.IP lisp 16
+Default: nolisp Type: toggle
+.br
+Autoindent for \fBlisp\fR code.  The commands \fB( ) [[\fR and \fB]]\fR
+are modified appropriately to affect s-expressions and functions.
+.IP list 16
+Default: nolist Type: toggle
+.br
+All printed lines have the <tab> and <nl> characters displayed visually.
+.IP magic 16
+Default: magic Type: toggle
+.br
+Enable the metacharacters for matching.  These include \fB. * < > [string]
+[^string]\fR and \fB[<chr>-<chr>]\fR.
+.IP number\ nu 16
+Default: nonu Type: toggle
+.br
+Each line is displayed with its line number.
+.IP open 16
+Default: open Type: toggle
+.br
+When set, prevents entering open or visual modes from ex or edit.
+Not of interest from vi.
+.IP optimize\ opt 16
+Default: opt Type: toggle
+.br
+Basically of use only when using the \fBex\fR capabilities.  This
+option prevents automatic <cr>s from taking place,
+and speeds up output of indented lines,
+at the expense of losing typeahead on some versions of UNIX.
+.IP paragraphs\ para 16
+Default: para=IPLPPPQPP\ bp Type: string
+.br
+Each pair of characters in the string indicate \fBnroff\fR macros
+which are to be treated as the beginning of a paragraph for the
+\fB{\fR and \fB}\fR commands.  The default string is for the \fB-ms\fR
+and \fB-mm\fR macros.
+To indicate one letter \fBnroff\fR macros, such as \fB.P\fR or \fB.H\fR,
+quote a space in for the second character position.  For example:
+.sp 1
+.ti +8
+:set paragraphs=P\e bp<nl>
+.sp 1
+would cause \fBvi\fR to consider \fB.P\fR and \fB.bp\fR as paragraph
+delimiters.
+.IP prompt 16
+Default: prompt Type: toggle
+.br
+In
+.B ex
+command mode the prompt character \fB:\fR will be printed when
+\fBex\fR is waiting for a command.  This is not of interest from vi.
+.IP redraw 16
+Default: noredraw Type: toggle
+.br
+On dumb terminals, force the screen to always be up to date,
+by sending great amounts of output.  Useful only at high speeds.
+.IP report 16
+Default: report=5 Type: numeric
+.br
+This sets the threshold for the number of lines modified.  When
+more than this number of lines are modified, removed, or yanked,
+\fBvi\fR will report the number of lines changed at the bottom of
+the screen.
+.IP scroll 16
+Default: scroll={1/2 window} Type: numeric
+.br
+This is the number of lines that the screen scrolls up or down when
+using the <^U> and <^D> commands.
+.IP sections 16
+Default: sections=SHNHH HU Type: string
+.br
+Each two character pair of this string specify \fBnroff\fR macro names
+which are to be treated as the beginning of a section by the
+\fB]]\fR and \fB[[\fR commands.  The default string is for the \fB-ms\fR
+and \fB-mm\fR macros.
+To enter one letter \fBnroff\fR macros, use a quoted space as the
+second character.
+See \fBparagraphs\fR for a fuller explanation.
+.IP shell\ sh 16
+Default: sh=from environment SHELL or /bin/sh   Type: string
+.br
+This is the name of the \fBsh\fR to be used for "escaped" commands.
+.IP shiftwidth\ sw 16
+Default: sw=8 Type: numeric
+.br
+This is the number of spaces that a <^T> or <^D> will move over for
+indenting, and the amount < and > shift by.
+.IP showmatch\ sm 16
+Default: nosm Type: toggle
+.br
+When a \fB)\fR or \fB}\fR is typed, show the matching \fB(\fR or \fB{\fR
+by moving the cursor to it for one second if it is on the current screen.
+.IP slowopen\ slow 16
+Default: terminal dependent Type: toggle
+.br
+On terminals that are slow and unintelligent, this option prevents the
+updating of the screen some of the time to improve speed.
+.IP tabstop\ ts 16
+Default: ts=8 Type: numeric
+.br
+<tab>s are expanded to boundaries that are multiples of this value.
+.IP taglength\ tl 16
+Default: tl=0 Type: numeric
+.br
+If nonzero, tag names are only significant to this many characters.
+.IP term 16
+Default: (from environment \fBTERM\fP, else dumb) Type: string
+.br
+This is the terminal and controls the visual displays.  It cannot be
+changed when in "visual" mode,
+you have to Q to command mode, type a
+set term command, and do ``vi.'' to get back into visual.
+Or exit vi, fix $TERM, and reenter.
+The definitions that drive a particular
+terminal type are found in the file \fB/etc/termcap\fR.
+.IP terse 16
+Default: terse Type: toggle
+.br
+When set, the error diagnostics are short.
+.IP warn 16
+Default: warn Type: toggle
+.br
+The user is warned if she/he tries to escape to
+the shell without writing out the current changes.
+.IP window 16
+Default: window={8 at 600 baud or less, 16 at 1200 baud, and screen
+size \- 1 at 2400 baud or more} Type: numeric
+.br
+This is the number of lines in the window whenever \fBvi\fR must redraw
+an entire screen.  It is useful to make this size smaller if you are
+on a slow line.
+.IP w300,\ w1200,\ w9600
+.br
+These set window, but only within the corresponding speed ranges.
+They are useful in an EXINIT to fine tune window sizes.
+For example,
+.DS
+set w300=4 w1200=12
+.DE
+causes a 4 lines window at speed up to 600 baud, a 12 line window at 1200
+baud, and a full screen (the default) at over 1200 baud.
+.IP wrapscan\ ws 16
+Default: ws Type: toggle
+.br
+Searches will wrap around the end of the file when is option is set.  When
+it is off, the search will terminate when it reaches the end or the
+beginning of the file.
+.IP wrapmargin\ wm 16
+Default: wm=0 Type: numeric
+.br
+\fBVi\fR will automatically insert a <nl> when it finds a natural
+break point (usually a <sp> between words) that occurs within
+"wm" spaces of the right margin.
+Therefore with "wm=0" the option is off.  Setting it to 10 would
+mean that any time you are within 10 spaces of the right margin
+\fBvi\fR would be looking for a <sp> or <tab> which it could
+replace with a <nl>.  This is convenient for people who forget
+to look at the screen while they type.
+(In version 3, wrapmargin behaves more like nroff, in that the
+boundary specified by the distance from the right edge of the screen
+is taken as the rightmost edge of the area where a break is allowed,
+instead of the leftmost edge.)
+.IP writeany\ wa 16
+Default: nowa Type: toggle
+.br
+\fBVi\fR normally makes a number of checks before it writes out a file.
+This prevents the user from inadvertently destroying a file.  When the
+"writeany" option is enabled, \fBvi\fR no longer makes these checks.
+.LE
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   urrent line. (5.4)
+.iP "{" 15
+Retreats to the beginning of the beginning of the preceding paragraph.
+A paragraph begins at each macro in the \fIparagraphs\fR option, normally
+`.IP', `.LP', `.PP', `.QP' and `.bp'.
+A paragraph also begins after a completely
+empty line, and at each section boundary (see \fB[[\fR above) (4.2, 6.8,
+7.6).
+.iP "|" 15
+Places the cursor on the character in the column specified
+by the count (7.1, 7.2).
+.iP "}" 15
+Advances to the beginning of the next paragraph.  See \fB{\fR for the
+definition of paragraph (4.2, 6.8, 7.6).
+.iP "~" 15
+Unused.
+.iP "^?\ (\s-2\fRDEL\fP\s0)" 15
+Interrupts the editor, returning it to command accepting state (1.5,
+7.5)
+.bp
+\&.
+                                                                                                                                                                                                                                                                                                                                                   .\" Copyright (c) 1983 Regents of the University of California.
+.\" All rights reserved.  The Berkeley software License Agreement
+.\" specifies the terms and conditions for redistribution.
+.\"
+.\"	@(#)1.3.t	6.2 (Berkeley) 5/12/86
+.\"
+.sh "Signals
+.PP
+.NH 3
+Overview
+.PP
+The system defines a set of \fIsignals\fP that may be delivered
+to a process.  Signal delivery resembles the occurrence of a hardware
+interrupt: the signal is blocked from further occurrence,
+the current process context is saved, and a new one
+is built.  A process may specify
+the \fIhandler\fP to which a signal is delivered, or specify that
+the signal is to be \fIblocked\fP or \fIignored\fP.  A process may
+also specify that a
+\fIdefault\fP action is to be taken when signals occur.
+.PP
+Some signals
+will cause a process to exit when they are not caught.  This
+may be accompanied by creation of a \fIcore\fP image file, containing
+the current memory image of the process for use in post-mortem debugging.
+A process may choose to have signals delivered on a special
+stack, so that sophisticated software stack manipulations are possible.
+.PP
+All signals have the same \fIpriority\fP.  If multiple signals
+are pending simultaneously, the order in which they are delivered
+to a process is implementation specific.  Signal routines execute
+with the signal that caused their invocation \fIblocked\fP, but other
+signals may yet occur.  Mechanisms are provided whereby critical sections
+of code may protect themselves against the occurrence of specified signals.
+.NH 3
+Signal types
+.PP
+The signals defined by the system fall into one of
+five classes: hardware conditions,
+software conditions, input/output notification, process control, or
+resource control.
+The set of signals is defined in the file \fI<signal.h>\fP.
+.PP
+Hardware signals are derived from exceptional conditions which
+may occur during
+execution.  Such signals include SIGFPE representing floating
+point and other arithmetic exceptions, SIGILL for illegal instruction
+execution, SIGSEGV for addresses outside the currently assigned
+area of memory, and SIGBUS for accesses that violate memory
+protection constraints.
+Other, more cpu-specific hardware signals exist,
+such as those for the various customer-reserved instructions on
+the VAX (SIGIOT, SIGEMT, and SIGTRAP). 
+.PP
+Software signals reflect interrupts generated by user request:
+SIGINT for the normal interrupt signal; SIGQUIT for the more
+powerful \fIquit\fP signal, that normally causes a core image
+to be generated; SIGHUP and SIGTERM that cause graceful
+process termination, either because a user has ``hung up'', or
+by user or program request; and SIGKILL, a more powerful termination
+signal which a process cannot catch or ignore.
+Programs may define their own asynchronous events using SIGUSR1
+and SIGUSR2.
+Other software signals (SIGALRM, SIGVTALRM, SIGPROF)
+indicate the expiration of interval timers.
+.PP
+A process can request notification via a SIGIO signal
+when input or output is possible
+on a descriptor, or when a \fInon-blocking\fP operation completes.
+A process may request to receive a SIGURG signal when an
+urgent condition arises. 
+.PP
+A process may be \fIstopped\fP by a signal sent to it or the members
+of its process group.  The SIGSTOP signal is a powerful stop
+signal, because it cannot be caught.  Other stop signals
+SIGTSTP, SIGTTIN, and SIGTTOU are used when a user request, input
+request, or output request respectively is the reason for stopping the process.
+A SIGCONT signal is sent to a process when it is
+continued from a stopped state.
+Processes may receive notification with a SIGCHLD signal when
+a child process changes state, either by stopping or by terminating.
+.PP
+Exceeding resource limits may cause signals to be generated.
+SIGXCPU occurs when a process nears its CPU time limit and SIGXFSZ
+warns that the limit on file size creation has been reached.
+.NH 3
+Signal handlers
+.PP
+A process has a handler associated with each signal.
+The handler controls the way the signal is delivered.
+The call
+.DS
+#include <signal.h>
+
+._f
+struct sigvec {
+	int	(*sv_handler)();
+	int	sv_mask;
+	int	sv_flags;
+};
+
+sigvec(signo, sv, osv)
+int signo; struct sigvec *sv; result struct sigvec *osv;
+.DE
+assigns interrupt handler address \fIsv_handler\fP to signal \fIsigno\fP.
+Each handler address
+specifies either an interrupt routine for the signal, that the
+signal is to be ignored,
+or that a default action (usually process termination) is to occur
+if the signal occurs.
+The constants
+SIG_IGN and SIG_DEF used as values for \fIsv_handler\fP
+cause ignoring or defaulting of a condition.
+The \fIsv_mask\fP value specifies the
+signal mask to be used when the handler is invoked; it implicitly includes
+the signal which invoked the handler.
+Signal masks include one bit for each signal;
+the mask for a signal \fIsigno\fP is provided by the macro
+\fIsigmask\fP(\fIsigno\fP), from \fI<signal.h>\fP.
+\fISv_flags\fP specifies whether system calls should be
+restarted if the signal handler returns and
+whether the handler should operate on the normal run-time
+stack or a special signal stack (see below).  If \fIosv\fP
+is non-zero, the previous signal vector is returned.
+.PP
+When a signal condition arises for a process, the signal
+is added to a set of signals pending for the process.
+If the signal is not currently \fIblocked\fP by the process
+then it will be delivered.  The process of signal delivery
+adds the signal to be delivered and those signals
+specified in the associated signal
+handler's \fIsv_mask\fP to a set of those \fImasked\fP
+for the process, saves the current process context,
+and places the process in the context of the signal
+handling routine.  The call is arranged so that if the signal
+handling routine exits normally the signal mask will be restored
+and the process will resume execution in the original context.
+If the process wishes to resume in a different context, then
+it must arrange to restore the signal mask itself.
+.PP
+The mask of \fIblocked\fP signals is independent of handlers for
+signals.  It delays signals from being delivered much as a
+raised hardware interrupt priority level delays hardware interrupts.
+Preventing an interrupt from occurring by changing the handler is analogous to
+disabling a device from further interrupts.
+.PP
+The signal handling routine \fIsv_handler\fP is called by a C call
+of the form
+.DS
+(*sv_handler)(signo, code, scp);
+int signo; long code; struct sigcontext *scp;
+.DE
+The \fIsigno\fP gives the number of the signal that occurred, and
+the \fIcode\fP, a word of information supplied by the hardware.
+The \fIscp\fP parameter is a pointer to a machine-dependent
+structure containing the information for restoring the
+context before the signal.
+.NH 3
+Sending signals
+.PP
+A process can send a signal to another process or group of processes
+with the calls:
+.DS
+kill(pid, signo)
+int pid, signo;
+
+killpgrp(pgrp, signo)
+int pgrp, signo;
+.DE
+Unless the process sending the signal is privileged,
+it must have the same effective user id as the process receiving the signal.
+.PP
+Signals are also sent implicitly from a terminal device to the
+process group associated with the terminal when certain input characters
+are typed.
+.NH 3
+Protecting critical sections
+.PP
+To block a section of code against one or more signals, a \fIsigblock\fP
+call may be used to add a set of signals to the existing mask, returning
+the old mask:
+.DS
+oldmask = sigblock(mask);
+result long oldmask; long mask;
+.DE
+The old mask can then be restored later with \fIsigsetmask\fP\|,
+.DS
+oldmask = sigsetmask(mask);
+result long oldmask; long mask;
+.DE
+The \fIsigblock\fP call can be used to read the current mask
+by specifying an empty \fImask\fP\|.
+.PP
+It is possible to check conditions with some signals blocked,
+and then to pause waiting for a signal and restoring the mask, by using:
+.DS
+sigpause(mask);
+long mask;
+.DE
+.NH 3
+Signal stacks
+.PP
+Applications that maintain complex or fixed size stacks can use
+the call
+.DS
+._f
+struct sigstack {
+	caddr_t	ss_sp;
+	int	ss_onstack;
+};
+
+sigstack(ss, oss)
+struct sigstack *ss; result struct sigstack *oss;
+.DE
+to provide the system with a stack based at \fIss_sp\fP for delivery
+of signals. The value \fIss_onsta.\"	@(#)implement	6.1 (Berkeley) 4/29/86
+.\"
+.EH 'PS2:4-%''UNIX Implementation'
+.OH 'UNIX Implementation''PS2:4-%'
+.de P1
+.DS
+..
+.de P2
+.DE
+..
+.de UL
+.lg 0
+.if n .ul
+\%\&\\$3\f3\\$1\fR\&\\$2
+.lg
+..
+.de UC
+\&\\$3\s-1\\$1\\s0\&\\$2
+..
+.de IT
+.lg 0
+.if n .ul
+\%\&\\$3\f2\\$1\fR\&\\$2
+.lg
+..
+.de SP
+.sp \\$1
+..
+.hw device
+.TL
+UNIX Implementation
+.AU "MH 2C-523" 2394
+K. Thompson
+.AI
+.MH
+.AB
+This paper describes in high-level terms the
+implementation of the resident
+.UX
+kernel.
+This discussion is broken into three parts.
+The first part describes
+how the
+.UX
+system views processes, users, and programs.
+The second part describes the I/O system.
+The last part describes the
+.UX
+file system.
+.AE
+.NH
+INTRODUCTION
+.PP
+The
+.UX
+kernel consists of about 10,000
+lines of C code and about 1,000 lines of assembly code.
+The assembly code can be further broken down into
+200 lines included for
+the sake of efficiency
+(they could have been written in C)
+and 800 lines to perform hardware
+functions not possible in C.
+.PP
+This code represents 5 to 10 percent of what has
+been lumped into the broad expression
+``the
+.UX
+operating system.''
+The kernel is the only
+.UX
+code that
+cannot be substituted by a user to his
+own liking.
+For this reason,
+the kernel should make as few real
+decisions as possible.
+This does not mean to allow the user
+a million options to do the same thing.
+Rather, it means to allow only one way to
+do one thing,
+but have that way be the least-common divisor
+of all the options that might have been provided.
+.PP
+What is or is not implemented in the kernel
+represents both a great responsibility and a great power.
+It is a soap-box platform on
+``the way things should be done.''
+Even so, if
+``the way'' is too radical,
+no one will follow it.
+Every important decision was weighed
+carefully.
+Throughout,
+simplicity has been substituted for efficiency.
+Complex algorithms are used only if
+their complexity can be localized.
+.NH
+PROCESS CONTROL
+.PP
+In the
+.UX
+system,
+a user executes programs in an
+environment called a user process.
+When a system function is required,
+the user process calls the system
+as a subroutine.
+At some point in this call,
+there is a distinct switch of environments.
+After this,
+the process is said to be a system process.
+In the normal definition of processes,
+the user and system processes are different
+phases of the same process
+(they never execute simultaneously).
+For protection,
+each system process has its own stack.
+.PP
+The user process may execute
+from a read-only text segment,
+which is shared by all processes
+executing the same code.
+There is no
+.IT functional
+benefit
+from shared-text segments.
+An
+.IT efficiency
+benefit comes from the fact
+that there is no need to swap read-only
+segments out because the original
+copy on secondary memory is still current.
+This is a great benefit to interactive
+programs that tend to be swapped while
+waiting for terminal input.
+Furthermore,
+if two processes are
+executing
+simultaneously
+from the same copy of a read-only segment,
+only one copy needs to reside in
+primary memory.
+This is a secondary effect,
+because
+simultaneous execution of a program
+is not common.
+It is ironic that this effect,
+which reduces the use of primary memory,
+only comes into play when there is
+an overabundance of primary memory,
+that is,
+when there is enough memory
+to keep waiting processes loaded.
+.PP
+All current read-only text segments in the
+system are maintained from the
+.IT "text table" .
+A text table entry holds the location of the
+text segment on secondary memory.
+If the segment is loaded,
+that table also holds the primary memory location
+and the count of the number of processes
+sharing this entry.
+When this count is reduced to zero,
+the entry is freed along with any
+primary and secondary memory holding the segment.
+When a process first executes a shared-text segment,
+a text table entry is allocated and the
+segment is loaded onto secondary memory.
+If a second process executes a text segment
+that is already allocated,
+the entry reference count is simply incremented.
+.PP
+A user process has some strictly private
+read-write data
+contained in its
+data segment.
+As far as possible,
+the system does not use the user's
+data segment to hold system data.
+In particular,
+there are no I/O buffers in the
+user address space.
+.PP
+The user data segment has two growing boundaries.
+One, increased automatically by the system
+as a result of memory faults,
+is used for a stack.
+The second boundary is only grown (or shrunk) by
+explicit requests.
+The contents of newly allocated primary memory
+is initialized to zero.
+.PP
+Also associated and swapped with
+a process is a small fixed-size
+system data segment.
+This segment contains all
+the data about the process
+that the system needs only when the
+process is active.
+Examples of the kind of data contained
+in the system data segment are:
+saved central processor registers,
+open file descriptors,
+accounting information,
+scratch data area,
+and the stack for the system phase
+of the process.
+The system data segment is not
+addressable from the user process
+and is therefore protected.
+.PP
+Last,
+there is a process table with
+one entry per process.
+This entry contains all the data
+needed by the system when the process
+is
+.IT not
+active.
+Examples are
+the process's name,
+the location of the other segments,
+and scheduling information.
+The process table entry is allocated
+when the process is created, and freed
+when the process terminates.
+This process entry is always directly
+addressable by the kernel.
+.PP
+Figure 1 shows the relationships
+between the various process control
+data.
+In a sense,
+the process table is the
+definition of all processes,
+because
+all the data associated with a process
+may be accessed
+starting from the process table entry.
+.KF
+.in .375i
+.so fig1.pic
+.in -.375i
+.sp 2v
+.ce
+Fig. 1\(emProcess control data structure.
+.KE
+.NH 2
+Process creation and program execution
+.PP
+Processes are created by the system primitive
+.UL fork .
+The newly created process (child) is a copy of the original process (parent).
+There is no detectable sharing of primary memory between the two processes.
+(Of course,
+if the parent process was executing from a read-only
+text segment,
+the child will share the text segment.)
+Copies of all writable data segments
+are made for the child process.
+Files that were open before the
+.UL fork
+are
+truly shared after the
+.UL fork .
+The processes are informed as to their part in the
+relationship to
+allow them to select their own
+(usually non-identical)
+destiny.
+The parent may
+.UL wait
+for the termination of
+any of its children.
+.PP
+A process may
+.UL exec
+a file.
+This consists of exchanging the current text and data
+segments of the process for new text and data
+segments specified in the file.
+The old segments are lost.
+Doing an
+.UL exec
+does
+.IT not
+change processes;
+the process that did the
+.UL exec
+persists,
+but
+after the
+.UL exec
+it is executing a different program.
+Files that were open
+before the
+.UL exec
+remain open after the
+.UL exec .
+.PP
+If a program,
+say the first pass of a compiler,
+wishes to overlay itself with another program,
+say the second pass,
+then it simply
+.UL exec s
+the second program.
+This is analogous
+to a ``goto.''
+If a program wishes to regain control
+after
+.UL exec ing
+a second program,
+it should
+.UL fork
+a child process,
+have the child
+.UL exec
+the second program, and
+have the parent
+.UL wait
+for the child.
+This is analogous to a ``call.''
+Breaking up the call into a binding followed by
+a transfer is similar to the subroutine linkage in
+SL-5.
+.[
+griswold hanson sl5 overview
+.]
+.NH 2
+Swapping
+.PP
+The major data associated with a process
+(the user data segment,
+the system data segment, and
+the text segment)
+are swapped to and from secondary
+memory, as needed.
+The user data segment and the system data segment
+are kept in contiguous primary memory to reduce
+swapping latency.
+(When low-latency devices, such as bubbles,
+.UC CCD s,
+or scatter/gather devices,
+are used,
+this decision will have to be reconsidered.)
+Allocation of both primary
+and secondary memory is performed
+by the same simple first-fit algorithm.
+When a process grows,
+a new piece of primary memory is allocated.
+The contentsR following the command.
+.VL 16
+.IP "r<chr>" 16
+Replaces the character at the current cursor position with <chr>.  This
+is a one character replacement.  No <esc> is required for termination.
+Mnemonic:  \fBr\fReplace character
+.IP "R{text}<esc>" 16
+Starts overlaying the characters on the screen with whatever you type.
+It does not stop until an <esc> is typed.
+.IP "[cnt]s{text}<esc>" 16
+Substitute for "cnt" characters beginning at the current cursor
+position.  A "$" will appear at the position in the text where the
+"cnt"'th character appears so you will know how much you are erasing.
+Mnemonic: \fBs\fRubstitute
+.IP "[cnt]S{text}<esc>" 16
+Substitute for the entire current line (or lines).  If no count is given,
+a "$" appears at the end of the current line.  If a count of more than
+1 is given, all the lines to be replaced are deleted before the insertion
+begins.
+.IP "[cnt]c{motion}{text}<esc>" 16
+.br
+Change the specified "motion" by replacing it with the
+insertion text.  A "$" will appear at the end of the last item
+that is being deleted unless the deletion involves whole lines.
+Motion's can be any motion from sections 4.1 or 4.2.
+Stuttering the c (e.g. [cnt]cc) changes cnt lines.
+.LE
+.NH 2
+Moving Text
+.LP
+\fBVi\fR provides a number of ways of moving chunks of text around.
+There are nine buffers into which each piece of text which is deleted
+or "yanked" is put in addition to the "undo" buffer.
+The most recent deletion or yank is in the "undo" buffer and also
+usually in buffer
+1, the next most recent in buffer 2, and so forth.  Each new deletion
+pushes down all the older deletions.  Deletions older than 9
+disappear.  There is also
+a set of named registers, a-z, into which text can optionally
+be placed.  If any delete or replacement type command is preceded
+by \fB"<a-z>\fR, that named buffer will contain the text deleted
+after the command is executed.  For example, \fB"a3dd\fR will delete
+three lines starting at the current line and put them in buffer \fB"a\fR.*
+.FS
+* Referring to an upper case letter as a buffer name (A-Z) is the
+same as referring to the lower case letter, except that text placed
+in such a buffer is appended to it instead of replacing it.
+.FE
+There are two more basic commands and
+some variations useful in getting and putting text into a file.
+.VL 16
+.IP ["<a-z>][cnt]y{motion} 16
+.sp 1
+Yank the specified item or "cnt" items and put in the "undo" buffer or
+the specified buffer.  The variety of "items" that can be yanked
+is the same as those that can be deleted with the "d" command or
+changed with the "c" command.  In the same way that "dd" means
+delete the current line and "cc" means replace the current line,
+"yy" means yank the current line.
+.IP ["<a-z>][cnt]Y 16
+Yank the current line or the "cnt" lines starting from the current
+line.  If no buffer is specified, they will go into the "undo" buffer,
+like any delete would.  It is equivalent to "yy".
+Mnemonic:  \fBY\fRank
+.IP ["<a-z>]p 16
+Put "undo" buffer or the specified buffer down \fBafter\fR the cursor.
+If whole lines were yanked or deleted into the buffer, then they will be
+put down on the line following the line the cursor is on.  If
+something else was deleted, like a word or sentence, then it will
+be inserted immediately following the cursor.
+Mnemonic:  \fBp\fRut buffer
+.IP
+It should be noted that text in the named buffers remains there when you
+start editing a new file with the \fB:e file<esc>\fR command.  Since
+this is so, it is possible to copy or delete text from one file and
+carry it over to another file in the buffers.
+However, the undo buffer and the ability to undo are lost when
+changing files.
+.IP ["<a-z>]P 16
+Put "undo" buffer or the specified buffer down \fBbefore\fR the cursor.
+If whole lines where yanked or deleted into the buffer, then they will be
+put down on the line preceding the line the cursor is on.  If
+something else was deleted, like a word or sentence, then it will
+be inserted immediately preceding the cursor.
+.IP [cnt]>{motion} 16
+The shift operator will right shift all the text from the line on which
+the cursor is located to the line where the \fBmotion\fR is located.
+The text is shifted by one \fBshiftwidth\fR.  (See section 6.)
+\fB>>\fR means right shift the current line or lines.
+.IP [cnt]<{motion} 16
+The shift operator will left shift all the text from the line on which
+the cursor is located to the line where the \fBitem\fR is located.
+The text is shifted by one \fBshiftwidth\fR.  (See section 6.)
+\fB<<\fR means left shift the current line or lines.
+Once the line has reached the left margin it is not further affected.
+.IP [cnt]={motion} 16
+Prettyprints the indicated area according to
+.B lisp
+conventions.
+The area should be a lisp s-expression.
+.LE
+.NH 2
+Miscellaneous Commands
+.LP
+\fBVi\fR has a number of miscellaneous commands that are very
+useful.  They are:
+.VL 16
+.IP ZZ 16
+This is the normal way to exit from vi.
+If any changes have been made, the file is written out.
+Then you are returned to the shell.
+.IP ^L 16
+Redraw the current screen.  This is useful if someone "write"s you
+while you are in "vi" or if for any reason garbage gets onto the
+screen.
+.IP ^R 16
+On dumb terminals, those not having the "delete line" function
+(the vt100 is such a terminal), \fBvi\fR saves redrawing the
+screen when you delete a line by just marking the line with an
+"@" at the beginning and blanking the line.  If you want to
+actually get rid of the lines marked with "@" and see what the
+page looks like, typing a ^R will do this.
+.IP \s+4.\s0 16
+"Dot" is a particularly useful command.  It repeats the last
+text modifying command.  Therefore you can type a command once and
+then to another place and repeat it by just typing ".".
+.IP u 16
+Perhaps the most important command in the editor,
+u undoes the last command that changed the buffer.
+Mnemonic:  \fBu\fRndo
+.IP U 16
+Undo all the text modifying commands performed on the current line
+since the last time you moved onto it.
+.IP [cnt]J 16
+Join the current line and the following line.  The <nl> is deleted
+and the two lines joined, usually with a space between the
+end of the first line and the beginning of what was the second
+line.  If the first line ended with a "period", then two spaces
+are inserted.
+A count joins the next cnt lines.
+Mnemonic: \fBJ\fRoin lines
+.IP Q 16
+Switch to \fBex\fR editing mode.
+In this mode \fBvi\fR will behave very much like \fBed\fR.
+The editor in this mode will operate on single lines normally and
+will not attempt to keep the "window" up to date.
+Once in this mode it is also possible to switch to the \fBopen\fR
+mode of editing.  By entering the command \fB[line number]open<nl>\fR
+you enter this mode.  It is similar to the normal visual mode
+except the window is only \fBone\fR line long.
+Mnemonic: \fBQ\fRuit visual mode
+.IP ^] 16
+An abbreviation for a tag command.
+The cursor should be positioned at the beginning of a word.
+That word is taken as a tag name, and the tag with that
+name is found as if it had been typed in a :tag command.
+.IP [cnt]!{motion}{UNIX\ cmd}<nl> 16
+.br
+Any UNIX filter
+(e.g. command that reads the standard input and outputs something
+to the standard output) can be sent a section of the current file and
+have the output of the command replace the original text.  Useful
+examples are programs like \fBcb\fR, \fBsort\fR, and
+\fBnroff\fR.  For instance, using \fBsort\fR it would be possible to
+sort a section of the current file into a new list.
+Using \fB!!\fR means take a line or lines starting at the line the
+cursor is currently on and pass them to the UNIX command.
+.B NOTE:
+To just escape to the shell for one command,
+use :!{cmd}<nl>, see section 5.
+.IP z{cnt}<nl> 16
+This resets the current window size to "cnt" lines and redraws the screen.
+.LE
+.NH 2
+Special Insert Characters
+.LP
+There are some characters that have special meanings during
+insert modes.  They are:
+.VL 16
+.IP ^V 16
+During inserts, typing a ^V allows you to quote control characters
+into the file.  Any character typed after the ^V will be inserted
+into the file.
+.IP [^]^D\ or\ [0]^D 16
+<^D> without any argument backs up one \fBshiftwidth\fR.  This is necessary
+to remove indentation that was inserted by the \fBautoinde.\" Copyright (c) 1983 Regents of the University of California.
+.\" All rights reserved.  The Berkeley software License Agreement
+.\" specifies the terms and conditions for redistribution.
+.\"
+.\"	@(#)1.4.t	6.2 (Berkeley) 5/12/86
+.\"
+.sh "Timers
+.NH 3
+Real time
+.PP
+The system's notion of the current Greenwich time and the current time
+zone is set and returned by the call by the calls:
+.DS
+#include <sys/time.h>
+
+settimeofday(tvp, tzp);
+struct timeval *tp;
+struct timezone *tzp;
+
+gettimeofday(tp, tzp);
+result struct timeval *tp;
+result struct timezone *tzp;
+.DE
+where the structures are defined in \fI<sys/time.h>\fP as:
+.DS
+._f
+struct timeval {
+	long	tv_sec;	/* seconds since Jan 1, 1970 */
+	long	tv_usec;	/* and microseconds */
+};
+
+struct timezone {
+	int	tz_minuteswest;	/* of Greenwich */
+	int	tz_dsttime;	/* type of dst correction to apply */
+};
+.DE
+The precision of the system clock is hardware dependent.
+Earlier versions of UNIX contained only a 1-second resolution version
+of this call, which remains as a library routine:
+.DS
+time(tvsec)
+result long *tvsec;
+.DE
+returning only the tv_sec field from the \fIgettimeofday\fP call.
+.NH 3
+Interval time
+.PP
+The system provides each process with three interval timers,
+defined in \fI<sys/time.h>\fP:
+.DS
+._d
+#define	ITIMER_REAL	0	/* real time intervals */
+#define	ITIMER_VIRTUAL	1	/* virtual time intervals */
+#define	ITIMER_PROF	2	/* user and system virtual time */
+.DE
+The ITIMER_REAL timer decrements
+in real time.  It could be used by a library routine to
+maintain a wakeup service queue.  A SIGALRM signal is delivered
+when this timer expires.
+.PP
+The ITIMER_VIRTUAL timer decrements in process virtual time.
+It runs only when the process is executing.  A SIGVTALRM signal
+is delivered when it expires.
+.PP
+The ITIMER_PROF timer decrements both in process virtual time and when
+the system is running on behalf of the process.
+It is designed to be used by processes to statistically profile
+their execution.
+A SIGPROF signal is delivered when it expires.
+.PP
+A timer value is defined by the \fIitimerval\fP structure:
+.DS
+._f
+struct itimerval {
+	struct	timeval it_interval;	/* timer interval */
+	struct	timeval it_value;	/* current value */
+};
+.DE
+and a timer is set or read by the call:
+.DS
+getitimer(which, value);
+int which; result struct itimerval *value;
+
+setitimer(which, value, ovalue);
+int which; struct itimerval *value; result struct itimerval *ovalue;
+.DE
+The third argument to \fIsetitimer\fP specifies an optional structure
+to receive the previous contents of the interval timer.
+A timer can be disabled by specifying a timer value of 0.
+.PP
+The system rounds argument timer intervals to be not less than the
+resolution of its clock.  This clock resolution can be determined
+by loading a very small value into a timer and reading the timer back to
+see what value resulted.
+.PP
+The \fIalarm\fP system call of earlier versions of UNIX is provided
+as a library routine using the ITIMER_REAL timer.  The process
+profiling facilities of earlier versions of UNIX
+remain because
+it is not always possible to guarantee
+the automatic restart of system calls after 
+receipt of a signal.
+The \fIprofil\fP call arranges for the kernel to begin gathering
+execution statistics for a process:
+.DS
+profil(buf, bufsize, offset, scale);
+result char *buf; int bufsize, offset, scale;
+.DE
+This begins sampling of the program counter, with statistics maintained
+in the user-provided buffer.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             .\" Copyright (c) 1983 Regents of the University of California.
+.\" All rights reserved.  The Berkeley software License Agreement
+.\" specifies the terms and conditions for redistribution.
+.\"
+.\"	@(#)1.6.t	6.2 (Berkeley) 5/12/86
+.\"
+.sh "Resource controls
+.NH 3
+Process priorities
+.PP
+The system gives CPU scheduling priority to processes that have not used
+CPU time recently.  This tends to favor interactive processes and
+processes that execute only for short periods.
+It is possible to determine the priority currently
+assigned to a process, process group, or the processes of a specified user,
+or to alter this priority using the calls:
+.DS
+._d
+#define	PRIO_PROCESS	0	/* process */
+#define	PRIO_PGRP	1	/* process group */
+#define	PRIO_USER	2	/* user id */
+
+prio = getpriority(which, who);
+result int prio; int which, who;
+
+setpriority(which, who, prio);
+int which, who, prio;
+.DE
+The value \fIprio\fP is in the range \-20 to 20.
+The default priority is 0; lower priorities cause more
+favorable execution.
+The \fIgetpriority\fP call returns the highest priority (lowest numerical value)
+enjoyed by any of the specified processes.
+The \fIsetpriority\fP call sets the priorities of all of the
+specified processes to the specified value.
+Only the super-user may lower priorities.
+.NH 3
+Resource utilization
+.PP
+The resources used by a process are returned by a \fIgetrusage\fP call,
+returning information in a structure defined in \fI<sys/resource.h>\fP:
+.DS
+._d
+#define	RUSAGE_SELF	0		/* usage by this process */
+#define	RUSAGE_CHILDREN	-1		/* usage by all children */
+
+getrusage(who, rusage)
+int who; result struct rusage *rusage;
+
+._f
+struct rusage {
+	struct	timeval ru_utime;	/* user time used */
+	struct	timeval ru_stime;	/* system time used */
+	int	ru_maxrss;	/* maximum core resident set size: kbytes */
+	int	ru_ixrss;	/* integral shared memory size (kbytes*sec) */
+	int	ru_idrss;	/* unshared data memory size */
+	int	ru_isrss;	/* unshared stack memory size */
+	int	ru_minflt;	/* page-reclaims */
+	int	ru_majflt;	/* page faults */
+	int	ru_nswap;	/* swaps */
+	int	ru_inblock;	/* block input operations */
+	int	ru_oublock;	/* block output operations */
+	int	ru_msgsnd;	/* messages sent */
+	int	ru_msgrcv;	/* messages received */
+	int	ru_nsignals;	/* signals received */
+	int	ru_nvcsw;	/* voluntary context switches */
+	int	ru_nivcsw;	/* involuntary context switches */
+};
+.DE
+The \fIwho\fP parameter specifies whose resource usage is to be returned.
+The resources used by the current process, or by all
+the terminated children of the current process may be requested.
+.NH 3
+Resource limits
+.PP
+The resources of a process for which limits are controlled by the
+kernel are defined in \fI<sys/resource.h>\fP, and controlled by the
+\fIgetrlimit\fP and \fIsetrlimit\fP calls:
+.DS
+._d
+#define	RLIMIT_CPU	0	/* cpu time in milliseconds */
+#define	RLIMIT_FSIZE	1	/* maximum file size */
+#define	RLIMIT_DATA	2	/* maximum data segment size */
+#define	RLIMIT_STACK	3	/* maximum stack segment size */
+#define	RLIMIT_CORE	4	/* maximum core file size */
+#define	RLIMIT_RSS	5	/* max

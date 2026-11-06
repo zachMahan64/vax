@@ -1,0 +1,1760 @@
+;
+		esac;;
+	esac
+	eval `echo $ch $unit $major $count |
+	  awk ' { ch = $1; u = $4 * $2; m = $3; cnt = $4 } END {
+	    for (i = 0; i < cnt; i++)
+	      if (i < 10)
+		printf("/etc/mknod tty%s%x c %d %d; ",ch,i,m,u+i);
+	      else
+		printf("/etc/mknod tty%s%c c %d %d; ",ch,87+i,m,u+i); }'`
+	;;
+
+lp*|va*|vp*)
+	case $i in
+	lp*) name=lp; major=15;;
+	va*) name=va; major=10;;
+	vp*) name=vp; major=6;;
+	esac
+	unit=`expr $i : "$name\(.*\)"`
+	case $unit in
+	0|1|2|3|4|5|6|7)
+		/etc/mknod $i c $major $unit;
+		chmod 666 $i
+		;;
+	*)
+		echo bad unit for $name in: $i
+		;;
+	esac
+	;;
+
+pty*)
+	class=`expr $i : 'pty\(.*\)'`
+	case $class in
+	0) offset=0 name=p;;
+	1) offset=16 name=q;;
+	2) offset=32 name=r;;
+	3) offset=48 name=s;;
+	4) offset=64 name=t;;
+	5) offset=80 name=u;;
+	*) echo bad unit for pty in: $i;;
+	esac
+	case $class in
+	0|1|2|3|4|5)
+		umask 0
+		eval `echo $offset $name | awk ' { b=$1; n=$2 } END {
+			for (i = 0; i < 16; i++)
+				printf("/etc/mknod tty%s%x c 20 %d; \
+					/etc/mknod pty%s%x c 21 %d; ", \
+					n, i, b+i, n,#
+# Copyright (c) 1983,1986 Regents of the University of California.
+# All rights reserved.  The Berkeley software License Agreement
+# specifies the terms and conditions for redistribution.
+#
+#	@(#)disktab	4.11 (Berkeley) 5/31/86
+#
+# Disk geometry and partition layout tables. 
+# Key:
+#	ty	type of disk
+#	ns	#sectors/track
+#	nt	#tracks/cylinder
+#	nc	#cylinders/disk
+#	rm	rpm, 3600 default
+#	se	sector size, 512 default
+#	sf	supports bad144-style bad sector forwarding
+#	so	partition offsets in sectors
+#	p[a-h]	partition sizes in sectors
+#	b[a-h]	partition block sizes in bytes
+#	f[a-h]	partition fragment sizes in bytes
+#
+# All partition sizes contain space
+# for bad sector tables unless the
+# device drivers fail to support this.
+#
+# Entries may also be used for other compatible drives
+# with the same geometry.
+
+#
+# Drives on hp
+#
+rm03|RM03|DEC RM03:\
+	:ty=removable:ns#32:nt#5:nc#823:sf:\
+	:pa#15884:ba#8192:fa#1024:\
+	:pb#33440:bb#8192:fb#1024:\
+	:pc#131520:bc#8192:fc#1024:\
+	:pd#15884:bd#8192:fd#1024:\
+	:pe#55936:be#8192:fe#1024:\
+	:pf#10080:bf#8192:ff#1024:\
+	:pg#82080:bg#8192:fg#1024:
+rm05|RM05|DEC RM05:\
+	:ty=removable:ns#32:nt#19:nc#823:sf:\
+	:pa#15884:ba#8192:fa#1024:\
+	:pb#33440:bb#8192:fb#1024:\
+	:pc#500224:bc#8192:fc#1024:\
+	:pd#15884:bd#4096:fd#512:\
+	:pe#55936:be#8192:fe#1024:\
+	:pf#86048:bf#8192:ff#1024:\
+	:pg#158528:bg#8192:fg#1024:\
+	:ph#291346:bh#8192:fh#1024:
+rp06|RP06|DEC RP06:\
+	:ty=removable:ns#22:nt#19:nc#815:sf:\
+	:pa#15884:ba#8192:fa#1024:\
+	:pb#33440:bb#8192:fb#1024:\
+	:pc#340516:bc#8192:fc#1024:\
+	:pd#15884:bd#4096:fd#512:\
+	:pe#55936:be#8192:fe#1024:\
+	:pf#219296:bf#8192:ff#1024:\
+	:pg#291192:bg#8192:fg#1024:
+rm80|RM80|DEC RM80:\
+	:ty=winchester:ns#31:nt#14:nc#559:sf:\
+	:pa#15884:ba#8192:fa#1024:\
+	:pb#33440:bb#8192:fb#1024:\
+	:pc#242420:bc#8192:fc#1024:\
+	:pd#15884:bd#4096:fd#512:\
+	:pe#55936:be#8192:fe#1024:\
+	:pf#120466:bf#8192:ff#1024:\
+	:pg#192510:bg#8192:fg#1024:
+rp05|RP05|DEC RP05:\
+	:ty=removable:ns#22:nt#19:nc#411:sf:\
+	:pa#15884:ba#8192:fa#1024:\
+	:pb#33440:bb#8192:fb#1024:\
+	:pc#171644:bc#8192:fc#1024:\
+	:pd#15884:bd#4096:fd#512:\
+	:pe#55936:be#8192:fe#1024:\
+	:pf#50424:bf#8192:ff#1024:\
+	:pg#122320:bg#8192:fg#1024:
+rp07|RP07|DEC RP07:\
+	:ty=winchester:ns#50:nt#32:nc#630:sf:\
+	:pa#15884:ba#8192:fa#1024:\
+	:pb#66880:bb#8192:fb#1024:\
+	:pc#1007800:bc#8192:fc#1024:\
+	:pd#15884:bd#4096:fd#512:\
+	:pe#307200:be#8192:fe#1024:\
+	:pf#308600:bf#8192:ff#1024:\
+	:pg#631800:bg#8192:fg#1024:\
+	:ph#291346:bh#8192:fh#1024:
+ml11|ml11a|ml11b|ML11A|ML11B|DEC disk emulator:\
+	:ty=simulated:ns#1:nt#1:nc#1:
+9775|CDC 9775:\
+	:ty=winchester:ns#32:nt#40:nc#842:sf:\
+	:pa#15884:ba#8192:fa#1024:\
+	:pb#66880:bb#8192:fb#1024:\
+	:pc#1077600:bc#8192:fc#1024:\
+	:pd#15884:bd#4096:fd#512:\
+	:pe#307200:be#8192:fe#1024:\
+	:pf#377440:bf#8192:ff#1024:\
+	:pg#701280:bg#8192:fg#1024:\
+	:ph#291346:bh#8192:fh#1024:
+9730|CDC 9730:\
+	:ty=removable:ns#32:nt#10:nc#823:sf:\
+	:pa#15884:ba#8192:fa#1024:\
+	:pb#33440:bb#8192:fb#1024:\
+	:pc#263200:bc#8192:fc#1024:\
+	:pd#15884:bd#4096:fd#512:\
+	:pe#55936:be#8192:fe#1024:\
+	:pf#141600:bf#8192:ff#1024:\
+	:pg#213600:bg#8192:fg#1024:
+330|capricorn|Capricorn|Ampex Capricorn:\
+	:ty=winchester:ns#32:nt#16:nc#1024:sf:\
+	:pa#15884:ba#8192:fa#1024:\
+	:pb#33440:bb#8192:fb#1024:\
+	:pc#524128:bc#8192:fc#1024:\
+	:pd#15884:bd#4096:fd#512:\
+	:pe#55936:be#8192:fe#1024:\
+	:pf#109408:bf#8192:ff#1024:\
+	:pg#182112:bg#8192:fg#1024:\
+	:ph#291346:bh#8192:fh#1024:
+eagle|Eagle|2351|2351A|Fujitsu Eagle 2351A (48 sectors):\
+	:ty=winchester:ns#48:nt#20:nc#842:rm#3961:sf:\
+	:pa#15884:ba#8192:fa#1024:\
+	:pb#66880:bb#8192:fb#1024:\
+	:pc#808128:bc#8192:fc#1024:\
+	:pd#15884:bd#4096:fd#512:\
+	:pe#307200:be#8192:fe#1024:\
+	:pf#109248:bf#8192:ff#1024:\
+	:pg#432768:bg#8192:fg#1024:\
+	:ph#291346:bh#8192:fh#1024:
+2361|doubleeagle|Fujitsu 2361 (Double Eagle, 64 sectors):\
+	:ty=winchester:ns#64:nt#20:nc#842:sf:\
+	:pa#15884:ba#8192:fa#1024:\
+	:pb#66880:bb#8192:fb#1024:\
+	:pc#1077568:bc#8192:fc#1024:\
+	:pd#15884:bd#4096:fd#512:\
+	:pe#307200:be#8192:fe#1024:\
+	:pf#377408:bf#8192:ff#1024:\
+	:pg#701248:bg#8192:fg#1024:\
+	:ph#291346:bh#8192:fh#1024:
+#
+# IDC disks
+#
+rb02|RB02|DEC RL02 on 730 IDC:\
+	:ty=removable:se#256:ns#40:nt#2:nc#32:\
+	:pa#15884:ba#4096:fa#1024:\
+	:pb#4480:bb#4096:fb#512:\
+	:pc#20480:bc#4096:fc#512:
+rb80|RB80|DEC R80 on 730 IDC:\
+	:ty=winchester:ns#31:nt#14:nc#559:\
+	:pa#15884:ba#8192:fa#1024:\
+	:pb#33440:bb#8192:fb#1024:\
+	:pc#242606:bc#8192:fc#1024:\
+	:pg#82080:bg#4096:fg#512:\
+	:ph#110143:bh#8192:fh#1024:
+#
+# Disks for rk
+#
+rk06|RK06|DEC RK06:\
+	:ty=removable:ns#22:nt#3:nc#411:sf:\
+	:pa#15884:ba#8192:fa#1024:\
+	:pb#11154:bb#4096:fb#512:\
+	:pc#26978:bc#4096:fc#512:
+rk07|RK07|DEC RK07:\
+	:ty=removable:ns#22:nt#3:nc#815:sf:\
+	:pa#15884:ba#8192:fa#1024:\
+	:pb#10032:bb#4096:fb#512:\
+	:pc#53636:bc#4096:fc#512:\
+	:pd#15884:bd#4096:fd#512:\
+	:pf#11792:bf#4096:ff#1024:\
+	:pg#27698:bg#4096:fg#512:
+#
+# Disks normally on up
+#
+160|fuji|fuji160|Fujitsu 160:\
+	:ty=winchester:ns#32:nt#10:nc#823:sf:\
+	:pa#15884:ba#8192:fa#1024:\
+	:pb#33440:bb#8192:fb#1024:\
+	:pc#263200:bc#8192:fc#1024:\
+	:pd#15884:bd#4096:fd#512:\
+	:pe#55936:be#8192:fe#1024:\
+	:pf#141600:bf#8192:ff#1024:\
+	:pg#213600:bg#8192:fg#1024:
+9300|Ampex 9300:\
+	:ty=removable:ns#32:nt#19:nc#815:sf:\
+	:pa#15884:ba#8192:fa#1024:\
+	:pb#33440:bb#8192:fb#1024:\
+	:pc#495360:bc#8192:fc#1024:\
+	:pd#15884:bd#4096:fd#512:\
+	:pe#55936:be#8192:fe#1024:\
+	:pf#81312:bf#8192:ff#1024:\
+	:pg#153664:bg#8192:fg#1024:\
+	:ph#291346:bh#8192:fh#1024:
+9766|CDC 9766:\
+	:ty=removable:ns#32:nt#19:nc#823:sf:\
+	:pa#15884:ba#8192:fa#1024:\
+	:pb#33440:bb#8192:fb#1024:\
+	:pc#500224:bc#8192:fc#1024:\
+	:pd#15884:bd#4096:fd#512:\
+	:pe#55936:be#8192:fe#1024:\
+	:pf#86176:bf#8192:ff#1024:\
+	:pg#158528:bg#8192:fg#1024:\
+	:ph#291346:bh#8192:fh#1024:
+980|9762|AMPEX DM980|CDC 9762:\
+	:ty=removable:ns#32:nt#5:nc#823:sf:\
+	:pa#15884:ba#8192:fa#1024:\
+	:pb#33440:bb#8192:fb#1024:\
+	:pc#131520:bc#8192:fc#1024:\
+	:pd#15884:bd#4096:fd#512:\
+	:pe#55936:be#8192:fe#1024:\
+	:pf#10080:bf#8192:ff#1024:\
+	:pg#82080:bg#8192:fg#1024:
+#
+# Disk on a UDA50
+# NOTE: new partition sizes since 4.2.
+#
+# RA60: standard use a-b-f
+#	4.2 compatible use a-b-d-e where 4.2 g == d; 4.2 h == e
+#	UCB compatible use a-b-h-g where UCB h == h; UCB g == g
+ra60|RA60|DEC RA60 Removable:\
+	:ty=removable:ns#42:nt#4:nc#2382:so:\
+	:pa#15884:ba#8192:fa#1024:\
+	:pb#33440:bb#4096:fb#512:\
+	:pc#400176:bc#8192:fc#1024:\
+	:pd#82080:bd#4096:fd#512:\
+	:pe#268772:be#4096:fe#512:\
+	:pf#350852:bf#4096:ff#512:\
+	:pg#157570:bg#4096:fg#1024:\
+	:ph#193282:bh#4096:fh#512:
+#
+# RA80: standard use a-b-g
+#	4.2 compatible use a-b-f-h where 4.2 g == f; 4.2 h == h
+#	UCB compatible use a-b-e where UCB h == e
+ra80|RA80|DEC RA80 Winchester:\
+	:ty=winchester:ns#31:nt#14:nc#559:so:\
+	:pa#15884:ba#8192:fa#1024:\
+	:pb#33440:bb#4096:fb#512:\
+	:pc#242606:bc#8192:fc#1024:\
+	:pe#193282:be#4096:fe#512:\
+	:pf#82080:bf#4096:ff#512:\
+	:pg#192696:bg#4096:fg#1024:\
+	:ph#111202:bh#4096:fh#512:
+#
+# RA81: standard use a-b-h-g or a-b-h-d-e-f
+#	When compiled as COMPAT_42 d-e-f are used for 4.2 compatible as:
+#		4.2 g == d; 4.2 h == e; 4.2 f == f
+ra81|RA81|DEC RA81 Winchester:\
+	:ty=winchester:ns#51:nt#14:nc#1248:so:\
+	:pa#15884:ba#8192:fa#1024:\
+	:pb#66880:bb#8192:fb#1024:\
+	:pc#891072:bc#8192:fc#1024:\
+	:pd#15884:bd#4096:fd#512:\
+	:pe#307200:be#8192:fe#1024:\
+	:pf#191352:bf#8192:ff#1024:\
+	:pg#515508:bg#8192:fg#1024:\
+	:ph#291346:bh#8192:fh#1024:
+# COMPAT_42 RA81: should you need to create more of these awful partitions
+#	When compiled as COMPAT_42 d-e-f are used for 4.2 compatible as:
+#		4.2 g == d; 4.2 h == e; 4.2 f == f
+compat_42ra81|COMPAT_42RA81|DEC COMPAT_42RA81 Winchester:\
+	:ty=winchester:ns#51:nt#14:nc#1248:so:\
+	:pd#82080:bd#4096:fd#512:\
+	:pe#759668:be#4096:fe#512:\
+	:pf#478582:bf#4096:ff#512:
+#
+# UCB RA81: use a-b-h-g or a-b-h-d-e-f
+ucbra81|UCBRA81|DEC UCBRA81 Winchester:\
+	:ty=winchester:ns#51:nt#14:nc#1248:so:\
+	:pa#15884:ba#8192:fa#1024:\
+	:pb#33440:bb#4096:fb#512:\
+	:pc#891072:bc#8192:fc#1024:\
+	:pd#15884:bd#4096:fd#512:\
+	:pe#307200:be#4096:fe#512:\
+	:pf#325382:bf#4096:ff#512:\
+	:pg#648466:bg#4096:fg#1024:\
+	:ph#193282:bh#4096:fh#512:
+#
+# RC25
+rc25|RC25:\
+	:ty=winchester:ns#42:nt#4:nc#302:so:\
+	:pa#15884:ba.if !\n(xx .so tmac.p
+.ta 8n 16n 24n
+.nr H1 2
+.if n .ND
+.NH
+Input/output
+.NH 2
+The files structure
+.PP
+Each file in the Pascal environment is represented by a pointer
+to a
+.I files
+structure in the heap.
+At the location addressed by the pointer is the element
+in the file's window variable.
+Behind this window variable is information about the file,
+at the following offsets:
+.so table3.1.n
+.PP
+Here
+.SM FBUF
+is a pointer to the system FILE block for the file.
+The standard system I/O library is
+used that provides block buffered input/output,
+with 1024 characters normally transferred at each read or write.
+.PP
+The files in the
+Pascal environment,
+are all linked together on a single file chain through the
+.SM FCHAIN
+links.
+For each file the
+.SM FLEV
+pointer gives its associated file variable.
+These are used to free files at block exit as described in section 3.3
+below.
+.PP
+The
+FNAME
+and
+PFNAME
+give the associated
+file name for the file and the name to be used when printing
+error diagnostics respectively.
+Although these names are usually the same,
+.I input
+and
+.I output
+usually have no associated
+file name so the distinction is necessary.
+.PP
+The
+FUNIT
+word contains 
+a set of flags.
+whose representations are:
+.TS
+center;
+l l l.
+EOF	0x0100	At end-of-file
+EOLN	0x0200	At end-of-line (text files only)
+SYNC	0x0400	File window is out of sync
+TEMP	0x0800	File is temporary
+FREAD	0x1000	File is open for reading
+FWRITE	0x2000	File is open for writing
+FTEXT	0x4000	File is a text file; process EOLN
+FDEF	0x8000	File structure created, but file not opened
+.TE
+.PP
+The
+EOF
+and
+EOLN
+bits here reflect the associated built-in function values.
+TEMP
+specifies that the file has a generated temporary name and that
+it should therefore be removed when its block exits.
+FREAD
+and
+FWRITE
+specify that
+.I reset
+and
+.I rewrite
+respectively have been done on the file so that
+input or output operations can be done.
+FTEXT
+specifies the file is a text file so that
+EOLN
+processing should be done,
+with newline characters turned into blanks, etc.
+.PP
+The
+SYNC
+bit,
+when true,
+specifies that there is no usable image in the file buffer window.
+As discussed in the
+.I "Berkeley Pascal User's Manual,"
+the interactive environment necessitates having
+``input^'' undefined at the beginning
+of execution so that a program may print a prompt
+before the user is required to type input.
+The
+SYNC
+bit implements this.
+When it is set,
+it specifies that the element in the window
+must be updated before it can be used.
+This is never done until necessary.
+.NH 2
+Initialization of files
+.PP
+All the variables in the Pascal runtime environment are cleared to zero on
+block entry.
+This is necessary for simple processing of files.
+If a file is unused, its pointer will be
+.B nil.
+All references to an inactive file are thus references through a
+.B nil
+pointer.
+If the Pascal system did not clear storage to zero before execution
+it would not be possible to detect inactive files in this simple way;
+it would probably be necessary to generate (possibly complicated)
+code to initialize
+each file on block entry.
+.PP
+When a file is first mentioned in a
+.I reset
+or
+.I rewrite
+call,
+a buffer of the form described above is associated with it,
+and the necessary information about the file is placed in this
+buffer.
+The file is also linked into the active file chain.
+This chain is kept sorted by block mark address, the
+FLEV
+entries.
+.NH 2
+Block exit
+.PP
+When block exit occurs the interpreter must free the files that are in
+use in the block
+and their associated buffers.
+This is simple and efficient because the files in the active file chain are 
+sorted by increasing block mark address.
+This means that the files for the current block will be at the front
+of the chain.
+For each file that is no longer accessible
+the interpreter first flushes the files buffer
+if it is an output file.
+The interpreter then returns the file buffer and the files structure and window
+to the free space in the heap and removes the file from the active file chain.
+.NH 2
+Flushing
+.PP
+Flushing all the file buffers at abnormal termination,
+or on a call to the procedure
+.I flush
+or
+.I message
+is done by flushing 
+each file on the file chain that has the
+FWRITE
+bit set in its flags word.
+.NH 2
+The active file
+.PP
+For input-output,
+.I px
+maintains a notion of an active file.
+Each operation that references a file makes the file
+it will be using the active file and then does its operation.
+A subtle point here is that one may do a procedure call to
+.I write
+that involves a call to a function that references another file,
+thereby destroying the active file set up before the
+.I write.
+Thus the active file is saved at block entry
+in the block mark and restored at block exit.\*(Dg
+.FS
+\*(dg\ It would probably be better to dispense with the notion of
+active file and use another mechanism that did not involve extra
+overhead on each procedure and function call.
+.FE
+.NH 2
+File operations
+.PP
+Files in Pascal can be used in two distinct ways:
+as the object of
+.I read,
+.I write,
+.I get,
+and
+.I put
+calls, or indirectly as though they were pointers.
+The second use as pointers must be careful
+not to destroy the active file in a reference such as
+.LS
+write(output, input\(ua)
+.LE
+or the system would incorrectly write on the input device.
+.PP
+The fundamental operator related to the use of a file is
+.SM FNIL.
+This takes the file variable, as a pointer,
+insures that the pointer is not
+.B nil,
+and also that a usable image is in the file window,
+by forcing the
+.SM SYNC
+bit to be cleared.
+.PP
+A simple example that demonstrates the use of the file operators
+is given by
+.LS
+writeln(f)
+.LE
+that produces
+.DS
+.mD
+.TS
+lp-2w(8) l.
+RV:\fIl	f\fP
+UNIT
+WRITLN
+.TE
+.DE
+.NH 2
+Read operations
+.SH
+GET
+.IP
+Advance the active file to the next input element.
+.SH
+FNIL
+.IP
+A file pointer is on the stack. Insure that the associated file is active
+and that the file is synced so that there is input available in the window.
+.SH
+READ*
+.IP
+If the file is a text file, read a block of text
+and convert it to the internal type of the specified
+operand. If the file is not a text file then 
+do an unformatted read of the next record.
+The procedure
+.SM READLN
+reads upto and including the next end of line character.
+.SH
+READE A
+.IP
+The operator
+.SM READE
+reads a string name of an enumerated type and converts it
+to its internal value.
+.SM READE 
+takes a pointer to a data structure as shown in figure 3.2.
+.so fig3.2.n
+See the description of
+.SM NAM
+in the next section for an example.
+.NH 2
+Write operations
+.SH
+PUT
+.IP
+Output the element in the active file window.
+.SH
+WRITEF s
+.IP
+The argument(s) on the stack are output
+by the
+.I fprintf
+standard
+.SM I/O
+library routine.
+The sub-opcode 
+.I s
+specifies the number
+of longword arguments on the stack.
+.SH
+WRITEC
+.IP
+The character on the top of the stack is output
+without formatting. Formatted characters must be output with 
+.SM WRITEF .
+.SH
+WRITES
+.IP
+The string specified by the pointer on the top of the stack is output
+by the
+.I fwrite
+standard
+.SM I/O
+library routine.
+All characters including nulls are printed.
+.SH
+WRITLN
+.IP
+A linefeed is output to the active file.
+The line-count for the file is
+incremented and checked against the line limit.
+.SH
+PAGE
+.IP
+A formfeed is output to the active file.
+.SH
+NAM A
+.IP
+The value on the top of the stack is converted to a pointer
+to an enumerated type string name.
+The address 
+.SM A
+points to an enumerated type structure identical
+to that used by
+.SM READE .
+An error is raised if the value is out of range.
+The form of this structure for the predefined type
+.B boolean
+is shown in figure 3.3.
+.so fig3.3.n
+The code for 
+.SM NAM 
+is
+.DS
+.mD
+_NAM:
+	\fBincl\fR	lc
+	\fBaddl3\fR	(lc)+,ap,r6	#r6 points to scalar name list
+	\fBmovl\fR	(sp)+,r3	#r3 has data value
+	\fBcmpw\fR	r3,(r6)+	#check value out of bounds
+	\fBbgequ\fR	enamrng
+	\fBmovzwl\fR	(r6)[r3],r4	#r4 has string index
+	\fBpushab\fR	(r6)[r4]	#push string pointer
+	\fBjmp\fR	(loop)
+enamrng:
+	\fBmovw\fR	$ENAMRNG,_perrno
+	\fBjbr\fR	error
+.DE
+The address of the table is calculated by adding the base address
+of the interpreter code,
+.I ap
+to the offset pointed to by
+.I lc .
+The first word of the ta field names.
+Thus to get the address of
+.LS
+p^.f1
+.LE
+.IP
+.I pi
+would generate the sequence
+.DS
+.mD
+.TS
+lp-2w(8) l.
+RV:\fIl	p\fP
+OFF	\fIf1\fP
+.TE
+.DE
+.IP
+where the
+.SM RV
+loads the value of
+.I p,
+given its block in the sub-opcode and offset in the following word,
+and the interpreter then adds the offset of the field
+.I f1
+in its record to get the correct address.
+.SM OFF
+takes its argument in the sub-opcode if it is small enough.
+.SH
+NIL
+.IP
+The example above is incomplete, lacking a check for a
+.B nil
+pointer.
+The code generated would be
+.DS
+.TS
+lp-2w(8) l.
+RV:\fIl	p\fP
+NIL
+OFF	\fIf1\fP
+.TE
+.DE
+.IP
+where the
+.SM NIL
+operation checks for a
+.I nil
+pointer and generates the appropriate runtime error if it is.
+.SH
+LVCON s,"
+.IP
+A pointer to the specified length inline data is pushed
+onto the stack.
+This is primarily used for
+.I printf
+type strings used by 
+.SM WRITEF .
+(see sections 3.6 and 3.8)
+.SH
+INX* s,w,w
+.IP
+The operators
+.SM INX2
+and
+.SM INX4
+are used for subscripting.
+For example, the statement
+.DS
+a[i] := 2.0
+.DE
+.IP
+with
+.I i
+an integer and
+.I a
+an
+``array [1..1000] of real''
+would generate
+.DS
+.TS
+lp-2w(8) l.
+LV:\fIl	a\fP
+RV4:\fIl	i\fP
+INX4:8	1,999
+CON8	2.0
+AS8
+.TE
+.DE
+.IP
+Here the
+.SM LV
+operation takes the address of
+.I a
+and places it on the stack.
+The value of
+.I i
+is then placed on top of this on the stack.
+The array address is indexed by the
+length 4 index (a length 2 index would use
+.SM INX2 )
+where the individual elements have a size of 8 bytes.
+The code for 
+.SM INX4
+is:
+.DS
+.mD
+_INX4:
+	\fBcvtbl\fR	(lc)+,r0
+	\fBbneq\fR	L1
+	\fBcvtwl\fR	(lc)+,r0	#r0 has size of records
+L1:
+	\fBcvtwl\fR	(lc)+,r1	#r1 has lower bound
+	\fBmovzwl\fR	(lc)+,r2	#r2 has upper-lower bound
+	\fBsubl3\fR	r1,(sp)+,r3	#r3 has base subscript
+	\fBcmpl\fR	r3,r2	#check for out of bounds
+	\fBbgtru\fR	esubscr
+	\fBmull2\fR	r0,r3	#calculate byte offset
+	\fBaddl2\fR	r3,(sp)		#calculate actual address
+	\fBjmp\fR	(loop)
+esubscr:
+	\fBmovw\fR	$ESUBSCR,_perrno
+	\fBjbr\fR	error
+.DE
+.IP
+Here the lower bound is subtracted, and range checked against the
+upper minus lower bound.
+The offset is then scaled to a byte offset into the array
+and added to the base address on the stack.
+Multi-dimension subscripts are translated as a sequence of single subscriptings.
+.SH
+IND*
+.IP
+For indirect references through
+.B var
+parameters and pointers,
+the interpreter has a set of indirection operators that convert a pointer
+on the stack into a value on the stack from that address.
+different
+.SM IND
+operators are necessary because of the possibility of different
+length operands.
+The
+.SM IND14
+and
+.SM IND24
+operators do conversions to long
+as they push their data.
+.NH 2
+Arithmetic operators
+.PP
+The interpreter has many arithmetic operators.
+All operators produce results long enough to prevent overflow
+unless the bounds of the base type are exceeded.
+The basic operators available are
+.DS
+Addition:	ADD*, SUCC*
+Subtraction:	SUB*, PRED*
+Multiplication:	MUL*, SQR*
+Division:	DIV*, DVD*, MOD*
+Unary:		NEG*, ABS*
+.DE
+.NH 2
+Range checking
+.PP
+The interpreter has several range checking operators.
+The important distinction among these operators is between values whose
+legal range begins at zero and those that do not begin at zero, 
+for example
+a subrange variable whose values range from 45 to 70.
+For those that begin at zero, a simpler ``logical'' comparison against
+the upper bound suffices.
+For others, both the low and upper bounds must be checked independently,
+requiring two comparisons.
+On the 
+.SM "VAX 11/780"
+both checks are done using a single index instruction
+so the only gain is in reducing the inline data.
+.NH 2
+Case operators
+.PP
+The interpreter includes three operators for
+.B case
+statements that are used depending on the width of the 
+.B case
+label type.
+For each width, the structure of the case data is the same, and
+is represented in figure 2.4.
+.sp 1
+.so fig2.4.n
+.PP
+The
+.SM CASEOP
+case statement operators do a sequential search through the
+case label values.
+If they find the label value, they take the corresponding entry
+from the transfer table and cause the interpreter to branch to the
+specified statement.
+If the specified label is not found, an error results.
+.PP
+The
+.SM CASE
+operators take the number of cases as a sub-opcode
+if possible.
+Three different operators are needed to handle single byte,
+word, and long case transfer table values.
+For example, the
+.SM CASEOP1
+operator has the following code sequence:
+.DS
+.mD
+_CASEOP1:
+	\fBcvtbl\fR	(lc)+,r0
+	\fBbneq\fR	L1
+	\fBcvtwl\fR	(lc)+,r0	#r0 has length of case table
+L1:
+	\fBmovaw\fR	(lc)[r0],r2	#r2 has pointer to case labels
+	\fBmovzwl\fR	(sp)+,r3	#r3 has the element to find
+	\fBlocc\fR	r3,r0,(r2)	#r0 has index of located element
+	\fBbeql\fR	caserr	#element not found
+	\fBmnegl\fR	r0,r0	#calculate new lc
+	\fBcvtwl\fR	(r2)[r0],r1	#r1 has lc offset
+	\fBaddl2\fR	r1,lc
+	\fBjmp\fR	(loop)
+caserr:
+	\fBmovw\fR	$ECASE,_perrno
+	\fBjbr\fR	error
+.DE
+.PP
+Here the interpreter first computes the address of the beginning
+of the case label value area by adding twice the number of case label
+values to the address of the transfer table, since the transfer
+table entries are 2 byte address offsets.
+It then searches through the label values, and generates an ECASE
+error if the label is not found.
+If the label is found, the index of the corresponding entry
+in the transfer table is extracted and that offset is added
+to the interpreter location counter.
+.NH 2
+Operations supporting pxp
+.PP
+The following operations are defined to do execution profiling.
+.SH
+PXPBUF w
+.IP
+Causes the interpreter to allocate a count buffer
+with
+.I w
+four byte counters
+and to clear them to zero.
+The count buffer is placed within an image of the
+.I pmon.out
+file as described in the
+.I "PXP Implementation Notes."
+The contents of this buffer are written to the file
+.I pmon.out
+when the program ends.
+.SH
+COUNT w
+.IP
+Increments the counter specified by
+.I w .
+.SH
+TRACNT w,A
+.IP
+Used at the entry point to procedures and functions,
+combining a transfer to the entry point of the block with
+an incrementing of its entry count.
+.NH 2
+Set operations
+.PP
+The set operations:
+union
+.SM ADDT,
+intersection
+.SM MULT,
+element removal
+.SM SUBT,
+and the set relationals
+.SM RELT
+are straightforward.
+The following operations are more interesting.
+.SH
+CARD s
+.IP
+Takes the cardinality of a set of size
+.I s
+bytes on top of the stack, leaving a 2 byte integer count.
+.SM CARD
+uses the 
+.B ffs
+opcode to successively count the number of set bits in the set.
+.SH
+CTTOT s,w,w
+.IP
+Constructs a set.
+This operation requires a non-trivial amount of work,
+checking bounds and setting individual bits or ranges of bits.
+This operation sequence is slow,
+and motivates the presence of the operator
+.SM INCT
+below.
+The arguments to
+.SM CTTOT
+include the number of elements
+.I s
+in the constructed set,
+the lower and upper bounds of the set,
+the two
+.I w
+values,
+and a pair of values on the stack for each range in the set, single
+elements in constructed sets being duplicated with
+.SM SDUP
+to form degenerate ranges.
+.SH
+IN s,w,w
+.IP
+The operator
+.B in
+for sets.
+The value
+.I s
+specifies the size of the set,
+the two
+.I w
+values the lower and upper bounds of the set.
+The value on the stack is checked to be in the set on the stack,
+and a Boolean value of
+.I true
+or
+.I false
+replaces the operands.
+.SH
+INCT
+.IP
+The operator
+.B in
+on a constructed set without constructing it.
+The left operand of
+.B in
+is on top of the stack followed by the number of pairs in the
+constructed set,
+and then the pairs themselves, all as single word integers.
+Pairs designate runs of values and single values are represented by
+a degenerate pair with both value equal.
+This operator is generated in grammatical constructs such as
+.LS
+\fBif\fR character \fBin\fR [`+', '\-', `*', `/']
+.LE
+.IP
+or
+.LS
+\fBif\fR character \fBin\fR [`a'..`z', `$', `_']
+.LE
+.IP
+These constructs are common in Pascal, and
+.SM INCT
+makes them run much faster in the interpreter,
+as if they were written as an efficient series of
+.B if
+statements.
+.NH 2
+Miscellaneous
+.PP
+Other miscellaneous operators that are present in the interpreter
+are
+.SM ASRT
+that causes the program to end if the Boolean value /dev/ra0a:/:rw:1:1
+/dev/ra0g:/mnt:rw:1:3
+/dev/ra0h:/usr:rw:1:2
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 /dev/rb0a:/:rw:1:1
+/dev/rb0g:/mnt:rw:1:3
+/dev/rb0h:/usr:rw:1:2
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 /dev/hk0a:/:rw:1:1
+/dev/hk0g:/usr:rw:1:3
+/dev/hk1a:/mnt:rw:1:2
+/dev/hk1g:/usr/src:rw:1:3
+/dev/hk1a:/tmp:xx:1:2
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 /dev/hp0a:/:rw:1:1
+/dev/hp0g:/usr:rw:1:2
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       /dev/hp0a:/:rw:1:1
+/dev/hp0g:/usr:rw:1:3
+/dev/hp0h:/mnt:rw:1:2
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 /dev/hp0a:/:rw:1:1
+/dev/hp0g:/usr:rw:1:2
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       #! /bin/sh -x
+
+# address search pattern to recognize local hosts
+LOCALADDR='^128\.32'
+
+# awk pattern for uninteresting (eg, long form) alias
+SKIP='/^ucb|\.berkeley\.edu$|^$/'
+
+# Special entries that don't get generated normally
+SPECIAL='ucbvax ucbarpa'
+
+
+cd ${DESTDIR}/usr/hosts
+#
+# We want to save ourselves while cleaning up.  The funny sequence is to
+# minimize the window where the machine could crash and leave MAKEHOSTS
+# misplaced.
+#
+mv MAKEHOSTS .MAKEHOSTS
+rm -f M*
+mv .MAKEHOSTS MAKEHOSTS
+rm -f [A-LN-Za-z]*
+
+for i in `egrep "$LOCALADDR" ${DESTDIR}/etc/hosts | awk "\\$2 !~ $SKIP {print \\$2} \\$3 !~ $SKIP {print \\$3} \\$4 !~ $SKIP {print \\$4}"`;
+do
+	ln -s /usr/ucb/rsh $i
+done
+
+for i in $SPECIAL
+do
+	ln -s /usr/ucb/rsh $i
+done
+                                                                                                                                                                                                                                                                                            /dev/hp0a:/:rw:1:1
+/dev/hp0g:/usr:rw:1:2
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       PATH=/etc:/bin:/usr/ucb:/usr/bin
+
+# myname is my symbolic name
+# myhostid is my internet address in #.#.#.# format
+# my-netmask is specified in /etc/networks
+#
+hostname myname.my.domain
+ifconfig imp0 netmask my-netmask `hostname`
+ifconfig en0 netmask my-netmask `hostname`
+ifconfig lo0 localhost
+route add `hostname` localhost 0
+hostid `hostname`
+
+strings /vmunix | grep UNIX >/tmp/t1
+tail +2 /etc/motd >>/tmp/t1
+mv /tmp/t1 /etc/motd
+chmod 666 /etc/motd
+
+# syslogd doesn't belong here, but needs to be started before the others.
+if [ -f /etc/syslogd ]; then
+			echo 'starting system logger'	>/dev/console
+	rm -f /dev/log
+	/etc/syslogd
+fi
+
+		echo -n 'checking for core dump... '	>/dev/console
+savecore /a/crash					>/dev/console 2>&1
+		echo ''					>/dev/console
+
+			echo -n starting local daemons:	>/dev/console
+#if [ -f /etc/routed ]; then
+#	/etc/routed;	 	echo -n ' routed'	>/dev/console
+#fi
+if [ -f /etc/named ]; then
+	/etc/named /etc/named.boot; echo -n ' named'	>/dev/console
+fi
+#if [ -f /etc/timed ]; then
+#	/etc/timed -M;		echo -n ' timed'	>/dev/console
+#fi
+if [ -f /usr/lib/sendmail ]; then
+	(cd /usr/spool/mqueue; rm -f lf*)
+	/usr/lib/sendmail -bd -q30m; echo -n ' sendmail'>/dev/console
+fi
+				echo '.'		>/dev/console
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     HOME=/; export HOME
+PATH=/bin:/usr/bin
+if [ -r /fastboot ]
+then
+	rm -f /fastboot
+	echo Fast boot ... skipping disk checks >/dev/console
+elif [ $1x = autobootx ]
+then
+	echo Automatic reboot in progress... >/dev/console
+	date >/dev/console
+	/etc/fsck -p >/dev/console
+	case $? in
+	0)
+		date >/dev/console
+		;;
+	2)
+		exit 1
+		;;
+	4)
+		/etc/reboot -n
+		;;
+	8)
+		echo "Automatic reboot failed... help!" >/dev/console
+		exit 1
+		;;
+	12)
+		echo "Reboot interrupted" >/dev/console
+		exit 1
+		;;
+	*)
+		echo "Unknown error in reboot" > /dev/console
+		exit 1
+		;;
+	esac
+else
+	date >/dev/console
+fi
+
+# attempt to rationally recover the passwd file if needed
+if [ -s /etc/ptmp ]
+then
+	if [ -s /etc/passwd ]
+	then
+		ls -l /etc/passwd /etc/ptmp >/dev/console
+		rm -f /etc/ptmp		# should really remove the shorter
+	else
+		echo 'passwd file recovered from ptmp' >/dev/console
+		mv /etc/ptmp /etc/passwd
+	fi
+elif [ -r /etc/ptmp ]
+then
+	echo 'removing passwd lock file' >/dev/console
+	rm -f /etc/ptmp
+fi
+
+/etc/umount -a
+cp /dev/null /etc/mtab
+/etc/swapon -a						>/dev/console 2>&1
+/etc/mount -a						>/dev/console 2>&1
+
+				echo -n 'checking quotas:' >/dev/console
+/etc/quotacheck -a -p					>/dev/console 2>&1
+				echo ' done.'		>/dev/console
+/etc/quotaon -a
+
+/bin/ps -U						>/dev/console 2>&1
+rm -f /etc/nologin
+rm -f /usr/spool/uucp/LCK.*
+chmod 666 /dev/tty[pqrs]*
+
+sh /etc/rc.local
+
+				echo preserving editor files 	>/dev/console
+(cd /tmp; /usr/lib/ex3.7preserve -a)
+				echo clearing /tmp 		>/dev/console
+(cd /tmp; find . ! -name . ! -name lost+found ! -name quotas -exec rm -r {} \; )
+
+				echo -n standard daemons:	>/dev/console
+/etc/update;			echo -n ' update'		>/dev/console
+/etc/cron;			echo -n ' cron'			>/dev/console
+/etc/accton /usr/adm/acct;	echo -n ' accounting'		>/dev/console
+				echo '.'			>/dev/console
+
+echo -n starting network daemons:				>/dev/console
+if [ -f /etc/rwhod ]; then
+	/etc/rwhod;		echo -n ' rwhod'		>/dev/console
+fi
+if [ -f /etc/inetd ]; then
+	/etc/inetd;		echo -n ' inetd'		>/dev/console
+fi
+if [ -f /usr/lib/lpd ]; then
+	rm -f /dev/printer
+	/usr/lib/lpd;		echo -n ' printer'		>/dev/console
+fi
+				echo '.'			>/dev/console
+
+				date				>/dev/console
+exit 0
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  lp|local line printer:\
+	:lp=/dev/lp:sd=/usr/spool/lpd:lf=/usr/adm/lpd-errs:
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   #
+# name	getty			type		status		comments
+#
+console	"/etc/getty Console-1200" unknown	on secure
+tty00	"/etc/getty std.9600"	unknown		on secure
+tty01	"/etc/getty std.9600"	unknown		on secure
+tty02	"/etc/getty std.9600"	unknown		on secure
+tty03	"/etc/getty std.9600"	unknown		on secure
+tty04	"/etc/getty std.9600"	unknown		on secure
+tty05	"/etc/getty std.9600"	unknown		on secure
+tty06	"/etc/getty std.9600"	unknown		on secure
+tty07	"/etc/getty std.9600"	unknown		on secure
+ttyp0	none			network
+ttyp1	none			network
+ttyp2	none			network
+ttyp3	none			network
+ttyp4	none			network
+ttyp5	none			network
+ttyp6	none			network
+ttyp7	none			network
+ttyp8	none			network
+ttyp9	none			network
+ttypa	none			network
+ttypb	none			network
+ttypc	none			network
+ttypd	none			network
+ttype	none			network
+ttypf	none			network
+ttyq0	none			network
+ttyq1	none			network
+ttyq2	none			network
+ttyq3	none			network
+ttyq4	none			network
+ttyq5	none			network
+ttyq6	none			network
+ttyq7	none			network
+ttyq8	none			network
+ttyq9	none			network
+ttyqa	none			network
+ttyqb	none			network
+ttyqc	none			network
+ttyqd	none			network
+ttyqe	none			network
+ttyqf	none			network
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          on the stack is not
+.I true,
+and
+.SM STOI ,
+.SM STOD ,
+.SM ITOD ,
+and
+.SM ITOS
+that convert between different length arithmetic operands for
+use in aligning the arguments in
+.B procedure
+and
+.B function
+calls, and with some untyped built-ins, such as
+.SM SIN
+and
+.SM COS \&.
+.PP
+Finally, if the program is run with the run-time testing disabled, there
+are special operators for
+.B for
+statements
+and special indexing operators for arrays
+that have individual element size that is a power of 2.
+The code can run significantly faster using these operators.
+.NH 2
+Mathematical Functions
+.PP
+The transcendental functions 
+.SM SIN ,
+.SM COS ,
+.SM ATAN ,
+.SM EXP ,
+.SM LN ,
+.SM SQRT ,
+.SM SEED ,
+and
+.SM RANDOM
+are taken from the standard UNIX
+mathematical package.
+These functions take double precision floating point
+values and return the same.
+.PP
+The functions
+.SM EXPO ,
+.SM TRUNC ,
+and
+.SM ROUND
+take a double precision floating point number.
+.SM EXPO
+returns an integer representing the machine 
+representation of its argument's exponent,
+.SM TRUNC
+returns the integer part of its argument, and
+.SM ROUND
+returns the rounded integer part of its argument.
+.NH 2
+System functions and procedures
+.SH
+LLIMIT
+.IP
+A line limit and a file pointer are passed on the stack.
+If the limit is non-negative the line limit is set to the
+specified value, otherwise it is set to unlimited.
+The default is unlimited.
+.SH
+STLIM
+.IP
+A statement limit is passed on the stack. The statement limit 
+is set as specified.
+The default is 500,000.
+No limit is enforced when the ``p'' option is disabled.
+.SH
+CLCK
+.br
+SCLCK
+.IP
+.SM CLCK
+returns the number of milliseconds of user time used by the program;
+.SM SCLCK
+returns the number of milliseconds of system time used by the program.
+.SH
+WCLCK
+.IP
+The number of seconds since some predefined time is
+returned. Its primary usefulness is in determining
+elapsed time and in providing a unique time stamp.
+.sp
+.LP
+The other system time procedures are
+.SM DATE
+and
+.SM TIME
+that copy an appropriate text string into a pascal string array.
+The function
+.SM ARGC
+returns the number of command line arguments passed to the program.
+The procedure
+.SM ARGV
+takes an index on the stack and copies the specified
+command line argument into a pascal string array.
+.NH 2
+Pascal procedures and functions
+.SH
+PACK s,w,w,w
+.br
+UNPACK s,w,w,w
+.IP
+They function as a memory to memory move with several
+semantic checks. 
+They do no ``unpacking'' or ``packing'' in the true sense as the
+interpreter supports no packed data types.
+.SH
+NEW s
+.br
+DISPOSE s
+.IP
+An 
+.SM LV
+of a pointer is passed. 
+.SM NEW
+allocates a record of a specified size and puts a pointer
+to it into the pointer variable.
+.SM DISPOSE
+deallocates the record pointed to by the pointer
+and sets the pointer to 
+.SM NIL .
+.sp
+.LP
+The function
+.SM CHR*
+converts a suitably small integer into an ascii character.
+Its primary purpose is to do a range check.
+The function
+.SM ODD*
+returns 
+.I true
+if its argument is odd and returns
+.I false
+if its argument is even.
+The function 
+.SM UNDEF
+always returns the value
+.I false .
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         .FK
+.TS
+center, box;
+cw(15).
+No. of cases
+_
+.sp
+offsets
+of element
+names
+.sp
+_
+.sp
+Array of
+null terminated
+element names
+.sp
+.TE
+.sp
+.ce
+Figure 3.2 \- Enumerated type conversion structure
+.sp
+.KE
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           .KF
+.TS
+center, box;
+cw(15).
+\s-2CASEOP\s0
+_
+No. of cases
+_
+.sp
+Case
+transfer
+table
+.sp
+_
+.sp
+Array of case
+label values
+.sp
+.TE
+.sp
+.ce
+Figure 2.4 \- Case data structure
+.sp
+.KE
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             .TS
+center, allbox;
+lw(20).
+T{
+.nf
+.ce 1000
+Space for
+value returned
+from f
+.ce 0
+.fi
+T}
+T{
+.ce
+Value of a
+T}
+T{
+.sp
+.ce
+Block Mark
+.sp
+T}
+.TE
+.sp .1i
+.ce
+Figure 1.3 \- Stack structure on function call `f(a)'
+.sp .1i
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       .KF
+.TS
+center;
+l l
+| cw(22n) | aw(20n).
+_	\&
+	Created by \s-2CALL\s0
+Saved lino
+.sp
+Saved lc
+.sp
+Saved dp
+.sp
+_	\&
+	Created by \s-2BEG\s0
+Saved dp contents
+.sp
+Pointer to current
+entry line and
+section name
+.sp
+Current file name
+and buffer
+.sp
+Top of stack reference
+.sp
+.T&
+| _ | l.
+
+.TE
+.sp
+.ce
+Figure 1.2 \- Block mark structure
+.sp
+.KE
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           #!/bin/sh
+#
+# Copyright (c) 1983 Regents of the University of California.
+# All rights reserved.  The Berkeley software License Agreement
+# specifies the terms and conditions for redistribution.
+#
+#	@(#)maketape	4.31 (Berkeley) 6/6/86
+#
+#	maketape [ 6250 | 1600 [ tapename [ remotetapemachine ] ] ]
+miniroot=hp0d
+tape=/dev/rmt12
+type=1600
+if [ $# -gt 0 ]; then type=$1; fi
+if [ $# -gt 1 ]; then tape=$2; fi
+tartape=$tape
+if [ $# -gt 2 ]; then remote=$3; tartape='-'; fi
+#
+trap "rm -f /tmp/tape.$$; exit" 0 1 2 3 13 15
+$remote mt -t ${tape} rew
+date
+umount /dev/hp2g
+umount /dev/hp2a
+mount -r /dev/hp2a /c/nbsd
+mount -r /dev/hp2g /c/nbsd/usr
+cd tp
+tp cmf /tmp/tape.$$ boot copy format
+cd /nbsd/sys/mdec
+echo "Build 1st level boot block file"
+cat tsboot htboot tmboot mtboot utboot noboot noboot /tmp/tape.$$ | \
+	$remote dd of=${tape} obs=512 conv=sync
+cd /nbsd
+sync
+echo "Add dump of mini-root file system"
+eval dd if=/dev/r${miniroot} count=205 bs=20b conv=sync ${remote+'|'} \
+	${remote-"of=$tape"} ${remote+'/usr/local/20b ">" $tape'}
+echo "Add full dump of real file system"
+/etc/${remote+r}dump 0uf $remote${remote+:}${tape} /c/nbsd
+echo "Add tar image of /usr"
+cd /nbsd/usr; eval tar cf ${tartape} adm bin dict doc games \
+	guest hosts include lib local man mdec msgs new \
+	preserve pub spool tmp ucb \
+		${remote+'| $remote /usr/local/20b ">" $tape'}
+if [ ${type} != '6250' ]
+then
+	echo "Done, rewinding first tape"
+	$remote mt -t ${tape} rew &
+	echo "Mount second tape and hit return when ready"
+	echo "(or type name of next tape drive)"
+	read x
+	if [ "$x" != "" ]
+	then	tape=$x
+	fi
+fi
+echo "Add tar image of system sources"
+cd /nbsd/sys; eval tar cf ${tartape} . \
+	${remote+'| $remote /usr/local/20b ">" $tape'}
+echo "Add user source code"
+cd /nbsd/usr/src; eval tar cf ${tartape} Makefile bin etc games \
+	include lib local old ucb undoc usr.bin usr.lib \
+	${remote+'| $remote /usr/local/20b ">" $tape'}
+echo "Add varian fonts"
+cd /usr/lib/vfont; eval tar cf ${tartape} . \
+	${remote+'| $remote /usr/local/20b ">" $tape'}
+if [ ${type} != '6250' ]
+then
+	echo "Done, rewinding second tape"
+	$remote mt -t ${tape} rew &
+	echo "Mount third tape and hit return when ready"
+	echo "(or type name of next tape drive)"
+	read x
+	if [ "$x" != "" ]
+	then	tape=$x
+	fi
+fi
+echo "Add user contributed software"
+if [ ${type} != '6250' ]
+then
+	cd /nbsd/usr/src/new; eval tar cf ${tartape} \
+		README Makefile \
+		B X ansi apl bib courier cpm dipress dsh emacs enet help \
+		hyper icon jove kermit mh mkmf mmdf.tar.Z news notes nntp \
+		np100 patch pathalias rcs rn spms sumacc.tar.Z sunrpc \
+		tac tools umodem xns \
+		${remote+'| $remote /usr/local/20b ">" $tape'}
+else
+	cd /nbsd/usr/src/new; eval tar cf ${tartape} \
+		README Makefile \
+		B X ansi apl bib courier cpm dipress dsh emacs enet help \
+		hyper icon jove kermit mh mkmf mmdf news notes nntp \
+		np100 patch pathalias rcs rn spms sumacc sunrpc \
+		tac tools umodem xns \
+		${remote+'| $remote /usr/local/20b ">" $tape'}
+fi
+echo "Add ingres source"
+cd /nbsd/usr/ingres; eval tar cf ${tartape} . \
+	${remote+'| $remote /usr/local/20b ">" $tape'}
+echo "Done, rewinding tape"
+$remote mt -t ${tape} rew &
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            wheel:*:0:root
+daemon:*:1:daemon
+kmem:*:2:root
+sys:*:3:root
+tty:*:4:root
+operator:*:5:root
+staff:*:10:root
+guest:*:31:root
+ingres:*:74:ingres
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  /dev/hp0a:/:rw:1:1
+/dev/hp0g:/usr:rw:1:3
+/dev/hp0h:/mnt:rw:1:2
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 /dev/ra0a:/:rw:1:1
+/dev/ra0g:/mnt:rw:1:3
+/dev/ra0h:/usr:rw:1:2
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 /dev/ra0a:/:rw:1:1
+/dev/ra0g:/mnt:rw:1:3
+/dev/ra0h:/usr:rw:1:2
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 #	@(#)services	1.16 (Berkeley) 86/04/20
+#
+# Network services, Internet style
+#
+echo		7/tcp
+echo		7/udp
+discard		9/tcp		sink null
+discard		9/udp		sink null
+systat		11/tcp		users
+daytime		13/tcp
+daytime		13/udp
+netstat		15/tcp
+qotd		17/tcp		quote
+chargen		19/tcp		ttytst source
+chargen		19/udp		ttytst source
+ftp		21/tcp
+telnet		23/tcp
+smtp		25/tcp		mail
+time		37/tcp		timserver
+time		37/udp		timserver
+rlp		39/udp		resource	# resource location
+nameserver	42/tcp		name		# IEN 116
+whois		43/tcp		nicname
+domain		53/tcp		nameserver	# name-domain server
+domain		53/udp		nameserver
+mtp		57/tcp				# deprecated
+tftp		69/udp
+rje		77/tcp		netrjs
+finger		79/tcp
+link		87/tcp		ttylink
+supdup		95/tcp
+hostnames	101/tcp		hostname	# usually from sri-nic
+#csnet-cs	105/?
+pop		109/tcp		postoffice
+sunrpc		111/tcp
+sunrpc		111/udp
+auth		113/tcp		authentication
+sftp		115/tcp
+uucp-path	117/tcp
+nntp		119/tcp		readnews untp	# USENET News Transfer Protocol
+#
+# UNIX specific services
+#
+exec		512/tcp
+biff		512/udp		comsat
+login		513/tcp
+who		513/udp		whod
+shell		514/tcp		cmd		# no passwords used
+syslog		514/udp
+printer		515/tcp		spooler		# line printer spooler
+talk		517/udp
+ntalk		518/udp
+efs		520/tcp				# for LucasFilm
+route		520/udp		router routed
+timed		525/udp		timeserver
+tempo		526/tcp		newdate
+courier		530/tcp		rpc
+conference	531/tcp		chat
+netnews		532/tcp		readnews
+netwall		533/udp				# -for emergency broadcasts
+uucp		540/tcp		uucpd		# uucp daemon
+remotefs	556/tcp		rfs_server rfs	# Brunhoff remote filesystem
+
+ingreslock	1524/tcp
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           /dev/hp0a:/:rw:1:1
+/dev/hp0g:/mnt:rw:1:3
+/dev/hp0h:/usr:rw:1:2
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 # List of acceptable shells for chsh/passwd -s
+# Ftpd will not allow users to connect who do not have one of these shells
+#
+/bin/sh
+/bin/csh
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   #
+# Internet server configuration database
+#
+ftp	stream	tcp	nowait	root	/etc/ftpd	ftpd
+telnet	stream	tcp	nowait	root	/etc/telnetd	telnetd
+shell	stream	tcp	nowait	root	/etc/rshd	rshd
+login	stream	tcp	nowait	root	/etc/rlogind	rlogind
+exec	stream	tcp	nowait	root	/etc/rexecd	rexecd
+# Run as user "uucp" if you don't want uucpd's wtmp entries.
+#uucp	stream	tcp	nowait	root	/etc/uucpd	uucpd
+finger	stream	tcp	nowait	nobody	/etc/fingerd	fingerd
+#tftp	dgram	udp	wait	nobody	/etc/tftpd	tftpd
+comsat	dgram	udp	wait	root	/etc/comsat	comsat
+talk	dgram	udp	wait	root	/etc/talkd	talkd
+ntalk	dgram	udp	wait	root	/etc/ntalkd	ntalkd
+echo	stream	tcp	nowait	root	internal
+discard	stream	tcp	nowait	root	internal
+chargen	stream	tcp	nowait	root	internal
+daytime	stream	tcp	nowait	root	internal
+time	stream	tcp	nowait	root	internal
+echo	dgram	udp	wait	root	internal
+discard	dgram	udp	wait	root	internal
+chargen	dgram	udp	wait	root	internal
+daytime	dgram	udp	wait	root	internal
+time	dgram	udp	wait	root	internal
+                                  *.err;kern.debug;auth.notice			/dev/console
+kern.debug;daemon,auth.notice;*.err;mail.crit	/usr/adm/messages
+lpr.debug					/usr/adm/lpd-errs
+mail.debug					/usr/spool/mqueue/syslog
+
+*.alert;kern.err;daemon.err			operator
+*.alert						root
+
+*.emerg						*
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  "    .       ..  #    tmac.p i$   
+ table3.1.n  %   
+ table2.3.n  &   
+ table2.2.n  '   
+ table2.1.n  (    pxin4.n )    pxin3.n *    pxin2.n +    pxin1.n ,    pxin0.n -    makefile n  .    fig3.3.n n  /    fig3.2.n n  0    fig2.4.n n  1   
+ fig2.3.raw  2    fig2.3.n w  3    fig1.3.n w  4    fig1.2.n w  5  ˜  fig1.1.n w                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      

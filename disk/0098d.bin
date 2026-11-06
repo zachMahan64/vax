@@ -1,0 +1,2284 @@
+r].sc_recal = 0;
+		rk_softc[um->um_ctlr].sc_wticks = 0;
+		if (um->um_ubinfo) {
+			printf("<%d>", (um->um_ubinfo>>28)&0xf);
+			um->um_ubinfo = 0;
+		}
+		for (unit = 0; unit < NRK; unit++) {
+			if ((ui = rkdinfo[unit]) == 0)
+				continue;
+			if (ui->ui_alive == 0 || ui->ui_mi != um)
+				continue;
+			rkutab[unit].b_active = 0;
+			(void) rkustart(ui);
+		}
+		(void) rkstart(um);
+	}
+}
+
+rkwatch()
+{
+	register struct uba_ctlr *um;
+	register rk11, unit;
+	register struct rk_softc *sc;
+
+	timeout(rkwatch, (caddr_t)0, hz);
+	for (rk11 = 0; rk11 < NHK; rk11++) {
+		um = rkminfo[rk11];
+		if (um == 0 || um->um_alive == 0)
+			continue;
+		sc = &rk_softc[rk11];
+		if (um->um_tab.b_active == 0) {
+			for (unit = 0; unit < NRK; unit++)
+				if (rkutab[unit].b_active &&
+				    rkdinfo[unit]->ui_mi == um)
+					goto active;
+			sc->sc_wticks = 0;
+			continue;
+		}
+active:
+		sc->sc_wticks++;
+		if (sc->sc_wticks >= 20) {
+			sc->sc_wticks = 0;
+			printf("hk%d: lost interrupt\n", rk11);
+			ubareset(um->um_ubanum);
+		}
+	}
+}
+
+#define	DBSIZE	20
+
+rk/*
+ * Copyright (c) 1985, 1986 Regents of the University of California.
+ * All rights reserved.  The Berkeley software License Agreement
+ * specifies the terms and conditions for redistribution.
+ *
+ *	@(#)dhu.c	7.1 (Berkeley) 6/5/86
+ */
+
+/*
+ * based on	dh.c 6.3	84/03/15
+ * and on	dmf.c	6.2	84/02/16
+ *
+ * Dave Johnson, Brown University Computer Science
+ *	ddj%brown@csnet-relay
+ */
+
+#include "dhu.h"
+#if NDHU > 0
+/*
+ * DHU-11 driver
+ */
+#include "../machine/pte.h"
+
+#include "bk.h"
+#include "param.h"
+#include "conf.h"
+#include "dir.h"
+#include "user.h"
+#include "proc.h"
+#include "ioctl.h"
+#include "tty.h"
+#include "map.h"
+#include "buf.h"
+#include "vm.h"
+#include "kernel.h"
+#include "syslog.h"
+
+#include "uba.h"
+#include "ubareg.h"
+#include "ubavar.h"
+#include "dhureg.h"
+
+#include "bkmac.h"
+#include "clist.h"
+#include "file.h"
+#include "uio.h"
+
+/*
+ * Definition of the driver for the auto-configuration program.
+ */
+int	dhuprobe(), dhuattach(), dhurint(), dhuxint();
+struct	uba_device *dhuinfo[NDHU];
+u_short dhustd[] = { 160440, 160500, 0 };	/* some common addresses */
+struct	uba_driver dhudriver =
+	{ dhuprobe, 0, dhuattach, 0, dhustd, "dhu", dhuinfo };
+
+#define	NDHULINE 	(NDHU*16)
+
+#define	UNIT(x)	(minor(x))
+
+#ifndef PORTSELECTOR
+#define ISPEED	B9600
+#define IFLAGS	(EVENP|ODDP|ECHO)
+#else
+#define ISPEED	B4800
+#define IFLAGS	(EVENP|ODDP)
+#endif
+
+/*
+ * default receive silo timeout value -- valid values are 2..255
+ * number of ms. to delay between first char received and receive interrupt
+ *
+ * A value of 20 gives same response as ABLE dh/dm with silo alarm = 0
+ */
+#define	DHU_DEF_TIMO	20
+
+/*
+ * Other values for silo timeout register defined here but not used:
+ * receive interrupt only on modem control or silo alarm (3/4 full)
+ */
+#define DHU_POLL_TIMO	0
+/*
+ * receive interrupt immediately on receive character
+ */
+#define DHU_NO_TIMO	1
+
+/*
+ * Local variables for the driver
+ */
+/*
+ * Baud rates: no 50, 200, or 38400 baud; all other rates are from "Group B".
+ *	EXTA => 19200 baud
+ *	EXTB => 2000 baud
+ */
+char	dhu_speeds[] =
+	{ 0, 0, 1, 2, 3, 4, 0, 5, 6, 7, 8, 10, 11, 13, 14, 9 };
+
+short	dhusoftCAR[NDHU];
+
+struct	tty dhu_tty[NDHULINE];
+int	ndhu = NDHULINE;
+int	dhuact;				/* mask of active dhu's */
+int	dhustart(), ttrstrt();
+
+/*
+ * The clist space is mapped by the driver onto each UNIBUS.
+ * The UBACVT macro converts a clist space address for unibus uban
+ * into an i/o space address for the DMA routine.
+ */
+int	dhu_ubinfo[NUBA];	/* info about allocated unibus map */
+int	cbase[NUBA];		/* base address in unibus map */
+#define UBACVT(x, uban) 	(cbase[uban] + ((x)-(char *)cfree))
+
+/*
+ * Routine for configuration to force a dhu to interrupt.
+ */
+/*ARGSUSED*/
+dhuprobe(reg)
+	caddr_t reg;
+{
+	register int br, cvec;		/* these are ``value-result'' */
+	register struct dhudevice *dhuaddr = (struct dhudevice *)reg;
+	int i;
+
+#ifdef lint
+	br = 0; cvec = br; br = cvec;
+	if (ndhu == 0) ndhu = 1;
+	dhurint(0); dhuxint(0);
+#endif
+	/*
+	 * The basic idea here is:
+	 *	do a self-test by setting the Master-Reset bit
+	 *	if this fails, then return
+	 *	if successful, there will be 8 diagnostic codes in RX FIFO
+	 *	therefore ask for a  Received-Data-Available interrupt
+	 *	wait for it...
+	 *	reset the interrupt-enable bit and flush out the diag. codes
+	 */
+	dhuaddr->dhucsr = DHU_CS_MCLR;
+	for (i = 0; i < 1000; i++) {
+		DELAY(10000);
+		if ((dhuaddr->dhucsr&DHU_CS_MCLR) == 0)
+			break;
+	}
+	if (dhuaddr->dhucsr&DHU_CS_MCLR)
+		return(0);
+	if (dhuaddr->dhucsr&DHU_CS_DFAIL)
+		return(0);
+	dhuaddr->dhucsr = DHU_CS_RIE;
+	DELAY(1000);
+	dhuaddr->dhucsr = 0;
+	while (dhuaddr->dhurbuf < 0)
+		/* void */;
+	return (sizeof(struct dhudevice));
+}
+
+/*
+ * Routine called to attach a dhu.
+ */
+dhuattach(ui)
+	struct uba_device *ui;
+{
+
+	dhusoftCAR[ui->ui_unit] = ui->ui_flags;
+	cbase[ui->ui_ubanum] = -1;
+}
+
+/*
+ * Open a DHU11 line, mapping the clist onto the uba if this
+ * is the first dhu on this uba.  Turn on this dhu if this is
+ * the first use of it.
+ */
+/*ARGSUSED*/
+dhuopen(dev, flag)
+	dev_t dev;
+{
+	register struct tty *tp;
+	register int unit, dhu;
+	register struct dhudevice *addr;
+	register struct uba_device *ui;
+	int s;
+
+	unit = UNIT(dev);
+	dhu = unit >> 4;
+	if (unit >= NDHULINE || (ui = dhuinfo[dhu])== 0 || ui->ui_alive == 0)
+		return (ENXIO);
+	tp = &dhu_tty[unit];
+	if (tp->t_state & TS_XCLUDE && u.u_uid != 0)
+		return (EBUSY);
+	addr = (struct dhudevice *)ui->ui_addr;
+	tp->t_addr = (caddr_t)addr;
+	tp->t_oproc = dhustart;
+	/*
+	 * While setting up state for this uba and this dhu,
+	 * block uba resets which can clear the state.
+	 */
+	s = spl5();
+	if (cbase[ui->ui_ubanum] == -1) {
+		dhu_ubinfo[ui->ui_ubanum] =
+		    uballoc(ui->ui_ubanum, (caddr_t)cfree,
+			nclist*sizeof(struct cblock), 0);
+		cbase[ui->ui_ubanum] = UBAI_ADDR(dhu_ubinfo[ui->ui_ubanum]);
+	}
+	if ((dhuact&(1<<dhu)) == 0) {
+		addr->dhucsr = DHU_SELECT(0) | DHU_IE;
+		addr->dhutimo = DHU_DEF_TIMO;
+		dhuact |= (1<<dhu);
+		/* anything else to configure whole board */
+	}
+	(void) splx(s);
+	/*
+	 * If this is first open, initialize tty state to default.
+	 */
+	if ((tp->t_state&TS_ISOPEN) == 0) {
+		ttychars(tp);
+#ifndef PORTSELECTOR
+		if (tp->t_ispeed == 0) {
+#else
+			tp->t_state |= TS_HUPCLS;
+#endif PORTSELECTOR
+			tp->t_ispeed = ISPEED;
+			tp->t_ospeed = ISPEED;
+			tp->t_flags = IFLAGS;
+#ifndef PORTSELECTOR
+		}
+#endif PORTSELECTOR
+		tp->t_dev = dev;
+		dhuparam(unit);
+	}
+	/*
+	 * Wait for carrier, then process line discipline specific open.
+	 */
+	s = spl5();
+	if ((dhumctl(dev, DHU_ON, DMSET) & DHU_CAR) ||
+	    (dhusoftCAR[dhu] & (1<<(unit&0xf))))
+		tp->t_state |= TS_CARR_ON;
+	while ((tp->t_state & TS_CARR_ON) == 0) {
+		tp->t_state |= TS_WOPEN;
+		sleep((caddr_t)&tp->t_rawq, TTIPRI);
+	}
+	(void) splx(s);
+	return ((*linesw[tp->t_line].l_open)(dev, tp));
+}
+
+/*
+ * Close a DHU11 line, turning off the modem control.
+ */
+/*ARGSUSED*/
+dhuclose(dev, flag)
+	dev_t dev;
+	int flag;
+{
+	register struct tty *tp;
+	register unit;
+
+	unit = UNIT(dev);
+	tp = &dhu_tty[unit];
+	(*linesw[tp->t_line].l_close)(tp);
+	(void) dhumctl(unit, DHU_BRK, DMBIC);
+	if ((tp->t_state&(TS_HUPCLS|TS_WOPEN)) || (tp->t_state&TS_ISOPEN)==0)
+#ifdef PORTSELECTOR
+	{
+		extern int wakeup();
+
+		(void) dhumctl(unit, DHU_OFF, DMSET);
+		/* Hold DTR low for 0.5 seconds */
+		timeout(wakeup, (caddr_t) &tp->t_dev, hz/2);
+		sleep((caddr_t) &tp->t_dev, PZERO);
+	}
+#else
+		(void) dhumctl(unit, DHU_OFF, DMSET);
+#endif PORTSELECTOR
+	ttyclose(tp);
+}
+
+dhuread(dev, uio)
+	dev_t dev;
+	struct uio *uio;
+{
+	register struct tty *tp = &dhu_tty[UNIT(dev)];
+
+	return ((*linesw[tp->t_line].l_read)(tp, uio));
+}
+
+dhuwrite(dev, uio)
+	dev_t dev;
+	struct uio *uio;
+{
+	register struct tty *tp = &dhu_tty[UNIT(dev)];
+
+	return ((*linesw[tp->t_line].l_write)(tp, uio));
+}
+
+/*
+ * DHU11 receiver interrupt.
+ */
+dhurint(dhu)
+	int dhu;
+{
+	register struct tty *tp;
+	register c;
+	register struct dhudevice *addr;
+	register struct tty *tp0;
+	register struct uba_device *ui;
+	register line;
+	int overrun = 0;
+
+#ifdef VAX630
+	(void) spl5();
+#endif
+	ui = dhuinfo[dhu];
+	if (ui == 0 || ui->ui_alive == 0)
+		return;
+	addr = (struct dhudevice *)ui->ui_addr;
+	tp0 = &dhu_tty[dhu<<4];
+	/*
+	 * Loop fetching characters from the silo for this
+	 * dhu until there are no more in the silo.
+	 */
+	while ((c = addr->dhurbuf) < 0) {	/* (c & DHU_RB_VALID) == on */
+		line = DHU_RX_LINE(c);
+		tp = tp0 + line;
+		if ((c & DHU_RB_STAT) == DHU_RB_STAT) {
+			/*
+			 * modem changed or diag info
+			 */
+			if (c & DHU_RB_DIAG) {
+				/* decode diagnostic messages */
+				continue;
+			}
+			if (c & DHU_ST_DCD)
+				(void)(*linesw[tp->t_line].l_modem)(tp, 1);
+			else if ((dhusoftCAR[dhu] & (1<<line)) == 0 &&
+			    (*linesw[tp->t_line].l_modem)(tp, 0) == 0)
+				(void) dhumctl((dhu<<4)|line, DHU_OFF, DMSET);
+			continue;
+		}
+		if ((tp->t_state&TS_ISOPEN) == 0) {
+			wakeup((caddr_t)&tp->t_rawq);
+#ifdef PORTSELECTOR
+			if ((tp->t_state&TS_WOPEN) == 0)
+#endif
+				continue;
+		}
+		if (c & DHU_RB_PE)
+			if ((tp->t_flags&(EVENP|ODDP)) == EVENP ||
+			    (tp->t_flags&(EVENP|ODDP)) == ODDP)
+				continue;
+		if ((c & DHU_RB_DO) && overrun == 0) {
+			log(LOG_WARNING, "dhu%d: silo overflow\n", dhu);
+			overrun = 1;
+		}
+		if (c & DHU_RB_FE)
+			/*
+			 * At framing error (break) generate
+			 * a null (in ra/*
+ * Copyright (c) 1982, 1986 Regents of the University of California.
+ * All rights reserved.  The Berkeley software License Agreement
+ * specifies the terms and conditions for redistribution.
+ *
+ *	@(#)rlreg.h	7.1 (Berkeley) 6/5/86
+ */
+
+struct rldevice {
+	short	rlcs;		/* control status */
+	u_short	rlba;		/* bus address */
+	union {			/* disk address */
+		u_short	seek;		/* disk seek address */
+		u_short	rw;		/* disk read/write address */
+		u_short	getstat;	/* get disk status command */
+	} rlda;
+	union {			/* multi-purpose register */
+		u_short	getstat;	/* get status */
+		u_short readhdr;	/* read header */
+		u_short	rw;		/* read/write word count */
+	} rlmp;
+};
+
+#define	NRLCYLN		512	/* number of cylinders per disk */
+#define NRLTRKS		2	/* number of tracks per cylinder */
+#define NRLSECT		40	/* number of sectors per track */
+#define NRLBPSC		256	/* bytes per sector */
+
+/* rlcs */
+/* commands */
+#define RL_NOOP		0000000		/* no-operation */
+#define RL_WCHECK	0000002		/* write check */
+#define RL_GETSTAT	0000004		/* get status */
+#define	RL_SEEK		0000006		/* seek */
+#define	RL_RHDR		0000010		/* read header */
+#define	RL_WRITE	0000012		/* write data */
+#define	RL_READ		0000014		/* read data */
+#define	RL_RDNCK	0000016		/* read data without hdr check */
+
+#define RL_DRDY		0000001		/* When set indicates drive ready */
+#define RL_BAE		0000060		/* UNIBUS address bits 16 & 17 */
+#define	RL_IE		0000100		/* interrupt enable */
+#define	RL_CRDY		0000200		/* controller ready */
+#define RL_DS0		0000400		/* drive select 0 */
+#define RL_DS1		0001000		/* drive select 1 */
+#define	RL_OPI		0002000		/* operation incomplete */
+#define	RL_DCRC		0004000		/* CRC error occurred */
+#define	RL_DLT		0010000		/* data late or header not found */
+#define	RL_NXM		0020000		/* non-existant memory */
+#define	RL_DE		0040000		/* selected drive flagged an error */
+#define	RL_ERR		0100000		/* composite error */
+
+#define	RL_DCRDY	(RL_DRDY | RL_CRDY)
+
+#define	RLCS_BITS \
+"\10\20ERR\17DE\16NXM\15DLT\14DCRC\13OPI\1DRDY"
+
+/* da_seek */
+#define	RLDA_LOW	0000001		/* lower cylinder seek */
+#define	RLDA_HGH	0000005		/* higher cylinder seek */
+#define	RLDA_HSU	0000000		/* upper head select */
+#define	RLDA_HSL	0000020		/* lower head select */
+#define	RLDA_CA		0177600		/* cylinder address */
+
+/* da_rw */
+#define	RLDA_SA		0000077		/* sector address */
+#define RLDA_HST	0000000		/* upper head select */
+#define	RLDA_HSB	0000100		/* lower head select */
+
+/* da_getstat */
+
+#define	RL_GSTAT	0000003		/* Get status */
+#define	RL_RESET	0000013		/* get status with reset */
+
+/* mp_getstat */
+#define	RLMP_STA	0000001		/* drive state: load cartridge */
+#define	RLMP_STB	0000002		/* drive state: brush cycle */
+#define	RLMP_STC	0000004		/* drive state: seek */
+#define	RLMP_BH		0000010		/* set when brushes are home */
+#define	RLMP_HO		0000020		/* set when brushes over the disk */
+#define	RLMP_CO		0000040		/* set when cover open */
+#define	RLMP_HS		0000100		/* indicates selected head:
+						0 upper head
+						1 lower head */
+#define	RLMP_DT		0000200		/* indicates drive type:
+						0 RL01
+						1 RL02 */
+#define	RLMP_DSE	0000400		/* set on multiple drive selection */
+#define	RLMP_VC		0001000		/* set on pack mounted and spining */
+#define	RLMP_WGE	0002000		/* write gate error */
+#define	RLMP_SPE	0004000		/* spin speed error */
+#define	RLMP_SKTO	0010000		/*\* seek time out error */
+#define RLMP_WL		0020000		/* set on protected drive */
+#define RLMP_CHE	0040000		/* current head error */
+#define RLMP_WDE	0100000		/* write data error */
+
+/* mp_rhc */
+#define	RLMP_SA		0000077		/* sector address */
+#define	RLMP_CA		0177600		/* cylinder address */
+
+/* check these bits after a get status and reset */
+#define RLMP_STATUS (RLMP_WDE|RLMP_CHE|RLMP_SKTO|RLMP_SPE|RLMP_WGE \
+	|RLMP_VC|RLMP_DSE|RLMP_CO|RLMP_HO|RLMP_BH|RLMP_STC|RLMP_STB|RLMP_STA)
+
+/* these are the bits that should be on in the above check */
+#define RLMP_STATOK (RLMP_HO|RLMP_BH|RLMP_STC|RLMP_STA)
+
+/* mp_rw */
+#define	RLMP_WC		0017777		/* word count 2's complement */
+
+#define	RLER_BITS \
+"\10\20WDE\17CHE\16WL\15SKTO\14SPE\13WGE\12VC\11DSE\
+\10DT\7HS\6CO\5HO\4BH\3STC\2STB\1STA"
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               #	@(#)Makefile	6.1 (Berkeley) 5/26/86
+#
+# make the various documents
+
+FMT=ditroff
+PRINTER=-Pdp
+FMTOPTS=
+LPR=
+
+manner: manner.mn tmac.n
+	$(FMT) $(PRINTER) $(FMTOPTS) tmac.n manner.mn
+manner.aps: manner.mn tmac.n
+	$(FMT) $(PRINTER) $(FMTOPTS) tmac.n manner.mn | $(LPR)
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     This gradually evolved into the habit of including amusing first lines.
+.Lp
+The original bug has since been fixed in newer version of news,
+and sites running older versions of news have applied a patch
+to prevent articles from losing text.
+The \*(lqbug-killer\*(rq lines are therefore probably no longer needed,
+but they linger on.
+.Lp 19.
+What is the address or phone number of the \*(lqfoo\*(rq company?
+.Lp
+Try the white and yellow pages of your phone directory,
+first;
+a sales representative will surely know,
+and if you're a potential customer they will be who you're looking for.
+Phone books for other cities are usually available in libraries of any size.
+Whoever buys or recommends things for your company
+will probably have some buyer's guides or national company directories.
+Call or visit the reference desk of your library;
+they have several company and organization directories
+and many will answer questions like this over the phone.
+Remember if you only know the city where the company is,
+you can telephone to find out their full address or a dealer.
+The network is
+.i not
+a free resource,
+although it may look like that to some people.
+It is far better to spend a few minutes of your own time
+researching an answer rather than broadcast
+your laziness and/or ineptitude to the net.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              w mode, for getty), or a
+			 * interrupt (in cooked/cbreak mode).
+			 */
+			if (tp->t_flags&RAW)
+				c = 0;
+			else
+				c = tp->t_intrc;
+#if NBK > 0
+		if (tp->t_line == NETLDISC) {
+			c &= 0x7f;
+			BKINPUT(c, tp);
+		} else
+#endif
+			(*linesw[tp->t_line].l_rint)(c, tp);
+	}
+}
+
+/*
+ * Ioctl for DHU11.
+ */
+/*ARGSUSED*/
+dhuioctl(dev, cmd, data, flag)
+	caddr_t data;
+{
+	register struct tty *tp;
+	register int unit = UNIT(dev);
+	int error;
+
+	tp = &dhu_tty[unit];
+	error = (*linesw[tp->t_line].l_ioctl)(tp, cmd, data, flag);
+	if (error >= 0)
+		return (error);
+	error = ttioctl(tp, cmd, data, flag);
+	if (error >= 0) {
+		if (cmd == TIOCSETP || cmd == TIOCSETN || cmd == TIOCLSET ||
+		    cmd == TIOCLBIC || cmd == TIOCLBIS)
+			dhuparam(unit);
+		return (error);
+	}
+
+	switch (cmd) {
+	case TIOCSBRK:
+		(void) dhumctl(unit, DHU_BRK, DMBIS);
+		break;
+
+	case TIOCCBRK:
+		(void) dhumctl(unit, DHU_BRK, DMBIC);
+		break;
+
+	case TIOCSDTR:
+		(void) dhumctl(unit, DHU_DTR|DHU_RTS, DMBIS);
+		break;
+
+	case TIOCCDTR:
+		(void) dhumctl(unit, DHU_DTR|DHU_RTS, DMBIC);
+		break;
+
+	case TIOCMSET:
+		(void) dhumctl(dev, dmtodhu(*(int *)data), DMSET);
+		break;
+
+	case TIOCMBIS:
+		(void) dhumctl(dev, dmtodhu(*(int *)data), DMBIS);
+		break;
+
+	case TIOCMBIC:
+		(void) dhumctl(dev, dmtodhu(*(int *)data), DMBIC);
+		break;
+
+	case TIOCMGET:
+		*(int *)data = dhutodm(dhumctl(dev, 0, DMGET));
+		break;
+	default:
+		return (ENOTTY);
+	}
+	return (0);
+}
+
+dmtodhu(bits)
+	register int bits;
+{
+	register int b = 0;
+
+	if (bits & DML_RTS) b |= DHU_RTS;
+	if (bits & DML_DTR) b |= DHU_DTR;
+	if (bits & DML_LE) b |= DHU_LE;
+	return(b);
+}
+
+dhutodm(bits)
+	register int bits;
+{
+	register int b = 0;
+
+	if (bits & DHU_DSR) b |= DML_DSR;
+	if (bits & DHU_RNG) b |= DML_RNG;
+	if (bits & DHU_CAR) b |= DML_CAR;
+	if (bits & DHU_CTS) b |= DML_CTS;
+	if (bits & DHU_RTS) b |= DML_RTS;
+	if (bits & DHU_DTR) b |= DML_DTR;
+	if (bits & DHU_LE) b |= DML_LE;
+	return(b);
+}
+
+
+/*
+ * Set parameters from open or stty into the DHU hardware
+ * registers.
+ */
+dhuparam(unit)
+	register int unit;
+{
+	register struct tty *tp;
+	register struct dhudevice *addr;
+	register int lpar;
+	int s;
+
+	tp = &dhu_tty[unit];
+	addr = (struct dhudevice *)tp->t_addr;
+	/*
+	 * Block interrupts so parameters will be set
+	 * before the line interrupts.
+	 */
+	s = spl5();
+	if ((tp->t_ispeed) == 0) {
+		tp->t_state |= TS_HUPCLS;
+		(void)dhumctl(unit, DHU_OFF, DMSET);
+		splx(s);
+		return;
+	}
+	lpar = (dhu_speeds[tp->t_ospeed]<<12) | (dhu_speeds[tp->t_ispeed]<<8);
+	if ((tp->t_ispeed) == B134)
+		lpar |= DHU_LP_BITS6|DHU_LP_PENABLE;
+	else if (tp->t_flags & (RAW|LITOUT|PASS8))
+		lpar |= DHU_LP_BITS8;
+	else
+		lpar |= DHU_LP_BITS7|DHU_LP_PENABLE;
+	if (tp->t_flags&EVENP)
+		lpar |= DHU_LP_EPAR;
+	if ((tp->t_ospeed) == B110)
+		lpar |= DHU_LP_TWOSB;
+	addr->dhucsr = DHU_SELECT(unit) | DHU_IE;
+	addr->dhulpr = lpar;
+	splx(s);
+}
+
+/*
+ * DHU11 transmitter interrupt.
+ * Restart each line which used to be active but has
+ * terminated transmission since the last interrupt.
+ */
+dhuxint(dhu)
+	int dhu;
+{
+	register struct tty *tp;
+	register struct dhudevice *addr;
+	register struct tty *tp0;
+	register struct uba_device *ui;
+	register int line, t;
+	u_short cntr;
+
+#ifdef VAX630
+	(void) spl5();
+#endif
+	ui = dhuinfo[dhu];
+	tp0 = &dhu_tty[dhu<<4];
+	addr = (struct dhudevice *)ui->ui_addr;
+	while ((t = addr->dhucsrh) & DHU_CSH_TI) {
+		line = DHU_TX_LINE(t);
+		tp = tp0 + line;
+		tp->t_state &= ~TS_BUSY;
+		if (t & DHU_CSH_NXM) {
+			printf("dhu(%d,%d): NXM fault\n", dhu, line);
+			/* SHOULD RESTART OR SOMETHING... */
+		}
+		if (tp->t_state&TS_FLUSH)
+			tp->t_state &= ~TS_FLUSH;
+		else {
+			addr->dhucsrl = DHU_SELECT(line) | DHU_IE;
+			/*
+			 * Do arithmetic in a short to make up
+			 * for lost 16&17 bits.
+			 */
+			cntr = addr->dhubar1 -
+			    UBACVT(tp->t_outq.c_cf, ui->ui_ubanum);
+			ndflush(&tp->t_outq, (int)cntr);
+		}
+		if (tp->t_line)
+			(*linesw[tp->t_line].l_start)(tp);
+		else
+			dhustart(tp);
+	}
+}
+
+/*
+ * Start (restart) transmission on the given DHU11 line.
+ */
+dhustart(tp)
+	register struct tty *tp;
+{
+	register struct dhudevice *addr;
+	register int car, dhu, unit, nch;
+	int s;
+
+	unit = minor(tp->t_dev);
+	dhu = unit >> 4;
+	unit &= 0xf;
+	addr = (struct dhudevice *)tp->t_addr;
+
+	/*
+	 * Must hold interrupts in following code to prevent
+	 * state of the tp from changing.
+	 */
+	s = spl5();
+	/*
+	 * If it's currently active, or delaying, no need to do anything.
+	 */
+	if (tp->t_state&(TS_TIMEOUT|TS_BUSY|TS_TTSTOP))
+		goto out;
+	/*
+	 * If there are sleepers, and output has drained below low
+	 * water mark, wake up the sleepers..
+	 */
+	if (tp->t_outq.c_cc<=TTLOWAT(tp)) {
+		if (tp->t_state&TS_ASLEEP) {
+			tp->t_state &= ~TS_ASLEEP;
+			wakeup((caddr_t)&tp->t_outq);
+		}
+		if (tp->t_wsel) {
+			selwakeup(tp->t_wsel, tp->t_state & TS_WCOLL);
+			tp->t_wsel = 0;
+			tp->t_state &= ~TS_WCOLL;
+		}
+	}
+	/*
+	 * Now restart transmission unless the output queue is
+	 * empty.
+	 */
+	if (tp->t_outq.c_cc == 0)
+		goto out;
+	if (tp->t_flags & (RAW|LITOUT))
+		nch = ndqb(&tp->t_outq, 0);
+	else {
+		nch = ndqb(&tp->t_outq, 0200);
+		/*
+		 * If first thing on queue is a delay process it.
+		 */
+		if (nch == 0) {
+			nch = getc(&tp->t_outq);
+			timeout(ttrstrt, (caddr_t)tp, (nch&0x7f)+6);
+			tp->t_state |= TS_TIMEOUT;
+			goto out;
+		}
+	}
+	/*
+	 * If characters to transmit, restart transmission.
+	 */
+	if (nch) {
+		car = UBACVT(tp->t_outq.c_cf, dhuinfo[dhu]->ui_ubanum);
+		addr->dhucsrl = DHU_SELECT(unit) | DHU_IE;
+		addr->dhulcr &= ~DHU_LC_TXABORT;
+		addr->dhubcr = nch;
+		addr->dhubar1 = car;
+		addr->dhubar2 = ((car >> DHU_XBA_SHIFT) & DHU_BA2_XBA) |
+					DHU_BA2_DMAGO;
+		tp->t_state |= TS_BUSY;
+	}
+out:
+	splx(s);
+}
+
+/*
+ * Stop output on a line, e.g. for ^S/^Q or output flush.
+ */
+/*ARGSUSED*/
+dhustop(tp, flag)
+	register struct tty *tp;
+{
+	register struct dhudevice *addr;
+	register int unit, s;
+
+	addr = (struct dhudevice *)tp->t_addr;
+	/*
+	 * Block input/output interrupts while messing with state.
+	 */
+	s = spl5();
+	if (tp->t_state & TS_BUSY) {
+		/*
+		 * Device is transmitting; stop output
+		 * by selecting the line and setting the
+		 * abort xmit bit.  We will get an xmit interrupt,
+		 * where we will figure out where to continue the
+		 * next time the transmitter is enabled.  If
+		 * TS_FLUSH is set, the outq will be flushed.
+		 * In either case, dhustart will clear the TXABORT bit.
+		 */
+		unit = minor(tp->t_dev);
+		addr->dhucsrl = DHU_SELECT(unit) | DHU_IE;
+		addr->dhulcr |= DHU_LC_TXABORT;
+		if ((tp->t_state&TS_TTSTOP)==0)
+			tp->t_state |= TS_FLUSH;
+	}
+	(void) splx(s);
+}
+
+/*
+ * DHU11 modem control
+ */
+dhumctl(dev, bits, how)
+	dev_t dev;
+	int bits, how;
+{
+	register struct dhudevice *dhuaddr;
+	register int unit, mbits;
+	int s;
+
+	unit = UNIT(dev);
+	dhuaddr = (struct dhudevice *)(dhu_tty[unit].t_addr);
+	unit &= 0xf;
+	s = spl5();
+	dhuaddr->dhucsr = DHU_SELECT(unit) | DHU_IE;
+	/*
+	 * combine byte from stat register (read only, bits 16..23)
+	 * with lcr register (read write, bits 0..15).
+	 */
+	mbits = dhuaddr->dhulcr | (dhuaddr->dhustat << 16);
+	switch (how) {
+	case DMSET:
+		mbits = (mbits & 0xff0000) | bits;
+		break;
+
+	case DMBIS:
+		mbits |= bits;
+		break;
+
+	case DMBIC:
+		mbits &= ~bits;
+		break;
+
+	case DMGET:
+		(void) splx(s);
+		return(mbits);
+	}
+	dhuaddr->dhulcr = (mbits & 0xffff) | DHU_LC_RXEN;
+	dhuaddr->dhulcr2 = DHU_LC2_TXEN;
+	(void) splx(s);
+	return(mbits);
+}
+
+/*
+ * Reset state of driver if UBA reset was necessary.
+ * Reset the line and modem control registers.
+ * restart transmitters.
+ */
+dhureset(uban)
+	int uban;
+{
+	register int dhu, unit;
+	register struct tty *tp;
+	register struct uba_device *ui;
+	register struct dhudevice *addr;
+	int i;
+
+	for (dhu = 0; dhu < NDHU; dhu++) {
+		ui = dhuinfo[dhu];
+		if (ui == 0 || ui->ui_alive == 0 || ui->ui_ubanum != uban)
+			continue;
+		printf(" dhu%d", dhu);
+		if (dhu_ubinfo[uban]) {
+			dhu_ubinfo[uban] = uballoc(uban, (caddr_t)cfree,
+					    nclist*sizeof (struct cblock), 0);
+			cbase[uban] = UBAI_ADDR(dhu_ubinfo[uban]);
+		}
+		addr = (struct dhudevice *)ui->ui_addr;
+		addr->dhucsr = DHU_SELECT(0) | DHU_IE;
+		addr->dhutimo = DHU_DEF_TIMO;
+		unit = dhu * 16;
+		for (i = 0; i < 16; i++) {
+			tp = &dhu_tty[unit];
+			if (tp->t_state & (TS_ISOPEN|TS_WOPEN)) {
+				dhuparam(unit);
+				(void)dhumctl(unit, DHU_ON, DM/*
+ * Copyright (c) 1982, 1986 Regents of the University of California.
+ * All rights reserved.  The Berkeley software License Agreement
+ * specifies the terms and conditions for redistribution.
+ *
+ *	@(#)rx.c	7.1 (Berkeley) 6/5/86
+ */
+
+#include "rx.h"
+#if NFX > 0
+/*
+ * RX02 floppy disk device driver
+ *
+ */
+
+/*
+ * TODO:
+ *	- clean up the code for multisector transfers using
+ *	  a 'transfer in progress' flag
+ *	- Test Deleted Data read/write 
+ *	- Test error handling/reporting and 'volume valid' stuff
+ *
+ * 	Note: If the drive subsystem is
+ * 	powered off at boot time, the controller won't interrupt!
+ */
+
+#include "../machine/pte.h"
+
+#include "param.h"
+#include "buf.h"
+#include "systm.h"
+#include "conf.h"
+#include "errno.h"
+#include "time.h"
+#include "kernel.h"
+#include "uio.h"
+#include "file.h"
+
+#include "../vax/cpu.h"
+#include "../vax/nexus.h"
+
+#include "ubavar.h"
+#include "ubareg.h"
+#include "rxreg.h"
+
+#define b_cylin	b_resid
+
+/* per-controller data */
+struct	rx_ctlr {
+	int	rxc_state;	/* controller state */
+#define	RXS_READ	1	/* read started	*/
+#define	RXS_EMPTY	2	/* empty started */
+#define	RXS_FILL	3	/* fill started	*/
+#define	RXS_WRITE	4	/* write started */
+#define	RXS_FORMAT	5	/* format started */
+#define	RXS_RDSTAT	6	/* status read started */
+#define	RXS_RDERR	7	/* error read started */
+#define	RXS_IDLE	8	/* device is idle */
+	u_short	rxc_rxcs;	/* extended error status */
+	u_short	rxc_rxdb;
+	u_short	rxc_rxxt[4];
+	int	rxc_tocnt;	/* for watchdog routine */
+#define	RX_MAXTIMEOUT	30	/* # seconds to wait before giving up */
+} rx_ctlr[NFX];
+
+/* per-drive buffers */
+struct buf	rrxbuf[NRX];	/* buffers for raw I/O */
+struct buf	erxbuf[NRX];	/* buffers for reading error status */
+struct buf	rxutab[NRX];	/* per drive buffers */
+
+/* per-drive data */
+struct rx_softc {
+	int	sc_flags;	/* drive status flags */
+#define	RXF_DIRECT	0x01	/* if set: use direct sector mapping */
+#define	RXF_TRKONE	0x02	/* if set: start mapping on track 1 */
+#define	RXF_DBLDEN	0x04	/* use double density */
+#define	RXF_DEVTYPE	0x07	/* mapping flags */
+#define	RXF_LOCK	0x10	/* exclusive use */
+#define	RXF_DDMK	0x20	/* deleted-data mark detected */
+#define	RXF_USEWDDS	0x40	/* write deleted-data sector */
+#define	RXF_FORMAT	0x80	/* format in progress */
+#define	RXF_BAD		0x100	/* drive bad, cannot be used */
+	int	sc_csbits;	/* constant bits for CS register */
+	int	sc_open;	/* count number of opens */
+	int	sc_offset;	/* raw mode kludge to avoid restricting */
+				/* single sector transfers to start on */
+				/* DEV_BSIZE boundaries */
+	/*
+	 * The rest of this structure is used to 
+	 * store temporaries while simulating multi 
+	 * sector transfers
+	 */
+	caddr_t	sc_uaddr;	/* unibus base address */
+	long	sc_bcnt;	/* total transfer count */
+	long	sc_resid;	/* no. of bytes left to transfer */
+} rx_softc[NRX];
+
+struct rxerr {
+	short	rxcs;
+	short	rxdb;
+	short	rxxt[4];	/* error code dump from controller */
+} rxerr[NRX];
+/* End of per-drive data */
+
+struct	uba_device *rxdinfo[NRX];
+struct	uba_ctlr *rxminfo[NFX];
+
+struct buf *savebp;
+
+int rxprobe(), rxslave(), rxattach(), rxdgo(), rxintr(), rxwatch(), rxphys();
+u_short rxstd[] = { 0177170, 0177150, 0 };
+struct uba_driver fxdriver =
+  { rxprobe, rxslave, rxattach, rxdgo, rxstd, "rx", rxdinfo, "fx", rxminfo };
+
+int	rxwstart;
+#define	RXUNIT(dev)	(minor(dev)>>3)
+#define	MASKREG(reg)	(reg&0xffff)
+
+/* constants related to floppy data capacity */
+#define	RXSECS	2002				/* # sectors on a floppy */
+#define	DDSTATE	(sc->sc_csbits&RX_DDEN)
+#define	NBPS	(DDSTATE ? 256 : 128)		/* # bytes per sector */
+#define	RXSIZE	(DDSTATE ? 512512 : 256256)	/* # bytes per disk */
+#define	SECMASK	(DDSTATE ? 0xff : 0x7f)		/* shifted-out bits of offset */
+
+#define	B_CTRL		0x80000000		/* control (format) request */
+#define B_RDSTAT	0x40000000		/* read drive status (open) */
+
+/*ARGSUSED*/
+rxprobe (reg)
+	caddr_t reg;
+{
+	register int br, cvec;			/* value-result */
+	struct rxdevice *rxaddr = (struct rxdevice *)reg;
+
+#ifdef lint
+	br = 0; cvec = br; br = cvec;
+	rxintr(0);
+#endif lint
+	rxaddr->rxcs = RX_INTR;
+	DELAY(10);
+	rxaddr->rxcs = 0;
+	return (sizeof (*rxaddr));
+}
+
+rxslave(ui, reg)
+	struct uba_device *ui;
+	caddr_t reg;
+{
+
+	ui->ui_dk = 1;
+	return (ui->ui_slave == 0 || ui->ui_slave == 1);
+}
+
+/*ARGSUSED*/
+rxattach(ui)
+	struct uba_device *ui;
+{
+
+}
+
+/*ARGSUSED1*/
+rxopen(dev, flag)
+	dev_t dev;
+{ 
+	register int unit = RXUNIT(dev);
+	register struct rx_softc *sc;
+	register struct uba_device *ui;
+	struct rx_ctlr *rxc;
+
+	if (unit >= NRX || (ui = rxdinfo[unit]) == 0 || ui->ui_alive == 0)
+		return (ENXIO);
+	sc = &rx_softc[unit];
+	if (sc->sc_open == 0 && sc->sc_csbits == 0) {
+		struct buf *bp = &erxbuf[unit];
+		/*
+		 * lock the device while an open 
+		 * is in progress
+		 */
+		sc->sc_flags = (minor(dev) & RXF_DEVTYPE) | RXF_LOCK;
+		sc->sc_csbits = RX_INTR;
+		sc->sc_csbits |= ui->ui_slave == 0 ? RX_DRV0 : RX_DRV1;
+
+		bp->b_dev = dev;
+		bp->b_flags = B_RDSTAT | B_BUSY;
+		bp->b_error = 0;
+		bp->b_blkno = 0;
+		sc->sc_offset = 0;
+		sc->sc_resid  = 0;
+		/*
+		 * read device status to determine if
+		 * a floppy is present in the drive and
+		 * what density it is
+		 */
+		rxstrategy(bp);
+		iowait(bp);
+		if (bp->b_flags & B_ERROR) {
+			sc->sc_csbits = 0;
+			sc->sc_flags &= ~RXF_LOCK;
+			return (bp->b_error);
+		}
+		if (rxwstart++ == 0) {
+			rxc = &rx_ctlr[ui->ui_mi->um_ctlr];
+			rxc->rxc_tocnt = 0;
+			timeout(rxwatch, (caddr_t)0, hz);  /* start watchdog */
+		}
+#ifdef RXDEBUG
+		printf("rxopen: csbits=0x%x\n", sc->sc_csbits);
+#endif
+		sc->sc_flags &= ~RXF_LOCK;
+	} else	{
+		if (sc->sc_flags & RXF_LOCK)
+			return(EBUSY);
+	}
+	sc->sc_open = 1;
+	return (0);
+}
+
+/*ARGSUSED1*/
+rxclose(dev, flag)
+	dev_t dev;
+{
+	register struct rx_softc *sc = &rx_softc[RXUNIT(dev)];
+
+	sc->sc_open = 0;
+#ifdef RXDEBUG
+	printf("rxclose: dev=0x%x, sc_open=%d\n", dev, sc->sc_open);
+#endif
+}
+
+rxstrategy(bp)
+	register struct buf *bp;
+{
+	struct uba_device *ui;
+	register struct buf *dp;
+	struct rx_softc *sc;
+	int s, unit = RXUNIT(bp->b_dev);
+
+	if (unit >= NRX)
+		goto bad;
+	ui = rxdinfo[unit];
+	if (ui == 0 || ui->ui_alive == 0) 
+		goto bad;
+	sc = &rx_softc[unit];
+	if (bp->b_blkno < 0 || dbtob(bp->b_blkno) > RXSIZE)
+		goto bad;
+	if (sc->sc_flags & RXF_BAD) {
+		bp->b_error = EIO;
+		goto dbad;
+	}
+	s = spl5();
+#ifdef RXDEBUG
+	printf("rxstrat: bp=0x%x, fl=0x%x, un=%d, bl=%d, cnt=%d\n", 
+		bp, bp->b_flags, unit, bp->b_blkno, bp->b_bcount);
+#endif
+	bp->b_cylin = bp->b_blkno;	/* don't care to calculate trackno */
+	dp = &rxutab[unit];
+	disksort(dp, bp);
+	if (dp->b_active == 0) {
+		rxustart(ui);
+		bp = &ui->ui_mi->um_tab;
+		if (bp->b_actf && bp->b_active == 0)
+			rxstart(ui->ui_mi);
+	}
+	splx(s);
+	return;
+
+bad:
+	bp->b_error = ENXIO;
+dbad:
+	bp->b_flags |= B_ERROR;
+	iodone(bp);
+	return;
+}
+
+/*
+ * Unit start routine.
+ * Put this unit on the ready queue for the controller
+ */
+rxustart(ui)
+	register struct uba_device *ui;
+{
+	struct buf *dp = &rxutab[ui->ui_unit];
+	struct uba_ctlr *um = ui->ui_mi;
+	
+	dp->b_forw = NULL;
+	if (um->um_tab.b_actf == NULL)
+		um->um_tab.b_actf = dp;
+	else
+		um->um_tab.b_actl->b_forw = dp;
+	um->um_tab.b_actl = dp;
+	dp->b_active++;
+}
+/*
+ * Sector mapping routine.
+ * Two independent sets of choices are available:
+ *
+ * (a) The first logical sector may either be on track 1 or track 0.
+ * (b) The sectors on a track may either be taken in 2-for-1 interleaved
+ *	 fashion or directly.
+ * This gives a total of four possible mapping schemes.
+ *
+ * Physical tracks on the RX02 are numbered 0-76.  Physical sectors on
+ * each track are numbered 1-26.
+ *
+ * When interleaving is used, sectors on the first logical track are
+ * taken in the order 1, 3, 5, ..., 25, 2, 4, 6, ..., 26.  A skew of
+ * six sectors per track is also used (to allow time for the heads to
+ * move); hence, the sectors on the second logical track are taken in
+ * the order 7, 9, 11, ..., 25, 1, 3, 5, 8, 10, 12, ..., 26, 2, 4, 6;
+ * the third logical track starts with sector 13; and so on.
+ *
+ * When the mapping starts with track 1, track 0 is the last logical
+ * track, and this track is always handled directly (without inter-
+ * leaving), even when the rest of the disk is interleaved.  (This is
+ * still compatible with DEC RT-11, which does not use track 0 at all.)
+ */*
+ * Copyright (c) 1982, 1986 Regents of the University of California.
+ * All rights reserved.  The Berkeley software License Agreement
+ * specifies the terms and conditions for redistribution.
+ *
+ *	@(#)tmreg.h	7.1 (Berkeley) 6/5/86
+ */
+
+/*
+ * TM11 controller registers
+ */
+struct tmdevice {
+	u_short	tmer;		/* error register, per drive */
+	u_short	tmcs;		/* control-status register */
+	short	tmbc;		/* byte/frame count */
+	u_short tmba;		/* address */
+	short	tmdb;		/* data buffer */
+	short	tmrd;		/* read lines */
+	short	tmmr;		/* maintenance register */
+#ifdef	AVIV
+	short	tmfsr;		/* formatter status reading */
+#endif
+};
+
+#define	b_repcnt  b_bcount
+#define	b_command b_resid
+
+/* bits in tmcs */
+#define	TM_GO		0000001
+#define	TM_OFFL		0000000		/* offline */
+#define	TM_RCOM		0000002		/* read */
+#define	TM_WCOM		0000004		/* write */
+#define	TM_WEOF		0000006		/* write-eof */
+#define	TM_SFORW	0000010		/* space forward */
+#define	TM_SREV		0000012		/* space backwards */
+#define	TM_WIRG		0000014		/* write with xtra interrecord gap */
+#define	TM_REW		0000016		/* rewind */
+#define	TM_SENSE	TM_IE		/* sense (internal to driver) */
+
+#define	tmreverseop(cmd)		((cmd)==TM_SREV || (cmd)==TM_REW)
+
+/* TM_SNS is a pseudo-op used to get tape status */
+#define	TM_IE		0000100		/* interrupt enable */
+#define	TM_CUR		0000200		/* control unit is ready */
+#define	TM_DCLR		0010000		/* drive clear */
+#define	TM_D800		0060000		/* select 800 bpi density */
+#define	TM_ERR		0100000		/* drive error summary */
+
+/* bits in tmer */
+#define	TMER_ILC	0100000		/* illegal command */
+#define	TMER_EOF	0040000		/* end of file */
+#define	TMER_CRE	0020000		/* cyclic redundancy error */
+#define	TMER_PAE	0010000		/* parity error */
+#define	TMER_BGL	0004000		/* bus grant late */
+#define	TMER_EOT	0002000		/* at end of tape */
+#define	TMER_RLE	0001000		/* record length error */
+#define	TMER_BTE	0000400		/* bad tape error */
+#define	TMER_NXM	0000200		/* non-existant memory */
+#define	TMER_SELR	0000100		/* tape unit properly selected */
+#define	TMER_BOT	0000040		/* at beginning of tape */
+#define	TMER_CH7	0000020		/* 7 channel tape */
+#define	TMER_SDWN	0000010		/* gap settling down */
+#define	TMER_WRL	0000004		/* tape unit write protected */
+#define	TMER_RWS	0000002		/* tape unit rewinding */
+#define	TMER_TUR	0000001		/* tape unit ready */
+
+#define	TMER_BITS	\
+"\10\20ILC\17EOF\16CRE\15PAE\14BGL\13EOT\12RLE\11BTE\10NXM\
+\7SELR\6BOT\5CH7\4SDWN\3WRL\2RWS\1TUR"
+
+#define	TMER_HARD	(TMER_ILC|TMER_EOT)
+#define	TMER_SOFT	(TMER_CRE|TMER_PAE|TMER_BGL|TMER_RLE|TMER_BTE|TMER_NXM)
+
+#ifdef	AVIV
+/* bits in tmmr (formatter diagnostic reading) */
+#define	DTS		000000		/* select dead track status */
+#   define	DTS_MASK	0xff
+
+#define	DAB		010000		/* select diagnostic aid bits */
+#   define  DAB_MASK		037	/* reject code only */
+
+#define	RWERR		020000		/* select read-write errors */
+#    define RWERR_MASK		01777	/* include bit 9 (MAI) */
+#    define RWERR_BITS \
+"\10\12MAI\11CRC ERR\10WTMCHK\7UCE\6PART REC\5MTE\3END DATA CHK\
+\2VEL ERR\1DIAG MODE"
+
+#define	DRSENSE		030000		/* select drive sense */
+#    define DRSENSE_MASK	0777
+#    define DRSENSE_BITS \
+"\10\11WRTS\10EOTS\7BOTS\6WNHB\5PROS\4BWDS\3HDNG\2RDYS\1ON LINE"
+
+#define	CRCF		040000		/* CRC-F Generator */
+
+#define	FSR_BITS \
+"\10\20REJ\17TMS\16OVRN\15DATACHK\14SSC\13EOTS\12WRTS\11ROMPS\10CRERR\
+\7ONLS\6BOTS\5HDENS\4BUPER\3FPTS\2REWS\1RDYS"
+#endif	AVIV
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               /* @(#)tmscpreg.h	7.1 (Berkeley) 6/5/86 */
+
+/*	@(#)tmscpreg.h	1.1	11/2/84	84/09/25	*/
+
+/****************************************************************
+ *								*
+ *        Licensed from Digital Equipment Corporation 		*
+ *                       Copyright (c) 				*
+ *               Digital Equipment Corporation			*
+ *                   Maynard, Massachusetts 			*
+ *                         1985, 1986 				*
+ *                    All rights reserved. 			*
+ *								*
+ *        The Information in this software is subject to change *
+ *   without notice and should not be construed as a commitment *
+ *   by  Digital  Equipment  Corporation.   Digital   makes  no *
+ *   representations about the suitability of this software for *
+ *   any purpose.  It is supplied "As Is" without expressed  or *
+ *   implied  warranty. 					*
+ *								*
+ *        If the Regents of the University of California or its *
+ *   licensees modify the software in a manner creating  	*
+ *   diriviative copyright rights, appropriate copyright  	*
+ *   legends may be placed on  the drivative work in addition   *
+ *   to that set forth above. 					*
+ *								*
+ ****************************************************************/
+/*
+ * TMSCP registers and structures
+ */
+ 
+struct tmscpdevice {
+	short	tmscpip;	/* initialization and polling */
+	short	tmscpsa;	/* status and address */
+};
+ 
+#define	TMSCP_ERR		0100000	/* error bit */
+#define	TMSCP_STEP4	0040000	/* step 4 has started */
+#define	TMSCP_STEP3	0020000	/* step 3 has started */
+#define	TMSCP_STEP2	0010000	/* step 2 has started */
+#define	TMSCP_STEP1	0004000	/* step 1 has started */
+#define	TMSCP_NV		0002000	/* no host settable interrupt vector */
+#define	TMSCP_QB		0001000	/* controller supports Q22 bus */
+#define	TMSCP_DI		0000400	/* controller implements diagnostics */
+#define	TMSCP_OD		0000200	/* port allows odd host addr's in the buffer descriptor */
+#define	TMSCP_IE		0000200	/* interrupt enable */
+#define	TMSCP_MP		0000100	/* port supports address mapping */
+#define	TMSCP_LF		0000002	/* host requests last fail response packet */
+#define	TMSCP_PI		0000001	/* host requests adapter purge interrupts */
+#define	TMSCP_GO		0000001	/* start operation, after init */
+ 
+ 
+/*
+ * TMSCP Communications Area
+ */
+ 
+struct tmscpca {
+	short	ca_xxx1;	/* unused */
+	char	ca_xxx2;	/* unused */
+	char	ca_bdp;		/* BDP to purge */
+	short	ca_cmdint;	/* command queue transition interrupt flag */
+	short	ca_rspint;	/* response queue transition interrupt flag */
+	long	ca_rspdsc[NRSP];/* response descriptors */
+	long	ca_cmddsc[NCMD];/* command descriptors */
+};
+ 
+#define	ca_ringbase	ca_rspdsc[0]
+ 
+#define	TMSCP_OWN	0x80000000	/* port owns this descriptor (else host
+ owns it) */
+#define	TMSCP_INT	0x40000000	/* allow interrupt on ring transition */
+ 
+#define	TMSCP_MAP	0x80000000	/* modifier for mapped buffer descriptors */
+ 
+/*
+ * TMSCP packet info (same as MSCP)
+ */
+struct mscp_header {
+	short	tmscp_msglen;	/* length of MSCP packet */
+	char	tmscp_credits;	/* low 4 bits: credits, high 4 bits: msgtype */
+	char	tmscp_vcid;	/* virtual circuit id (connection id) */
+};
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           /
+rxmap(bp, psector, ptrack)
+	struct buf *bp;
+	int *psector, *ptrack;
+{
+	register int lt, ls, ptoff;
+	struct rx_softc *sc = &rx_softc[RXUNIT(bp->b_dev)];
+
+	ls = (dbtob(bp->b_blkno) + (sc->sc_offset - sc->sc_resid)) / NBPS;
+	lt = ls / 26;
+	ls %= 26;
+	/*
+	 * The "physical track offset" (ptoff) takes the
+	 * starting physical track (0 or 1) and the desired
+	 * interleaving into account.  If lt+ptoff >= 77,
+	 * then interleaving is not performed.
+	 */
+	ptoff = 0;
+	if (sc->sc_flags & RXF_DIRECT)
+		ptoff = 77;
+	if (sc->sc_flags & RXF_TRKONE)
+		ptoff++;
+	if (lt + ptoff < 77)
+		ls = ((ls << 1) + (ls >= 13) + (6*lt)) % 26;
+	*ptrack = (lt + ptoff) % 77;
+	*psector = ls + 1;
+}
+
+/*
+ * Controller start routine.
+ * Start a new transfer or continue a multisector
+ * transfer. If this is a new transfer (dp->b_active == 1)
+ * save the start address of the data buffer and the total
+ * byte count in the soft control structure. These are
+ * restored into the buffer structure when the transfer has
+ * been completed, before calling 'iodone'.
+ */
+rxstart(um)
+	register struct uba_ctlr *um;
+{
+	register struct rxdevice *rxaddr;
+	register struct rx_ctlr *rxc;
+	register struct rx_softc *sc;
+	struct buf *dp, *bp;
+	int unit, sector, track;
+
+	if (um->um_tab.b_active)
+		return;
+loop:
+	if ((dp = um->um_tab.b_actf) == NULL)
+		return;
+	if ((bp = dp->b_actf) == NULL) {
+		um->um_tab.b_actf = dp->b_forw;
+		goto loop;
+	}
+	um->um_tab.b_active++;
+	unit = RXUNIT(bp->b_dev);
+	sc = &rx_softc[unit];
+	if (sc->sc_flags & RXF_BAD) {
+		rxpurge(um);
+		return;
+	}
+	if (dp->b_active == 1) {
+		sc->sc_resid = bp->b_bcount;
+		sc->sc_uaddr = bp->b_un.b_addr;
+		sc->sc_bcnt = bp->b_bcount;
+		sc->sc_offset += sc->sc_bcnt;
+		dp->b_active++;
+	}
+	rxaddr = (struct rxdevice *)um->um_addr;
+	rxc = &rx_ctlr[um->um_ctlr];
+	bp->b_bcount = sc->sc_resid;
+	if (bp->b_bcount > NBPS)
+		bp->b_bcount = NBPS;
+	rxc->rxc_tocnt = 0;
+#ifdef RXDEBUG
+	printf("rxstart: ");
+#endif
+	if (rxaddr->rxcs == 0x800) {
+		/*
+		 * 'Volume valid'? (check if the 
+		 * drive unit has been powered down)
+		 */
+		rxaddr->rxcs = RX_INIT;
+		while((rxaddr->rxcs&RX_DONE) == 0)
+			;
+	}
+	if (bp->b_flags & B_CTRL) {				/* format */
+		rxc->rxc_state = RXS_FORMAT;
+		rxaddr->rxcs = RX_FORMAT | sc->sc_csbits;
+		while ((rxaddr->rxcs&RX_TREQ) == 0)
+			;
+		rxaddr->rxdb = 'I';
+		return;
+	}
+	if (bp->b_flags & B_RDSTAT) {			/* read drive status */
+		rxc->rxc_state = RXS_RDSTAT;
+		rxaddr->rxcs = RX_RDSTAT | sc->sc_csbits;
+		return;
+	}
+
+	if (bp->b_flags & B_READ) {
+		rxmap(bp, &sector, &track);			/* read */
+#ifdef RXDEBUG
+		printf("read tr=%d, sc=%d", track, sector);
+#endif
+		rxc->rxc_state = RXS_READ;
+		rxaddr->rxcs = RX_READ | sc->sc_csbits;
+		while ((rxaddr->rxcs&RX_TREQ) == 0)
+			;
+		rxaddr->rxdb = (u_short)sector;
+		while ((rxaddr->rxcs&RX_TREQ) == 0)
+			;
+		rxaddr->rxdb = (u_short)track;
+	} else {
+#ifdef RXDEBUG
+		printf("write");
+#endif
+		rxc->rxc_state = RXS_FILL;			/* write */
+		um->um_cmd = RX_FILL;
+		(void) ubago(rxdinfo[unit]);
+	}
+#ifdef RXDEBUG
+	printf("\n");
+#endif
+}
+
+rxdgo(um)
+	struct uba_ctlr *um;
+{
+	register struct rxdevice *rxaddr = (struct rxdevice *)um->um_addr;
+	int ubinfo = um->um_ubinfo;
+	struct buf *bp = um->um_tab.b_actf->b_actf;
+	struct rx_softc *sc = &rx_softc[RXUNIT(bp->b_dev)];
+	struct rx_ctlr *rxc = &rx_ctlr[um->um_ctlr];
+
+	rxaddr->rxcs = um->um_cmd | ((ubinfo & 0x30000) >> 4) | sc->sc_csbits;
+	if (rxc->rxc_state != RXS_RDERR) {
+		while ((rxaddr->rxcs&RX_TREQ) == 0)
+			;
+		rxaddr->rxdb = (u_short) bp->b_bcount >> 1;
+	}
+	while ((rxaddr->rxcs&RX_TREQ) == 0)
+		;
+	rxaddr->rxdb = (u_short) ubinfo;
+}
+
+rxintr(ctlr)
+	int ctlr;
+{
+	int unit, sector, track;
+	struct uba_ctlr *um = rxminfo[ctlr];
+	register struct rxdevice *rxaddr;
+	register struct buf *bp, *dp;
+	register struct rx_softc *sc;
+	struct uba_device *ui;
+	struct rxerr *er;
+	struct rx_ctlr *rxc;
+
+	if (!um->um_tab.b_active)
+		return;
+	dp = um->um_tab.b_actf;
+	if (!dp->b_active)
+		return;
+	bp = dp->b_actf;
+	unit = RXUNIT(bp->b_dev);
+	sc = &rx_softc[unit];
+	ui = rxdinfo[unit];
+	rxaddr = (struct rxdevice *)um->um_addr;
+	rxc = &rx_ctlr[um->um_ctlr];
+	rxc->rxc_tocnt = 0;
+	er = &rxerr[unit];
+#ifdef RXDEBUG
+	printf("rxint: dev=%x, st=%d, cs=0x%x, db=0x%x\n", 
+		bp->b_dev, rxc->rxc_state, rxaddr->rxcs, rxaddr->rxdb);
+#endif
+	if ((rxaddr->rxcs & RX_ERR) &&
+	    (rxc->rxc_state != RXS_RDSTAT) && (rxc->rxc_state != RXS_RDERR))
+		goto error;
+	switch (rxc->rxc_state) {
+
+	/*
+	 * Incomplete commands.  Perform next step
+	 * and return.  Note that b_active is set on
+	 * entrance and, therefore, also on exit.
+	 */
+	case RXS_READ:
+		if (rxaddr->rxdb & RXES_DDMARK)
+			sc->sc_flags |= RXF_DDMK;
+		else
+			sc->sc_flags &= ~RXF_DDMK;
+		rxc->rxc_state = RXS_EMPTY;
+		um->um_cmd = RX_EMPTY;
+		(void) ubago(ui);
+		return;
+
+	case RXS_FILL:
+		rxc->rxc_state = RXS_WRITE;
+		if (sc->sc_flags & RXF_USEWDDS) {
+			rxaddr->rxcs = RX_WDDS | sc->sc_csbits;
+			sc->sc_flags &= ~RXF_USEWDDS;
+		} else
+			rxaddr->rxcs = RX_WRITE | sc->sc_csbits;
+		rxmap(bp, &sector, &track);
+		while ((rxaddr->rxcs&RX_TREQ) == 0)
+			;
+		rxaddr->rxdb = sector;
+		while ((rxaddr->rxcs&RX_TREQ) == 0)
+			;
+		rxaddr->rxdb = track;
+		return;
+
+	/*
+	 * Possibly completed command.
+	 */
+	case RXS_RDSTAT:
+		if (bp->b_flags & B_RDSTAT) {
+			if ((rxaddr->rxdb&RXES_READY) == 0) {
+				bp->b_flags |= B_ERROR;
+				bp->b_error = ENODEV;
+			} else {
+				sc->sc_csbits |= rxaddr->rxdb&RXES_DBLDEN ?
+					RX_DDEN : RX_SDEN;
+			}
+			goto rdone;
+		}
+		if (rxaddr->rxdb&RXES_READY)
+			goto rderr;
+		bp->b_error = ENODEV;
+		bp->b_flags |= B_ERROR;
+		goto done;
+
+	/*
+	 * Command completed.
+	 */
+	case RXS_EMPTY:
+	case RXS_WRITE:	
+		goto done;
+
+	case RXS_FORMAT:
+		goto rdone;
+
+	case RXS_RDERR:
+		bp = savebp;
+		rxmap(bp, &sector, &track);
+		printf("rx%d: hard error, trk %d psec %d ",
+			unit, track, sector);
+		printf("cs=%b, db=%b, err=", MASKREG(er->rxcs), 
+			RXCS_BITS, MASKREG(er->rxdb), RXES_BITS);
+		printf("%x, %x, %x, %x\n", MASKREG(er->rxxt[0]),
+			MASKREG(er->rxxt[1]), MASKREG(er->rxxt[2]), 
+			MASKREG(er->rxxt[3]));
+		goto done;
+
+	default:
+		printf("rx%d: state %d (reset)\n", unit, rxc->rxc_state);
+		rxreset(um->um_ubanum);
+		return;
+	}
+error:
+	/*
+	 * In case of an error:
+	 *  (a) Give up now if a format (ioctl) was in progress, if a
+	 *	  density error was detected, or if the drive went offline
+	 *  (b) Retry up to nine times if a CRC (data) error was detected,
+	 *	  then give up if the error persists.
+	 *  (c) In all other cases, reinitialize the drive and try the
+	 *	  operation once more before giving up.
+	 */
+	if (rxc->rxc_state == RXS_FORMAT || (rxaddr->rxdb&RXES_DENERR))
+		goto giveup;
+	if (rxaddr->rxdb & RXES_CRCERR) {
+		if (++um->um_tab.b_errcnt >= 10)
+			goto giveup;
+		goto retry;
+	}
+	um->um_tab.b_errcnt += 9;
+	if (um->um_tab.b_errcnt >= 10)
+		goto giveup;
+	rxaddr->rxcs = RX_INIT;
+	/* no way to get an interrupt for "init done", so just wait */
+	while ((rxaddr->rxcs&RX_DONE) == 0)
+		;
+	/* if someone opened the drive: give up */
+	if ((rxaddr->rxdb&RXES_READY) == 0)
+		goto giveup;
+retry:
+	/*
+	 * In case we already have UNIBUS resources, give
+	 * them back since we reallocate things in rxstart.
+	 */
+	if (um->um_ubinfo)
+		ubadone(um);
+	um->um_tab.b_active = 0;
+	rxstart(um);
+	return;
+
+giveup:
+	/*
+	 * Hard I/O error --
+	 * ALL errors are considered fatal and will abort the
+	 * transfer and purge the i/o request queue
+	 */
+	sc->sc_flags |= RXF_BAD;
+	sc->sc_resid = 0;	/* make sure the transfer is terminated */
+	rxc->rxc_state = RXS_RDSTAT;
+	rxaddr->rxcs = RX_RDSTAT | sc->sc_csbits;
+	return;
+
+rderr:
+	/*
+	 * A hard error (other than not ready) has occurred.
+	 * Read the extended error status information.
+	 * Before doing this, save the current CS and DB register values,
+	 * because the read error status operation may modify them.
+	 * Insert buffer with request at the head of the queue.
+	 */
+	bp->b_error = EIO;
+	bp->b_flags |= B_ERROR;
+	if (um->um_ubinfo)
+		ubadone(um);
+	savebp = bp;
+	er->rxcs = rxaddr->rxcs;
+	er->rxdb = rxaddr->rxdb;
+	bp = &erxbuf[unit];
+	bp->b_un.b_addr = (caddr_t)er->rxxt;
+	bp->b_bcount = sizeof (er->rxxt);
+	bp->b_flags &= ~(B_DIRTY|B_UAREA|B_PHYS|B_PAGET);
+	if (dp->b_actf == NULL)
+		dp->b_actl = bp;
+	bp->b_forw = dp->b_actf;
+	dp->b_actf = bp;
+	rxc->rxc/*
+ * Copyright (c) 1985, 1986 Regents of the University of California.
+ * All rights reserved.  The Berkeley software License Agreement
+ * specifies the terms and conditions for redistribution.
+ *
+ *	@(#)dmzreg.h	7.1 (Berkeley) 6/5/86
+ */
+
+/*
+ * HISTORY
+ * 23-Apr-85  Joe Camaratta (jcc) at Siemens RTL
+ *	Header file for DEC's DMZ32
+ */
+
+struct dmzdevice {
+	short dmz_config;	/* configuration cntl and status register */
+	short dmz_diag;		/* diagnostic control and status register */
+	struct {
+		short octet_csr;	/* octet control and status */
+		short octet_lprm;	/* line parameter */
+		union{
+			short octet_rb;		/* receiver buffer */
+			short octet_rsp;	/* receive silo parameter */
+		} octet_receive;
+		union{
+			u_short word;		/* word */
+			u_char bytes[2];	/* bytes */
+		} octet_ir;			/* indirect registers */
+	} octet[3];
+	short dmz_unused[2];
+};
+
+#define octet_sato octet_rsp
+
+/* aliases for asynchronous indirect control registers */
+#define	IR_TBUF		000	/* transmit character */
+#define	IR_RMSTSC	000	/* receive modem status, transmit silo count */
+#define	IR_LCTMR	010	/* line control and transmit modem */
+#define	IR_TBA		020	/* transmit buffer address register */
+#define	IR_TCC		030	/* transmit character count (DMA) */
+
+#define	octet_tbf	octet_ir.bytes[0]	/* transmit buffer */
+#define	octet_tbf2	octet_ir.word		/* transmit buffer, 2 chars */
+#define	octet_rmstsc	octet_ir.word	/* rcv modem status, xmit silo count */
+#define	octet_lctmr	octet_ir.word		/* line control, xmit modem */
+#define	octet_tba	octet_ir.word		/* transmit buffer address */
+#define	octet_tcc	octet_ir.word		/* transmit character count */
+
+/* bits in octet_csr */
+#define	DMZ_TRDY	0100000		/* transmit ready */
+#define	DMZ_TIE		0040000		/* transmit interrupt enable */
+#define	DMZ_NXM		0030000		/* non-existant memory */
+#define	DMZ_LIN		0003400		/* transmit line number */
+#define	DMZ_RRDY	0000200		/* receiver data available */
+#define	DMZ_RIE		0000100		/* receiver interrupt enable */
+#define	DMZ_RESET	0000040		/* master reset */
+#define	DMZ_IAD		0000037		/* indirect address register */
+
+#define	DMZ_IE		(DMZ_TIE | DMZ_RIE)	/* enable transmit and receive */
+
+/* bits in octet_lprm (taken from dmfreg.h) */
+#define	DMZ_6BT		0010		/* 6 bits per character */
+#define	DMZ_7BT		0020		/* 7 bits per character */
+#define	DMZ_8BT		0030		/* 8 bits per character */
+#define	DMZ_PEN		0040		/* parity enable */
+#define	DMZ_EPR		0100		/* even parity */
+#define	DMZ_SCD		0200		/* stop code */
+#define	DMZ_XTE		0170000		/* transmit rate */
+#define	DMZ_RRT		0007400		/* receive rate */
+#define	DMZ_LSL		0000007		/* line select */
+
+/* baud rates */
+#define	BR_50		000
+#define	BR_75		001
+#define	BR_110		002
+#define	BR_134_5	003
+#define	BR_150		004
+#define	BR_300		005
+#define	BR_600		006
+#define	BR_1200		007
+#define	BR_1800		010
+#define	BR_2000		011
+#define	BR_2400		012
+#define	BR_3600		013
+#define	BR_4800		014
+#define	BR_7200		015
+#define	BR_9600		016
+#define	BR_19200	017
+
+/* bits in octet_rb (taken from dmfreg.h) */
+#define	DMZ_DSC		0004000		/* data set change */
+#define	DMZ_PE		0010000		/* parity error */
+#define	DMZ_FE		0020000		/* framing error */
+#define	DMZ_DO		0040000		/* data overrun */
+#define	DMZ_DV		0100000		/* data valid */
+#define	DMZ_RL		0003400		/* line */
+#define	DMZ_RD		0000377		/* data */
+#define	DMZ_AT		0000377		/* alarm timeout */
+
+/* bits in dmz_rmstsc */
+#define	DMZ_TSC		0x00ff		/* transmit silo count */
+#define	DMZ_USRR	0x0400		/* user modem signal (pin 25) */
+#define	DMF_SR		0x0800		/* secondary receive */
+#define	DMZ_CTS		0x1000		/* clear to send */
+#define	DMZ_CAR		0x2000		/* carrier detect */
+#define	DMZ_RNG		0x4000		/* ring */
+#define	DMZ_DSR		0x8000		/* data set ready */
+
+/* bits in dmz_lctmr (tms half) */
+#define	DMZ_USRW	0x0100		/* user modem signal (pin 18) */
+#define	DMZ_DTR		0x0200		/* data terminal ready */
+#define	DMZ_RATE	0x0400		/* data signal rate select */
+#define	DMF_ST		0x0800		/* secondary transmit */
+#define	DMZ_RTS		0x1000		/* request to send */
+#define	DMZ_PREEMPT	0x8000		/* preempt output */
+
+/* bits in octet_lctmr (lc half) */
+#define	DMZ_MIE		0040		/* modem interrupt enable */
+#define	DMZ_FLS		0020		/* flush transmit silo */
+#define	DMZ_BRK		0010		/* send break bit */
+#define	DMZ_RE		0004		/* receive enable */
+#define	DMZ_AUT		0002		/* auto XON/XOFF */
+#define	DMZ_TE		0001		/* transmit enable */
+#define	DMZ_CF		0300		/* control function */
+
+#define	DMZ_LCE		(DMZ_MIE|DMZ_RE|DMZ_TE)
+#define	DMZ_ON		(DMZ_DTR|DMZ_RTS|DMZ_LCE)
+#define	DMZ_OFF		DMZ_LCE
+
+
+/* bits in octet_tcc */
+#define	DMZ_HA		0140000		/* high address bits */
+
+/* bits added to dm lsr for DMGET/DMSET */
+#define	DML_USR		0001000		/* usr modem sig, not a real DM bit */
+#define	DML_DSR		0000400		/* data set ready, not a real DM bit */
+
+#define	DMZ_SIZ		32		/* size of DMZ output silo (per line) */
+
+#define	DMZ(a)		(a/24)
+#define	OCTET(a)	((a%24)/8)
+#define	LINE(a)		((a%24)%8)
+
+#define	DMZ_NOC_MASK	03
+#define	DMZ_INTERFACE	000
+                                                                                                                                                                          =     .   #(    ..  >     ae.mac v?     ae0 @     ae1 A     ae2 B     ae3 C     ae4 D     ae5 E     ae6 F     ae7 G   x ae9                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             .\"	@(#)ae.mac	6.1 (Berkeley) 6/2/86
+.\"
+.tr _\(em
+.de UL
+.if n .ul
+.if n \\$3\\$1\\$2
+.if t \\$3\f3\\$1\fP\\$2
+..
+.de IT
+.if t \\$3\f2\\$1\fP\\$2
+.if n .ul
+.if n \\$3\\$1\\$2
+..
+.de UI
+\f3\\$1\fI\\$2\fR\\$3
+..
+.de P1
+.if n .ls 1
+.nf
+.if n .ta 5 10 15 20 25 30 35 40 45 50 55 60
+.if t .ta .3i .6i .9i 1.2i 1.5i 1.8i
+.tr -\-
+.		use first argument as indent if present
+.if \\n(.$ .DS I \\$1
+.if !\\n(.$ .DS I 5
+..
+.de P2
+.DE
+.tr --
+.if n .ls 2
+..
+.if t .ds BL \s6\|\v'.1m'\(sq\v'-.1m'\|\s0
+.if n .ds BL []
+.if t .ds m \(mi
+.if n .ds m -
+.if t .ds n \(no
+.if n .ds n -
+.if t .ds s \v'.41m'\s+4*\s-4\v'-.41m'
+.if n .ds s *
+.if t .ds S \(sl
+.if n .ds S /
+.if t .ds d \s+4\&.\&\s-4
+.if n .ds d \&.\&
+.if t .ds a \z@@
+.if n .ds a @
+.if t .ds . \s+2\fB.\fP\s-2
+.if n .ds . .
+.if t .ds e \z\e\h'1u'\e
+.if n .ds e \e
+.hy 14
+.	2=not last lines; 4= no -xx; 8=no xx-
+.tr *\(**
+
+                                                                                                                                                              .\"	@(#)ae9	6.1 (Berkeley) 5/22/86
+.\"
+.SH
+Acknowledgement
+.PP
+I am grateful to Ted Dolotta
+for his careful reading and valuable suggestions.
+.SH
+References
+.IP [1]
+Brian W. Kernighan,
+.ul
+A Tutorial Introduction to the UNIX Text Editor,
+Bell Laboratories internal memorandum.
+.IP [2]
+Brian W. Kernighan,
+.ul
+UNIX For Beginners,
+Bell Laboratories internal memorandum.
+.IP [3]
+Ken L. Thompson and Dennis M. Ritchie,
+.ul
+The UNIX Programmer's Manual.
+Bell Laboratories.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            _state = RXS_RDERR;
+	um->um_cmd = RX_RDERR;
+	(void) ubago(ui);
+	return;
+
+done:
+	ubadone(um);
+rdone:
+	um->um_tab.b_active = 0;
+	um->um_tab.b_errcnt = 0;
+	if ((sc->sc_resid -= NBPS) > 0) {
+		bp->b_un.b_addr += NBPS;
+		rxstart(um);
+		return;
+	}
+	bp->b_un.b_addr = sc->sc_uaddr;
+	bp->b_resid = 0;
+	bp->b_bcount = sc->sc_bcnt;
+	dp->b_actf = bp->av_forw;
+	iodone(bp);
+	sc->sc_offset = 0;
+	rxc->rxc_state = RXS_IDLE;
+	um->um_tab.b_actf = dp->b_forw;
+	dp->b_active = 0;
+	dp->b_errcnt = 0;
+#ifdef RXDEBUG
+	printf(".. bp=%x, new=%x\n", bp, dp->b_actf);
+#endif
+	/*
+	 * If this unit has more work to do,
+	 * start it up right away
+	 */
+	if (dp->b_actf)
+		rxustart(ui);
+
+	rxstart(um);
+}
+
+/*ARGSUSED*/
+
+rxwatch()
+{
+	register struct uba_device *ui;
+	register struct uba_ctlr *um;
+	register struct rx_softc *sc;
+	struct rx_ctlr *rxc;
+	int i, dopen = 0;
+
+	for (i=0; i<NRX; i++) {
+		ui = rxdinfo[i];
+		if (ui == 0 || ui->ui_alive == 0)
+			continue;
+		sc = &rx_softc[i];
+		if ((sc->sc_open == 0) && (rxutab[i].b_active == 0)) {
+			sc->sc_csbits = 0;
+			continue;
+		}
+		dopen++;
+		um = ui->ui_mi;
+		rxc = &rx_ctlr[um->um_ctlr];
+		if (++rxc->rxc_tocnt >= RX_MAXTIMEOUT) {
+			rxc->rxc_tocnt = 0;
+			if (um->um_tab.b_active) {	
+				printf("rx%d: timeout\n", i);/* for debugging */
+				rxintr(um->um_ctlr);
+			}
+		}
+	}
+	if (dopen)
+		timeout(rxwatch, (caddr_t)0, hz);
+	else
+		rxwstart = 0;
+}
+
+rxreset(uban)
+	int uban;
+{
+	register struct uba_ctlr *um;
+	register struct rxdevice *rxaddr;
+	register int ctlr;
+
+	for (ctlr = 0; ctlr < NFX; ctlr++) {
+		if ((um = rxminfo[ctlr]) == 0 || um->um_ubanum != uban ||
+		    um->um_alive == 0)
+			continue;
+		if (um->um_ubinfo)
+			um->um_ubinfo = 0;
+		rx_ctlr[ctlr].rxc_state = RXS_IDLE;
+		rxaddr = (struct rxdevice *)um->um_addr;
+		rxaddr->rxcs = RX_INIT;
+		while ((rxaddr->rxcs&RX_DONE) == 0)
+			;
+		rxstart(um);
+	}
+}
+
+rxread(dev, uio)
+	dev_t dev;
+	struct uio *uio;
+{
+	int unit = RXUNIT(dev);
+	struct rx_softc *sc = &rx_softc[unit];
+
+	if (uio->uio_offset + uio->uio_resid > RXSIZE)
+		return (ENXIO);
+	if (uio->uio_offset < 0 || (uio->uio_offset & SECMASK) != 0)
+		return (ENXIO);
+	sc->sc_offset = uio->uio_offset % DEV_BSIZE;
+	return (physio(rxstrategy, &rrxbuf[unit], dev, B_READ, minphys, uio));
+}
+
+rxwrite(dev, uio)
+	dev_t dev;
+	struct uio *uio;
+{
+	int unit = RXUNIT(dev);
+	struct rx_softc *sc = &rx_softc[unit];
+
+	if (uio->uio_offset + uio->uio_resid > RXSIZE)
+		return (ENXIO);
+	if (uio->uio_offset < 0 || (uio->uio_offset & SECMASK) != 0)
+		return (ENXIO);
+	sc->sc_offset = uio->uio_offset % DEV_BSIZE;
+	return(physio(rxstrategy, &rrxbuf[unit], dev, B_WRITE, minphys, uio));
+}
+
+/*
+ * Control routine:
+ * processes four kinds of requests:
+ *
+ *	(1) Set density (i.e., format the diskette) according to 
+ *		  that specified data parameter
+ *	(2) Arrange for the next sector to be written with a deleted-
+ *		  data mark.
+ *	(3) Report whether the last sector read had a deleted-data mark
+ *	(4) Report the density of the diskette in the indicated drive
+ *	    (since the density it automatically determined by the driver,
+ *	     this is the only way to let an application program know the
+ *	     density)
+ *
+ * Requests relating to deleted-data marks can be handled right here.
+ * A "set density" (format) request, however, must additionally be 
+ * processed through "rxstart", just like a read or write request.
+ */
+
+/*ARGSUSED3*/
+rxioctl(dev, cmd, data, flag)
+	dev_t dev;
+	caddr_t data;
+{   
+	int unit = RXUNIT(dev);
+	struct rx_softc *sc = &rx_softc[unit];
+
+	switch (cmd) {
+
+	case RXIOC_FORMAT:
+		if ((flag&FWRITE) == 0)
+			return (EBADF);
+		if (sc->sc_open > 1)
+			return (EBUSY);
+		if (*(int *)data)
+			sc->sc_csbits |= RX_DDEN;
+		else
+			sc->sc_csbits &= ~RX_DDEN;
+		return (rxformat(dev));
+
+	case RXIOC_WDDS:
+		sc->sc_flags |= RXF_USEWDDS;
+		return (0);
+
+	case RXIOC_RDDSMK:
+		*(int *)data = sc->sc_flags & RXF_DDMK;
+		return (0);
+
+	case RXIOC_GDENS:
+		*(int *)data = sc->sc_csbits & RX_DDEN;
+		return (0);
+	}
+	return (ENXIO);
+}
+
+/*
+ * Initiate a format command.
+ */
+rxformat(dev)
+	dev_t dev;
+{
+	int unit = RXUNIT(dev);
+	struct buf *bp;
+	struct rx_softc *sc = &rx_softc[unit];
+	int s, error = 0;
+
+	bp = &rrxbuf[unit];
+	bp->b_flags = B_BUSY | B_CTRL;
+	sc->sc_flags = RXF_FORMAT | RXF_LOCK;
+	bp->b_dev = dev;
+	bp->b_error = 0;
+	bp->b_blkno = 0;
+	rxstrategy(bp);
+	iowait(bp);
+	if (bp->b_flags & B_ERROR)
+		error = bp->b_error;
+	bp->b_flags &= ~B_BUSY;
+	sc->sc_flags &= ~RXF_LOCK;
+	return (error);
+}
+
+/*
+ * A permanent hard error condition has occured,
+ * purge the buffer queue
+ */
+rxpurge(um)
+	register struct uba_ctlr *um;
+{
+	register struct buf *bp, *dp;
+
+	dp = um->um_tab.b_actf;
+	while (dp->b_actf) {
+		dp->b_errcnt++;
+		bp = dp->b_actf;
+		bp->b_error = EIO;
+		bp->b_flags |= B_ERROR;
+		iodone(bp);
+		dp->b_actf = bp->av_forw;
+	}
+}
+#endif
+                                                                                                                                                                                                                                                                                                                                                                 .\"	@(#)ae0	6.1 (Berkeley) 5/22/86
+.\"
+.nr P1 1
+.EH 'USD:13-%''Advanced Editing on \s-2UNIX\s+2'
+.OH 'Advanced Editing on \s-2UNIX\s+2''USD:13-%'
+.....TM 76-1273-8 39199 39199-11
+.\".RP
+.TL
+Advanced Editing on \s-2UNIX\s+2
+.AU "MH 2C518" 6021
+Brian W. Kernighan
+.AI
+.MH
+.AU
+(Updated for 4.3BSD by Mark Seiden)
+.AB
+This paper is meant to help
+secretaries, typists and programmers
+to make effective use of the
+.UX
+facilities
+for preparing and editing text.
+It provides explanations and examples of
+.IP \(bu
+special characters, line addressing and global commands in the editor
+.UL ed ;
+.IP \(bu
+commands for ``cut and paste'' operations on files
+and parts of files,
+including the
+.UL mv ,
+.UL cp ,
+.UL cat
+and
+.UL rm
+commands,
+and the
+.UL r ,
+.UL w ,
+.UL m
+and
+.UL t
+commands of the editor;
+.IP \(bu
+editing scripts and
+editor-based programs like
+.UL grep
+and
+.UL sed .
+.PP
+Although the treatment is aimed
+at non-programmers,
+new
+.UC UNIX
+users
+with any background
+should find helpful hints
+on how to get their jobs done
+more easily.
+.AE
+.CS 16 0 16 0 0 3
+.if n .ls 2
+.if t .2C
+.nr PS 9
+.nr VS 11
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         

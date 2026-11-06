@@ -1,0 +1,754 @@
+ue:\
+	:is=\41com 31\r\n^_sto 9 17 25 33 41 49 57 65 73\r:\
+	:am:le=^H:bs:pt:li#33:co#80:cm=^_jum%i%d,%d;:up=^K:\
+	:do=^F^J:cl=^_era;:nd=^_rig;:nl=^F\n:ti=^_wor 33h:te=^_wor 0:
+# next two lines commented out since curses only allows 128 chars, sigh.
+#	:ti=^_lea p1/b/^_lea p2/j/^_lea p3/n/^_lea p4/h/^_lea p5/ /^_lea p6/l/^_lea p7/y/^_lea p8/k/^_lea p9/u/^_lea p./f/^_lea pt/`era w/13^_lea p0/s/^_wor 33h:\
+#	:te=^_lea p1^_lea p2^_lea p3^_lea p4^_lea pt^_lea p5^_lea p6^_lea p7^_lea p8^_lea p9/la/13^_lea p.^_lea p0^_wor 0:
+# The 4110 series may be a wonderful graphics series, but they make the 4025
+# look good for screen editing.  In the dialog area, you can't move the cursor
+# off the bottom line.  Out of the dialog area, ^K moves it up, but there
+# is no way to scroll.
+Xs|4112|4114|tek4112|tektronix 4110 series:\
+	:is=\E3!1:li#34:co#80:am:al=\E[L:bs:bt=\E[Z:\
+	:cd=\E[0J:ce=\E[0K:cl=\E[2J\E[0;0H:cm=\E[%i%d;%dH:\
+	:db:dc=\E[P:dl=\E[M:ic=\E[@:im=:nd=\E[C:se=\E[m:\
+	:so=\E[7m:ue=\E[m:up=\EM:us=\E[4m:vs=:ve=:\
+	:sr=\E7\E[0;0H\E[L\E8:sf=\E7\E[0;0H\E[M\E8:
+Xt|4112-nd|4112 not in dialog area:up=^K:ns:tc=4112:
+Xu|4112-5|4112 in 5 line dialog area:li#5:tc=4112:
+Xv|4113|tek4113|tektronix 4113 color graphics, 5 line dialog area:\
+	:le=^H:do=^J:eo:da:bs:am:li#5:co#80:is=\EKA1\ELL5\ELV0\ELV1:\
+	:vb=\ERBA4\ERBA4\ERBA4\ERBA4\ERBA4\ERBA4\ERBA4\ERBA4\ERBA4\ERBA4\ERB0:\
+	:cl=\ELZ:uc=^H\ELM1_\ELM0:nd=\LM1 \LM0:\
+	:.as=\E^N:.ae=\E^O:
+Xw|4113-34|tek4113-34|tektronix 4113 color graphics, 34 line dialog area:\
+	:is=\EKA1\ELLB2\ELV0\ELV1:li#34:tc=tek4113:
+# ns hidden from vi to allow visual mode. APL font (as, ae) not supported here.
+# uc is slow, but looks nice. Suggest setenv MORE -up . vb needs enough delay
+# to let you see the background color being toggled.
+Xy|4113-nd|tek4113-nd|tektronix 4113 color graphics, no dialog area:\
+	:le=^H:do=^J:nd=\t:up=^K:ll=\ELF hl @:ho=\ELF7l\177 @:\
+	:eo:bs:am:li#34:co#80:is=\ELZ\EKA0\ELF7l\177 @:vs=\ELZ\EKA0:\
+	:vb=\ERBA4\ERBA4\ERBA4\ERBA4\ERBA4\ERBA4\ERBA4\ERBA4\ERBA4\ERBA4\ERB0:\
+	:cl=\E\f:uc=^H\EMG1_\EMG0:so=\EMT2:se=\EMT1:\
+	:.ns:.as=\E^N:.ae=\E^O:
+Xz|4105|tek4105:\
+	:al=\E[1L:am:bs:cd=\E[J:ce=\E[K:cl=\E[2J\E[H:cm=\E[%i%2;%2H:co#80:\
+	:dc=\E[1P:dl=\E[1M:dn=\E[1B:ho=\E[H:im=\E[4h:li#30:mi:nd=\E[1C:\
+	:as=\E[1m:ae=\E[0m:ms:pt:se=\E[0m:so=\E[7m:up=\E[1A:kb=^h:ku=\E[1A:\
+	:kd=\E[1B:kl=\E[1D:kr=\E[1C:ul:us=\E[4m:ue=\E[0m:is=\E%!1\E[?6l\E[0m:\
+	:mr=\E[<3m:md=\E[<4m:mh=\E[<6m:mb=\E[<7m:me=\E[<1m:ti=\E%!1\E[?6l:xt:
+# This entry is from Tek. Inc.  (Brian Biehl)
+Xz|4115|tek4115|Tektronix 4115:\
+	:co#80:li#34:\
+	:al=\E[L:am:bc=\E[D:bs:bt=\E[Z:cd=\E[J:ce=\E[K:\
+	:cl=\E[;H\E[2J:cm=\E[%i%d;%dH:da:db:dc=\E[P:dl=\E[M:do=\E[B:\
+	:ei=\E[4l:eo:ho=\E[;H:im=\E[4h:if=/usr/lib/tabset/vt100:\
+	:is=\E%\0410\E%\014\ELV0\EKA1\ELBB2\ENU@\075\ELLB2\ELM0\ELV1\EKYA?\E%\0411\E[<1l\E[?7h\E[?8h\E[34;1H\E[34B\E[0m:\
+	:kb=^H:ke=\E>:ks=\E=:nd=\E[C:pt:se=\E[m:so=\E[7m:sr=\EM:\
+	:te=\E%\0410\ELBG8\E%\0411\E[34;1H\E[J:
+	:ti=\E%\0410\ELBB2\E%\0411:\
+	:ue=\E[m:up=\E[A:us=\E[4m:\
+	:ve=\E%\0410\ELBG8\E%\0411\E[34;1H:\
+	:vs=\E%\0410\ELBB2\E%\0411:
+# The tek4125 emulates a vt100 incorrectly - the scrolling region
+# command is ignored. The following entry replaces the cs with the
+# needed al, dl, and im; removes some cursor pad commands that the tek4125
+# chokes on; and adds a lot of initialization for the tek dialog area.
+# Note that this entry uses all 34 lines and sets the cursor color to green
+# Steve Jacobson 8/85
+XB|tek4125:\
+	:ks=\E=:li#34:\
+	:is=\EQD1\EUX03\E%\!0\EKA\ELBB2\ELCE0\ELI100\ELJ2\ELLB2\ELM0\ELS1\ELX00\ELV1\E%\!1\E>\E[?3l\E[?4l\E[?5l\E[?7h\E[?8h:dl=\E[1M:\
+	:al=\E[1L:cs@:sc@:rc@:im=\E1:tc=vt100:
+# From carolyn@dali.berkeley.edu  Thu Oct 31 12:54:27 1985
+XA|4404|tek4404:\
+	:al=\E[1L:bs:cd=\E[J:ce=\E[K:cl=\E[;H\E[2J:cm=\E[%i%d;%dH:co#80:\
+	:cs=\E[%i%d;%dr:dc=\E[P:dl=\E[1M:do=^J:ei=\E[4l:ho=\E[H:im=\E[4h:\
+	:kd=\E[B:ke=\E[?1h:kl=\E[D:kr=\E[C:ks=\E[?1l:ku=\E[A:li#32::mb=\E[5m:\
+	:md=\E[1m:me=\E[m:nd=\E[C:pt:rc=\E8:sc=\E7:se=\E[27m:so=\E[7m:\
+	:ta=\E[2I:ti=\E%\!1\E[1;32r\E[?6l\E>:te=\E[1;1H\E[0J\E[?6h\E[?1l:\
+	:ue=\E[m:up=\E[A:us=\E[4m:
+# # --------------------------------
+#
+# a: ADDS
+#
+# Regent: lowest common denominator, works on all regents.
+a0|regent|Adds Regent Series:li#24:co#80:am:cl=^L:ll=^A:up=^Z:\
+	:bs:bc=^U:nd=^F:do=^J:ho=\EY  :
+# Regent 100 has a bug where if computer sends escape when user is holding
+# down shift key it gets confused, so we avoid escape.
+a1|regent100|Adds Regent 100:k0=^B1^M:k1=^B2^M:k2=^B3^M:k3=^B4^M:\
+	:k4=^B5^M:k5=^B6^M:k6=^B7^M:k7=^B8^M:\
+	:l0=F1:l1=F2:l2=F3:l3=F4:l4=F5:l5=F6:l6=F7:l7=F8:\
+	:so=\E0P:ue=\E0@:us=\E0`:se=\E0@:\
+	:cm=^K%+ %B^P%.:ug#1:sg#1:tc=regent:
+a2|regent20|Adds Regent 20:cd=\Ek:ce=\EK:cm=\EY%+ %+ :tc=regent:
+a3|regent25|Adds Regent 25:kh=^A:kl=^U:kr=^F:ku=^Z:kd=^J:tc=regent20:
+a4|regent40|Adds Regent 40:k0=^B1^M:k1=^B2^M:k2=^B3^M:k3=^B4^M:\
+	:k4=^B5^M:k5=^B6^M:k6=^B7^M:k7=^B8^M:\
+	:l0=F1:l1=F2:l2=F3:l3=F4:l4=F5:l5=F6:l6=F7:l7=F8:\
+	:al=2*\EM:dl=2*\El:\
+	:so=\E0P:ue=\E0@:us=\E0`:se=\E0@:ug#1:sg#1:tc=regent25:
+a5|regent40+|Adds Regent 40+:is=\EB:tc=regent40:
+a6|regent60|regent200|Adds Regent 60:se=\ER\E0@\EV:so=\ER\E0P\EV:dc=\EE:ei=\EF:\
+	:im=\EF:is=\EV\EB:ko=dc,im,ei:tc=regent40+:
+a7|regent60na|regent 60 w/no arrow keys:\
+	kl@:kr@:ku@:kd@:tc=regent60:
+# Note: if return acts weird on a980, check internal switch #2
+# on the top chip on the CONTROL pc board.
+ac|a980|adds consul 980:\
+	:do=^J:al=13\E^N:am:le=^H:bs:cl=^L\200^K@:cm=^K%+@\E^E%2:co#80:\
+	:dl=13\E^O:k0=\E0:k1=\E1:k2=\E2:k3=\E3:k4=\E4:k5=\E5:k6=\E6:k7=\E7:\
+	:k8=\E8:k9=\E9:li#24:nd=\E^E01:so=^Y^^^N:se=^O:up=9:
+as|viewpt60|viewpoint60|addsviewpoint60|adds viewpoint60:\
+	:tc=regent40:
+# From Onyx:edward  Thu Jul  9 09:27:33 1981
+av|viewpoint|addsviewpoint|adds viewpoint:\
+	:do=^J:am:le=^H:bs:li#24:co#80:cm=\EY%+ %+ :cd=\Ek:ce=\EK:\
+	:up=^Z:cl=^L:ll=^A:kl=^U:kd=^J:ku=^Z:kh=^A:\
+	:so=^N:se=^O:us=^N:ue=^O:is=^O\E0`:vs=^O\E0P:ve=^O\E0`:
+# # --------------------------------
+#
+# b: BEEHIVE
+#
+# Reports are that most of these Beehive entries (except superbee) have not been
+# tested and do not work right.  se is a trouble spot.  Be warned.
+b2|sb2|sb3|fixed superbee:\
+	:xb@:tc=superbee:
+# set tab is ^F, clear (one) tab is ^V, no way to clear all tabs.
+# good grief - does this entry make sg/ug when it doesn't have to?
+# look at those spaces in se/so.  Seems strange to me...
+bh|bh3m|beehiveIIIm:\
+	:if=/usr/lib/tabset/beehive:do=^J:\
+	:al=160^S:am:le=^H:bs:cd=^R:ce=^P:cl=^E^R:\
+	:co#80:dl=350^Q:ho=^E:li#20:ll=^E^K:\
+	:nd=^L:pt:se= ^_:so=^] :up=^K:
+# This loses on lines > 80 chars long, use at your own risk
+bi|superbeeic|super bee with insert char:\
+	:ic=:im=\EQ:ei=\ER:tc=superbee:
+bm|microb|microbee|micro bee series:\
+	:do=^J:am:le=^H:bs:cd=\EJ:ce=\EK:cl=\EE:co#80:cm=\EF%+ %+ :\
+	:k1=\Ep:k2=\Eq:k3=\Er:k4=\Es:k5=\Et:k6=\Eu:k7=\Ev:k8=\Ew:k9=\Ex:\
+	:kd=\EB:kh=\EH:kl=\ED:kr=\EC:ku=\EA:\
+	:li#24:nd=\EC:pt:se=\Ed@ :so= \EdP:ue=\Ed@:up=\EA:us=\Ed`:
+# Superbee - f1=escape, f2=^C.
+# Note: there are at least 3 kinds of superbees in the world.  The sb1
+# holds onto escapes and botches ^C's.  The sb2 is the best of the 3.
+# The sb3 puts garbage on the bottom of the screen when you scroll with
+# the switch in the back set to CRLF instead of AEP.  This description
+# is tested on the sb2 but should work on all with either switch setting.
+# The f1/f2 business is for the sb1 and the :xb: can be taken out for
+# the other two if you want to try to hit that tiny escape key.
+# This description is tricky: being able to use cm depends on there being
+# 2048 bytes of memory and the hairy nl string.
+bs|sb1|superbee|superb|beehive super bee:\
+	:ct=\E3:st=\E1:is=\EH\EJ:do=^J:\
+	:sf=\n\200\200\200\n\200\200\200\EA\EK\200\200\200\ET\ET:\
+	:am:le=^H:bs:cd=3\EJ:ce=3\EK:cl=3\EH\EJ:co#80:cm=\EF%r%3%3:cr=1000\r:\
+	:dC#10:da:db:xb:dc=3\EP:dl=100\EM:so=\E_1:se=\E_3:\
+	:li#25:nl=\n\200\200\200\n\200\200\200\EA\EK\200\200\200\ET\ET:\
+	:nd=\EC:pt:up=\EA:ho=\EH:ve=\n:\
+	:k1=\Ep:k2=\Eq:k3=\Er:k4=\Es:k5=\Et:k6=\Eu:k7=\Ev:k8=\Ew:\
+	:kd=\EB:kh=\EH:kl=\ED:kr=\EC:ku=\EA:
+# # --------------------------------
+#
+# c: CONCEPT (HUMAN DESIGNED SYSTEMS)
+#
+# From vax135!hpk  Sat Jun 27 07:41:20 1981
+# Extensive cha   D     	                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   CĞ^ZÁZPĞPYĞYXÕ‰úÑYhÂYĞYïÚC  ÔïÜP  İïÎC  İXİjûï   İPûï=  »   ı    Â^ÔYÔXĞ­øİ İYßï1D  ûïÒ  ×¬À¬Ô­ünßïD  İ¼ûï65  ÕPÖXOßï
+D  İ¼ûï5  ÕPÈ­ü5ßïóC  İ¼ûï5  ÕPÔ­øßïİC  ßï+N  ûïX  İûïg<  ×¬À¬Õ¬Õ­øIû ï³  ĞP­ôÕPû ï  İPûï½  ĞP­ğĞ½ğ­ôÕ­ôŞïC  ­ôİ­ôßï—C  İûï  İİûï–"  İİûïË  ÖPßï}C  ßï›M  ûïÈ  İûï×;  İûïº  İİÿÿÿÿûï“  İûï¢  ÕXXĞZİ	İÿÿÿÿûït  ÖP*ÑïRO  9ßï6C  ûïÚ  İİûïO  İûïr;  ÑZhßïC  ßïM  ûïB  ÕX#à­üû ï|   û ï3  İûïP   û ï  İ­üİ7ûï  ßïÿB  ûïn  İİûïã   İûï;  xZ~ûï   û ïÏ   ÖZ1?ÿ     ßïôÿÿÿİûïm!  İ¬ûï{   İßïB  ûïI5  ĞP[sİİ İ[ûïK2  İßïˆB  ßïaN  ûï"  İßïuB  ßïTN  ûïù!  İßïiB  ßïGN  ûïä!  ßïJN  ûïw!  İ$ßïN  İ[ûï¢>  İ[ûï¡8  ïš>      ¼ò ïŠ>      ¼%ò   İ ûïù5  İPûï6      Õ¬ÔPÂ^}¬nİïİM  ûï¢  }`¬Õ¬àĞ¬[ŞïÏM  ZĞZïËQ  ‹ŠûĞZïÃQ  ‹ŠûİßïºQ  İ[ûïU=  À[İßïªQ  İ[ûïA=  À[İßïšQ  İ[ûï-=  À[ĞZï‹Q  ‹ŠûĞZïƒQ  ‹ŠûĞZï{Q  ‹ŠûĞZïsQ  ‹ŠûŞïHQ  P Â^Õï+M  Nİ İï©A  ûï~  ĞPïM  6û ï~  û ï  ĞP[İkİ¬ûï‚1  ÕPäÕïìL  û ï‡  Ğ[PİİÿÓL  ûï4  ÕPİïÂL  ûï  ÔïµL  ¢Ğ¬­øİ¬ûï  ĞP­üÂ^}­ønûïşÿÿĞP[İİÿ‡L  ûïè   Õï~L  ™İïrL  ûïÃ  ÔïeL  „  Â^ÕïWL  Eİ İïÕ@  ûïª  ĞPï?L  -û ïª   û ï9  ĞP[Ñ«¬íÕï!L  û ï¼   Ğ[PİİÿL  ûïi   ÕPİï÷K  ûïH  ÔïêK  «Á\­øĞ­üÂ^}­ønûïİıÿÿĞP[İİÿÆK  ûï'   Õï½K  £İï±K  ûï  Ôï¤K    ï<      ¼ƒ ğ     Õï@  ßï@  İïş?  ûïƒ-  ĞPïì?  İïä?  ûïÕ.    ÕïÔ?  İïÌ?  ûïS5  Ôï¿?  Õï5K  İï-K  ûï~  Ôï K  ÔïK    Ğ¬[‘k:‘k
+Ö[•kğ•k”‹Ğ[P Õïr?  ßït?  İïh?  ûïí,  ĞPïV?  ÔPİïK?  İ   ßïïN  ûï+  ĞP[ßĞ[ïàR  İ[ûï‡ÿÿÿĞP[Ğ[ïÑR  İ[ûïtÿÿÿĞP[İ[ûï   ĞPï¹R  İ[ûïXÿÿÿĞP[İ[ûït   ĞPï¡R  ÔïŸR  ŞïÑ>  ï˜R  İ[ûï+ÿÿÿĞP[Ğ[ï‰R  İ[ûïÿÿÿĞP[Ğ[ïzR  İ[ûïÿÿÿĞP[Ğ[ïkR  ‘k
+Ö[•kõ”kŞï6R  P  Ğ¬ïz>    Ğ¬[ÔZÔY‘k94Å
+ZP˜‹QÀPQÃ0QZÖYÖ[Ö[˜kPÑP	öÑP ñÑP+èÑP-á‘k0ÇÕYÎZPĞZP   ®À^İ,  ûï‘6  ĞP[
+ĞïQI  ÔPÓ¬ĞPÔPĞP«ï ¬PÑP
+Ë¬PÉP¬İ¬Á([~ûïö0  ßïd?  Á([~ûï0  İ¬İ¬Á([~ûïÈ/  ĞP«Õ«fİ¬Á([~ûï½0  ßï0?  Á([~ûïT0  İ¬İ¬Á([~ûï/  ĞPkÕk%ß­Àİkûï5  x­ÔPÃP«ÎË(ĞË(«$Ğ[Pİ«ûï)3  İ[ûïô6  1,ÿ   İ¼ûï3  Ğ¬Pİ ûï3  İ¬ûïÌ6    Â^Ğ¬[Â^}¬nûïI  ĞP­üÔ«
+x«PÁP«Ò«PËP­ü« Á«« «İ[ûï  ÕPØĞ« P  Â^Ğ¬[à«^Â^}¬nûïö  İPİ[ûïí  Â^}¬nÁ([~ûïE  ĞPZ.ÁZ~Á([~ûïË  }`­øÕ­øŞ­øPï0P  Q}`aï&P  PÔ­øÔ­üâ Â^Ğ¬[á«1… è«zÂ^}¬nûï{  İPİ[ûïr  Â^}¬nÁ([~ûïÊ  ĞPZQİZÁ([~ûï  ÕP3Ğ« «$İ x
+« ~İ«ûï+  İ   Á([~İ«ûï¬7  ÑP   È«ĞïşF  ÎPÔP  Îğû^Ğ¬[á«1è«1¸ĞïÕF  1İZÁ([~ûï  ÕP1ê Â^}¬nÂ^}¬nÁ([~ûï  ÕP6Ğ« «$İ x
+« ~İ«ûïo*  İ   Á([~İ«ûï7  ÑP   ­ÔPÁ¬¬PÀPÑP   È«ĞïNF  |İ   ßÍğûûïï2  ÔZ1˜ ÁZ~Á([~ûï7  }`­ğÕ­ğRßïr<  ßï
+D  ûï7  È«Ğ« «$İ x
+« ~İ«ûïÕ)  İ   Á([~İ«ûïu6  ÑP   oÈ«ÎPÂ^}­ğnÂ^}­ønßÍğûûï  ÕPÛİZÁ([~ûïğ  ÕPÊİZÁ([~ûï¡  }`­øÕ­øÂ^}­ønûï„  Á«QÒQQÊQP14ÿÀZÇİ Á«« PÖPx
+P~İ«ûï1)  İ   ßÍğûİ«ûïÑ5  ÑP   1Yÿİ[ûïT  Â^}¬nûï   İPİ[ûï  Â^}¬nÁ([~ûïo  ĞPZ13şÕ¬1şĞP   Ğ¬PÔ Ğ¬PÔ İ¬ûï   ïTM  Q}`aïJM  P ®¸^Ğ¬[á«1ª ß­Àİ«ûï}1  ÕPìÆ   ­ÔÑ««$DĞ««$İ x
+«~İ«ûïT(  İ   Á([~İ«ûï¤+  ÑP   İ   Á([~ûïö0  µ«(4İ«Á([~ûï?  }`­¸Õ­¸À«Ş­¸Pï°L  Q}`aï¦L  PÔ«Ö«Ñ«­Ô1oÿÔ­¸Ô­¼Ò Ğ¬[Ô«
+x«PÁP«Ò«PËP¬« Á«« «İ[ûïQ   ÕPØÑ« «$DĞ« «$İ x
+« ~İ«ûïˆ'  İ   Á([~İ«ûïØ*  ÑP   İ   Á([~ûï*0    Â^Ğ¬[Ñ««ÔPÇ«PxPPÃP«XÇ«­üÇ   ­üPxPPÃP­üYÇ   ­üZÑZË(IĞZË(İ xZ~İkûïû&  İ   Á,  [~İkûïH*  ÑP   İ   Á,  [~ûï–/  xXPÒPP˜IË,QËPQP Â^Ğ¬[Ñ««Ğ««Ç«PxPPÃP«YÇ«­üÇ   ­üPxPPÃP­üZÇ   ­üXÑXË(IĞXË(İ xX~İkûïU&  İ   Á,  [~İkûï¢)  ÑP   İ   Á,  [~ûïğ.  xYP˜JË,QÈPQöQJË,ĞXË(İ xX~İkûïù%  İ   Á,  [~İkûï–2  ÑP   È« Â^Ğ¬[Ğ¬P2kQÑPQÔ­øÔ­üŞ­øPïkJ  Q}`aïaJ  P2 ZÕ¬Ğ¬P2@kZÁ¬P2@kPÁ¬P­øÁ¬PĞZQ2@kPÃPQ­ü¶  Ğ¬[2 YÔZ2kX=ÁZP2@kPÂPYÑY¬%ÕYİYİ¬ÁZP2@kPÁ¬P~ûïÆ  ÕPĞZPÀZ2JkYÑZX¾ÎP Â^Ğ¬[Ò«PÊP¬Á«­üxÿ­ü­ü1«ıÒ­üPËP¬PÉ­ü¬PÊ­ü¬ÛÀÔWÔVĞ¬XĞ¬[×[.˜ˆZÔYÑYòï ZPÀ@ïŞ5  Vï VPÀ@ï6  WxüZZÀY×ĞWP Ğ¬[2kXÑ¬X1<ıè¬ùÃXPÑ¬P¢kĞP2 YÕ¬Ğ¬P2@kYÁ¬P2@kPÂPY&2HkXÁ¬P2@kPÃXP~ÁX¬PÁYP~ÁX¬~ûï-0  ¢k2kPÀPPÁ[PZÁ¬PÀPPÀP[2«PÀYP÷PkÀ[Ñ[Zîˆ  Ğ¬[2 Z2kY2IkZÁ¬¬PÂPZÁYPÀPPÑZP1†ü kÁ¬ZPÖY÷PIkİ¬ÁZ¬PÁ¬P~İ¬ûï­/  ÖY÷ZIkİ¬ÁZ¬~İ¬ûï•/  1ÿ  @(#)bcmp.s	5.3 (Berkeley) 3/9/86      Ğ¬QĞ¬SĞ¬T<ÿÿPÑTPÂPT)PacíÀTP)Tac   û ïƒ  ĞP[ÔPİ ßïÛ5  ûï&  ĞPZéİ Å$[~İZûï#  İ$ßïÄG  İZûï[&  ÑP$İZûï¥)  ¹İZûïš)  •ï¤G  ¨ö ï£G  Şï•G  Y‘‰ û”yŞï‡G  P  Î ü^Ğ¬[á«<ª«ŞÍ ü«Ğ««2 «İ[Á\~İ¬ûï?  İ[ûïz(  ¨«Ô«Ô«Ôkİ[Á\~İ¬ûï  á«ÎPÔP    Â ^Ş­à[Õ¬(•¼#Ğ¬kİ¬ûïÓ  ĞP«À[Şï*5  kĞ«À[Ñï,>  ïŸ7  Ğï>  PĞ@ïC	  PŞï5  PĞPkİkûï  ĞP«À[Şïõ4  kĞ«Ş­àPÃP[PÆPÁP~ß­àİûïd&      Â<^Ş­ìPĞP[Õ¬Ô«Ğ«kÔ«Ğ««ß­Üİ[İ ûï±%  ÕPĞ¬«Õ­äÕ­è+Ñ­ä«Ñ­ä«Ñ­è«Â«­äŞ­äP}`«Ğ­äÔ­èŞï~   ­ĞÔ­ØĞ­Ø­Ôß­Äß­Ğİûï£%  İ    ûïZ%  ĞP­üÔïøE  İ İ[İ ûï/%  Ë    ­ü~ûïE%  ÕïÓE  èİ ß­ÄİûïW%  İ­üûï9%  İ ß­Üİ ûïï$    Ğï¡E  ïn-      ¼$ò   Ğ¬PÃŒl¼PïO-      Îì÷^ĞïŸ<  Íğ÷Õ¬)Ëüÿÿ¬PxıPPÑPï ¬PxPPÒïè3  QÊQPÕïÏ3  İ ÉïÈ3  ~İïÅ3  ûïŠ  Óø  ¬Èï¶3  ¬ŞÍş÷Yİ¬ßïª3  İYûïQ  İYûï¨  ÀPYßÍø÷ûïj  ßÍø÷ûï/  ÁP~ßïz3  İYûï  İYûïs  ÀPYÕïN3  İïF3  İYûï©#  İYûïP  ÀPYéï'3  $û ï×  İPßï33  İYûïÎ  İYûï%  ÀPYÕï 3  ßï3  İYûï[#  ÀYŞÍÿû[Ğ¬Zhö%‹öX‹`ĞÍğ÷Pİ@ï‰  İ[ûï0#  =ÑX
+IŞ­ÿPÑ[P@ÑX%Ñ˜ŠXÑXm   ÂÑÍğ÷ï¢4  ¿İÍğ÷ßï®2  İ[ûïA  İ[ûï˜  ÀP[˜ŠX²ö
+‹”kİ¬İ¬İ¬İ¬İ¬ßÍÿûİYûï  ßÍş÷ûïd  ĞPXÑX   2 XİßïC  İ İXßÍş÷İï2  ûïò  ÕPàï
+2  û ï5  ĞPÍô÷ÑPÿÿÿÿÕÍô÷1› İ İûïJ  İ ûï"  Ë    P~ûï¦"  İûïA  İßï¡1  ûï!  ĞPÍì÷İ ûï$  ßïÇ1  İYûï©!  İ>ßÍş÷ûïT  ÁPYÁXPŞÍş÷QÃQYQÃQP~İYİÍì÷ûï*  İÍì÷ûï‹$  İ ûï¶  àïG1  İ ûïE"  ĞPXÑXÍô÷ë  Õ¬Ğ¬ï%1  Ğ¬ï1  Õ¬Ëüÿÿ¬PĞPï1  Õïú0  ÷ïXB  İßïÌ0  ßïLB  ûï/  áïØ0  !İ İİûïº  ĞPï¿0  İİİPûï~     İï¨0  ûïÙ#  Îïš0     Â^Ğï™0  ­üÕ¬Ğ¬ïŠ0  Ğ­üP  Â ^Ş­ğ[Ô«Ğ«kĞ¬«Ô«ß­àİ[İ ûïú   ÕPÎPÕ­ìÖ­èĞ­èP   İ¬ûï
+   İPûï{  ÀÂ^ÕïÏ1  ßï§A  ß­ğûï-  Öï·1  Å<ïA  PÃP¼­øß­øûï  ĞPZĞª[Şï"1  WÑgïlA  ÀWÕgğÕg1Œ Ál  ª­üĞ§V	Ñf­üÀVÕfóĞ¦YĞ¦XİYİZûï„   ĞPYİXİZûïv   ĞPXĞ§PÑP FÑP=Ñ[YÑ[Y3Ñª-Ñ[X1Ñ[X#Ñª$Ñ[YÑªÑ[XÑ[XÑª	ĞZPÑ[YÜÅ  §PÀP­øß­øûïL   ĞPZÖª Ø Ğ¬[Ğ¬ZÑZ:İ«ûï9  Âm  PÀPZÃ«ZPÀ«PÀ¼  PÇPQÄQÃQPQÃQZP  Â^Ç€Q ¼PÄ€Q PÃP¼­üÇ€Q ¼­øÕ­üÀ€Q ­ü×­øŞï-@  YÇ<­üPÄ<PÃP­ü‰Ç<­üZÇ<ZPÄ<PÃPZ‰Æ<ZĞZ‰Á p ­øPÇPQÄQÃQPï	@  Õ­ø(˜FZİZûï…  ĞP­ôÑ­øP-İZûïr  ÂP­øÖZÜ˜FZÃZ~ûïY  ÀP­ø×ZÕ­øêĞZïµ?  Ğ­ø[Ğ[ï²?  İZûï3  ÑPn  Ğïi.  ÔZ
+ÂJïZ.  [ÖZÑ[JïO.  ìĞïJ.  Á[‰ĞZ‰Ôïq?  ŞïK?  P  Şï?  [ŞïU/  ZŠ‹ûĞ¬PÅ P@ïY/  ZŞïø>  [Š‹Š‹Š‹Ö[Á¬YÅiP@ïL/  ZŠ‹Š‹Š‹İyİ[ûï¯   ĞP[Ád   y~İ[ûï›   ĞP[Ád   y~İ[ûï‡   ĞP[Ád   y~İ[ûïs   ĞP[Ğ¬PÑ d   ö2«Ğ¬PÃd    PÆd   PÀ0PöP«À[Ğ¬PÁd    ~İ[ûï*   ĞP[Şï9>  P   Ç¬PxPPÃP¬P2nP2mP Ğ¬[Ö[Ñ¬
+Ç
+¬PÇ
+PQÄ
+QÃQPQÀ0QöQ‹ö ‹Ç
+¬PÄ
+nges to c108 by arpavax:eric Feb 1982
+#
+# There seem to be a number of different versions of the C108 PROMS
+# (with bug fixes in its Z-80 program).
+# The first one that we had would lock out the keyboard of you
+# sent lots of short lines (like /usr/dict/words) at 9600 baud.
+# Try that on your C108 and see if it sends a ^S when you type it.
+# If so, you have an old version of the PROMs.
+# The old one also messed up running vi with a 132-character line-length.
+# You should configure the C108 to send ^S/^Q before running this.
+# It is much faster (at 9600 baud) than the c100 because the delays
+# are not fixed.
+# new status line display entries for c108:
+# hs - has status capability
+# es - escape sequences are OK on status line
+# i2 - second init str - setup term for status display - set programmer mode,
+#	select window 2, define window at last line of memory,
+#	set bkgnd stat mesg there, select window 0.
+# ts - to status line - select window 2, home cursor, erase to end-of-window,
+#	1/2 bright on, goto(line#0, col#?)
+# fs - from status line - 1/2 bright off, select window 0
+# ds - disable status display - set bkgnd status mesg with illegal window #
+#
+# the following two entries are for emacs -- they are just like the regular
+# entries except that they have buffer overflow control OFF
+c0|e108-8p:\
+	:i2=\EU\E z"\Ev^A\177 !p\E ;"\E z \Ev  ^A\177p\Ep\n:\
+	:te=\Ev  ^A\177p\Ep\r\n:tc=e108-4p:
+c1|e108-4p:\
+	:is=\EU\E f\Ef\E7\E5\E8\El\ENH\EK\E\200\Eo&\200\Eo\47\E\E!\E^G!\E^HA@ :\
+	:tc=c108-4p:
+c6|c108-na|c108-na-8p|concept108-na-8p|concept 108 w/8 pages, no arrows:\
+	:ks@:ke@:k7=\E;:k8=\E<:k9=\E=:tc=c108-8p
+c7|c108-rv-na|c108-rv-na-8p|concept 108 w/8 pages, no arrows in rev video:\
+	:ts=\E z"\E?\E^C\EE\Ea %+ :fs=\Ee\E z :\
+	:ks@:ke@:k7=\E;:k8=\E<:k9=\E=:tc=c108-rv8p
+# this needs new frotz in the cm capability for 2-char addrs when > 95....
+c8|c108-w|c108-w-8p|concept108-w-8p|concept 108 w/8 pages in wide mode:\
+	:is=\EU\E F\Ef\E7\E5\E8\El\ENH\EK\E\200\Eo&\200\Eo\47\E\E"\E^G!\E^HA@ :\
+	:ti=\EU\Ev  8^AD\Ep\r:te=\Ev  ^A0^AD\Ep\r\n:pt@:cm@:\
+	:co#132:tc=c108-8p
+cA|avt-w|avtw|HDS concept avt w/4 or 8 pages; 132 columns:\
+	:is=\E[1*q\E[2!t\E[7!t\E[=4;101;119l\E[=103;107;118;207h\E)1\E[1Q\EW\E[7!y\E[0\0720\07232!r\E[w\E2\r\n:\
+	:ch=\E[%i%3G:cm=\E[%i%2;%3H:co#132:tc=avt:
+#
+# Concepts have only window relative cursor addressing, not screen relative.
+# To get it to work right here, ti/te (which were invented for the concept)
+# lock you into a one page window for screen style programs.  To get out of
+# the one page window, we use a clever trick: we set the window size to zero
+# ("\Ev    " in te) which the terminal recognizes as an error and resets the
+# window to all of memory.
+#
+# Some tty drivers use cr3 for concept, others use nl3, hence dN/dC below.
+# This padding is only needed at 9600 baud.
+# 2 nulls padding on te isn't always enough.  6 works fine.  Maybe less
+# than 6 but more than 2 will work.
+cc|c100-rv-na|c100-rv-4p-na|concept100-rv-na|c100rv4pna|c100 with no arrows:\
+	:ks@:ke@:tc=c100-rv:
+# This is useful at 1200 baud.
+ce|c100-s|concept-s|concept100-s|slow concept 100:\
+	:vb=\Ek\200\EK:pt:dC@:dN@:tc=c100:
+cf|c100-rv-s|concept-rv-s|concept100-rv-s|c100rvs|slow reverse concept 100:\
+	:vb=\EK\200\Ek:pt:dC@:dN@:tc=c100-rv:
+# # --------------------------------
+#
+# d: DEC (DIGITAL EQUIPMENT CORPORATION)
+#
+# Note that xn glitch in vt100 is not quite the same as concept, since
+# the cursor is left in a different position while in the weird state
+# (concept at beginning of next line, vt100 at end of this line) so
+# all versions of vi before 3.7 don't handle xn right on vt100.
+# I assume you have smooth scroll off or are at a slow enough baud
+# rate that it doesn't matter (1200? or less).  Also this assumes
+# that you set auto-nl to "on", if you set it off use vt100-nam below.
+#
+# Since there are two things here called vt100, the installer can make
+# a local decision to make either one standard "vt100" by including
+# it in the list of terminals in reorder, since the first vt100 in
+# /etc/termcap is the one that it will find.  The choice is between
+# nam (no automatic margins) and am (automatic margins), as determined
+# by the wrapline switch (group 3 #2).  I presonally recommend turning
+# on the bit and using vt100-am, since having stuff hammer on the right
+# margin is sort of hard to read.  However, the xn glitch does not occur
+# if you turn the bit off.
+#
+# I am unsure about the padding requirements listed here.  I have heard
+# a claim that the vt100 needs no padding.  It's possible that it needs
+# padding only if the xon/xoff switch is off.  For UNIX, this switch
+# should probably be on.
+#
+# The vt100 uses rs and rf rather than is/ct/st because the tab settings
+# are in non-volatile memory and don't need to be reset upon login.
+# You can type "reset" to get them set.
+dp|vt100-np|vt100 with no padding (for psl games):\
+	:cl=\E[H\E[2J:sr=\EM:cm=\E[%i%d;%dH:nd=\E[C:up=\E[A:\
+	:ce=\E[K:cd=\E[J:so=\E[7m:se=\E[m:us=\E[4m:ue=\E[m:\
+	:md=\E[1m:mr=\E[7m:mb=\E[5m:me=\E[m:tc=vt100:
+d1|vt100-nam|vt100nam|vt100 w/no am:\
+	:am@:xn@:\
+	:is=\E>\E[?3l\E[?4l\E[?5l\E[?7l\E[?8h:ks=\E[?1h\E=:ke=\E[?1l\E>:\
+	:tc=vt100-am:
+d2|gt42|dec gt42:\
+	:do=^J:le=^H:bs:co#72:ns:li#40:os:
+d3|vt132|vt132:\
+	:al=99\E[L:dl=99\E[M:ip=7:dc=7\E[P:ei=\E[4l:im=\E[4h:xn:dN#30:tc=vt100:
+d4|gt40|dec gt40:\
+	:do=^J:le=^H:bs:co#72:ns:li#30:os:
+d5|vt50|dec vt50:\
+	:do=^J:le=^H:bs:cd=\EJ:ce=\EK:cl=\EH\EJ:co#80:li#12:nd=\EC:pt:up=\EA:
+d6|vt125|vt125-am|DEC vt125:\
+	:xn:do=^J:co#80:li#24:cl=50\E[H\E[2J:\
+	:le=^H:am:bs:cm=5\E[%i%d;%dH:nd=2\E[C:up=2\E[A:ce=3\E[K:cd=50\E[J:\
+	:so=2\E[7m:se=2\E[m:us=2\E[4m:ue=2\E[m:md=2\E[1m:mr=2\E[7m:mb=2\E[5m:\
+	:me=2\E[m:is=\E[1;24r\E[24;1H\E>\E[?3l\E[?4l\E[?5l\E[?7h\E[?8h:\
+	:ks=\E[?1h\E=:ke=\E[?1l\E>:if=/usr/lib/tabset/vt100:ku=\EOA:kd=\EOB:\
+	:kr=\EOC:kl=\EOD:kb=^H:ho=\E[H:k1=\EOP:k2=\EOQ:k3=\EOR:k4=\EOS:\
+	:pt:sr=5\EM:vt#3:sc=\E7:rc=\E8:cs=\E[%i%d;%dr:
+d9|vt125-nam|DEC vt125 no automatic margin:\
+	:am@:tc=vt125-am:
+# DEC gigi color graphic terminal , same as vt52
+d7|gigi|dec gigi terminal:\
+	:co#80:is=200\E>\E[?4l\E[?5l\E[?7h\E[?8h:\
+	:li#24:cl=100\E[;H\E[2J:bs:cm=50\E[%i%2;%2H:nd=200\E[C:up=100\E[A:\
+	:ce=120\E[K:cd=100\E[J:so=20\E[7m:se=20\E[m:us=20\E[4m:ue=20\E[m:\
+	:ks=200\E[?1h\E=:ke=200\E[?1l\E>:\
+	:ku=\EOA:kd=\EOB:kr=\EOC:kl=\EOD:\
+	:kh=\E[H:k1=\EOP:k2=\EOQ:k3=\EOR:k4=\EOS:pt:sr=200\EM:\
+	:dC=50:dF=200:dN=50:dT=50:
+dI|dw1|decwriter I:\
+	:do=^J:le=^H:bs:co#72:hc:os:
+# From tut@Topaz.CC Thu May 12 14:49:02 1983
+dJ|dw3|la120|decwriter III:\
+	:bs:kb=^H:co#132:hc:os:pt:\
+	:is=\E(B\E[20l\E[w\E[1;132s\E[2g\E[9;17;25;33;41;49;57;65;73;81;89;97;105;113;121;129u\E[z\E[66t\E[1;66r\E[4g\E>\r:
+# From tut@topaz.CC Thu Sep 24 22:10:46 1981
+df|dw4|decwriter IV:\
+	:do=^J:le=^H:bs:co#132:hc:os:am:\
+	:pt:is=\Ec:k0=\EOP:k1=\EOQ:k2=\EOR:k3=\EOS:kb=^H:
+dh|vt50h|dec vt50h:\
+	:do=^J:le=^H:bs:cd=\EJ:ce=\EK:cl=\EH\EJ:cm=\EY%+ %+ :\
+	:co#80:li#12:nd=\EC:pt:sr=\EI:up=\EA:
+di|vt100-s|vt100 with status line at top:\
+	:li#23:i2=\E[2;24r\E[24;1H:cm@:ho=\E[H^J:cl=50\E[;H^J\E[0J:\
+	:hs:es:ts=\E7\E[1;%dH\E[1K:fs=\E8:tc=vt100-am:
+dj|vt100-s-bot|vt100 with status line at bottom:\
+	:li#23:i2=\E[1;23r\E[23;1H:\
+	:hs:es:ts=\E7\E[24;%dH\E[1K:fs=\E8:tc=vt100-am:
+ds|vt100-nav|dec vt100 132 cols 14 lines (w/o advanced video option):\
+	:li#14:tc=vt100-w:
+dt|vt100-w|dec vt100 132 cols (w/advanced video):\
+	:co#132:li#24:rs=\E>\E[?3h\E[?4l\E[?5l\E[?8h:tc=vt100-am:
+dv|vt100-w-nam|dec vt100 132 cols (w/advanced video), no am:\
+	:co#132:li#24:rs=\E>\E[?3h\E[?4l\E[?5l\E[?8h:vt@:tc=vt100-nam:
+# vt 102	(from lai@decwrl)
+dy|vt102|vt-102|dec vt102:\
+	:do=^J:co#80:li#24:cl=50\E[;H\E[2J:\
+	:le=^H:bs:cm=5\E[%i%d;%dH:nd=2\E[C:up=2\E[A:\
+	:ce=3\E[K:cd=50\E[J:so=2\E[7m:se=2\E[m:us=2\E[4m:ue=2\E[m:\
+	:md=2\E[1m:mr=2\E[7m:mb=2\E[5m:me=2\E[m:is=\E[1;24r\E[24;1H:\
+	:rs=\E>\E[?3l\E[?4l\E[?5l\E[?7h\E[?8h:ks=\E[?1h\E=:ke=\E[?1l\E>:\
+	:ku=\EOA:kd=\EOB:kr=\EOC:kl=\EOD:kb=^H:\
+	:ho=\E[H:k1=\EOP:k2=\EOQ:k3=\EOR:k4=\EOS:pt:sr=5\EM:vt#3:\
+	:sc=\E7:rc=\E8:cs=\E[%i%d;%dr:vs=\E[?7l:ve=\E[?7h:
+dw|vt52|dec vt52:\
+	:do=^J:le=^H:bs:cd=\EJ:ce=\EK:cl=\EH\EJ:cm=\EY%+ %+ :co#80:li#24:\
+	:nd=\EC:pt:sr=\EI:up=\EA:ku=\EA:kd=\EB:kr=\EC:kl=\ED:kb=^PÃP¬PÀ0PöP‹Ğ[P@(#)errlst.c	5.2 (Berkeley) 3/9/86  L  T  ^  x  ˆ     ª  Ä  Ö  è  ø      (  :  F  \  h  t  †  •  ¥  ´  Å  Ù  í      *  B  O  e  t  €  “  ¤  º  Ô  ò     .   ?   ^      –   °   Ò   ğ    !  7!  V!  f!  }!  ¡!  Â!  Û!  õ!  "  )"  J"  l"  "  ”"  ¶"  É"  Ö"  ê"  ş"  #   #  Error 0 Not owner No such file or directory No such process Interrupted system call I/O error No such device or address Arg list too long Exec format error Bad file number No children No more processes Not enough memory Permission denied Bad address Block device required Device busy File exists Cross-device link No such device Not a directory Is a directory Invalid argument File table overflow Too many open files Inappropriate ioctl for device Text file busy File too large No space left on device Illegal seek Read-only file system Too many links Broken pipe Argument too large Result too large Operation would block Operation now in progress Operation already in progress Socket operation on non-socket Destination address required Message too long Protocol wrong type for socket Option not supported by protocol Protocol not supported Socket type not supported Operation not supported on socket Protocol family not supported Address family not supported by protocol family Address already in use Can't assign requested address Network is down Network is unreachable Network dropped connection on reset Software caused connection abort Connection reset by peer No buffer space available Socket is already connected Socket is not connected Can't send after socket shutdown Too many references: can't splice Connection timed out Connection refused Too many levels of symbolic links File name too long Host is down Host is unreachable Directory not empty Too many processes Too many users Disc quota exceeded ïn      ¼\ ğ   ïZ      ¼… ğ   ïF      ¼a ğ   @(#)strlen.s	5.3 (Berkeley) 3/9/86    Ğ¬Q: ÿÿaøÃ¬QP  Ğ­Rï   ­¼B ï   ÕQĞPï8-  ÎPbÔPb     ¼  Â^Ğ¬­èĞ¬PĞ@ï;6  ­ìĞ@ï²6  ­ğß­ôß­èİ¬ûïX  ÕPÎPÑ­ì­øÑ­ğ­ü7Ğ­ø­ìĞ¬PĞ­ì@ïø5  Ğ­ü­ğĞ¬PĞ­ğ@ïf6  İ ß­èİ¬ûï  ÕP·Ğ­ôP    Â^İ ß­øûï   ÕPÎPÕ¬Ğ­ø¼Ğ­øPï      ¼t ğ   @(#)strncpy.s	5.3 (Berkeley) 3/9/86 @ Ğ¬VRĞ¬SĞ¬Q<ÿÿRÑVRĞVRÂRV: RaÂRQ(RacÕVß'ÀPVÂPRÂRQ(Rac<ÿÿRÑVRĞVRÂRV, c RcÕVæĞ¬P ï~      ¼ò   Â^™B­üĞ¬­ğ2ÿ­ìß­ìÁ\~İ¬ûïN  ×­ìĞ­ğPÖ­ğ”`6á­ü$Î­ìPÑP­ø”½ğ˜½ğPÑP
+Ö­ğß­ìš½ğ~ß­ìš ~ûï  Ğ¬P    	
+ !"#$ &'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~€‚ƒ„…†‡ˆ‰Š‹Œ‘’“”•–—˜™š›œŸ ¡¢£¤¥¦§¨©ª«¬­®¯°±²³´µ¶·¸¹º»¼½¾¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏĞÑÒÓÔÕÖ×ØÙÚÛÜİŞßàáâãäåæçèéêëìíîïğñòóôõö÷øùúûüışÿÀ1± ÔTSĞ­üSá£Á££TÑ£TÑR
+R³Ö£ÔcÖ­ğ»İ­üİRûï½  ÕPã­ğ Ö­ğºï­şÿÿS}½üTàT©ÀP­ğÔRÕPÕTšS•CïŒşÿÿÎR×QS…×TõPá}T½üÂP­ğàRôPšR•Bïaşÿÿ1eÿÖP×QĞRã­ğ Ğ­ğPÎ ÿ^Ğ¬[Ğ¬­üĞ¬\Ô­ğ<ÿÿPĞ[Q}½üTÃQURÑPRĞRP0eÿĞQ[áRÜ•‹¾Ğ^U|Y|Vš‹PP Xœ² ² ¦² ² ² ² ² ² ì¬² ²á² ¸ÃÃÃÃÃÃÃÃÃ² ² ² ² ² ² ² ² ² ² Ÿ½ ² ½ ² ² ² ² ² ² ² ² ² ² ² ² s² ² ½ ² ² ² ² ² ² ² ² ² ² Ÿäøÿ² ² ² øÿ² ² ² ² ² Ê ² s² ² P…1ğş1ÙÈ@   ZŒ P11ÿĞXPàZÎPĞŒR: PbĞQUĞRQ1!0123456789abcdef0123456789ABCDEFĞRĞSïÔÿÿÿWĞRĞSïÅÿÿÿWáZïÊÿÿÿWÎSVÔQÀUĞŒPïRSPQAg…ñ VRñÿ|V”e;0®áZzÕ¬üuÑSxPáZXPPqĞW0qYÊ   ZïlPùP
+n4
+n® 
+®
+néŒ ï÷   
+nª ùŒ
+nÖW8
+nïíÿÿÿ®; ®ÕWáZ+qáZ qÖWàZĞXÃQUVÂWVÂVX&ÀWQİQH¥ RÂ]RÂRX(VaHa, a0X¾ ÃWQÁVSUÃQUXÃXYP àZàZRĞWP	ÂPXÂPY0"ıÃXYP7ÂXYĞXP0ıáR×PšR}½üTôT0¼üëR…Ö­ğ}T½üÜĞYP1hı1cı0R RÂPYİQĞPWÂP^, `RWnĞWPĞ^Q0ÃüÀW^ĞQĞŒPP…Ğ^Q1iÿÈ€   Z1RıÈ Z1LıÈZ1FıÈZ1@ıà ZàZÈZàZŞIiY>I ĞY	ŞHhX>H ĞXÈZ1ıÔXÈZÊZ1ıàZĞŒYæÌZÎYYŞĞŒXÙÎXXÔàZĞX0ëÁ­øXWĞWVÔWÑWĞWÃWPøPnW®#ó VĞWPÖ­øÖWøPïHÿÿÿ W®xÿWPˆ­ï@®®QĞWVŸïSşÿÿŸ¡0¡0Sƒ, a‘Vc”c8Va¡0¡ÃVUQĞnSÔWé­ï-ƒÖWĞ­øP0ƒÑPVĞVPÂPVÂP­ø(PacĞ­øP, a0PcĞXPàZã	Z.ƒÎ­øPÑPXĞXPÂPX, a0PcĞXPÑPVĞVPÂPX(PacĞXP@£ RÂ]RÂRPĞPXÂPX, a0PcĞSUºDeB+’ ÖXàZĞX0Ò ĞXWÑWĞWÃWPøPnW®Ö­øÃWPøPï=şÿÿ W®xÿWPˆ­ï@®àZ=®Q&ĞQVÃ­ôPùPn8nï—ÿÿÿeĞVQàZ1,ıŒ ¥ü1%ıĞWV×XĞ­ø­ôĞ­ø1ÁşÁ­øP0ÂPÑPX(ĞWVÂPX®Q0¥şàZà	Z‘u0û‘e.ÖUáZ•1İü®Q0±ÿäZÚàZĞXÕXĞXâZ1.ÿ1+ÿ”­ïpŒU1Ÿ rUU–­ïïUR¢€RÄ;RÂÄ R¢RÆÄ   R0‚ qPUÖRĞR­øÎRRÑR
+dïá   UÂRÀ	Rï\   tPTUPUùP	®ø	® ®tï²    UPUùP®ĞXWŸïœşÿÿÑnÀ­øWÑW	qU ˆ® ®®ˆ­ï®ÔPĞ­ø®   pPÔT~ïM   SÕRÎRRâR áTRdcPÀSóTòåRgPPÑRÀïÄÿÿÿQÎRRÁ(RSáSïA   Âï®ÿÿÿQšBïb   T B      ÈC      G @    ¾M ¼    [É¿  u­Å+¨¶pPB<ò‡   öVvÓˆµbºõ2>HÛQS'±ïë¥I[ÙÍÿ¿—ı¼¶#,;
+Í                          È:„äÜ’› ÀX®ï  İ ûï]  ĞPZİûïO  ĞPZİûïA  ĞPZÔPİ/İZûï¢  ĞPYĞZYÖYû ï3   ÔXû ï  ĞP[ÖXİYİkûï   ÕPãû ïA   ĞXPû ï6   ¬  Õï¨  ßï¤  ßï  ûïo  ĞPïŒ  İï„  ûïÁ    Õït  İïl  ûï?  Ôï_   Ğ¬[Ğ[ZÔXÌXÖ[˜kY.ÑY"ñÑX‘k\‘«"Ö[kŠÑXÙÑY#öYïß+  ”k”zĞ[PÑY	
+ÑY ÑY
+¶öYïÁ+  ”‹˜kYÑY	
+ÑY ÑY
+ĞÖ[ê  Ğ¬[İ=İ[ûï«  ĞP[ÔPÖ[°  Õï¾  ßï¼  ßï¤  ûï…  ĞPï¢  ÔPİï—  İ   ßïS+  ûï¬  ĞP[İÖ[˜kZÑZ	öÑZ ñÑZ
+ìÕZÈÑZ#Ã”ï+  Ğ[ï,  İ[ûïìşÿÿĞP[Ğ[ï,  İ[ûïÙşÿÿĞP[Ğ[ïı+  İ[ûïÆşÿÿĞP[Ôïï+  Ôïí+  1Å ˜«ZÑZ 
+ÑZ	ÑZ
+ÈïÌ+  1œ İßïõ  İ[ûï¼  ÕPÎİßïã  İ[ûï§  ÕP˜«ZÑZ 
+ÑZ	ÑZ
+	Êï…+  Vİßï¶  İ[ûïv  ÕP˜«ZÑZ 
+ÑZ	ÑZ
+	ÈïT+  %İßïŒ  İ[ûïE  ÕP#İ[ûï|şÿÿĞPï1+  İ[ûïòıÿÿĞP[•k1Qÿ‘ï*  #‘k#Ö[˜kZÑZ öÑZ	ñĞ[ïş*  •kÔïô*  İ
+İ[ûïå  ĞP[”kŞïÈ*  P  @(#)fgets.c	5.3 (Berkeley) 3/9/86    Ğ¬[Ğ¬ZÑ¬yÃ¬YÕj%İZûïj   ÕPYP‹×¬×Y‘P
+”k'ÕªÛÑjYĞjY:
+Yº×PÂPY(Yºk”cÂYjĞQªĞ¬P(YºkÂYjĞQªÂY¬ĞS[Ã¬YšÑ[¬”k×ÔP ®¸^Ğ¬[á«¨«è«ÎP³P «ôŞ­»PÕï  ò˜«PÀï  PĞP«Õ«Hà«ßß­¼˜«~ûïr  ÕPÕ­ì2 ­üĞ­ì­üİ­üûï¢  ĞP«¨«¼¨«Ğ­ü«Ñ[ØN  *áï=  ßï&  ûï  áï<  ßï%  ûï
+  á«ĞPĞ«PİPİ«˜«~ûïP  ĞPkĞ««á«Ş­»PÑ«PÔ«×k!Ñkÿÿÿÿ¨«á«
+ª«¨ «Ôk1øşš»PÖ« €Ğ¬[û ï[  ĞPZ‘«+ĞPÑPr   3ÑPw   :ÔPÔPĞPX˜kPÑPa   ÚÕXĞPĞPÉ   PW$ÕXĞPÔPĞPWÕXĞPĞPÉ   PWİ¶  İWİ¬ûï  ĞPY›‘kaİİ İYûïı   ÔjöYªÔªÕX° ª‘kr÷ª÷ªÔªĞªªĞZP@(#)index.s	5.3 (Berkeley) 3/9/86     }¬QÕR: ÿÿaøĞQPŞït  Sâ c BcU–e<ÿÿT*TacùĞQP•`ÔP”e”cĞQS: ÿÿc:RÿÿcĞQSëÃSQTÖT:RTcĞQP   Ğ¬[İ[ûï-  İ İ ˜«~ûï   ÔkĞ««ª0«á«ª« ï¾      ¼ò @(#)rindex.s	5.3 (Berkeley) 3/9/86    }¬QÕR: ÿÿaøĞQPŞïÀ  Sâ c$BcU–eÔT*ÿÿac÷•aĞQTÖQìĞTP”e”cĞQSÔT: ÿÿc·P:RPcĞQSëĞQTÁQS×PàÃSQPÖP:RPcĞQTÁQS×PïĞTP   @(#)strcmp.s	5.3 (Berkeley) 3/9/86    Ğ¬QĞ¬SƒcaP˜PPÔUƒQÿUƒSÿP‘PUPUÖU)UacÂUQ: UaÛÂPScP˜PPÂPUÂUQ: UaƒcaP˜PPÔP  @(#)strncmp.s	5.3 (Berkeley) 3/9/86   Ğ¬Q}¬SÔUƒQÿUƒSÿP‘PUPUÖUÑTUĞTU)UacÂUT'ÂUQ: UaÎÂPScP˜PPÂPUÂUQ: UaƒcaP˜PPÔP    ®€^İ¬ûïT  ÕPÔPß­Àİ¬ûï$  ÕPì<­ÈPÊÿÿÿPÑP    Øßï2  ûïŸ   ĞPZÆİZûïå   ĞP[]Ñk­Äìßï  ßï:%  ûïË  Á[~ßï)%  ûïb  ß­€ßï%  ûï&  ÕP´±­€­À­Ñ­„­Ä¦İZûï   Şïñ$  PİZûï   1Oÿ    Ğ¬[İkûï-  ÎkÔ«İ[ûïò    İ İ¬ûï>   ĞPZÑZÿÿÿÿ%İ  ûï‰  ĞP[
+ĞZkÔ«Ğ[PİZûïİ  ÔP  ïÒ	      ¼ò  Ğ¬[Ô«Õ«İ   Á[~İkûïM   ĞP«Õ«ÔPÑ««ÒÁ[PÁ«PZµªèÃ«  P<ªQÑQPÖ<ªPÀP«Õj©ĞZP  ïZ	      ¼ò ïJ	      ¼&ò @(#)strcat.s	5.3 (Berkeley) 3/9/86  À }¬VĞVQ: ÿÿaøĞQS: ÿÿg(ÿÿgcĞQWíÂWQÖQ(QgcĞVP@(#)strcpy.s	5.3 (Berkeley) 3/9/86  @ Ğ¬SĞ¬V: ÿÿf(ÿÿfcĞQVíÂVQÖQ(QfcĞ¬P ï’      ¼S ğ   ï~      ¼m ğ   ïj      ¼o ğ   ïV      ¼n ğ   ïB      ¼l ğ   ï.      ¼T ğÕ¬ĞQ¼  ï      ¼y ğ    ®¸^Ğ¬[á«¨«ª«à«wÎPÔYĞYXš¬Pá« ¬­ÿĞXİXß­ÿ˜«~ûïµ  ĞPYÔk1ê Ğ«Z1´ ß­¸˜«~ûïâ  ÕPÕ­è2 ­øĞ­è­øİ­øûï  ĞPZĞZ«G¨«á«’Ğ«Z¬»Ö«Á«ZPÑ«P	‘¬
+1hÿÃZ«XİXİZ˜«~ûï0  ĞPYĞZ«1tÿ¨«Ğ­ø«Ñ[ìN  ˜ïl  ~ûïn  ÕPâ« ĞZ«ÔYĞYX ÃZ«YĞYXĞZ«İYİZ˜«~ûïÓ  ĞPYÃ«k¬ŠĞZ«ÑXY1äş¨ «1Ôş Ğ¬[2«PÊùÿÿÿPÑP@Ğ«Z:ÃZ«Y3ĞZ«³„ «ÔPĞ«PĞPkİYİZ˜«~ûïk  ÑPY¨ «ÎPÔP  Ğ¬[ÎZ³«2à«-İ[ûï‡ÿÿÿĞPZ˜«~ûï5   ÕPÎZá«
+İ«ûïó  ÔkÔ«Ô«Ô«´«”«ĞZP  ï      ¼ò  ÕïÈ   VŞï  Z³ªĞZPÀZÑZhP  èû ïP   ÕP*Ğï  ĞkP³ !À[Ñ[ïH:
+# vt61 created by Roger Sacilotto  Massachusetts Computer Associates, Inc
+# Similar to vt52 but add al and dl
+#
+dq|vt61|dec vt61:\
+	:al=\EPf:dl=\EPd:tc=vt52:
+dx|dw2|decwriter II:\
+	:do=^J:kb=^h:le=^H:bs:co#132:hc:os:
+# DEC PRO-350 console (VT220-style)
+dP|pro350|decpro|dec pro console:\
+	:bs:cd=\EJ:ce=\EK:cl=\EH\EJ:\
+	:cm=\EY%+ %+ :co#80:ho=\EH:\
+	:kl=\ED:kr=\EC:ku=\EA:kd=\EB:kh=\EH:\
+	:k0=\EE:k1=\EF:k2=\EG:k3=\EH:k4=\EI:k5=\EJ:k6=\Ei:k7=\Ej:\
+	:li#24:nd=\EC:pt:sr=\EI:up=\EA:do=\EB:\
+	:se=\E^N:so=\E^H:us=\E^D:ue=\E^C:\
+	:ae=\EG:as=\EF:
+#
+# From: Bracy H. Elton  <elton@lll-crg>
+dm|vt200-ss|vt220-ss|dec vt200 series with smooth scroll:\
+	:is=\E>\E[?3l\E[?4h\E[?5l\E[?7h\E[?8h\E[1;24r\E[24;1H:\
+	:rs=\E>\E[?3l\E[?4h\E[?5l\E[?7h\E[?8h:\
+	:tc=vt200:
+dn|vt200-w|vt220-w|vt200-wj|vt220-wj|dec vt200 series; 132 col.; jump scroll:\
+	:is=\E>\E[?3h\E[?4l\E[?5l\E[?7h\E[?8h\E[1;24r\E[24;1H:\
+	:rs=\E>\E[?3h\E[?4l\E[?5l\E[?7h\E[?8h:\
+	:co#132:tc=vt200:
+do|vt200-ws|vt220-ws|dec vt200 series; 132 col.; smooth scroll:\
+	:is=\E>\E[?3h\E[?4h\E[?5l\E[?7h\E[?8h\E[1;24r\E[24;1H:\
+	:rs=\E>\E[?3h\E[?4h\E[?5l\E[?7h\E[?8h:\
+	:co#132:tc=vt200:
+# vs100 emulator using tsim	(from lai@decwrl)
+vt|vs100t|tsim|vs100-tsim:\
+	:bs:cm=\EM%+ %+ :ho=\EH:do=^J:up=^K:cl=\EE:ce=\EL:cs=\ES%+ %+ :\
+	:so=\Eh:se=\Er:us=\Eu:ue=\Ev:al=\EI:Al=\E+%+ :dl=\ED:Dl=\E-%+ :\
+	:ic=\Ei:dc=\Ed:is=\ER:rs=\ER:am:cd=\EQ:pt:nd=\En:li#24:co#80:
+# # --------------------------------
+#
+# h: HEWLETT PACKARD
+#
+# Note: no "ho" on HP's since that homes to top of memory, not screen.
+# Due to severe 2621 braindamage, the only way to get the arrow keys to
+# transmit anything at all is to turn on the function key labels
+# (f1-f8) with ks, and even then the poor user has to hold down shift!
+# The default 2621 turns off the labels except when it has to to enable
+# the function keys.  If your installation prefers labels on all the time,
+# or off all the time (at the "expense" of the function keys) move the
+# 2621-nl or 2621-wl labels to the front using reorder.
+# Note: there are newer ROM's for 2621's that allow you to set strap A
+# so the regular arrow keys xmit \EA, etc, as with the 2645.  However,
+# even with this strap set, the terminal stops xmitting if you reset it,
+# until you unset and reset the strap!  Since there is no way to set/unset
+# the strap with an escape sequence, we don't use it in the default.
+# If you like, you can use 2621-ba (braindamaged arrow keys).
+h1|2621-ba|2621 w/new rom, strap A set:\
+	:ks@:ke@:ku=\EA:kd=\EB:kl=\ED:kr=\EC:kh=\Eh:tc=hp2621:
+# 2621 with function labels.  Most of the time they are off,
+# but inside vi, the function key labels appear.  You have to
+# hold down shift to get them to xmit.
+# 2621k45: untested
+# 2622: unsure if this is quite it, have only heard about the terminal.
+h3|2621k45|hp2621k45|k45|2622|hp2622|hp 2621 with 45 keyboard:\
+	:kb=^H:ku=\EA:kd=\EB:kl=\ED:kr=\EC:kh=\Eh:ks=\E&s1A:ke=\E&s0A:tc=2621:
+h5|hp|hewlett-packard:\
+	:ct=\E3:st=\E1:do=^J:al=\EL:am:le=^H:bs:\
+	:cd=\EJ:ce=\EK:ch=\E&a%dC:cl=\EH\EJ:cm=6\E&a%r%dc%dY:\
+	:co#80:cv=\E&a%dY:da:db:dc=\EP:dl=\EM:ei=\ER:im=\EQ:\
+	:kb=^H:li#24:mi:nd=\EC:pt:se=\E&d@:so=\E&dJ:\
+	:us=\E&dD:ue=\E&d@:up=\EA:xs:vt#6:pb#9600:
+# This entry does not use any of the fancy windowing stuff of the 2621.
+# Indeed, termcap does not yet handle such stuff.  We are looking at it.
+h6|hp2626|hp2626a|hp2626p|2626|2626a|2626p|hp 2626:\
+	:dc=2\EP:ip=2:se=\E&d@:so=\E&dB:cd=500\EJ:\
+	:mr=\E&dB:us=\E&dD:mb=\E&dA:mk=\E&dS:me=\E&d@:ue=\E&d@:\
+	:kh=\Eh:ku=\EA:kl=\ED:kr=\EC:kd=\EB:ks=\E&s1A:ke=\E&s0A:\
+	:sf=\ES:ta=2^I:xs:tc=2621:
+# cD is a pain - but it only screws up at 9600 baud.
+# You should use this terminal at 4800 baud or less.
+h8|hp2648|hp2648a|2648a|2648|HP 2648a graphics terminal:\
+	:cl=50\EH\EJ:cm=20\E&a%r%dc%dY:dc=7\EP:ip=5:tc=2645:
+# This terminal should be used at 4800 baud or less.
+h9|hp2645-np|2645 w/no padding:cm=\E&a%r%dc%dY:tc=hp2645:
+# 2640a doesn't have the Y cursor addressing feature, and C is memory relative
+# instead of screen relative, as we need.
+ha|2640|hp2640a|2640a|hp 2640a:\
+	:cm@:ks@:ke@:tc=2645:
+hb|2640b|hp2640b|2644a|hp2644a|hp 264x series:\
+	:ks@:ke@:tc=2645:
+# 2621 using all 48 lines of memory, only 24 visible at any time.  Untested.
+hl|2621-48|48 line 2621:\
+	:li#48:ho=\EH:cm=\E&a%r%dc%dR:tc=2621:
+# Hp 110 computer is the same as 2621 except has 16 lines
+hm|hp110|110|hp 110 computer:\
+	:li#16:tc=2621:
+# 2621 with no labels ever.  Also prevents vi delays on escape.
+# Needed for UCB ARPAVAX console, since lsi-11 expands tabs (wrong).
+ht|hp2621-nt|2621nt|2621-nt|hp2621nt|hp 2621 w/no tabs:\
+	:pt@:tc=hp2621:
+# 2621 with labels on all the time - normal outside vi, function inside vi.
+hw|hp2621wl|2621wl|2621-wl|hp2621-wl|hp 2621 w/labels:\
+	:is=\E&jA\r:ke=\E&jA:tc=hp2621-fl:
+# 2392 (from haddix@arpa?)
+hz|2392|hp2392|hp2392a:\
+	:bt=\Ei:ip=2:is=\E&j@\E3\r:if=/usr/lib/tabset/stdcrt:\
+	:ml=\El:MT:mu=\Em:km:\
+	:mh=\E&dH:mr=\E&dB:us=\E&dD:mb=\E&dA:me=\E&d@:\
+	:ku=\EA:kd=\EB:kl=\ED:kr=\EC:kh=\Eh:ks=\E&s1A:ke=\E&s0A:tc=hp:
+#HP 236 console running 4.3 BSD
+#from ddavis@ic.berkeley.edu
+h7|236|hp236|HP236 internal terminal emulator:\
+	:am:bs:li#24:co#80:cl=\EF:cm=\EE%+ %+ :\
+	:dc=\EJ:dl=\EH:ic=\EI:al=\EG:up=^K:im=:ei=:\
+	:so=\EBI:se=\ECI:vs=\EDB:ve=\EDE:
+# hp150 from ddavis@ic.berkeley.edu
+h0|150|hp150|hp150a|150a:\
+	:is=\E&s1A\E&f0a1k2L\Ep\r\E&k0K\E&f0a2k2L\Eq\r\E&f0a3k2L\Er\r\E&f0a4k2L\Es\r\E&f0a5k2L\Et\r\E&f0a6k2L\Eu\r\E&f0a7k2L\Ev\r\E&f0a8k2L\Ew\r\E&k0D\E&s0A:\
+	:bt=\Ei:li#24:cm=\E&a%r%dc%dY:dc=2\EP:ip=2:pb#19200:so=\E&dJ:\
+	:se=\E&d@:us=\E&dD:ue=\E&d@:me=\E&d@:kh=\Eh:ku=\EA:kl=\ED:kr=\EC:\
+	:kd=\EB:kn#8:k1=\Ep:k2=\Eq:k3=\Er:k4=\Es:k5=\Et:k6=\Eu:k7=\Ev:\
+	:k8=\Ew:ta=2^I:ct=\E3:st=\E1:do=^J:al=\EL:am:le=^H:\
+	:bs:cd=\EJ:ce=\EK:ch=\E&a%dC:cl=\Eh\EJ:co#80:cv=\E&a%dY:da:db:dl=\EM:\
+	:ei=\ER:im=\EQ:kb=^H:mi:nd=\EC:pt:up=\EA:xs:vt#6:sf=\ES:sr=\ET:\
+	:vs=\E&s1A:ve=\E&s0A:ks=\E&jB\E&j@:ke=\E&j@:
+# # --------------------------------
+#
+# i: INFOTON (GENERAL TERMINAL)
+#
+# Infoton is now called General Terminal Corp. or some such thing.
+# gt100 sounds like something DEC would come out with.  Lets hope they don't.
+i1|i100|gt100|gt100a|General Terminal 100A (formerly Infoton 100):\
+	:do=^J:cl=^L:cd=\EJ:ce=\EK:li#24:co#80:\
+	:al=\EL:dl=\EM:up=\EA:nd=\EC:ho=\EH:cm=\Ef%r%+ %+ :vb=\Eb\Ea:\
+	:am:le=^H:bs:so=\Eb:se=\Ea:
+i4|i400|400|infoton 400:\
+	:do=^J:al=\E[L:am:le=^H:bs:ce=\E[N:cl=\E[2J:cm=%i\E[%3;%3H:co#80:\
+	:dl=\E[M:li#25:nd=\E[C:up=\E[A:im=\E[4h\E[2Q:ei=\E[4l\E[0Q:\
+	:dc=\E[4h\E[2Q\E[P\E[4l\E[0Q:
+ia|addrinfo:\
+	:do=^J:li#24:co#80:cl=^L:ho=^H:nd=^Y:cd=^K:\
+	:up=^\:am:le=^Z:bc=^Z:cm=\037%+\377%+\377:ll=^H^\:
+ik|infotonKAS:\
+	:do=^J:am:le=^Z:bc=^Z:cd=^K:cl=^L:co#80:li#24:nd=^Y:up=^\:ll=^H^\:
+# # --------------------------------
+#
+# k: HEATHKIT (ZENITH)
+#
+kA|h19-a|h19a|heath-ansi|heathkit-a|heathkit h19 ansi mode:\
+	:\
+	:al=1*\E[1L:am:le=^H:bs:cd=\E[J:ce=\E[K:cl=\E[2J:cm=\E[%i%2;%2H:co#80:\
+	:dc=\E[1P:dl=1*\E[1M:do=\E[1B:ei=\E[4l:ho=\E[H:im=\E[4h:li#24:mi:\
+	:nd=\E[1C:as=\E[10m:ae=\E[11m:ms:pt:se=\E[0m:so=\E[7m:up=\E[1A:\
+	:vs=\E[>4h:ve=\E[>4l:kb=^h:ku=\E[1A:kd=\E[1B:kl=\E[1D:kr=\E[1C:\
+	:kh=\E[H:kn#8:k1=\EOS:k2=\EOT:k3=\EOU:k4=\EOV:k5=\EOW:l6=blue:\
+	:l7=red:l8=white:k6=\EOP:k7=\EOQ:k8=\EOR:\
+	:sr=\EM:is=\E<\E[>1;2;3;4;5;6;7;8;9l\E[0m\E[11m\E[?7h:
+kB|h19-bs|h19bs|heathkit w/keypad shifted:\
+	:ks=\Et:ke=\Eu:tc=h19-b:
+#written by David Shewmake, UCSF Medical Information Science
+#ucbvax!ucsfmis!shewmake
+#the z29-e entry sucks...but it works with emacs
+kD|z29-e|zenith 29 hacked for emacs:\
+	:ip=1.5:ks=\Et:ke=\Eu:vs@:ve@:al=1*\EL:am:le=^H:\
+	:bs:cd=\EJ:ce=\EK:cl=\EE:cm=\EY%+ %+ :co#80:dc=\EN:dl=1*\EM:\
+	:do=\EB:ho=\EH:li#24:nd=\EC:as=\EF:ae=\EG:ms:\
+	:pt:sr=\EI:se=\Eq:so=\Ep:up=\EA:vs=\Ex4:ve=\Ey4:kb=^h:\
+	:ku=\EA:kd=\EB:kl=\ED:kr=\EC:kh=\EH:kn#8:k1=\ES:k2=\ET:k3=\EU:\
+	:k4=\EV:k5=\EW:l6=blue:l7=red:l8=white:k6=\EP:k7=\EQ:k8=\ER:es:hs:\
+	:ts=\Ej\Ex5\Ex1\EY8%+ \Eo:fs=\Ek\Ey5:ds=\Ey1:
+# z29 in ansi mode. Assumes that the cursor is in the correct state, and that
+# the world is stable. `rs' causes the terminal to be reset to the state
+# indicated by the name. kc -> key click, nkc -> no key click, uc -> underscore
+# cursor, bc -> block cursor.
+# from €   Ğïû  ÔPĞïj   [ÕkÔÕkİİûï6  ĞPkĞkP  Â^û ï¾  ĞP­üİİPûï  ĞPï,   ÕPÔPx­üPÁï   Pï   Şïf  ZĞï   [ĞZ‹ÀZÑZhP  ñİİ­üûïÉ   ĞPïÊ  ĞP ÕïÖ  û ïÿÿÿÕPĞïÂ  [Õkİİûï   ĞPkÀ[Ñ[ï§  â Ğ¬[Õï”  "Şïä  YÑYhP  ;³©İYûkÀYåĞïj  ZÕjĞjP³ İjûkÀZÑZïM  à  ßïşÿÿûï—ÿÿÿ    û ïåÿÿÿİ¬ûï}æÿÿ Ğ¬[Ğ¬ZÄ[ZİZûïÆ   ĞPYİZİYûï6   ĞYP  İ¬ûïæ   @(#)bzero.s	5.3 (Berkeley) 3/9/86     Ğ¬S
+ÂP¬, c Pc<ÿÿPÑ¬Pë, c ¬c   ï¾      ¼>ò ï®      ¼Y ğ     Â^ß­úİt@İ¬ûï   ÕPÔPĞP ïv      ¼6ò  Õï¼  ^û ï  ĞPXĞXï©  İ ûï  ĞP[ÃXPÃXQÒQQËQ[QÃQPXİXûïç  ÖPÔPÔZĞYÀYYÖZÑïf  YòĞZï`  ÃïU  XÑ¬X
+ĞYÔZÎXĞï>  YĞï;  ZÀYY´ÖZÁXYPÑ¬PïĞJï¤  [İZûï    ĞJï‘  [‹ĞkJï†  ïköZ«Á[P  Â^Á¬PxPPĞPZÑZïÕ  ĞïÍ  ­üÇZ­ü­øÁï½  Z­üĞ­øİ­üûï  ĞP[Ñ[ÿÿÿÿĞ¬PĞ[@ï  ÁZ[kÀZ[õ­øõ  Õ¬Ã¬ZšjPÑPï   šª[ĞKïç  jĞZKïŞ    Â^Ô­ôÕ¬İ¬ûïyşÿÿÃ¬­üš½üPÑPï   Ö­ôĞ­üPš Zİİ­üûï¦   ĞPZÁZPxP[Ñ[ïş  Â[Ãïğ  PÀP[Õ­ô@ÕZ!ÁZPxPZÑZïÔ  ÂZÃïÆ  PÀPZÑ¬[Ñ¬ZĞ¬Pİ¬ûï#ÿÿÿİ¬ûïÙıÿÿĞP­øÔPÑ¬­øÑ¬[Ğ¬PĞ[PİPİ­øİ¬ûï_   Ğ­øP ÔZÔYĞJïå  [ÑY¬Ñ[¬ĞZPÖYĞk[Õ[çÖZÑZÔÎP  @(#)bcopy.s	5.3 (Berkeley) 3/9/86   @ Ğ¬QĞ¬SĞ¬VÑQS
+ÂPV(Pac<ÿÿPÑVPï(VacÀVQÀVS<ÿÿPÂPVÂPQÂPS(Pac<ÿÿPÂPQÂPSÑVPãÂVQÂVS(Vac   ïN       ¼@ ğ     Áï”  ¬~İĞ\SĞ^\¼Ğï  PÀ£ïv  ï      ï
+       ¼ò ĞPïY  ÎP                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    @(#) Copyright (c) 1980,1986 Regents of the University of California.
+ All rights reserved.
+    @(#)reboot.c	5.4 (Berkeley) 5/26/86 /usr/adm/wtmp   reboot -q -n -l usage: reboot [ -n ][ -q ]
+ root rebooted by %s reboot: can't idle init
+ reboot: kill CAUTION: some process(es) wouldn't die
+ reboot ~ shutdown     @(#)pause.c	5.2 (Berkeley) 3/9/86   @(#)getpwnamuid.c	5.2 (Berkeley) 3/9/86 @(#)getpwent.c	5.2 (Berkeley) 3/9/86            ÄE  r r /etc/passwd @(#)atoi.c	5.2 (Berkeley) 3/9/86    @(#)ndbm.c	5.3 (Berkeley) 3/9/86    =   9   5   1   -   )   %   !                  	         ¿Ò 1Şã1r«4G¨(fõ3Y³C!ˆdÕ&Yo;VVu7{Ê‰0…-éØéĞT;/ª>®ú›[´2/aí1˜ƒ<=ã`fvK_zÇ™‡lõG6Ÿ$C w$M¼ú³†¦6ß7ä0íÃ)Yn!N³6VŸ1pğû&±„Ç83¬)Å]H+Ü<Íû©5;7Õ1™g$+Ó#)
+n©Ÿ0µ%õa3˜Û	$²ş¤· 2nV01}D9R7N•:#6ş8WÍÇ)9:{Š2ˆ}õxº|~L'\æ‹»° /qÃ¶.pag .dir ndbm: split not paired
+   @(#)getlogin.c	5.3 (Berkeley) 5/9/86    /etc/utmp   @(#)fprintf.c	5.2 (Berkeley) 3/9/86 @(#)perror.c	5.2 (Berkeley) 3/9/86  :  Unknown error 
+  @(#)sleep.c	5.2 (Berkeley) 3/9/86   @(#)syslog.c	5.9 (Berkeley) 5/7/86  /dev/log    /dev/console    ÿÿÿÿ    ¤H  ÿ      <%d> %.15s  [%d] :  error %d   syslog  @(#)alarm.c	5.2 (Berkeley) 3/9/86   @(#)ctime.c	5.5 (Berkeley) 3/9/86                                       ¶     M  ·  :   /      w   /  ²        ³  /      ´  /  :       /  A   ¿  Y   (      Y   /  ¿  Y   (      Y         w   /        $I           HI            xI           I           I           ¨I     ÿÿÿÿ                Day Mon 00 00:00:00 1900
+ SunMonTueWedThuFriSat JanFebMarAprMayJunJulAugSepOctNovDec    F   @(#)signal.c	5.2 (Berkeley) 3/9/86  @(#)time.c	5.3 (Berkeley) 3/9/86    @(#)sprintf.c	5.2 (Berkeley) 3/9/86 @(#)doprnt.c	5.4 (Berkeley) 3/9/86  @(#)ttyslot.c	5.2 (Berkeley) 3/9/86 @(#)getttyent.c	5.4 (Berkeley) 5/19/86  /etc/ttys       r r on off secure window=   @(#)filbuf.c	5.3 (Berkeley) 3/9/86  @(#)fopen.c	5.2 (Berkeley) 3/9/86                                                                                                                                                                                                                                                                   @(#)rew.c	5.2 (Berkeley) 3/9/86                                                                                                                                                                                                                                                                 @(#)ttyname.c	5.2 (Berkeley) 3/9/86 /dev/   @(#)closedir.c	5.2 (Berkeley) 3/9/86    @(#)opendir.c	5.2 (Berkeley) 3/9/86 @(#)readdir.c	5.2 (Berkeley) 3/9/86 @(#)flsbuf.c	5.2 (Berkeley) 3/9/86  @(#)findiop.c	5.6 (Berkeley) 3/9/86                                                                                                                                                                                                                                                                                                                                                                                                            l\  @(#)exit.c	5.2 (Berkeley) 3/9/86    @(#)calloc.c	5.2 (Berkeley) 3/9/86  @(#)isatty.c	5.2 (Berkeley) 3/9/86  @(#)malloc.c	5.6 (Berkeley) 3/9/86     ]  ]                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          oc.c	5.6 (Berkeley) 3/9/86     = =                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         /dev/hk0a:/:rw:1:1
+/dev/hk0g:/usr:rw:1:3
+/dev/hk1a:/mnt:rw:1:2
+/dev/hk1g:/usr/src:rw:1:3
+/dev/hk1a:/tmp:xx:1:2
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 Mike Meyers
+kF|z29a|z29a-kc-bc|h29a-kc-bc|heath/zenith 29 in ansi mode:\
+	:do=^J:co#80:li#24:cl=\E[2J:pt:ho=\E[H:\
+	:le=^H:bs:cm=\E[%i%d;%dH:nd=\E[C:up=\E[A:mb=\E[5m:mr=\E7m:\
+	:ce=\E[K:cd=\E[J:so=\E[7;2m:se=\E[m:us=\E[4m:ue=\E[m:mh=\E[2m:\
+	:md=\E[2m:mr=\E[7m:mb=\E[5m:me=\E[m:\
+	:rs=\E<\E[1;24r\E[24;1H\E[?7h\E[>4h\E[>1;2;3;5;6;7;8;9l\E[m\E[11m:\
+	:ku=\EOA:kd=\EOB:kr=\EOC:kl=\EOD:kb=^H:\
+	:k1=\EOS:k2=\EOT:k3=\EOU:k4=\EOV:k5=\EOW:k6=\EOP:k7=\EOQ:k8=\EOR:\
+	:k9=\EOX:k0=\E[~:l0=help:kn#2:ko=ho,cd:if=/usr/lib/tabset/zenith29:\
+	:es:hs:ts=\E[s\E[>5;1h\E[25;%i%dH\E[1K:fs=\E[u\E[>5l:ds=\E[>1l:\
+	:cs=\E[%i%d;%dr:sr=\EM:sf=\ED:DO=\E[%dB:UP=\E[%dA:LE=\E[%dD:\
+	:RI=\E[%dC:AL=\E[%dL:DL=\E[%dM:sc=\E[s:rc=\E[r:dc=\E[1P:DC=\E[%dP:\
+	:kC=\E[J:ct=\E[3g:st=\EH:ti=\E[?7l:te=\E[?7h:ps=\E#7:
+kG|z29a-kc-uc|h29a-kc-uc|heath/zenith 29 in ansi mode:\
+	:rs=\E<\E[1;24r\E[24;1H\E[?7h\E[>1;2;3;4;5;6;7;8;9l\E[m\E[11m:\
+	:tc=z29a:
+kH|z29a-nkc-bc|h29a-nkc-bc|heath/zenith 29 in ansi mode:\
+	:rs=\E<\E[1;24r\E[24;1H\E[?7h\E[>2;4h\E[>1;3;5;6;7;8;9l\E[m\E[11m:\
+	:tc=z29a:
+kI|z29a-nkc-uc|h29a-nkc-uc|heath/zenith 29 in ansi mode:\
+	:rs=\E<\E[1;24r\E[24;1H\E[?7h\E[>2h\E[>1;3;4;5;6;7;8;9l\E[m\E[11m:\
+	:tc=z29a:
+#z100 entry from Brad Brahms at TRW (Brahms@USC-ECLC)
+#			   usenet: {decvax,ucbvax}!trwrb!trwspp!brahms
+kc|z100|h100|z110|z-100|h-100|heath/zenith z-100 pc with color monitor:\
+	:vs=\Ex4\Em71:ve=\Ey4\Em70:tc=z100bw:
+kY|z100bw|h100bw|z110bw|z-100bw|h-100bw|heath/zenith z-100 pc:\
+	:al=5*\EL:bs:cd=\EJ:ce=\EK:cl=5*\EE:cm=1*\EY%+ %+ :co#80:dc=1*\EN:\
+	:dl=5*\EM:do=\EB:ei=\EO:ho=\EH:im=\E@:li#24:mi:nd=\EC:as=\EF:ae=\EG:\
+	:ms:pt:sr=\EI:se=\Eq:so=\Ep:up=\EA:vs=\Ex4:ve=\Ey4:\
+	:kb=^h:ku=\EA:kd=\EB:kl=\ED:kr=\EC:kh=\EH:kn#10:\
+	:k0=\EJ:k1=\ES:k2=\ET:k3=\EU:k4=\EV:k5=\EW:\k6=\EP:k7=\EQ:\
+	:k8=\ER:k9=\EOI:
+kp|p19:\
+	:al=2*\EL:dl=2*\EM:tc=h19-b:
+# from ucscc!B.fiatlux@ucbvax.berkeley.edu
+zx|ztx|ztx11|zt-1|htx11|ztx-1-a|ztx-10/11:\
+	:al=\EL:am:bs:cd=\EJ:ce=\EK:cl=\EE:cm=\EY%+ %+ :co#80:\
+	:dl=\EM:do=^J:ho=\EH:is=\Ej\EH\Eq\Ek\Ev\Ey1\Ey5\EG\Ey8\Ey9\Ey>:\
+	:k0=\ES:k1=\EB:k2=\EU:k3=\EV:k4=\EW:k5=\EP:k6=\EQ:k7=\ER:kb=^H:kd=\EB:\
+	:kl=\ED:kr=\EC:ku=\EA:le=^H:li#24:nd=\EC:pt:se=\Eq:so=\Es5:\
+	:sr=\EI:sr=\EI:ue=\Eq:up=\EA:us=\Es2:\
+	:es:hs:ts=\Ej\Ex5\Ex1\EY8%+ \Eo:fs=\Ek\Ey5:ds=\Ey1:
+# # --------------------------------
+#
+# l: LEAR SIEGLER (ADM)
+#
+# If the adm31 gives you trouble with standout mode, check the DIP switch
+# in position 6, bank @c11, 25% from back end of pc.  Should be OFF.
+# If there is no such switch, you have an old adm31 and must use oadm31
+l2|adm2|lsi adm2:\
+	:do=^J:al=\EE:am:le=^H:bs:cd=\EY:ce=\ET:cl=\E;:\
+	:cm=\E=%+ %+ :co#80:dc=\EW:dl=\ER:\
+	:ei=:ho=^^:ic=\EQ:im=:kd=^J:kh=^^:kl=^H:kr=^L:ku=^K:li#24:nd=^L:up=^K:
+l4|adm42|42|lsi adm42:\
+	:vs=\EC\E3 \E3(:do=^J:al=270\EE:am:le=^H:bs:cd=\EY:ce=\ET:cl=\E;:\
+	:cm=\E=%+ %+ :co#80:dc=\EW:dl=\ER:ei=\Er:im=\Eq:ip=6*:li#24:\
+	:bt=\EI:nd=^L:se=\EG0:so=\EG4:up=^k:ma=^K^P:pc=\177:
+l5|adm5|5|lsi adm5:\
+	:do=^J:cd=\EY:ce=\ET:do=^J:kb=^H:kh=^^:\
+	:ma=^Hh^Jj^Kk^Ll^^H:se=\EG:sg#1:so=\EG:tc=adm3aplus:
+l7|adm20|lear siegler adm20:\
+	:am:li#24:co#80:bs:cl=^Z:cm=\E=%i%r%+^_%+^_:nd=^L:up=^K:ho=^^:ce=\ET:\
+	:cd=\EY:al=\EE:dl=\ER:im=:ei=:ic=\EQ:dm=:ed=:dc=\EW:so=\E):se=\E(:\
+	:bt=\EI:pt:kn#7:k1=^A:k2=^B:k3=^W:k4=^D:k5=^E:k6:^X:k7=^Z:
+# From Andrew Scott Beals <bandy@lll-crg.ARPA>
+l8|adm12|12|lsi adm12:\
+	:is=\Eq:do=^J:al=\EE:am:le=^H:bs:ce=\ET:cm=\E=%+ %+ :cl=^Z:cd=\EY:\
+	:co#80:dc=\EW:dl=\ER:ei=\Er:ho=^^:im=\Eq:\
+	:k0=^A0\r:k1=^A1\r:k2=^A2\r:k3=^A3\r:k4=^A4\r:\
+	:k5=^A5\r:k6=^A6\r:k7=^A7\r:k8=^A8\r:k9=^A9\r:kd=^J:kl=^H:kr=^L:ku=^K:\
+	:li#24:ma=j^Jk^P^K^Pl ^R^L^L :mi:nd=^L:\
+	:se=\EG0:so=\EG4:up=^K:us=\EG1:ue=\EG0:
+lb|adm3a+|3a+|adm3aplus:\
+	:kl=^H:kd=^J:ku=^K:kr=^L:tc=adm3a:
+lc|adm22|22|lsi adm22:\
+	:is=\E%\014\014\014\016\003\000\003\002\003\002\000\000\000\000\000\000\000\000\000\000\000:\
+	:al=\EE:am:bs:bt=\EI:cd=\Ey:ce=\Et:cl=\E+:cm=\000\E=%+ %+ :co#80:\
+	:dc=\EW:dl=\ER:do=^J:em=:ho=^^:ic=\EQ:im=:\
+	:k1=\001@\015:k2=\001A\015:k3=\001B\015:k4=\001C\015:\
+	:k5=\001D\015:k6=\001E\015:k7=\001F\015:kn#7:\
+	:ko=ho:l1=F1:l2=F2:l3=F3:l4=F4:l5=F5:l6=F6:l7=F7:\
+	:kb=^H:kd=^J:kh=^^:kl=^H:kr=^L:ku=^K:li#24:\
+	:ma=j^Jk^P^K^Pl ^R^L^L :nd=^L:se=\E(:so=\E):ta=\Ei:up=^K:
+#From: stephen%comp.lancs.ac.uk@ucl-cs.arpa
+le|adm11|lsi adm11:\
+	:do=^J:bs:\
+	:cd=\EY:ce=\ET:kb=^H:kh=^^:\
+	:ma=^Hh^Jj^Kk^Ll^^H:so=\E):se=\E(:\
+	:kl=^H:kd=^J:ku=^K:kr=^L:\
+	:am:cm=\E=%+ %+ :cl=^Z:co#80:li#24:nd=^L:up=^K:\
+	:hs:ts=\EF\E):fs=\E(^M:ds=\Eh:
+# # --------------------------------
+#
+# m: MICROTERM
+#
+# These mime1 entries refer to the Microterm Mime I or Mime II.
+# The default mime is assumed to be in enhanced act iv mode.
+m3|mime3a|mime1 emulating 3a:\
+	:am@:ma=^X ^K^J^Z^P:ku=^Z:kd=^K:kl=^H:kr=^X:tc=adm3a:
+m4|microterm|act4|microterm act iv:\
+	:am:do=^J:le=^H:bs:cd=^_:ce=^^:cl=^L:cm=^T%.%.:\
+	:co#80:li#24:nd=^X:up=^Z:ho=^]:
+# The padding on sr and ta for act5 and mime is a guess and not final.
+# The act 5 has hardware tabs, but they are in columns 8, 16, 24, 32, 41 (!)...
+m5|microterm5|act5|microterm act v:\
+	:uc=^H\EA:sr=3\EH:ku=^Z:kd=^K:kl=^H:kr=^X:ma=^Z^P^Xl^Kj:tc=act4:
+# Act V in split screen mode.  act5s is not tested and said not to work.
+mS|act5s|skinny act5:\
+	:ti=\EP:te=\EQ:li#48:co#39:tc=act5:
+# Mimes using brightness for standout.  Half bright is really dim unless
+# you turn up the brightness so far that lines show up on the screen.
+# uc is disabled to get around a curses bug, should be put back in someday.
+mf|mime-fb|full bright mime1:\
+	:so=^Y:se=^S:is=^S\E:tc=mime:
+mh|mime-hb|half bright mime1:\
+	:so=^S:se=^Y:is=^Y\E:tc=mime:
+mm|mime|mime1|mime2|mimei|mimeii|microterm mime1:\
+	:do=^J:al=80^A:am:le=^H:bs:cd=^_:ce=^^:cl=\035^C:cm=^T%+^X%> 0%+P:\
+	:co#80:dl=80^W:ta=2^I:li#24:nd=^X:pt:uc=^U:up=^z:ho=\035:do=^K:\
+	:is=^S\E^Q:ma=^X ^K^J^Z^P:ku=^Z:kd=^K:kl=^H:kr=^X:sr=3^R:vt#9:
+# These termcaps (for mime 2a) put the terminal in low intensity mode
+# since high intensity mode is so obnoxious.
+ms|mime2a-s|microterm mime2a (emulating an enhanced soroc iq120):\
+	:do=^J:\
+	:al=20*^A:am:le=^H:bs:cd=20*\EJ:ce=\EK:cl=\EL:cm=\E=%+ %+ :co#80:dc=\ED:\
+	:dl=20*^W:kl=^H:kr=^L:ku=^K:kd=^J:ho=^^:is=\E):sr=\EI\
+	:im=\EE:ei=^Z:ip=2:li#24:nd=^L:so=\E\072:se=\E;:up=\EI:\
+	:us=\E6:ue=\E7:
+# This is the preferred mode (but ^X can't be used as a kill character)
+mv|mime2a|mime2a-v|microterm mime2a (emulating an enhanced vt52):\
+	:do=^J:al=20*^A:le=^H:bs:cd=20*\EQ:co#80:ce=\EP:cl=\EL:cm=\EY%+ %+ :\
+	:is=^Ydc=^N:dl=20*^W:ip=2:ei=^Z:ho=\EH:im=^O:kd=\EB:kl=\ED:kr=\EC:\
+	:ku=\EA:li#24:nd=\EC:pt:se=\E9:so=\E8:up=\EA:sr=\EA:us=\E4:ue=\E5:
+mx|mime-3ax|mime1 emulating enhanced 3a:\
+	:al=80^A:dl=80^W:pt:ce=^X:cd=^_:tc=mime-3a:
+# # --------------------------------
+#
+# p: PERKIN ELMER
+#
+pe|pe550|bantam|perkin elmer 550:\
+	:do=^J:le=^H:bs:co#80:ce=20\EI:cl=20\EK:cm=\EX%+ \EY%+ :\
+	:ho=\EH:li#24:ll=\EH\EA:nd=\EC:up=\EA:ma=^Z^P:cd=6^N@^V:
+pf|fox|perkin elmer 1100:\
+	:ct=\E3:st=\E1:do=^J:\
+	:am:le=^H:bs:cd=5.5*\EJ:ce=\EI:cl=132\EH\EJ:co#80:ho=\EH:li#24:\
+	:ll=\EH\EA:nd=\EC:cm=\EX%+ \EY%+ :up=\EA:vb=^P^B^P^C:
+po|owl|perkin elmer 1200:\
+	:ct=\E3:st=\E1:do=^J:al=5.5*\EL:am:le=^H:\
+	:bs:cd=5.5*\EJ:ce=5.5\EI:cl=132\EH\EJ:ho=\EH:ll=\EH\EA:\
+	:cm=\EX%+ \EY%+ :co#80:dc=5.5*\EO:dl=5.5*\EM:ei=:ic=\EN:im=:ip=5.5*:\
+	:kb=^h:in:li#24:nd=\EC:up=\EA:se?=\E!\200:so?=\E!^H:vb=^P^B^P^C:\
+	:k1=\ERA:k2=\ERB:k3=\ERC:k4=\ERD:k5=\ERE:k6=\ERF:\
+	:k7=\ERG:k8=\ERH:k9=\ERI:k0=\ERJ:
+# # --------------------------------
+#
+# q: HOME MADE TERMINALS
+#
+qB|bc|bill croft homebrew:\
+	:do=^J:am:le=^H:bs:cm=\E=%+ %+ :cl=^Z:co#96:ho=^^:li#72:\
+	:nd=^L:up=^K:vb=:
+qN|nucterm|rayterm|NUC homebrew:\
+	:do=^J:am:le=^H:bs:cl=1^L:li#24:co#80:nd=^C:\
+	:up=^N:ho=^B:ll=^K:ce=^A:cd=^E:
+qb|ex3000:\
+	:do=^J:li#24:co#80:ho=^Q:
+qc|carlock|klc:\
+	:do=^J:al=^E:am:bs:ce=^U:cl=100^Z:cm=\E=%+ %+ :co#80:dc=\177:dl=^D:\
+	:dm=:ed=:ei=^T:ho=^^:im=^T:li#24:nd=^L:se=^V:so=^V:up=^K:vb=\EV\EV:
+qe|exidy|exidy2500|exidy sorcerer as dm2500:\
+	:do=^J:al=^P^J^X:am:le=^H:bs:ce=^W:cl=^^:cm=^L%r%n%.%.:co#64:\
+	:dc=\b:dl=^P^Z^X:dm=^P:ed=^X:ei=^X:ho=^B:ic=^\:\
+	:im=^P:li#30:nd=^\:pt:so=^N:se=^X:up=^Z:
+qn|netx|netronics:\
+	:do=^J:le=^H:bs:cd=2000^F^E:ce=1600^E:cl=466^L:cm=\E=%+@%+@:\
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             CĞ^ZÁZPĞPYĞYXÕ‰úÑYhÂYĞYïÚ  Ôï  İïÎ  İXİjûï   İPûïj  »   ı     Ñ¬	Ğ¬Pİ İ ûï2   ÕïH  ßï  ûï%   İûï$  İ ûï    ï*      ¼3ò  Â ^Ş­à[Õ¬(•¼#Ğ¬kİ¬ûï¿  ĞP«À[Şï†  kĞ«À[ÑïØ  ï‡  ĞïË  PĞ@ïk   PŞï]  PĞPkİkûïy  ĞP«À[ŞïQ  kĞ«Ş­àPÃP[PÆPÁP~ß­àİûïh     @(#)errlst.c	5.2 (Berkeley) 3/9/86  |  „    ¨  ¸  Ğ  Ú  ô      (  4  F  X  j  v  Œ  ˜  ¤  ¶  Å  Õ  ä  õ  	    <  K  Z  r    •  ¤  °  Ã  Ô  ê    "  A  ^  o    ¯  Æ  à       P  g  †  –  ­  Ñ  ò    %  A  Y  z  œ  ±  Ä  æ  ù      .  A  P  Error 0 Not owner No such file or directory No such process Interrupted system call I/O error No such device or address Arg list too long Exec format error Bad file number No children No more processes Not enough memory Permission denied Bad address Block device required Device busy File exists Cross-device link No such device Not a directory Is a directory Invalid argument File table overflow Too many open files Inappropriate ioctl for device Text file busy File too large No space left on device Illegal seek Read-only file system Too many links Broken pipe Argument too large Result too large Operation would block Operation now in progress Operation already in progress Socket operation on non-socket Destination address required Message too long Protocol wrong type for socket Option not supported by protocol Protocol not supported Socket type not supported Operation not supported on socket Protocol family not supported Address family not supported by protocol family Address already in use Can't assign requested address Network is down Network is unreachable Network dropped connection on reset Software caused connection abort Connection reset by peer No buffer space available Socket is already connected Socket is not connected Can't send after socket shutdown Too many references: can't splice Connection timed out Connection refused Too many levels of symbolic links File name too long Host is down Host is unreachable Directory not empty Too many processes Too many users Disc quota exceeded @(#)strlen.s	5.3 (Berkeley) 3/9/86    Ğ¬Q: ÿÿaøÃ¬QPï&       ¼y ğ     û ï   İ¬ûï      ĞPïí  ÎP   ¼                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 accton  @(#)accton.c	4.1 (Berkeley) 10/1/80 @(#)perror.c	5.2 (Berkeley) 3/9/86  :  Unknown error 
+  F   @(#)exit.c	5.2 (Berkeley) 3/9/86    @(#)fakcu.c	5.2 (Berkeley) 3/9/86                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              @(#)init.c	5.6 (Berkeley) 5/26/86   /bin/sh -   /etc/rc /etc/utmp   /usr/adm/wtmp   /dev/console    8
+         WARNING: Something is hung (wont die); ps axl advised
+  l   @      init ~ shutdown  / autoboot ~ reboot  no space for '%s' !?!  '%s %s' failing, sleeping utmp malloc failed     '%s %s' failing, sleeping - %s: %m    @(#)setjmperr.c	5.2 (Berkeley) 3/9/86   longjmp botch
+ longjmp botch
+   @(#)sleep.c	5.2 (Berkeley) 3/9/86   @(#)syslog.c	5.9 (Berkeley) 5/7/86  /dev/log    /dev/console    ÿÿÿÿ    0>  ÿ      <%d> %.15s  [%d] :  error %d   syslog  @(#)alarm.c	5.2 (Berkeley) 3/9/86   @(#)ctime.c	5.5 (Berkeley) 3/9/86                                       ¶     M  ·  :   /      w   /  ²        ³  /      ´  /  :       /  A   ¿  Y   (      Y   /  ¿  Y   (      Y         w   /        °>           Ô>            ?           ?           ?           4?     ÿÿÿÿ                Day Mon 00 00:00:00 1900
+ SunMonTueWedThuFriSat JanFebMarAprMayJunJulAugSepOctNovDec    F   @(#)signal.c	5.2 (Berkeley) 3/9/86  @(#)time.c	5.3 (Berkeley) 3/9/86    @(#)sprintf.c	5.2 (Berkeley) 3/9/86 @(#)doprnt.c	5.4 (Berkeley) 3/9/86  @(#)getttyent.c	5.4 (Berkeley) 5/19/86  /etc/ttys       r r on off secure window=   @(#)filbuf.c	5.3 (Berkeley) 3/9/86  @(#)fopen.c	5.2 (Berkeley) 3/9/86                                                                                                                                                                                                                                                                   @(#)rew.c	5.2 (Berkeley) 3/9/86 @(#)flsbuf.c	5.2 (Berkeley) 3/9/86  @(#)findiop.c	5.6 (Berkeley) 3/9/86                                                                                                                                                                                                                                                                                                                                                                                                            (H  @(#)exit.c	5.2 (Berkeley) 3/9/86    @(#)calloc.c	5.2 (Berkeley) 3/9/86  @(#)isatty.c	5.2 (Berkeley) 3/9/86  @(#)malloc.c	5.6 (Berkeley) 3/9/86     ÄH  ÄH                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              

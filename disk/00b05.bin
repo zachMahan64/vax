@@ -1,0 +1,4249 @@
+ernessdom
+governesshood
+governessy
+governing
+governingly
+government
+governmental
+governmentalism
+governmentalist
+governmentalize
+governmentally
+governmentish
+governor
+governorate
+governorship
+gowan
+gowdnie
+gowf
+gowfer
+gowiddie
+gowk
+gowked
+gowkedly
+gowkedness
+gowkit
+gowl
+gown
+gownlet
+gownsman
+gowpen
+goy
+Goyana
+goyazite
+Goyetian
+goyim
+goyin
+goyle
+gozell
+gozzard
+gra
+Graafian
+grab
+grabbable
+grabber
+grabble
+grabbler
+grabbling
+grabbots
+graben
+grabhook
+grabouche
+grace
+graceful
+gracefully
+gracefulness
+graceless
+gracelessly
+gracelessness
+gracelike
+gracer
+Gracilaria
+gracilariid
+Gracilariidae
+gracile
+gracileness
+gracilescent
+gracilis
+gracility
+graciosity
+gracioso
+gracious
+graciously
+graciousness
+grackle
+Graculus
+grad
+gradable
+gradal
+gradate
+gradation
+gradational
+gradationally
+gradationately
+gradative
+gradatively
+gradatory
+graddan
+grade
+graded
+gradefinder
+gradely
+grader
+Gradgrind
+gradgrind
+Gradgrindian
+Gradgrindish
+Gradgrindism
+gradient
+gradienter
+Gradientia
+gradin
+gradine
+grading
+gradiometer
+gradiometric
+gradometer
+graded,
+its armor protection will be higher than normal.
+If a suit of armor is cursed,
+its armor protection will be lower,
+and you will not be able to remove it.
+However, not all armor with a protection that is lower than normal is cursed.
+.pp
+The commands to use weapons are
+.Cs W
+(wear)
+and
+.Cs T
+(take off).
+.sh 2 Scrolls
+.pp
+Scrolls come with titles in an unknown tongue\**.
+.(f
+\** Actually, it's a dialect spoken only by the twenty-seven members
+of a tribe in Outer Mongolia,
+but you're not supposed to
+.i know
+that.
+.)f
+After you read a scroll,
+it disappears from your pack.
+The command to use a scroll is
+.Cs r
+(read).
+.sh 2 Potions
+.pp
+Potions are labeled by the color of the liquid inside the flask.
+They disappear after being quaffed.
+The command to use a scroll is
+.Cs q
+(quaff).
+.sh 2 "Staves and Wands"
+.pp
+Staves and wands do the same kinds of things.
+Staves are identified by a type of wood;
+wands by a type of metal or bone.
+They are generally things you want to do to something
+over a long distance,
+so you must point them at what you wish to affect
+to use them.
+Some staves are not affected by the direction they are pointed, though.
+Staves come with multiple magic charges,
+the number being random,
+and when they are used up,
+the staff is just a piece of wood or metal.
+.pp
+The command to use a wand or staff is
+.Cs z
+(zap)
+.sh 2 Rings
+.pp
+Rings are very useful items,
+since they are relatively permanent magic,
+unlike the usually fleeting effects of potions, scrolls, and staves.
+Of course,
+the bad rings are also more powerful.
+Most rings also cause you to use up food more rapidly,
+the rate varying with the type of ring.
+Rings are differentiated by their stone settings.
+The commands to use rings are
+.Cs P
+(put on)
+and
+.Cs R
+(remove).
+.sh 2 Food
+.pp
+Food is necessary to keep you going.
+If you go too long without eating you will faint,
+and eventually die of starvation.
+The command to use food is
+.Cs e
+(eat).
+.sh 1 Options
+.pp
+Due to variations in personal tastes
+and conceptions of the way rogue should do things,
+there are a set of options you can set
+that cause rogue to behave in various different ways.
+.sh 2 "Setting the options"
+.pp
+There are two ways to set the options.
+The first is with the
+.Cs o
+command of rogue;
+the second is with the
+.Cs ROGUEOPTS
+environment variable\**.
+.(f
+\** On Version 6 systems,
+there is no equivalent of the ROGUEOPTS feature.
+.br
+.)f
+.br
+.sh 3 "Using the `o' command"
+.pp
+When you type
+.Cs o
+in rogue,
+it clears the screen
+and displays the current settings for all the options.
+It then places the cursor by the value of the first option
+and waits for you to type.
+You can type a \*R
+which means to go to the next option,
+a
+.Cs \-
+which means to go to the previous option,
+an \*E
+which means to return to the game,
+or you can give the option a value.
+For boolean options this merely involves typing
+.Cs t
+for true or
+.Cs f
+for false.
+For string options,
+type the new value followed by a \*R.
+.sh 3 "Using the ROGUEOPTS variable"
+.pp
+The ROGUEOPTS variable is a string
+containing a comma separated list of initial values
+for the various options.
+Boolean variables can be turned on by listing their name
+or turned off by putting a
+.Cs no
+in front of the name.
+Thus to set up an environment variable so that
+.b jump
+is on,
+.b terse
+is off,
+and the
+.b name
+is set to \*(lqBlue Meanie\*(rq,
+use the command
+.nf
+.ti +3n
+% setenv ROGUEOPTS "jump,noterse,name=Blue Meanie"\**
+.fi
+.(f
+\**
+For those of you who use the Bourne shell sh (1), the commands would be
+.in +3
+.nf
+$ ROGUEOPTS="jump,noterse,name=Blue Meanie"
+$ export ROGUEOPTS
+.fi
+.in +0
+.)f
+.sh 2 "Option list"
+.pp
+Here is a list of the options
+and an explanation of what each one is for.
+The default value for each is enclosed in square brackets.
+For character string options,
+input over fifty characters will be ignored.
+.ip "\fBterse\fP [\fI\^noterse\^\fP]"
+Useful for those who are tired of the sometimes lengthy messages of rogue.
+This is a useful option for playing on slow terminals,
+so this option defaults to
+.i terse
+if you
+are on a slow (1200 baud or under) terminal.
+.ip "\fBjump\fP [\fI\^nojump\^\fP]"
+If this option is set,
+running moves will not be displayed
+until you reach the end of the move.
+This saves considerable cpu and display time.
+This option defaults to
+.i jump
+if you are using a slow terminal.
+.ip "\fBflush\fP [\fI\^noflush\^\fP]"
+All typeahead is thrown away after each round of battle.
+This is useful for those who type far ahead
+and then watch in dismay as a Bat kills them.
+.ip "\fBseefloor\fP [\fI\^seefloor\^\fP]"
+Display the floor around you on the screen
+as you move through dark rooms.
+Due to the amount of characters generated,
+this option defaults to
+.i noseefloor
+if you are using a slow terminal.
+.ip "\fBpassgo\fP [\fI\^nopassgo\^\fP]"
+Follow turnings in passageways.
+If you run in a passage
+and you run into stone or a wall,
+rogue will see if it can turn to the right or left.
+If it can only turn one way,
+it will turn that way.
+If it can turn either or neither,
+it will stop.
+This algorithm can sometimes lead to slightly confusing occurrences
+which is why it defaults to \fInopassgo\fP.
+.ip "\fBtombstone\fP [\fI\^tombstone\^\fP]"
+Print out the tombstone at the end if you get killed.
+This is nice but slow, so you can turn it off if you like.
+.ip "\fBinven\fP [\fI\^overwrite\^\fP]"
+Inventory type.
+This can have one of three values:
+.i overwrite ,
+.i slow ,
+or
+.i clear .
+With
+.i overwrite
+the top lines of the map are overwritten
+with the list
+when inventory is requested
+or when
+\*(lqWhich item do you wish to \fB. . .\fP? \*(rq questions
+are answered with a
+.Cs * .
+However, if the list is longer than a screenful,
+the screen is cleared.
+With
+.i slow ,
+lists are displayed one item at a time on the top of the screen,
+and with
+.i clear ,
+the screen is cleared,
+the list is displayed,
+and then the dungeon level is re-displayed.
+Due to speed considerations,
+.i clear
+is the default for terminals without
+clear-to-end-of-line capabilities.
+.ip "\fBname\fP [account name]"
+This is the name of your character.
+It is used if you get on the top ten scorer's list.
+.ip "\fBfruit\fP [\fI\^slime-mold\^\fP]"
+This should hold the name of a fruit that you enjoy eating.
+It is basically a whimsey that rogue uses in a couple of places.
+.ip "\fBfile\fP [\fI\^~/rogue.save\^\fP]"
+The default file name for saving the game.
+If your phone is hung up by accident,
+rogue will automatically save the game in this file.
+The file name may start with the special character
+.Cs ~
+which expands to be your home directory.
+.sh 1 Scoring
+.pp
+Rogue usually maintains a list
+of the top scoring people or scores on your machine.
+Depending on how it is set up,
+it can post either the top scores
+or the top players.
+In the latter case,
+each account on the machine
+can post only one non-winning score on this list.
+If you score higher than someone else on this list,
+or better your previous score on the list,
+you will be inserted in the proper place
+under your current name.
+How many scores are kept
+can also be set up by whoever installs it on your machine.
+.pp
+If you quit the game, you get out with all of your gold intact.
+If, however, you get killed in the Dungeons of Doom,
+your body is forwarded to your next-of-kin,
+along with 90% of your gold;
+ten percent of your gold is kept by the Dungeons' wizard as a fee\**.
+.(f
+\** The Dungeon's wizard is named Wally the Wonder Badger.
+Invocations should be accompanied by a sizable donation.
+.)f
+This should make you consider whether you want to take one last hit
+at that monster and possibly live,
+or quit and thus stop with whatever you have.
+If you quit, you do get all your gold,
+but if you swing and live, you might find more.
+.pp
+If you just want to see what the current top players/games list is,
+you can type
+.ti +1i
+.nf
+% rogue \-s
+.br
+.sh 1 Acknowledgements
+.pp
+Rogue was originally conceived of by Glenn Wichman and Michael Toy.
+Ken Arnold and Michael Toy then smoothed out the user interface,
+and added jillions of new features.
+We would like to thank
+Bob Arnold,
+Michelle Busch,
+Andy Hatcher,
+Kipp Hickman,
+Mark Horton,
+Daniel Jensen,
+Bill Joy,
+Joe Kalash,
+Steve Maurer,
+Marty McNary,
+Jan Millerual
+gradualism
+gradualist
+gradualistic
+graduality
+gradually
+gradualness
+graduand
+graduate
+graduated
+graduateship
+graduatical
+graduating
+graduation
+graduator
+gradus
+Graeae
+Graeculus
+graff
+graffage
+graffer
+Graffias
+graffito
+grafship
+graft
+graftage
+graftdom
+grafted
+grafter
+grafting
+graftonite
+graftproof
+graham
+grahamite
+Graian
+grail
+grailer
+grailing
+grain
+grainage
+grained
+grainedness
+grainer
+grainering
+grainery
+grainfield
+graininess
+graining
+grainland
+grainless
+grainman
+grainsick
+grainsickness
+grainsman
+grainways
+grainy
+graip
+graisse
+graith
+Grallae
+Grallatores
+grallatorial
+grallatory
+grallic
+Grallina
+gralline
+gralloch
+gram
+grama
+gramarye
+gramashes
+grame
+gramenite
+gramicidin
+Graminaceae
+graminaceous
+Gramineae
+gramineal
+gramineous
+gramineousness
+graminicolous
+graminiferous
+graminifolious
+graminiform
+graminin
+graminivore
+graminivorous
+graminological
+graminology
+graminous
+grammalogue
+grammar
+grammarian
+grammarianism
+grammarless
+grammatic
+grammatical
+grammatically
+grammaticalness
+grammaticaster
+grammaticism
+grammaticize
+grammatics
+grammatist
+grammatistical
+grammatite
+grammatolator
+grammatolatry
+Grammatophyllum
+gramme
+Grammontine
+gramoches
+Gramophone
+gramophone
+gramophonic
+gramophonical
+gramophonically
+gramophonist
+gramp
+grampa
+grampus
+granada
+granadilla
+granadillo
+Granadine
+granage
+granary
+granate
+granatum
+granch
+grand
+grandam
+grandame
+grandaunt
+grandchild
+granddad
+granddaddy
+granddaughter
+granddaughterly
+grandee
+grandeeism
+grandeeship
+grandesque
+grandeur
+grandeval
+grandfather
+grandfatherhood
+grandfatherish
+grandfatherless
+grandfatherly
+grandfathership
+grandfer
+grandfilial
+grandiloquence
+grandiloquent
+grandiloquently
+grandiloquous
+grandiose
+grandiosely
+grandiosity
+grandisonant
+Grandisonian
+Grandisonianism
+grandisonous
+grandly
+grandma
+grandmaternal
+Grandmontine
+grandmother
+grandmotherhood
+grandmotherism
+grandmotherliness
+grandmotherly
+grandnephew
+grandness
+grandniece
+grandpa
+grandparent
+grandparentage
+grandparental
+grandpaternal
+grandsire
+grandson
+grandsonship
+grandstand
+grandstander
+granduncle
+grane
+grange
+granger
+grangerism
+grangerite
+grangerization
+grangerize
+grangerizer
+Grangousier
+graniform
+granilla
+granite
+granitelike
+graniteware
+granitic
+granitical
+graniticoline
+granitiferous
+granitification
+granitiform
+granitite
+granitization
+granitize
+granitoid
+granivore
+granivorous
+granjeno
+grank
+grannom
+granny
+grannybush
+grano
+granoblastic
+granodiorite
+granogabbro
+granolite
+granolith
+granolithic
+granomerite
+granophyre
+granophyric
+granose
+granospherite
+grant
+grantable
+grantedly
+grantee
+granter
+Granth
+Grantha
+Grantia
+Grantiidae
+grantor
+granula
+granular
+granularity
+granularly
+granulary
+granulate
+granulated
+granulater
+granulation
+granulative
+granulator
+granule
+granulet
+granuliferous
+granuliform
+granulite
+granulitic
+granulitis
+granulitization
+granulitize
+granulize
+granuloadipose
+granulocyte
+granuloma
+granulomatous
+granulometric
+granulosa
+granulose
+granulous
+granza
+granzita
+grape
+graped
+grapeflower
+grapefruit
+grapeful
+grapeless
+grapelet
+grapelike
+grapenuts
+graperoot
+grapery
+grapeshot
+grapeskin
+grapestalk
+grapestone
+grapevine
+grapewise
+grapewort
+graph
+graphalloy
+graphic
+graphical
+graphically
+graphicalness
+graphicly
+graphicness
+graphics
+Graphidiaceae
+Graphiola
+graphiological
+graphiologist
+graphiology
+Graphis
+graphite
+graphiter
+graphitic
+graphitization
+graphitize
+graphitoid
+graphitoidal
+Graphium
+graphologic
+graphological
+graphologist
+graphology
+graphomania
+graphomaniac
+graphometer
+graphometric
+graphometrical
+graphometry
+graphomotor
+Graphophone
+graphophone
+graphophonic
+graphorrhea
+graphoscope
+graphospasm
+graphostatic
+graphostatical
+graphostatics
+graphotype
+graphotypic
+graphy
+graping
+grapnel
+grappa
+grapple
+grappler
+grappling
+Grapsidae
+grapsoid
+Grapsus
+Grapta
+graptolite
+Graptolitha
+Graptolithida
+Graptolithina
+graptolitic
+Graptolitoidea
+Graptoloidea
+graptomancy
+grapy
+grasp
+graspable
+grasper
+grasping
+graspingly
+graspingness
+graspless
+grass
+grassant
+grassation
+grassbird
+grasschat
+grasscut
+grasscutter
+grassed
+grasser
+grasset
+grassflat
+grassflower
+grasshop
+grasshopper
+grasshopperdom
+grasshopperish
+grasshouse
+grassiness
+grassing
+grassland
+grassless
+grasslike
+grassman
+grassnut
+grassplot
+grassquit
+grasswards
+grassweed
+grasswidowhood
+grasswork
+grassworm
+grassy
+grat
+grate
+grateful
+gratefully
+gratefulness
+grateless
+grateman
+grater
+gratewise
+grather
+Gratia
+Gratiano
+graticulate
+graticulation
+graticule
+gratification
+gratified
+gratifiedly
+gratifier
+gratify
+gratifying
+gratifyingly
+gratility
+gratillity
+gratinate
+grating
+Gratiola
+gratiolin
+gratiosolin
+gratis
+gratitude
+gratten
+grattoir
+gratuitant
+gratuitous
+gratuitously
+gratuitousness
+gratuity
+gratulant
+gratulate
+gratulation
+gratulatorily
+gratulatory
+graupel
+gravamen
+gravamina
+grave
+graveclod
+gravecloth
+graveclothes
+graved
+gravedigger
+gravegarth
+gravel
+graveless
+gravelike
+graveling
+gravelish
+gravelliness
+gravelly
+gravelroot
+gravelstone
+gravelweed
+gravely
+gravemaker
+gravemaking
+graveman
+gravemaster
+graven
+graveness
+Gravenstein
+graveolence
+graveolency
+graveolent
+graver
+Graves
+graveship
+graveside
+gravestead
+gravestone
+graveward
+gravewards
+graveyard
+gravic
+gravicembalo
+gravid
+gravidity
+gravidly
+gravidness
+Gravigrada
+gravigrade
+gravimeter
+gravimetric
+gravimetrical
+gravimetrically
+gravimetry
+graving
+gravitate
+gravitater
+gravitation
+gravitational
+gravitationally
+gravitative
+gravitometer
+gravity
+gravure
+gravy
+grawls
+gray
+grayback
+graybeard
+graycoat
+grayfish
+grayfly
+grayhead
+grayish
+graylag
+grayling
+grayly
+graymalkin
+graymill
+grayness
+graypate
+graywacke
+grayware
+graywether
+grazable
+graze
+grazeable
+grazer
+grazier
+grazierdom
+graziery
+grazing
+grazingly
+grease
+greasebush
+greasehorn
+greaseless
+greaselessness
+greaseproof
+greaseproofness
+greaser
+greasewood
+greasily
+greasiness
+greasy
+great
+greatcoat
+greatcoated
+greaten
+greater
+greathead
+greatheart
+greathearted
+greatheartedness
+greatish
+greatly
+greatmouthed
+greatness
+greave
+greaved
+greaves
+grebe
+Grebo
+grece
+Grecian
+Grecianize
+Grecism
+Grecize
+Grecomania
+Grecomaniac
+Grecophil
+gree
+greed
+greedily
+greediness
+greedless
+greedsome
+greedy
+greedygut
+greedyguts
+Greek
+Greekdom
+Greekery
+Greekess
+Greekish
+Greekism
+Greekist
+Greekize
+Greekless
+Greekling
+green
+greenable
+greenage
+greenalite
+greenback
+Greenbacker
+Greenbackism
+greenbark
+greenbone
+greenbrier
+Greencloth
+greencoat
+greener
+greenery
+greeney
+greenfinch
+greenfish
+greengage
+greengill
+greengrocer
+greengrocery
+greenhead
+greenheaded
+greenheart
+greenhearted
+greenhew
+greenhide
+greenhood
+greenhorn
+greenhornism
+greenhouse
+greening
+greenish
+greenishness
+greenkeeper
+greenkeeping
+Greenland
+Greenlander
+Greenlandic
+Greenlandish
+greenlandite
+Greenlandman
+greenleek
+greenless
+greenlet
+greenling
+greenly
+greenness
+greenockite
+greenovite
+greenroom
+greensand
+greensauce
+greenshank
+greensick
+greensickness
+greenside
+greenstone
+greenstuff
+greensward
+greenswarded
+greentail
+greenth
+greenuk
+greenweed
+Greenwich
+greenwing
+greenwithe
+greenwood
+greenwort
+greeny
+greenyard
+greet
+greeter
+greeting
+greetingless
+greetingly
+greffier
+greffotome
+gregal
+gregale
+gregaloid
+gregarian
+gregarianism
+Gregarina
+Gregarinae
+Gregarinaria
+gregarine
+Gregarinida
+gregarinidal
+gregariniform
+Gregarinina
+Gregarinoidea
+gregarinosis
+gregarinous
+gregarious
+gregariously
+gregariousness
+gregaritic
+grege
+greggle
+grego
+Gregorian
+Gregorianist
+Gregorianize
+Gregorianizer
+Gregory
+greige
+grein
+greisen
+gremial
+gremlin
+grenade
+Grenadian
+grenadier
+grenadierial
+grenadierly
+grenadiership
+grenadin
+grenadine
+Grendel
+Grenelle
+Gressoria
+gressorial
+gressorious
+Greta
+Gretchen
+Gretel
+greund
+Grevillea
+grew
+grewhound
+Grewia
+grey
+greyhound
+Greyiaceae
+greyly
+greyness
+gribble
+grice
+grid
+griddle
+griddlecake
+griddler
+gride
+gridelin
+gridiron
+griece
+grieced
+grief
+griefful
+grieffully
+griefless
+grieflessness
+grieshoch
+grievance
+grieve
+grieved
+grievedly
+griever
+grieveship
+grieving
+grievingly
+grievous
+grievously
+grievousness
+griff
+griffade
+griffado
+griffaun
+griffe
+griffin
+griffinage
+griffinesque
+griffinhood
+griffinish
+griffinism
+Griffith
+griffithite
+Griffon
+griffon
+griffonage
+griffonne
+grift
+grifter
+grig
+griggles
+grignet
+grigri
+grihastha
+grihyasutra
+grike
+grill
+grillade
+grillage
+grille
+grilled
+griller
+grillroom
+grillwork
+grilse
+grim
+grimace
+grimacer
+grimacier
+grimacing
+grimacingly
+grimalkin
+grime
+grimful
+grimgribber
+grimily
+griminess
+grimliness
+grimly
+g.\"	@(#)security.ms	5.2 (Berkeley) 5/14/86
+.\"
+.EH 'SMM:17-%''On the Security of \s-2UNIX\s+2'
+.OH 'On the Security of \s-2UNIX\s+2''SMM:17-%'
+.ND June 10, 1977
+.TL
+On the Security of UNIX
+.AU
+Dennis M. Ritchie
+.AI
+.MH
+.PP
+Recently there has been much interest in the security
+aspects of operating systems and software.
+At issue is the ability
+to prevent undesired
+disclosure of information, destruction of information,
+and harm to the functioning of the system.
+This paper discusses the degree of security which can be provided
+under the
+.UX
+system and offers a number of hints
+on how to improve security.
+.PP
+The first fact to face is that
+.UX
+was not developed with
+security, in any realistic sense, in mind;
+this fact alone guarantees a vast number of holes.
+(Actually the same statement can be made with respect
+to most systems.)
+The area of security in which
+.UX
+is theoretically weakest is
+in protecting against crashing or at least crippling
+the operation of the system.
+The problem here is not mainly in uncritical
+acceptance of bad parameters to system calls\(em
+there may be bugs in this area, but none are known\(em
+but rather in lack of checks for excessive
+consumption of resources.
+Most notably, there is no limit on the amount of disk
+storage used, either in total space allocated or in
+the number of files or directories.
+Here is a particularly ghastly shell sequence guaranteed
+to stop the system:
+.DS
+while : ; do
+	mkdir x
+	cd x
+done
+.DE
+Either a panic will occur because all the i-nodes
+on the device are used up, or all the disk blocks will
+be consumed, thus preventing anyone from writing files
+on the device.
+.PP
+In this version of the system,
+users are prevented from creating more than
+a set number of processes simultaneously,
+so unless users are in collusion it is unlikely that any one
+can stop the system altogether.
+However, creation of 20 or so CPU or disk-bound jobs
+leaves few resources available for others.
+Also, if many large jobs are run simultaneously,
+swap space may run out, causing a panic.
+.PP
+It should be evident that excessive consumption of disk
+space, files, swap space, and processes can easily occur
+accidentally in malfunctioning programs
+as well as at command level.
+In fact
+.UX
+is essentially defenseless against this kind of
+abuse,
+nor is there any easy fix.
+The best that can be said is that it is generally
+fairly
+easy to detect what has happened when disaster
+strikes,
+to identify the user responsible,
+and take appropriate action.
+In practice,
+we have found that difficulties
+in this area are rather rare,
+but we have not been faced with malicious users,
+and enjoy a fairly generous supply of
+resources which have served to cushion us against
+accidental overconsumption.
+.PP
+The picture is considerably brighter
+in the area of protection of information
+from unauthorized perusal and destruction.
+Here the degree of security seems (almost)
+adequate theoretically, and the problems lie
+more in the necessity for care in the actual use of
+the system.
+.PP
+Each
+.UX
+file has associated with it
+eleven bits of protection information
+together with a user identification number and a user-group
+identification number
+(UID and GID).
+Nine of the protection bits
+are used to specify independently
+permission to read, to write, and to execute the file
+to the user himself, to members of the user's
+group, and to all other users.
+Each process generated
+by or for a user has associated with
+it an effective UID and a real UID, and an effective and real GID.
+When an attempt is made
+to access the file for reading, writing, or execution,
+the user process's effective UID is compared
+against the file's UID; if a match is obtained,
+access is granted provided the read, write, or execute
+bit respectively for the user himself is
+present.
+If the UID for the file and for the process fail to match,
+but the GID's do match, the group bits are used; if the GID's
+do not match, the bits for other users are tested.
+The last two bits of each file's protection information,
+called the set-UID and set-GID bits,
+are used only when the
+file is executed as a program.
+If, in this case, the set-UID bit is on for the file,
+the effective UID for the process is changed to the UID
+associated with the file; the change persists
+until the process terminates or until the UID
+changed again by another execution of a set-UID file.
+Similarly the effective group ID of a process is changed
+to the GID associated with a file
+when that file is executed and has the set-GID bit set.
+The real UID and GID of a process do not change
+when any file is executed,
+but only as the result of a privileged system
+call.
+.PP
+The basic notion of the set-UID and set-GID
+bits is that one may write a program which is executable
+by others and which maintains files accessible to others only
+by that program.
+The classical example is the game-playing program which
+maintains records of the scores of its players.
+The program itself has to read and write the score file,
+but
+no one but the game's sponsor can be allowed
+unrestricted access to the file lest they manipulate
+the game to their own advantage.
+The solution is to
+turn on the set-UID bit of the
+game
+program.
+When, and only when, it is invoked
+by players of the game, it may update the score file
+but ordinary programs executed by others cannot
+access the score.
+.PP
+There are a number of special cases involved
+in determining access permissions.
+Since executing a directory as a program is a meaningless
+operation, the execute-permission
+bit, for directories, is taken instead to mean
+permission to search the directory for a given file
+during the scanning of a path name;
+thus if a directory has execute permission but no read
+permission for a given user, he may access files
+with known names in the directory,
+but may not read (list) the entire contents of the
+directory.
+Write permission on a directory is interpreted to
+mean that the user may create and delete
+files in that directory;
+it is impossible
+for any user to write directly into any directory.
+.PP
+Another, and from the point of view of security, much
+more serious special case is that there is a ``super user''
+who is able to read any file and write any non-directory.
+The super-user is also able to change the protection
+mode and the owner UID and GID of any file
+and to invoke privileged system calls.
+It must be recognized that the mere notion of
+a super-user is a theoretical, and usually
+practical, blemish on any protection scheme.
+.PP
+The first necessity for a secure system
+is of course arranging that all files and directories
+have the proper protection modes.
+Traditionally,
+.UX
+software has been exceedingly
+permissive in this regard;
+essentially all commands create files
+readable and writable by everyone.
+In the current version,
+this policy may be easily adjusted to suit the needs of
+the installation or the individual user.
+Associated with each process and its descendants
+is a mask, which is in effect
+.I and\fR\|-ed
+with the mode of every file and directory created by
+that process.
+In this way, users can arrange that, by default,
+all their files are no more accessible than they wish.
+The standard mask, set by
+.I login,
+allows all permissions to the user himself and to his group,
+but disallows writing by others.
+.PP
+To maintain both data privacy and
+data integrity,
+it is necessary, and largely sufficient,
+to make one's files inaccessible to others.
+The lack of sufficiency could follow
+from the existence of set-UID programs
+created by the user
+and the possibility of total
+breach of system security
+in one of the ways discussed below
+(or one of the ways not discussed below).
+For greater protection,
+an encryption scheme is available.
+Since the editor is able to create encrypted
+documents, and the
+.I crypt
+command can be used to pipe such documents into
+the other text-processing programs,
+the length of time during which cleartext versions
+need be available is strictly limited.
+The encryption scheme used is not one of the strongest
+known, but it is judged adequate, in the sense that
+cryptanalysis
+is likely to require considerably more effort than more direct
+methods of reading the encrypted files.
+For example, a user who stores rimme
+Grimmia
+Grimmiaceae
+grimmiaceous
+grimmish
+grimness
+grimp
+grimy
+grin
+grinagog
+grinch
+grind
+grindable
+Grindelia
+grinder
+grinderman
+grindery
+grinding
+grindingly
+grindle
+grindstone
+gringo
+gringolee
+gringophobia
+Grinnellia
+grinner
+grinning
+grinningly
+grinny
+grintern
+grip
+gripe
+gripeful
+griper
+gripgrass
+griphite
+Griphosaurus
+griping
+gripingly
+gripless
+gripman
+gripment
+grippal
+grippe
+gripper
+grippiness
+gripping
+grippingly
+grippingness
+gripple
+grippleness
+grippotoxin
+grippy
+gripsack
+gripy
+Griqua
+griquaite
+Griqualander
+gris
+grisaille
+grisard
+Griselda
+griseous
+grisette
+grisettish
+grisgris
+griskin
+grisliness
+grisly
+Grison
+grison
+grisounite
+grisoutine
+Grissel
+grissens
+grissons
+grist
+gristbite
+grister
+Gristhorbia
+gristle
+gristliness
+gristly
+gristmill
+gristmiller
+gristmilling
+gristy
+grit
+grith
+grithbreach
+grithman
+gritless
+gritrock
+grits
+gritstone
+gritten
+gritter
+grittily
+grittiness
+grittle
+gritty
+grivet
+grivna
+Grizel
+Grizzel
+grizzle
+grizzled
+grizzler
+grizzly
+grizzlyman
+groan
+groaner
+groanful
+groaning
+groaningly
+groat
+groats
+groatsworth
+grobian
+grobianism
+grocer
+grocerdom
+groceress
+grocerly
+grocerwise
+grocery
+groceryman
+Groenendael
+groff
+grog
+groggery
+groggily
+grogginess
+groggy
+grogram
+grogshop
+groin
+groined
+groinery
+groining
+Grolier
+Grolieresque
+gromatic
+gromatics
+Gromia
+grommet
+gromwell
+groom
+groomer
+groomish
+groomishly
+groomlet
+groomling
+groomsman
+groomy
+groop
+groose
+groot
+grooty
+groove
+grooveless
+groovelike
+groover
+grooverhead
+grooviness
+grooving
+groovy
+grope
+groper
+groping
+gropingly
+gropple
+grorudite
+gros
+grosbeak
+groschen
+groser
+groset
+grosgrain
+grosgrained
+gross
+grossart
+grossen
+grosser
+grossification
+grossify
+grossly
+grossness
+grosso
+grossulaceous
+grossular
+Grossularia
+grossularia
+Grossulariaceae
+grossulariaceous
+grossularious
+grossularite
+grosz
+groszy
+grot
+grotesque
+grotesquely
+grotesqueness
+grotesquerie
+grothine
+grothite
+Grotian
+Grotianism
+grottesco
+grotto
+grottoed
+grottolike
+grottowork
+grouch
+grouchily
+grouchiness
+grouchingly
+grouchy
+grouf
+grough
+ground
+groundable
+groundably
+groundage
+groundberry
+groundbird
+grounded
+groundedly
+groundedness
+groundenell
+grounder
+groundflower
+grounding
+groundless
+groundlessly
+groundlessness
+groundliness
+groundling
+groundly
+groundman
+groundmass
+groundneedle
+groundnut
+groundplot
+grounds
+groundsel
+groundsill
+groundsman
+groundward
+groundwood
+groundwork
+groundy
+group
+groupage
+groupageness
+grouped
+grouper
+grouping
+groupist
+grouplet
+groupment
+groupwise
+grouse
+grouseberry
+grouseless
+grouser
+grouseward
+grousewards
+grousy
+grout
+grouter
+grouthead
+grouts
+grouty
+grouze
+grove
+groved
+grovel
+groveler
+groveless
+groveling
+grovelingly
+grovelings
+grovy
+grow
+growable
+growan
+growed
+grower
+growing
+growingly
+growingupness
+growl
+growler
+growlery
+growling
+growlingly
+growly
+grown
+grownup
+growse
+growsome
+growth
+growthful
+growthiness
+growthless
+growthy
+grozart
+grozet
+grr
+grub
+grubbed
+grubber
+grubbery
+grubbily
+grubbiness
+grubby
+grubhood
+grubless
+grubroot
+grubs
+grubstake
+grubstaker
+Grubstreet
+grubstreet
+grubworm
+grudge
+grudgeful
+grudgefully
+grudgekin
+grudgeless
+grudger
+grudgery
+grudging
+grudgingly
+grudgingness
+grudgment
+grue
+gruel
+grueler
+grueling
+gruelly
+Grues
+gruesome
+gruesomely
+gruesomeness
+gruff
+gruffily
+gruffiness
+gruffish
+gruffly
+gruffness
+gruffs
+gruffy
+grufted
+grugru
+Gruidae
+gruiform
+Gruiformes
+gruine
+Gruis
+grum
+grumble
+grumbler
+grumblesome
+Grumbletonian
+grumbling
+grumblingly
+grumbly
+grume
+Grumium
+grumly
+grummel
+grummels
+grummet
+grummeter
+grumness
+grumose
+grumous
+grumousness
+grump
+grumph
+grumphie
+grumphy
+grumpily
+grumpiness
+grumpish
+grumpy
+grun
+Grundified
+Grundlov
+grundy
+Grundyism
+Grundyist
+Grundyite
+grunerite
+gruneritization
+grunion
+grunt
+grunter
+Grunth
+grunting
+gruntingly
+gruntle
+gruntled
+gruntling
+Grus
+grush
+grushie
+Grusian
+Grusinian
+gruss
+grutch
+grutten
+gryde
+grylli
+gryllid
+Gryllidae
+gryllos
+Gryllotalpa
+Gryllus
+gryllus
+grypanian
+Gryphaea
+Gryphosaurus
+gryposis
+Grypotherium
+grysbok
+guaba
+guacacoa
+guachamaca
+guacharo
+guachipilin
+Guacho
+Guacico
+guacimo
+guacin
+guaco
+guaconize
+Guadagnini
+guadalcazarite
+Guaharibo
+Guahiban
+Guahibo
+Guahivo
+guaiac
+guaiacol
+guaiacolize
+guaiaconic
+guaiacum
+guaiaretic
+guaiasanol
+guaiol
+guaka
+Gualaca
+guama
+guan
+Guana
+guana
+guanabana
+guanabano
+guanaco
+guanajuatite
+guanamine
+guanase
+guanay
+Guanche
+guaneide
+guango
+guanidine
+guanidopropionic
+guaniferous
+guanine
+guanize
+guano
+guanophore
+guanosine
+guanyl
+guanylic
+guao
+guapena
+guapilla
+guapinol
+Guaque
+guar
+guara
+guarabu
+guaracha
+guaraguao
+guarana
+Guarani
+guarani
+Guaranian
+guaranine
+guarantee
+guaranteeship
+guarantor
+guarantorship
+guaranty
+guarapucu
+Guaraunan
+Guarauno
+guard
+guardable
+guardant
+guarded
+guardedly
+guardedness
+guardeen
+guarder
+guardfish
+guardful
+guardfully
+guardhouse
+guardian
+guardiancy
+guardianess
+guardianless
+guardianly
+guardianship
+guarding
+guardingly
+guardless
+guardlike
+guardo
+guardrail
+guardroom
+guardship
+guardsman
+guardstone
+Guarea
+guariba
+guarinite
+guarneri
+Guarnerius
+Guarnieri
+Guarrau
+guarri
+Guaruan
+guasa
+Guastalline
+guatambu
+Guatemalan
+Guatemaltecan
+guativere
+Guato
+Guatoan
+Guatusan
+Guatuso
+Guauaenok
+guava
+guavaberry
+guavina
+guayaba
+guayabi
+guayabo
+guayacan
+Guayaqui
+Guaycuru
+Guaycuruan
+Guaymie
+guayroto
+guayule
+guaza
+Guazuma
+gubbertush
+Gubbin
+gubbo
+gubernacula
+gubernacular
+gubernaculum
+gubernative
+gubernator
+gubernatorial
+gubernatrix
+guberniya
+gucki
+gud
+gudame
+guddle
+gude
+gudebrother
+gudefather
+gudemother
+gudesake
+gudesakes
+gudesire
+gudewife
+gudge
+gudgeon
+gudget
+gudok
+gue
+guebucu
+guejarite
+Guelph
+Guelphic
+Guelphish
+Guelphism
+guemal
+guenepe
+guenon
+guepard
+guerdon
+guerdonable
+guerdoner
+guerdonless
+guereza
+Guerickian
+Guerinet
+Guernsey
+guernsey
+guernseyed
+guerrilla
+guerrillaism
+guerrillaship
+Guesdism
+Guesdist
+guess
+guessable
+guesser
+guessing
+guessingly
+guesswork
+guessworker
+guest
+guestchamber
+guesten
+guester
+guesthouse
+guesting
+guestive
+guestless
+Guestling
+guestling
+guestmaster
+guestship
+guestwise
+Guetar
+Guetare
+gufa
+guff
+guffaw
+guffer
+guffin
+guffy
+gugal
+guggle
+gugglet
+guglet
+guglia
+guglio
+gugu
+Guha
+Guhayna
+guhr
+Guiana
+Guianan
+Guianese
+guib
+guiba
+guidable
+guidage
+guidance
+guide
+guideboard
+guidebook
+guidebookish
+guidecraft
+guideless
+guideline
+guidepost
+guider
+guideress
+guidership
+guideship
+guideway
+guidman
+guidon
+Guidonian
+guidwilly
+guige
+Guignardia
+guignol
+guijo
+Guilandina
+guild
+guilder
+guildhall
+guildic
+guildry
+guildship
+guildsman
+guile
+guileful
+guilefully
+guilefulness
+guileless
+guilelessly
+guilelessness
+guilery
+guillemet
+guillemot
+guillevat
+guilloche
+guillochee
+guillotinade
+guillotine
+guillotinement
+guillotiner
+guillotinism
+guillotinist
+guilt
+guiltily
+guiltiness
+guiltless
+guiltlessly
+guiltlessness
+guiltsick
+guilty
+guily
+guimbard
+guimpe
+Guinea
+guinea
+Guineaman
+Guinean
+Guinevere
+guipure
+Guisard
+guisard
+guise
+guiser
+Guisian
+guising
+guitar
+guitarfish
+guitarist
+guitermanite
+guitguit
+Guittonian
+Gujar
+Gujarati
+Gujrati
+gul
+gula
+gulae
+gulaman
+gulancha
+Gulanganes
+gular
+gularis
+gulch
+gulden
+guldengroschen
+gule
+gules
+Gulf
+gulf
+gulflike
+gulfside
+gulfwards
+gulfweed
+gulfy
+gulgul
+gulinula
+gulinulae
+gulinular
+gulix
+gull
+Gullah
+gullery
+gullet
+gulleting
+gullibility
+gullible
+gullibly
+gullion
+gullish
+gullishly
+gullishness
+gully
+gullyhole
+Gulo
+gulonic
+gulose
+gulosity
+gulp
+gulper
+gulpin
+gulping
+gulpingly
+gulpy
+gulravage
+gulsach
+Gum
+gum
+gumbo
+gumboil
+gumbotil
+gumby
+gumchewer
+gumdigger
+gumdigging
+gumdrop
+gumfield
+gumflower
+gumihan
+gumless
+gumlike
+gumly
+gumma
+gummage
+gummaker
+gummaking
+gummata
+gummatous
+gummed
+gummer
+gummiferous
+gumminess
+gumming
+gummite
+gummose
+gummosis
+gummosity
+gummous
+gummy
+gump
+gumphion
+gumption
+gumptionless
+gumptious
+gumpus
+gumshoe
+gumweed
+gumwood
+gun
+guna
+gunate
+gunation
+gunbearer
+gunboat
+gunbright
+gunbuilder
+guncotton
+gundi
+gundy
+gunebo
+gunfire
+gunflint
+gunge
+gunhouse
+Gunite
+gunite
+gunj
+gunk
+gunl
+gunless
+gunlock
+gunmaker
+gunmaking
+gunman
+gunmanship
+gunnage
+gunne
+gunnel
+gunner
+Gunnera
+Gunneraceae
+gunneress
+gunnership
+gunnery
+gunnies
+gunning
+gunnung
+gunny
+gunocracy
+gunong
+gunpaper
+gunplay
+gunpowder
+gunpowderous
+gunpowdery
+gunpower
+gunrack
+gunreach
+gunrunner
+gunrunning
+gunsel
+gunshop
+gunshot
+gunsman
+gunsmith
+gunsmithery
+gunsmithing
+gunster
+gunstick
+gunstock
+gunstocker
+gunstocking
+gunstone
+gunter
+Gunther
+gunwale
+gunyah
+gunyang
+gunyeh
+Gunz
+Gunzian
+gup
+guppy
+guptavidya
+gur
+Guran
+gurdfish
+gurdle
+gurdwara
+gurge
+gurgeon
+gurgeons
+gurges
+gurgitation
+gurgle
+data that he regards as truly secret
+should be aware that he is implicitly trusting the system
+administrator not to install a version of the crypt command
+that stores every typed password in a file.
+.PP
+Needless to say, the system administrators
+must be at least as careful as their most
+demanding user to place the correct
+protection mode on the files under their
+control.
+In particular,
+it is necessary that special files be protected
+from writing, and probably reading, by ordinary
+users when
+they store sensitive files belonging to other
+users.
+It is easy to write programs that examine and change
+files by accessing the device
+on which the files live.
+.PP
+On the issue of password security,
+.UX
+is probably better than most systems.
+Passwords are stored in an encrypted form
+which, in the absence of serious attention
+from specialists in the field,
+appears reasonably secure,
+provided its limitations are understood.
+In the current version, it is based on a slightly
+defective version of the Federal DES;
+it is purposely defective so that
+easily-available hardware is useless for attempts at exhaustive
+key-search.
+Since both the encryption algorithm and the encrypted passwords
+are available,
+exhaustive enumeration of potential passwords
+is still feasible up to a point.
+We have observed that users choose passwords that are easy to guess:
+they are short, or from a limited alphabet, or
+in a dictionary.
+Passwords should be
+at least six characters long and randomly chosen from an alphabet
+which includes digits and special characters.
+.PP
+Of course there also exist
+feasible non-cryptanalytic
+ways of finding out passwords.
+For example: write a program which types out ``login:\|''
+on the typewriter and copies whatever is typed
+to a file of your own.
+Then invoke the command and go away until the victim arrives.
+.PP
+The set-UID (set-GID)
+notion must be used carefully if any security is to be maintained.
+The first thing to keep in mind is that
+a writable set-UID file can have another program copied onto it.
+For example, if the super-user
+.I (su)
+command is writable,
+anyone can copy the shell
+onto it and get a password-free version
+of
+.I su.
+A more subtle problem
+can come from
+set-UID programs which are not sufficiently
+careful of what is fed into them.
+To take an obsolete example,
+the previous version of the
+.I mail
+command was set-UID and owned by the super-user.
+This version sent mail to the recipient's own directory.
+The notion was that one should be able to send
+mail to anyone even if they want to protect
+their directories from writing.
+The trouble was that
+.I mail
+was rather dumb:
+anyone could mail someone else's private file to himself.
+Much more serious
+is the following scenario:
+make a file with a line like one in the password file
+which allows one to log in as the super-user.
+Then make a link named ``.mail'' to the password file
+in some writable
+directory on the same device as the password file (say /tmp).
+Finally mail the bogus login line to /tmp/.mail;
+You can then login as the super-user,
+clean up the incriminating evidence,
+and have your will.
+.PP
+The fact that users can mount their own disks and tapes
+as file systems
+can be another way of gaining super-user status.
+Once a disk pack is mounted, the system believes
+what is on it.
+Thus one can take a blank disk pack,
+put on it anything desired,
+and mount it.
+There are obvious and unfortunate consequences.
+For example:
+a mounted disk with garbage on it will crash the
+system;
+one of the files on the mounted disk can easily be
+a password-free version of
+.I su;
+other files can be unprotected entries for special files.
+The only easy fix for this problem is to
+forbid the use of
+.I mount
+to unprivileged users.
+A partial solution, not so restrictive,
+would be to have the
+.I mount
+command examine the special file for bad data,
+set-UID programs owned by others, and accessible
+special files,
+and balk at unprivileged invokers.
+                                                                                                                                                                          #
+# Copyright (c) 1986 Regents of the University of California.
+# All rights reserved.  The Berkeley software License Agreement
+# specifies the terms and conditions for redistribution.
+#
+#	@(#)Makefile	1.1 (Berkeley) 5/14/86
+#
+SRCS=	security.ms
+MACROS=	-msU
+PRINTER=Pdp
+TROFF=	ditroff -${PRINTER}
+
+paper:	paper.${PRINTER}
+	lpr -${PRINTER} -n paper.${PRINTER}
+
+paper.${PRINTER}: ${SRCS}
+	 ${TROFF} ${MACROS} -t ${SRCS} > paper.${PRINTER}
+
+clean:
+	rm -f paper.[PT]* *.spell errs Errs make.out
+
+spell:	${SRCS}
+	@for i in ${SRCS}; do \
+		echo $$i; spell $$i | sort | comm -23 - spell.ok > $$i.spell; \
+	done
+                                                                                                                                                                                                                                                                                                                                                                                                                                    À    .   3°    ..   À    Init  le!À    L0 r"À    L1.1a le#À    L1.1b le$À    L1.2  le%À    L2.1  le&À    L2.2  le'À    L2.3  le(À    L2.4  le)À    L3.1  le*À    L3.2  le+À    L3.3  le,À    L3.4  le-À    L4.0  le.À    L4.1  le/À    L4.2  le0À    L4.3  le1À    L5.1  le2À    L5.2  le3À    L5.3  le4À    L5.4  le5À    L6.1  le6À    L6.2  le7À    L6.3  le8À    L6.4  le9À  \  longtext   .                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        #
+(echo $TERM > /dev/null) >& /tmp/l$$
+if (-z /tmp/l$$) exit 0
+cat << '%'
+To do the lessons on 'vi', I need to know your terminal type, and your terminal
+must have an "addressable cursor".  You can still use 'vi' (in something
+called "open mode") on other kinds of terminals, but not with these lessons.
+
+I will put you out of learn.  Find out the terminal type for the
+terminal you are using (this may mean asking someone), then type
+
+setenv TERM xxx
+tset
+
+where you replace xxx with your terminal type.
+
+Some common types are:	TERMINAL MODEL		TERMINAL TYPE
+			Televideo 912/920C	tvi920c
+			Televideo 925		tvi925
+			LSI adm3a		adm3a
+			Zenith/Heathkit H19	h19
+			Datamedia 1520		dm1520
+
+When you are done type "learn vi" again.
+'%'
+exit 1
+                                                                                                                                                                                                                                                                                            #next
+1.1a 10
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  gurglet
+gurgling
+gurglingly
+gurgly
+gurgoyle
+gurgulation
+Gurian
+Guric
+Gurish
+Gurjara
+gurjun
+gurk
+Gurkha
+gurl
+gurly
+Gurmukhi
+gurnard
+gurnet
+gurnetty
+Gurneyite
+gurniad
+gurr
+gurrah
+gurry
+gurt
+guru
+guruship
+Gus
+gush
+gusher
+gushet
+gushily
+gushiness
+gushing
+gushingly
+gushingness
+gushy
+gusla
+gusle
+guss
+gusset
+Gussie
+gussie
+gust
+gustable
+gustation
+gustative
+gustativeness
+gustatory
+Gustavus
+gustful
+gustfully
+gustfulness
+gustily
+gustiness
+gustless
+gusto
+gustoish
+Gustus
+gusty
+gut
+Guti
+Gutium
+gutless
+gutlike
+gutling
+Gutnic
+Gutnish
+gutt
+gutta
+guttable
+guttate
+guttated
+guttatim
+guttation
+gutte
+gutter
+Guttera
+gutterblood
+guttering
+gutterlike
+gutterling
+gutterman
+guttersnipe
+guttersnipish
+gutterspout
+gutterwise
+guttery
+gutti
+guttide
+guttie
+Guttiferae
+guttiferal
+Guttiferales
+guttiferous
+guttiform
+guttiness
+guttle
+guttler
+guttula
+guttulae
+guttular
+guttulate
+guttule
+guttural
+gutturalism
+gutturality
+gutturalization
+gutturalize
+gutturally
+gutturalness
+gutturize
+gutturonasal
+gutturopalatal
+gutturopalatine
+gutturotetany
+guttus
+gutty
+gutweed
+gutwise
+gutwort
+guvacine
+guvacoline
+Guy
+guy
+Guyandot
+guydom
+guyer
+guytrash
+guz
+guze
+Guzmania
+guzmania
+Guzul
+guzzle
+guzzledom
+guzzler
+gwag
+gweduc
+gweed
+gweeon
+gwely
+Gwen
+Gwendolen
+gwine
+gwyniad
+Gyarung
+gyascutus
+Gyges
+Gygis
+gyle
+gym
+gymel
+gymkhana
+Gymnadenia
+Gymnadeniopsis
+Gymnanthes
+gymnanthous
+Gymnarchidae
+Gymnarchus
+gymnasia
+gymnasial
+gymnasiarch
+gymnasiarchy
+gymnasiast
+gymnasic
+gymnasium
+gymnast
+gymnastic
+gymnastically
+gymnastics
+gymnemic
+gymnetrous
+gymnic
+gymnical
+gymnics
+gymnite
+Gymnoblastea
+gymnoblastic
+Gymnocalycium
+gymnocarpic
+gymnocarpous
+Gymnocerata
+gymnoceratous
+gymnocidium
+Gymnocladus
+Gymnoconia
+Gymnoderinae
+Gymnodiniaceae
+gymnodiniaceous
+Gymnodiniidae
+Gymnodinium
+gymnodont
+Gymnodontes
+gymnogen
+gymnogenous
+Gymnoglossa
+gymnoglossate
+gymnogynous
+Gymnogyps
+Gymnolaema
+Gymnolaemata
+gymnolaematous
+Gymnonoti
+Gymnopaedes
+gymnopaedic
+gymnophiona
+gymnoplast
+Gymnorhina
+gymnorhinal
+Gymnorhininae
+gymnosoph
+gymnosophist
+gymnosophy
+gymnosperm
+Gymnospermae
+gymnospermal
+gymnospermic
+gymnospermism
+Gymnospermous
+gymnospermy
+Gymnosporangium
+gymnospore
+gymnosporous
+Gymnostomata
+Gymnostomina
+gymnostomous
+Gymnothorax
+gymnotid
+Gymnotidae
+Gymnotoka
+gymnotokous
+Gymnotus
+Gymnura
+gymnure
+Gymnurinae
+gymnurine
+gympie
+gyn
+gynaecea
+gynaeceum
+gynaecocoenic
+gynander
+gynandrarchic
+gynandrarchy
+Gynandria
+gynandria
+gynandrian
+gynandrism
+gynandroid
+gynandromorph
+gynandromorphic
+gynandromorphism
+gynandromorphous
+gynandromorphy
+gynandrophore
+gynandrosporous
+gynandrous
+gynandry
+gynantherous
+gynarchic
+gynarchy
+gyne
+gynecic
+gynecidal
+gynecide
+gynecocentric
+gynecocracy
+gynecocrat
+gynecocratic
+gynecocratical
+gynecoid
+gynecolatry
+gynecologic
+gynecological
+gynecologist
+gynecology
+gynecomania
+gynecomastia
+gynecomastism
+gynecomasty
+gynecomazia
+gynecomorphous
+gyneconitis
+gynecopathic
+gynecopathy
+gynecophore
+gynecophoric
+gynecophorous
+gynecotelic
+gynecratic
+gyneocracy
+gyneolater
+gyneolatry
+gynephobia
+Gynerium
+gynethusia
+gyniatrics
+gyniatry
+gynic
+gynics
+gynobase
+gynobaseous
+gynobasic
+gynocardia
+gynocardic
+gynocracy
+gynocratic
+gynodioecious
+gynodioeciously
+gynodioecism
+gynoecia
+gynoecium
+gynogenesis
+gynomonecious
+gynomonoeciously
+gynomonoecism
+gynophagite
+gynophore
+gynophoric
+gynosporangium
+gynospore
+gynostegia
+gynostegium
+gynostemium
+Gynura
+gyp
+Gypaetus
+gype
+gypper
+Gyppo
+Gyps
+gyps
+gypseian
+gypseous
+gypsiferous
+gypsine
+gypsiologist
+gypsite
+gypsography
+gypsologist
+gypsology
+Gypsophila
+gypsophila
+gypsophilous
+gypsophily
+gypsoplast
+gypsous
+gypster
+gypsum
+Gypsy
+gypsy
+gypsydom
+gypsyesque
+gypsyfy
+gypsyhead
+gypsyhood
+gypsyish
+gypsyism
+gypsylike
+gypsyry
+gypsyweed
+gypsywise
+gypsywort
+Gyracanthus
+gyral
+gyrally
+gyrant
+gyrate
+gyration
+gyrational
+gyrator
+gyratory
+gyre
+Gyrencephala
+gyrencephalate
+gyrencephalic
+gyrencephalous
+gyrene
+gyrfalcon
+gyri
+gyric
+gyrinid
+Gyrinidae
+Gyrinus
+gyro
+gyrocar
+gyroceracone
+gyroceran
+Gyroceras
+gyrochrome
+gyrocompass
+Gyrodactylidae
+Gyrodactylus
+gyrogonite
+gyrograph
+gyroidal
+gyroidally
+gyrolite
+gyrolith
+gyroma
+gyromagnetic
+gyromancy
+gyromele
+gyrometer
+Gyromitra
+gyron
+gyronny
+Gyrophora
+Gyrophoraceae
+Gyrophoraceous
+gyrophoric
+gyropigeon
+gyroplane
+gyroscope
+gyroscopic
+gyroscopically
+gyroscopics
+gyrose
+gyrostabilizer
+Gyrostachys
+gyrostat
+gyrostatic
+gyrostatically
+gyrostatics
+Gyrotheca
+gyrous
+gyrovagi
+gyrovagues
+gyrowheel
+gyrus
+gyte
+gytling
+gyve
+H
+h
+ha
+haab
+haaf
+Habab
+habanera
+Habbe
+habble
+habdalah
+Habe
+habeas
+habena
+habenal
+habenar
+Habenaria
+habendum
+habenula
+habenular
+haberdash
+haberdasher
+haberdasheress
+haberdashery
+haberdine
+habergeon
+habilable
+habilatory
+habile
+habiliment
+habilimentation
+habilimented
+habilitate
+habilitation
+habilitator
+hability
+habille
+Habiri
+Habiru
+habit
+habitability
+habitable
+habitableness
+habitably
+habitacle
+habitacule
+habitally
+habitan
+habitance
+habitancy
+habitant
+habitat
+habitate
+habitation
+habitational
+habitative
+habited
+habitual
+habituality
+habitualize
+habitually
+habitualness
+habituate
+habituation
+habitude
+habitudinal
+habitue
+habitus
+habnab
+haboob
+Habronema
+habronemiasis
+habronemic
+habu
+habutai
+habutaye
+hache
+Hachiman
+hachure
+hacienda
+hack
+hackamatak
+hackamore
+hackbarrow
+hackberry
+hackbolt
+hackbush
+hackbut
+hackbuteer
+hacked
+hackee
+hacker
+hackery
+hackin
+hacking
+hackingly
+hackle
+hackleback
+hackler
+hacklog
+hackly
+hackmack
+hackman
+hackmatack
+hackney
+hackneyed
+hackneyer
+hackneyism
+hackneyman
+hacksaw
+hacksilber
+hackster
+hackthorn
+hacktree
+hackwood
+hacky
+had
+Hadassah
+hadbot
+hadden
+haddie
+haddo
+haddock
+haddocker
+hade
+Hadean
+Hadendoa
+Hadendowa
+hadentomoid
+Hadentomoidea
+Hades
+Hadhramautian
+hading
+Hadith
+hadj
+Hadjemi
+hadji
+hadland
+Hadramautian
+hadrome
+Hadromerina
+hadromycosis
+hadrosaur
+Hadrosaurus
+haec
+haecceity
+Haeckelian
+Haeckelism
+haem
+Haemamoeba
+Haemanthus
+Haemaphysalis
+haemaspectroscope
+haematherm
+haemathermal
+haemathermous
+haematinon
+haematinum
+haematite
+Haematobranchia
+haematobranchiate
+Haematocrya
+haematocryal
+Haematophilina
+haematophiline
+Haematopus
+haematorrhachis
+haematosepsis
+Haematotherma
+haematothermal
+haematoxylic
+haematoxylin
+Haematoxylon
+haemoconcentration
+haemodilution
+Haemodoraceae
+haemodoraceous
+haemoglobin
+haemogram
+Haemogregarina
+Haemogregarinidae
+haemonchiasis
+haemonchosis
+Haemonchus
+haemony
+haemophile
+Haemoproteus
+haemorrhage
+haemorrhagia
+haemorrhagic
+haemorrhoid
+haemorrhoidal
+haemosporid
+Haemosporidia
+haemosporidian
+Haemosporidium
+Haemulidae
+haemuloid
+haeremai
+haet
+haff
+haffet
+haffkinize
+haffle
+Hafgan
+hafiz
+hafnium
+hafnyl
+haft
+hafter
+hag
+Haganah
+Hagarite
+hagberry
+hagboat
+hagborn
+hagbush
+hagdon
+hageen
+Hagenia
+hagfish
+haggada
+haggaday
+haggadic
+haggadical
+haggadist
+haggadistic
+haggard
+haggardly
+haggardness
+hagged
+hagger
+haggis
+haggish
+haggishly
+haggishness
+haggister
+haggle
+haggler
+haggly
+haggy
+hagi
+hagia
+hagiarchy
+hagiocracy
+Hagiographa
+hagiographal
+hagiographer
+hagiographic
+hagiographical
+hagiographist
+hagiography
+hagiolater
+hagiolatrous
+hagiolatry
+hagiologic
+hagiological
+hagiologist
+hagiology
+hagiophobia
+hagioscope
+hagioscopic
+haglet
+haglike
+haglin
+hagride
+hagrope
+hagseed
+hagship
+hagstone
+hagtaper
+hagweed
+hagworm
+hah
+Hahnemannian
+Hahnemannism
+Haiathalah
+Haida
+Haidan
+Haidee
+haidingerite
+Haiduk
+haik
+haikai
+haikal
+Haikh
+haikwan
+hail
+hailer
+hailproof
+hailse
+hailshot
+hailstone
+hailstorm
+hailweed
+haily
+Haimavati
+hain
+Hainai
+Hainan
+Hainanese
+hainberry
+haine
+hair
+hairband
+hairbeard
+hairbird
+hairbrain
+hairbreadth
+hairbrush
+haircloth
+haircut
+haircutter
+haircutting
+hairdo
+hairdress
+hairdresser
+hairdressing
+haire
+haired
+hairen
+hairhoof
+hairhound
+hairif
+hairiness
+hairlace
+hairless
+hairlessness
+hairlet
+hairline
+hairlock
+hairmeal
+hairmonger
+hairpin
+hairsplitter
+hairsplitting
+hairspring
+hairstone
+hairstreak
+hairtail
+hairup
+hairweed
+hairwood
+hairwork
+hairworm
+hairy
+Haisla
+Haithal
+Haitian
+haje
+hajib
+hajilij
+hak
+hakam
+hakdar
+hake
+Hakea
+hakeem
+hakenkreuz
+Hakenkreuzler
+hakim
+Hakka
+hako
+haku
+hala
+halakah
+halakic
+halakist
+halakistic
+halal
+halalcor
+halation
+Halawi
+halazone
+halberd
+halberdier
+halberdman
+halberdsman
+halbert
+halch
+halcyon
+halcyonian
+halcyonic
+Halcyonidae
+Halcyoninae
+halcyonine
+Haldanite
+hale
+halebi
+Halecomorphi
+haleness
+Halenia
+haler
+halerz
+Halesia
+halesome
+half
+halfback
+halfbeak
+halfer
+halfheaded
+halfhearted
+halfheartedly
+halfheartedness
+halfling
+halfman
+halfness
+halfpace
+halfpaced
+halfpenny
+halfpennyworth
+halfway
+halfwise#print
+    This is a sequence of lessons in the use of the text-editing
+program called 'vi'.  'Vi' stands for 'Visual' and is really a
+screen-oriented mode of the editor 'ex'.  It allows you to create and
+change files containing text, programs, or pretty much anything else.
+These lessons are due for the most part to Pavel Curtis at Cornell.
+
+    You can run the vi program by using the command
+			vi <filename>
+where '<filename>' stands for the name of the file you want to create
+or change.  In most of these lessons, vi will be called automatically
+by 'learn'; you'll usually not need to use the above command until
+after you've completed this course.
+
+    If at any time you want to leave the learn program and you have a
+percent sign as a prompt, just type 'bye' and learn will quit.  There is
+a logical stopping place about 20 minutes into the tutorial which is well
+marked.
+
+    Type 'ready' when you're ready to go on to the first lesson.
+#user
+#next
+1.1b	10
+                                                        #print
+    When you enter the vi editor, it will show you the first screenful
+of your file.  If your file is shorter than the size of your screen, the
+lines past the end of the file will appear blank, with a tilde (~) in
+the first column.  This is so that you can tell where the end of your
+file is, even when it ends in a blank line.  In a moment, you'll
+go into vi and be able to see this for yourself.
+
+    There are two commands to keep in mind in case of difficulties with vi:
+first, the 'Escape' key.  This key is usually located near the upper lefthand
+corner of the keyboard.  Whenever you aren't sure whether vi is listening to
+you or what state it's in, just hit Escape a few times, until it beeps.
+The key is truly harmless and will make vi go back to its normal state.
+
+    The second command is used whenever the screen gets messed up; for
+example, when someone writes you a message.  Just hit the 'L' key while
+holding down the 'CTRL' or Control button.  This is usually called
+'Control-L' and written '^L'.  The ^L command will clear and redraw the
+screen, leaving the cursor where it was.  On some terminals, ^R must be used
+instead of ^L; we'll explore this in a moment, when you're inside the editor.
+
+    You'll now be placed inside the editor.  You'll be given instructions
+on what to do when you get there.  Type 'ready' now to enter vi.
+#user
+#create QuitTest
+    You are now inside the vi editor.  Note the name and numbers at the
+bottom of the screen.  They tell you that you're editing the file named
+QuitTest and how many lines and characters the file has.  The tildes in
+the first column of several of the lines near the bottom of the screen
+represent lines beyond the end of this file.
+    First, try out the Escape command.  Hitting Escape should make the
+terminal beep. Now, try out the ^L command.  ^L should make the screen
+clear and be redrawn.  (Remember, ^L is typed by holding down the
+'Control' key and hitting 'L').  On some types of terminals the ^L command
+doesn't work.  If when you typed ^L nothing happened except for the cursor
+moving one letter to the right, you're using one of those terminals.  In
+this case, use ^R (hold down 'Control' and hit 'R') to redraw the screen.
+Make sure you know which one will work for you.
+    The other command you'll need to know right now is the command to
+quit and get out of the editor.  (Oh, yeah....)  First, hit the colon
+key, ':'.  The cursor should move to the bottom line of the screen and
+print a colon.  Vi is now ready for a 'colon-command'.  Now type a
+'q'.  When you hit the return key, you'll leave the editor.  If it
+doesn't work, it means you accidentally made changes to the file and vi
+doesn't want you to lose them.  We don't care about this file, though,
+so just type ':q!' and it will give up.  Bye!!
+#
+vi QuitTest
+#next
+1.2 10
+                                                                                                                                                                                                                                                   #print
+    So far, you've learned how to force vi to listen to you (the Escape
+key), to redraw the screen (the ^L or ^R command), how to get out of vi
+(the :q command), and how to quit even when vi thinks you shouldn't
+(the :q! command).  Suppose that vi is right, however, when it prevents
+you from quitting.  Suppose that you really do want to save the changes
+you've made to the file.  For this vi uses the :w command.  'w' stands for
+write, meaning that vi is going to write out its private copy of the file,
+thereby saving your work.
+
+   You use the :w command in the same way as you use :q.  That is, you type 
+a colon, the cursor moves to the bottom of the screen, you type 'w' and hit
+return, and vi saves the file.  If you wanted vi to save the file under a
+different name, you could type ':w <filename>', where <filename> stands for
+the new name.  Very frequently, you want to both write out the file and then
+quit.  You could use the :w command followed by the :q command.  Vi also
+provides a shorthand version, :wq, which will both save the file and then quit.
+
+    Now you are ready to try out the :w command, but this time I want you to
+get into the editor yourself.  When you see the percent sign, type
+       vi WriteText
+and when you've quit the editor type 'ready' to go to the next lesson.
+#create WriteText
+    Use the :w command to save this file under the name SaveTest and then
+use the :wq command to save it also under its old name.
+
+    If you don't remember how to do this, just type :q and you'll get to
+see the lesson again.
+
+    When you see the percent sign, don't forget to type 'ready' to
+go on to the next lesson.
+#user
+#cmp WriteText SaveTest
+#succeed
+Very good.  Now that you can save anything you do, let's go on.
+#fail
+Try again.  To save a file in a new place, type
+		:w <filename>
+using the new name instead of '<filename>'.  For example, to save it under
+the name 'blort', you'd type
+		:w blort
+
+To save it under its old name and then quit, just type
+		:wq
+
+When 'learn' types a percent sign, type 'vi WriteText' to try it again.
+#next
+2.1  10
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            f to
+		replace the next three characters.  You'd then type 'PDP11'
+		and hit Escape, to leave insert mode.
+
+			1. Finish writing that darn tutorial
+			2. Find out about VAX Prolog implementation
+			3. Set up meeting times with NET committee
+			4. Buy a loaf of bread on way home
+				    ||
+				    ||
+				    \/
+			1. Finish writing that darn tutorial
+			2. Find out about PDP11 Prolog implementation
+			3. Set up meeting times with NET committee
+			4. Buy a loaf of bread on way home
+#
+vi Review2
+#next
+4.0  10
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
+Haliaeetus
+halibios
+halibiotic
+halibiu
+halibut
+halibuter
+Halicarnassean
+Halicarnassian
+Halichondriae
+halichondrine
+halichondroid
+Halicore
+Halicoridae
+halide
+halidom
+halieutic
+halieutically
+halieutics
+Haligonian
+Halimeda
+halimous
+halinous
+haliographer
+haliography
+Haliotidae
+Haliotis
+haliotoid
+haliplankton
+haliplid
+Haliplidae
+Haliserites
+halisteresis
+halisteretic
+halite
+Halitheriidae
+Halitherium
+halitosis
+halituosity
+halituous
+halitus
+hall
+hallabaloo
+hallage
+hallah
+hallan
+hallanshaker
+hallebardier
+hallecret
+halleflinta
+halleflintoid
+hallel
+hallelujah
+hallelujatic
+hallex
+Halleyan
+halliblash
+halling
+hallman
+hallmark
+hallmarked
+hallmarker
+hallmoot
+halloo
+Hallopididae
+hallopodous
+Hallopus
+hallow
+Hallowday
+hallowed
+hallowedly
+hallowedness
+Halloween
+hallower
+Hallowmas
+Hallowtide
+halloysite
+Hallstatt
+Hallstattian
+hallucal
+hallucinate
+hallucination
+hallucinational
+hallucinative
+hallucinator
+hallucinatory
+hallucined
+hallucinosis
+hallux
+hallway
+halma
+halmalille
+halmawise
+halo
+Haloa
+Halobates
+halobios
+halobiotic
+halochromism
+halochromy
+Halocynthiidae
+haloesque
+halogen
+halogenate
+halogenation
+halogenoid
+halogenous
+Halogeton
+halohydrin
+haloid
+halolike
+halolimnic
+halomancy
+halometer
+halomorphic
+halophile
+halophilism
+halophilous
+halophyte
+halophytic
+halophytism
+Halopsyche
+Halopsychidae
+Haloragidaceae
+haloragidaceous
+Halosauridae
+Halosaurus
+haloscope
+Halosphaera
+halotrichite
+haloxene
+hals
+halse
+halsen
+halsfang
+halt
+halter
+halterbreak
+halteres
+Halteridium
+halterproof
+Haltica
+halting
+haltingly
+haltingness
+haltless
+halucket
+halukkah
+halurgist
+halurgy
+halutz
+halvaner
+halvans
+halve
+halved
+halvelings
+halver
+halves
+halyard
+Halysites
+ham
+hamacratic
+Hamadan
+hamadryad
+Hamal
+hamal
+hamald
+Hamamelidaceae
+hamamelidaceous
+Hamamelidanthemum
+hamamelidin
+Hamamelidoxylon
+hamamelin
+Hamamelis
+Hamamelites
+hamartiologist
+hamartiology
+hamartite
+hamate
+hamated
+Hamathite
+hamatum
+hambergite
+hamble
+hambroline
+hamburger
+hame
+hameil
+hamel
+Hamelia
+hamesucken
+hamewith
+hamfat
+hamfatter
+hami
+Hamidian
+Hamidieh
+hamiform
+Hamilton
+Hamiltonian
+Hamiltonianism
+Hamiltonism
+hamingja
+hamirostrate
+Hamital
+Hamite
+Hamites
+Hamitic
+Hamiticized
+Hamitism
+Hamitoid
+hamlah
+hamlet
+hamleted
+hamleteer
+hamletization
+hamletize
+hamlinite
+hammada
+hammam
+hammer
+hammerable
+hammerbird
+hammercloth
+hammerdress
+hammerer
+hammerfish
+hammerhead
+hammerheaded
+hammering
+hammeringly
+hammerkop
+hammerless
+hammerlike
+hammerman
+hammersmith
+hammerstone
+hammertoe
+hammerwise
+hammerwork
+hammerwort
+hammochrysos
+hammock
+hammy
+hamose
+hamous
+hamper
+hamperedly
+hamperedness
+hamperer
+hamperman
+Hampshire
+hamrongite
+hamsa
+hamshackle
+hamster
+hamstring
+hamular
+hamulate
+hamule
+Hamulites
+hamulose
+hamulus
+hamus
+hamza
+han
+Hanafi
+Hanafite
+hanaper
+hanaster
+Hanbalite
+hanbury
+hance
+hanced
+hanch
+hancockite
+hand
+handbag
+handball
+handballer
+handbank
+handbanker
+handbarrow
+handbill
+handblow
+handbolt
+handbook
+handbow
+handbreadth
+handcar
+handcart
+handclap
+handclasp
+handcloth
+handcraft
+handcraftman
+handcraftsman
+handcuff
+handed
+handedness
+Handelian
+hander
+handersome
+handfast
+handfasting
+handfastly
+handfastness
+handflower
+handful
+handgrasp
+handgravure
+handgrip
+handgriping
+handgun
+handhaving
+handhold
+handhole
+handicap
+handicapped
+handicapper
+handicraft
+handicraftship
+handicraftsman
+handicraftsmanship
+handicraftswoman
+handicuff
+handily
+handiness
+handistroke
+handiwork
+handkercher
+handkerchief
+handkerchiefful
+handlaid
+handle
+handleable
+handled
+handleless
+handler
+handless
+handlike
+handling
+handmade
+handmaid
+handmaiden
+handmaidenly
+handout
+handpost
+handprint
+handrail
+handrailing
+handreader
+handreading
+handsale
+handsaw
+handsbreadth
+handscrape
+handsel
+handseller
+handset
+handshake
+handshaker
+handshaking
+handsmooth
+handsome
+handsomeish
+handsomely
+handsomeness
+handspade
+handspike
+handspoke
+handspring
+handstaff
+handstand
+handstone
+handstroke
+handwear
+handwheel
+handwhile
+handwork
+handworkman
+handwrist
+handwrite
+handwriting
+handy
+handyblow
+handybook
+handygrip
+hangability
+hangable
+hangalai
+hangar
+hangbird
+hangby
+hangdog
+hange
+hangee
+hanger
+hangfire
+hangie
+hanging
+hangingly
+hangkang
+hangle
+hangman
+hangmanship
+hangment
+hangnail
+hangnest
+hangout
+hangul
+hangwoman
+hangworm
+hangworthy
+hanif
+hanifism
+hanifite
+hanifiya
+hank
+hanker
+hankerer
+hankering
+hankeringly
+hankie
+hankle
+hanksite
+hanky
+hanna
+hannayite
+Hannibal
+Hannibalian
+Hannibalic
+Hano
+Hanoverian
+Hanoverianize
+Hanoverize
+hansa
+Hansard
+Hansardization
+Hansardize
+Hanse
+hanse
+Hanseatic
+hansel
+hansgrave
+hansom
+hant
+hantle
+Hanukkah
+Hanuman
+hao
+haole
+haoma
+haori
+hap
+Hapale
+Hapalidae
+hapalote
+Hapalotis
+hapaxanthous
+haphazard
+haphazardly
+haphazardness
+haphtarah
+Hapi
+hapless
+haplessly
+haplessness
+haplite
+haplocaulescent
+haplochlamydeous
+Haplodoci
+Haplodon
+haplodont
+haplodonty
+haplography
+haploid
+haploidic
+haploidy
+haplolaly
+haplologic
+haplology
+haploma
+Haplomi
+haplomid
+haplomous
+haplont
+haploperistomic
+haploperistomous
+haplopetalous
+haplophase
+haplophyte
+haploscope
+haploscopic
+haplosis
+haplostemonous
+haplotype
+haply
+happen
+happening
+happenstance
+happier
+happiest
+happify
+happiless
+happily
+happiness
+happing
+happy
+hapten
+haptene
+haptenic
+haptere
+hapteron
+haptic
+haptics
+haptometer
+haptophor
+haptophoric
+haptophorous
+haptotropic
+haptotropically
+haptotropism
+hapu
+hapuku
+haqueton
+harakeke
+harangue
+harangueful
+haranguer
+Hararese
+Harari
+harass
+harassable
+harassedly
+harasser
+harassingly
+harassment
+haratch
+Haratin
+Haraya
+Harb
+harbergage
+harbi
+harbinge
+harbinger
+harbingership
+harbingery
+harbor
+harborage
+harborer
+harborless
+harborous
+harborside
+harborward
+hard
+hardanger
+hardback
+hardbake
+hardbeam
+hardberry
+harden
+hardenable
+Hardenbergia
+hardener
+hardening
+hardenite
+harder
+Harderian
+hardfern
+hardfist
+hardfisted
+hardfistedness
+hardhack
+hardhanded
+hardhandedness
+hardhead
+hardheaded
+hardheadedly
+hardheadedness
+hardhearted
+hardheartedly
+hardheartedness
+hardihood
+hardily
+hardim
+hardiment
+hardiness
+hardish
+hardishrew
+hardly
+hardmouth
+hardmouthed
+hardness
+hardock
+hardpan
+hardship
+hardstand
+hardstanding
+hardtack
+hardtail
+hardware
+hardwareman
+Hardwickia
+hardwood
+hardy
+hardystonite
+hare
+harebell
+harebottle
+harebrain
+harebrained
+harebrainedly
+harebrainedness
+harebur
+harefoot
+harefooted
+harehearted
+harehound
+Harelda
+harelike
+harelip
+harelipped
+harem
+haremism
+haremlik
+harengiform
+harfang
+haricot
+harigalds
+hariolate
+hariolation
+hariolize
+harish
+hark
+harka
+harl
+Harleian
+Harlemese
+Harlemite
+harlequin
+harlequina
+harlequinade
+harlequinery
+harlequinesque
+harlequinic
+harlequinism
+harlequinize
+harling
+harlock
+harlot
+harlotry
+harm
+Harmachis
+harmal
+harmala
+harmaline
+harman
+harmattan
+harmel
+harmer
+harmful
+harmfully
+harmfulness
+harmine
+harminic
+harmless
+harmlessly
+harmlessness
+harmonia
+harmoniacal
+harmonial
+harmonic
+harmonica
+harmonical
+harmonically
+harmonicalness
+harmonichord
+harmonici
+harmonicism
+harmonicon
+harmonics
+harmonious
+harmoniously
+harmoniousness
+harmoniphon
+harmoniphone
+harmonist
+harmonistic
+harmonistically
+Harmonite
+harmonium
+harmonizable
+harmonization
+harmonize
+harmonizer
+harmonogram
+harmonograph
+harmonometer
+harmony
+harmost
+harmotome
+harmotomic
+harmproof
+harn
+harness
+harnesser
+harnessry
+harnpan
+harp
+Harpa
+harpago
+harpagon
+Harpagornis
+Harpalides
+Harpalinae
+Harpalus
+harper
+harperess
+Harpidae
+harpier
+harpings
+harpist
+harpless
+harplike
+Harpocrates
+harpoon
+harpoo

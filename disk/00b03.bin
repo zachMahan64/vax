@@ -1,0 +1,4551 @@
+shroud
+foreside
+foresight
+foresighted
+foresightedness
+foresightful
+foresightless
+foresign
+foresignify
+foresin
+foresing
+foresinger
+foreskin
+foreskirt
+foresleeve
+foresound
+forespeak
+forespecified
+forespeed
+forespencer
+forest
+forestaff
+forestage
+forestair
+forestal
+forestall
+forestaller
+forestallment
+forestarling
+forestate
+forestation
+forestay
+forestaysail
+forestcraft
+forested
+foresteep
+forestem
+forestep
+forester
+forestership
+forestful
+forestial
+Forestian
+forestick
+Forestiera
+forestine
+forestish
+forestless
+forestlike
+forestology
+forestral
+forestress
+forestry
+forestside
+forestudy
+forestwards
+foresty
+foresummer
+foresummon
+foresweat
+foretack
+foretackle
+foretalk
+foretalking
+foretaste
+foretaster
+foretell
+foretellable
+foreteller
+forethink
+forethinker
+forethought
+forethoughted
+forethoughtful
+forethoughtfully
+forethoughtfulness
+forethoughtless
+forethrift
+foretime
+foretimed
+foretoken
+foretold
+foretop
+foretopman
+foretrace
+foretrysail
+foreturn
+foretype
+foretypified
+foreuse
+foreutter
+forevalue
+forever
+forevermore
+foreview
+fovel.  If the primary
+input is a file, then
+.I ex
+will exit when this occurs.
+.NH 2
+Recovering from hangups and crashes
+.PP
+If a hangup signal is received and the buffer has been modified since
+it was last written out, or if the system crashes, either the editor
+(in the first case) or the system (after it reboots in the second) will
+attempt to preserve the buffer.  The next time you log in you should be
+able to recover the work you were doing, losing at most a few lines of
+changes from the last point before the hangup or editor crash.  To
+recover a file you can use the
+.B \-r
+option.  If you were editing the file
+.I resume,
+then you should change
+to the directory where you were when the crash occurred, giving the command
+.DS
+\fBex \-r\fP\fI resume\fP
+.DE
+After checking that the retrieved file is indeed ok, you can
+.I write
+it over the previous contents of that file.
+.PP
+You will normally get mail from the system telling you when a file has
+been saved after a crash.  The command
+.DS
+\fBex\fP \-\fBr\fP
+.DE
+will print a list of the files which have been saved for you.
+(In the case of a hangup,
+the file will not appear in the list,
+although it can be recovered.)
+.NH 1
+Editing modes
+.PP
+.I Ex
+has five distinct modes.  The primary mode is
+.I command
+mode.  Commands are entered in command mode when a `:' prompt is
+present, and are executed each time a complete line is sent.  In
+.I "text input"
+mode
+.I ex
+gathers input lines and places them in the file.  The
+.I append,
+.I insert,
+and
+.I change
+commands use text input mode.
+No prompt is printed when you are in text input mode.
+This mode is left by typing a `.' alone at the beginning of a line, and
+.I command
+mode resumes.
+.PP
+The last three modes are
+.I open
+and
+.I visual
+modes, entered by the commands of the same name, and, within open and
+visual modes
+.I "text insertion"
+mode.
+.I Open
+and
+.I visual
+modes allow local editing operations to be performed on the text in the
+file.  The
+.I open
+command displays one line at a time on any terminal while
+.I visual
+works on \s-2CRT\s0 terminals with random positioning cursors, using the
+screen as a (single) window for file editing changes.
+These modes are described (only) in
+.I "An Introduction to Display Editing with Vi."
+.NH 
+Command structure
+.PP
+Most command names are English words,
+and initial prefixes of the words are acceptable abbreviations.
+The ambiguity of abbreviations is resolved in favor of the more commonly
+used commands.*
+.FS
+* As an example, the command 
+.I substitute
+can be abbreviated `s'
+while the shortest available abbreviation for the 
+.I set
+command is `se'.
+.FE
+.NH 2
+Command parameters
+.PP
+Most commands accept prefix addresses specifying the lines in the file
+upon which they are to have effect.
+The forms of these addresses will be discussed below.
+A number of commands also may take a trailing
+.I count
+specifying the number of lines to be involved in the command.\(dg
+.FS
+\(dg Counts are rounded down if necessary.
+.FE
+Thus the command ``10p'' will print the tenth line in the buffer while
+``delete 5'' will delete five lines from the buffer,
+starting with the current line.
+.PP
+Some commands take other information or parameters,
+this information always being given after the command name.\(dd
+.FS
+\(dd Examples would be option names in a
+.I set
+command i.e. ``set number'',
+a file name in an
+.I edit
+command,
+a regular expression in a
+.I substitute
+command,
+or a target address for a
+.I copy
+command, i.e. ``1,5 copy 25''.
+.FE
+.NH 2
+Command variants
+.PP
+A number of commands have two distinct variants.
+The variant form of the command is invoked by placing an
+`!' immediately after the command name.
+Some of the default variants may be controlled by options;
+in this case, the `!' serves to toggle the default.
+.NH 2
+Flags after commands
+.PP
+The characters `#', `p' and `l' may be placed after many commands.**
+.FS
+**
+A `p' or `l' must be preceded by a blank or tab
+except in the single special case `dp'.
+.FE
+In this case, the command abbreviated by these characters
+is executed after the command completes.
+Since
+.I ex
+normally prints the new current line after each change, `p' is rarely necessary.
+Any number of `+' or `\-' characters may also be given with these flags.
+If they appear, the specified offset is applied to the current line
+value before the printing command is executed.
+.NH 2
+Comments
+.PP
+It is possible to give editor commands which are ignored.
+This is useful when making complex editor scripts
+for which comments are desired.
+The comment character is the double quote: ".
+Any command line beginning with " is ignored.
+Comments beginning with " may also be placed at the ends
+of commands, except in cases where they could be confused as part
+of text (shell escapes and the substitute and map commands).
+.NH 2
+Multiple commands per line
+.PP
+More than one command may be placed on a line by separating each pair
+of commands by a `|' character.
+However the
+.I global
+commands,
+comments,
+and the shell escape `!'
+must be the last command on a line, as they are not terminated by a `|'.
+.NH 2
+Reporting large changes
+.PP
+Most commands which change the contents of the editor buffer give
+feedback if the scope of the change exceeds a threshold given by the
+.I report
+option.
+This feedback helps to detect undesirably large changes so that they may
+be quickly and easily reversed with an
+.I undo.
+After commands with more global effect such as
+.I global
+or
+.I visual,
+you will be informed if the net change in the number of lines
+in the buffer during this command exceeds this threshold.
+.NH 1
+Command addressing
+.NH 2
+Addressing primitives
+.IP \fB.\fR 20
+The current line.
+Most commands leave the current line as the last line which they affect.
+The default address for most commands is the current line,
+thus `\fB.\fR' is rarely used alone as an address.
+.IP \fIn\fR 20
+The \fIn\fRth line in the editor's buffer, lines being numbered
+sequentially from 1.
+.IP \fB$\fR 20
+The last line in the buffer.
+.IP \fB%\fR 20
+An abbreviation for ``1,$'', the entire buffer.
+.IP \fI+n\fR\ \fI\-n\fR 20
+An offset relative to the current buffer line.\(dg
+.FS
+\(dg
+The forms `.+3' `+3' and `+++' are all equivalent;
+if the current line is line 100 they all address line 103.
+.FE
+.IP \fB/\fIpat\fR\fB/\fR\ \fB?\fIpat\fR\fB?\fR 20
+Scan forward and backward respectively for a line containing \fIpat\fR, a
+regular expression (as defined below).  The scans normally wrap around the end
+of the buffer.
+If all that is desired is to print the next line containing \fIpat\fR, then
+the trailing \fB/\fR or \fB?\fR may be omitted.
+If \fIpat\fP is omitted or explicitly empty, then the last
+regular expression specified is located.\(dd
+.FS
+\(dd The forms \fB\e/\fP and \fB\e?\fP scan
+using the last regular expression used in a scan; after a substitute
+\fB//\fP and \fB??\fP would scan using the substitute's regular expression.
+.FE
+.IP \fB\(aa\(aa\fP\ \fB\(aa\fP\fIx\fP 20
+Before each non-relative motion of the current line `\fB.\fP',
+the previous current line is marked with a tag, subsequently referred to as
+`\(aa\(aa'.
+This makes it easy to refer or return to this previous context.
+Marks may also be established by the
+.I mark
+command, using single lower case letters
+.I x
+and the marked lines referred to as
+`\(aa\fIx\fR'.
+.NH 2
+Combining addressing primitives
+.PP
+Addresses to commands consist of a series of addressing primitives,
+separated by `,' or `;'.
+Such address lists are evaluated left-to-right.
+When addresses are separated by `;' the current line `\fB.\fR'
+is set to the value of the previous addressing expression
+before the next address is interpreted.
+If more addresses are given than the command requires,
+then all but the last one or two are ignored.
+If the command takes two addresses, the first addressed line must
+precede the second in the buffer.\(dg
+.FS
+\(dg Null address specifications are permitted in a list of addresses,
+the default in this case is the current line `.';
+thus `,100' is equivalent to `\fB.\fR,100'.
+It is an error to give a prefix address to a command which expects none.
+.FE
+.NH 1
+Command descriptions
+.PP
+The following form is a prototype for all
+.I ex
+commands:
+.DS
+\fIaddress\fR \fBcommand\frevision
+forevouch
+forevouched
+forevow
+forewarm
+forewarmer
+forewarn
+forewarner
+forewarning
+forewarningly
+forewaters
+foreween
+foreweep
+foreweigh
+forewing
+forewinning
+forewisdom
+forewish
+forewoman
+forewonted
+foreword
+foreworld
+foreworn
+forewritten
+forewrought
+foreyard
+foreyear
+forfairn
+forfar
+forfare
+forfars
+forfault
+forfaulture
+forfeit
+forfeiter
+forfeits
+forfeiture
+forfend
+forficate
+forficated
+forfication
+forficiform
+Forficula
+forficulate
+Forficulidae
+forfouchten
+forfoughen
+forfoughten
+forgainst
+forgather
+forge
+forgeability
+forgeable
+forged
+forgedly
+forgeful
+forgeman
+forger
+forgery
+forget
+forgetful
+forgetfully
+forgetfulness
+forgetive
+forgetness
+forgettable
+forgetter
+forgetting
+forgettingly
+forgie
+forging
+forgivable
+forgivableness
+forgivably
+forgive
+forgiveless
+forgiveness
+forgiver
+forgiving
+forgivingly
+forgivingness
+forgo
+forgoer
+forgot
+forgotten
+forgottenness
+forgrow
+forgrown
+forhoo
+forhooy
+forhow
+forinsec
+forint
+forisfamiliate
+forisfamiliation
+forjesket
+forjudge
+forjudger
+fork
+forkable
+forkbeard
+forked
+forkedly
+forkedness
+forker
+forkful
+forkhead
+forkiness
+forkless
+forklike
+forkman
+forksmith
+forktail
+forkwise
+forky
+forleft
+forlet
+forlorn
+forlornity
+forlornly
+forlornness
+form
+formability
+formable
+formably
+formagen
+formagenic
+formal
+formalazine
+formaldehyde
+formaldehydesulphoxylate
+formaldehydesulphoxylic
+formaldoxime
+formalesque
+Formalin
+formalism
+formalist
+formalistic
+formalith
+formality
+formalization
+formalize
+formalizer
+formally
+formalness
+formamide
+formamidine
+formamido
+formamidoxime
+formanilide
+formant
+format
+formate
+formation
+formational
+formative
+formatively
+formativeness
+formature
+formazyl
+forme
+formed
+formedon
+formee
+formel
+formene
+formenic
+former
+formeret
+formerly
+formerness
+formful
+formiate
+formic
+Formica
+formican
+Formicariae
+formicarian
+Formicariidae
+formicarioid
+formicarium
+formicaroid
+formicary
+formicate
+formication
+formicative
+formicicide
+formicid
+Formicidae
+formicide
+Formicina
+Formicinae
+formicine
+Formicivora
+formicivorous
+Formicoidea
+formidability
+formidable
+formidableness
+formidably
+formin
+forminate
+forming
+formless
+formlessly
+formlessness
+Formol
+formolite
+formonitrile
+Formosan
+formose
+formoxime
+formula
+formulable
+formulae
+formulaic
+formular
+formularism
+formularist
+formularistic
+formularization
+formularize
+formulary
+formulate
+formulation
+formulator
+formulatory
+formule
+formulism
+formulist
+formulistic
+formulization
+formulize
+formulizer
+formwork
+formy
+formyl
+formylal
+formylate
+formylation
+fornacic
+Fornax
+fornaxid
+fornenst
+fornent
+fornical
+fornicate
+fornicated
+fornication
+fornicator
+fornicatress
+fornicatrix
+forniciform
+forninst
+fornix
+forpet
+forpine
+forpit
+forprise
+forrad
+forrard
+forride
+forrit
+forritsome
+forrue
+forsake
+forsaken
+forsakenly
+forsakenness
+forsaker
+forset
+forslow
+forsooth
+forspeak
+forspend
+forspread
+Forst
+forsterite
+forswear
+forswearer
+forsworn
+forswornness
+Forsythia
+fort
+fortalice
+forte
+fortescue
+fortescure
+forth
+forthbring
+forthbringer
+forthcome
+forthcomer
+forthcoming
+forthcomingness
+forthcut
+forthfare
+forthfigured
+forthgaze
+forthgo
+forthgoing
+forthink
+forthputting
+forthright
+forthrightly
+forthrightness
+forthrights
+forthtell
+forthteller
+forthwith
+forthy
+forties
+fortieth
+fortifiable
+fortification
+fortifier
+fortify
+fortifying
+fortifyingly
+fortin
+fortis
+fortissimo
+fortitude
+fortitudinous
+fortlet
+fortnight
+fortnightly
+fortravail
+fortread
+fortress
+fortuitism
+fortuitist
+fortuitous
+fortuitously
+fortuitousness
+fortuity
+fortunate
+fortunately
+fortunateness
+fortune
+fortuned
+fortuneless
+Fortunella
+fortunetell
+fortuneteller
+fortunetelling
+fortunite
+forty
+fortyfold
+forum
+forumize
+forwander
+forward
+forwardal
+forwardation
+forwarder
+forwarding
+forwardly
+forwardness
+forwards
+forwean
+forweend
+forwent
+forwoden
+forworden
+fosh
+fosie
+Fosite
+fossa
+fossage
+fossane
+fossarian
+fosse
+fossed
+fossette
+fossick
+fossicker
+fossiform
+fossil
+fossilage
+fossilated
+fossilation
+fossildom
+fossiled
+fossiliferous
+fossilification
+fossilify
+fossilism
+fossilist
+fossilizable
+fossilization
+fossilize
+fossillike
+fossilogist
+fossilogy
+fossilological
+fossilologist
+fossilology
+fossor
+Fossores
+Fossoria
+fossorial
+fossorious
+fossula
+fossulate
+fossule
+fossulet
+fostell
+Foster
+foster
+fosterable
+fosterage
+fosterer
+fosterhood
+fostering
+fosteringly
+fosterite
+fosterland
+fosterling
+fostership
+fostress
+fot
+fotch
+fother
+Fothergilla
+fotmal
+fotui
+fou
+foud
+foudroyant
+fouette
+fougade
+fougasse
+fought
+foughten
+foughty
+foujdar
+foujdary
+foul
+foulage
+foulard
+fouler
+fouling
+foulish
+foully
+foulmouthed
+foulmouthedly
+foulmouthedness
+foulness
+foulsome
+foumart
+foun
+found
+foundation
+foundational
+foundationally
+foundationary
+foundationed
+foundationer
+foundationless
+foundationlessness
+founder
+founderous
+foundership
+foundery
+founding
+foundling
+foundress
+foundry
+foundryman
+fount
+fountain
+fountained
+fountaineer
+fountainhead
+fountainless
+fountainlet
+fountainous
+fountainously
+fountainwise
+fountful
+Fouquieria
+Fouquieriaceae
+fouquieriaceous
+four
+fourble
+fourche
+fourchee
+fourcher
+fourchette
+fourchite
+fourer
+fourflusher
+fourfold
+Fourierian
+Fourierism
+Fourierist
+Fourieristic
+Fourierite
+fourling
+fourpence
+fourpenny
+fourpounder
+fourre
+fourrier
+fourscore
+foursome
+foursquare
+foursquarely
+foursquareness
+fourstrand
+fourteen
+fourteener
+fourteenfold
+fourteenth
+fourteenthly
+fourth
+fourther
+fourthly
+foussa
+foute
+fouter
+fouth
+fovea
+foveal
+foveate
+foveated
+foveation
+foveiform
+foveola
+foveolarious
+foveolate
+foveolated
+foveole
+foveolet
+fow
+fowk
+fowl
+fowler
+fowlerite
+fowlery
+fowlfoot
+fowling
+fox
+foxbane
+foxberry
+foxchop
+foxer
+foxery
+foxfeet
+foxfinger
+foxfish
+foxglove
+foxhole
+foxhound
+foxily
+foxiness
+foxing
+foxish
+foxlike
+foxproof
+foxship
+foxskin
+foxtail
+foxtailed
+foxtongue
+foxwood
+foxy
+foy
+foyaite
+foyaitic
+foyboat
+foyer
+foziness
+fozy
+fra
+frab
+frabbit
+frabjous
+frabjously
+frabous
+fracas
+fracedinous
+frache
+frack
+fractable
+fractabling
+fracted
+Fracticipita
+fractile
+fraction
+fractional
+fractionalism
+fractionalize
+fractionally
+fractionary
+fractionate
+fractionating
+fractionation
+fractionator
+fractionization
+fractionize
+fractionlet
+fractious
+fractiously
+fractiousness
+fractocumulus
+fractonimbus
+fractostratus
+fractuosity
+fracturable
+fractural
+fracture
+fractureproof
+frae
+Fragaria
+fraghan
+Fragilaria
+Fragilariaceae
+fragile
+fragilely
+fragileness
+fragility
+fragment
+fragmental
+fragmentally
+fragmentarily
+fragmentariness
+fragmentary
+fragmentation
+fragmented
+fragmentist
+fragmentitious
+fragmentize
+fragrance
+fragrancy
+fragrant
+fragrantly
+fragrantness
+fraid
+fraik
+frail
+frailejon
+frailish
+frailly
+frailness
+frailty
+fraise
+fraiser
+Fram
+framable
+framableness
+frambesia
+frame
+framea
+frameable
+frameableness
+framed
+frameless
+framer
+framesmith
+framework
+framing
+frammit
+frampler
+frampold
+franc
+Frances
+franchisal
+franchise
+franchisement
+franchiser
+Francic
+Francis
+francisc
+francisca
+Franciscan
+Franciscanism
+francium
+Francize
+franco
+francolin
+francolite
+Francomania
+Franconian
+Francophile
+Francophilism
+Francophobe
+Francophobia
+frangent
+Frangi
+frangibility
+frangible
+frangibleness
+frangipane
+frangipani
+frangula
+Frangulaceae
+frangulic
+frangulin
+frangulinic
+Frank
+frank
+frankability
+frankable
+frankalmoign
+Frankenia
+Frankeniaceae
+frankeniaceous
+Frankenstein
+franker
+frankfurter
+frankhearted
+frankheartedly
+frankheartedness
+Frankify
+frankincense
+frankincensed
+franking
+Frankish
+Frankist
+franklandite
+Franklin
+franklin
+Franklinia
+Franklinian
+Frankliniana
+Franklinic
+Franklinism
+Franklinist
+franklinite
+Franklinization
+frankly
+frankmarriage
+frankness
+frankpledge
+frantic
+frantically
+franticly
+franticness
+franzy
+frap
+frappe
+frapping
+frasco
+frase
+Frasera
+frasier
+frass
+frat
+fratch
+fratched
+fratcheous
+fratcher
+fratchety
+fratchy
+frater
+Fratercula
+fraternal
+fraternalism
+fraternalist
+fraternality
+fraternally
+fraternate
+fraternation
+fraternism
+fraternity
+fraternization
+fraternize
+fraternizer
+fratery
+Fraticelli
+Fraticellian
+fratority
+Fratricelli
+fratricidal
+fratricide
+fratry
+fraud
+fraudful
+fraudfully
+fraudless
+fraudlessly
+fraudlessness
+fraudproof
+fraudulence
+fraudulency
+fraudulent
+fraudulently
+fraudulentness
+fraughan
+fraught
+frawn
+fraxetin
+fraxin
+fraxinella
+Fraxinus
+fray
+frayed
+frayedly
+frayedness
+fraying
+frayn
+frayproof
+fraze
+frazer
+frazil
+frazzle
+frazzling
+freak
+freakdom
+freakery
+freakful
+freakily
+freakiness
+freakish
+freakishly
+freakishness
+freaky
+fream
+freath
+freck
+frecken
+fR \fI! parameters count flags\fR
+.DE
+All parts are optional; the degenerate case is the empty command which prints
+the next line in the file.  For sanity with use from within
+.I visual
+mode,
+.I ex
+ignores a ``:'' preceding any command.
+.PP
+In the following command descriptions, the
+default addresses are shown in parentheses,
+which are
+.I not,
+however,
+part of the command.
+.LC
+\fBabbreviate\fR \fIword rhs\fP	abbr: \fBab\fP
+.ZP
+Add the named abbreviation to the current list.
+When in input mode in visual, if
+.I word
+is typed as a complete word, it will be changed to
+.I rhs .
+.LC
+( \fB.\fR ) \fBappend\fR	abbr: \fBa\fR
+.br
+\fItext\fR
+.br
+\&\fB.\fR
+.ZP
+Reads the input text and places it after the specified line.
+After the command, `\fB.\fR'
+addresses the last line input or the
+specified line if no lines were input.
+If address `0' is given,
+text is placed at the beginning of the buffer.
+.LC
+\fBa!\fR
+.br
+\fItext\fR
+.br
+\&\fB.\fR
+.ZP
+The variant flag to
+.I append
+toggles the setting for the
+.I autoindent
+option during the input of
+.I text.
+.LC
+\fBargs\fR
+.ZP
+The members of the argument list are printed, with the current argument
+delimited by `[' and `]'.
+.ig
+.PP
+\fBcd\fR \fIdirectory\fR
+.ZP
+The
+.I cd
+command is a synonym for
+.I chdir.
+..
+.LC
+( \fB.\fP , \fB.\fP ) \fBchange\fP \fIcount\fP	abbr: \fBc\fP
+.br
+\fItext\fP
+.br
+\&\fB.\fP
+.ZP
+Replaces the specified lines with the input \fItext\fP.
+The current line becomes the last line input;
+if no lines were input it is left as for a
+\fIdelete\fP.
+.LC
+\fBc!\fP
+.br
+\fItext\fP
+.br
+\&\fB.\fP
+.ZP
+The variant toggles
+.I autoindent
+during the
+.I change.
+.ig
+.LC
+\fBchdir\fR \fIdirectory\fR
+.ZP
+The specified \fIdirectory\fR becomes the current directory.
+If no directory is specified, the current value of the
+.I home
+option is used as the target directory.
+After a
+.I chdir
+the current file is not considered to have been
+edited so that write restrictions on pre-existing files apply.
+..
+.LC
+( \fB.\fP , \fB.\fP )\|\fBcopy\fP \fIaddr\fP \fIflags\fP	abbr: \fBco\fP
+.ZP
+A
+.I copy
+of the specified lines is placed after
+.I addr,
+which may be `0'.
+The current line
+`\fB.\fR'
+addresses the last line of the copy.
+The command
+.I t
+is a synonym for
+.I copy.
+.LC
+( \fB.\fR , \fB.\fR )\|\fBdelete\fR \fIbuffer\fR \fIcount\fR \fIflags\fR	abbr: \fBd\fR
+.ZP
+Removes the specified lines from the buffer.
+The line after the last line deleted becomes the current line;
+if the lines deleted were originally at the end,
+the new last line becomes the current line.
+If a named
+.I buffer
+is specified by giving a letter,
+then the specified lines are saved in that buffer,
+or appended to it if an upper case letter is used.
+.LC
+\fBedit\fR \fIfile\fR	abbr: \fBe\fR
+.br
+\fBex\fR \fIfile\fR
+.ZP
+Used to begin an editing session on a new file.
+The editor
+first checks to see if the buffer has been modified since the last
+.I write
+command was issued.
+If it has been,
+a warning is issued and the
+command is aborted.
+The
+command otherwise deletes the entire contents of the editor buffer,
+makes the named file the current file and prints the new filename.
+After insuring that this file is sensible\(dg
+.FS
+\(dg I.e., that it is not a binary file such as a directory,
+a block or character special file other than
+.I /dev/tty,
+a terminal,
+or a binary or executable file
+(as indicated by the first word).
+.FE
+the editor reads the file into its buffer.
+.IP
+If the read of the file completes without error,
+the number of lines and characters read is typed.
+If there were any non-\s-2ASCII\s0 characters
+in the file they are stripped of their non-\s-2ASCII\s0
+high bits,
+and any null characters in the file are discarded.
+If none of these errors occurred, the file is considered
+.I edited.
+If the last line of the input file is missing the trailing
+newline character, it will be supplied and a complaint will be issued.
+This command leaves the current line `\fB.\fR' at the last line read.\(dd
+.FS
+\(dd If executed from within
+.I open
+or
+.I visual,
+the current line is initially the first line of the file.
+.FE
+.LC
+\fBe!\fR \fIfile\fR
+.ZP
+The variant form suppresses the complaint about modifications having
+been made and not written from the editor buffer, thus
+discarding all changes which have been made before editing the new file.
+.LC
+\fBe\fR \fB+\fIn\fR \fIfile\fR
+.ZP
+Causes the editor to begin at line
+.I n
+rather than at the last line;
+\fIn\fR may also be an editor command containing no spaces, e.g.: ``+/pat''.
+.LC
+\fBfile\fR	abbr: \fBf\fR
+.ZP
+Prints the current file name,
+whether it has been `[Modified]' since the last
+.I write 
+command,
+whether it is
+.I "read only" ,
+the current line,
+the number of lines in the buffer,
+and the percentage of the way through the buffer of the current line.*
+.FS
+* In the rare case that the current file is `[Not edited]' this is
+noted also; in this case you have to use the form \fBw!\fR to write to
+the file, since the editor is not sure that a \fBwrite\fR will not
+destroy a file unrelated to the current contents of the buffer.
+.FE
+.LC
+\fBfile\fR \fIfile\fR
+.ZP
+The current file name is changed to
+.I file
+which is considered 
+`[Not edited]'.
+.LC
+( 1 , $ ) \fBglobal\fR /\fIpat\|\fR/ \fIcmds\fR	abbr: \fBg\fR
+.ZP
+First marks each line among those specified which matches
+the given regular expression.
+Then the given command list is executed with `\fB.\fR' initially
+set to each marked line.
+.IP
+The command list consists of the remaining commands on the current
+input line and may continue to multiple lines by ending all but the
+last such line with a `\e'.
+If
+.I cmds
+(and possibly the trailing \fB/\fR delimiter) is omitted, each line matching
+.I pat
+is printed.
+.I Append,
+.I insert,
+and
+.I change
+commands and associated input are permitted;
+the `\fB.\fR' terminating input may be omitted if it would be on the
+last line of the command list.
+.I Open
+and
+.I visual
+commands are permitted in the command list and take input from the terminal.
+.IP
+The
+.I global
+command itself may not appear in
+.I cmds.
+The
+.I undo
+command is also not permitted there,
+as
+.I undo
+instead can be used to reverse the entire
+.I global
+command.
+The options
+.I autoprint
+and
+.I autoindent
+are inhibited during a
+.I global,
+(and possibly the trailing \fB/\fR delimiter) and the value of the
+.I report
+option is temporarily infinite,
+in deference to a \fIreport\fR for the entire global.
+Finally, the context mark `\'\'' is set to the value of
+`.' before the global command begins and is not changed during a global
+command,
+except perhaps by an
+.I open
+or
+.I visual
+within the
+.I global.
+.LC
+\fBg!\fR \fB/\fIpat\fB/\fR \fIcmds\fR	abbr: \fBv\fR
+.IP
+The variant form of \fIglobal\fR runs \fIcmds\fR at each line not matching
+\fIpat\fR.
+.LC
+( \fB.\fR )\|\fBinsert\fR	abbr: \fBi\fR
+.br
+\fItext\fR
+.br
+\&\fB.\fR
+.ZP
+Places the given text before the specified line.
+The current line is left at the last line input;
+if there were none input it is left at the line before the addressed line.
+This command differs from
+.I append
+only in the placement of text.
+.KS
+.LC
+\fBi!\fR
+.br
+\fItext\fR
+.br
+\&\fB.\fR
+.ZP
+The variant toggles
+.I autoindent
+during the
+.I insert.
+.KE
+.LC
+( \fB.\fR , \fB.\fR+1 ) \fBjoin\fR \fIcount\fR \fIflags\fR	abbr: \fBj\fR
+.ZP
+Places the text from a specified range of lines
+together on one line.
+White space is adjusted at each junction to provide at least
+one blank character, two if there was a `\fB.\fR' at the end of the line,
+or none if the first following character is a `)'.
+If there is already white space at the end of the line,
+then the white space at the start of the next line will be discarded.
+.LC
+\fBj!\fR
+.ZP
+The variant causes a simpler
+.I join
+with no white space processing; the characters in the lines are simply
+concatenated.
+.LC
+( \fB.\fR ) \fBk\fR \fIx\fR
+.ZP
+The
+.I k
+command is a synonym for
+.I mark.
+It does not require a blank or tab before the following letter.
+.LC
+( \fB.\fR , \fB.\fR ) \fBlist\fR \fIcount\fR \fIflags\fR
+.ZP
+Prints the specified lines in a more unambiguous way:
+tabs are printed as `^I'
+and the end of each line is marked with a trailing `$'.
+The current line is left at the last line printed.
+.LC
+\fBmap\fR \fIlhs\fR \fIrhs\fR
+.ZP
+The
+.I map
+command is used to define macros reckened
+frecket
+freckle
+freckled
+freckledness
+freckleproof
+freckling
+frecklish
+freckly
+Fred
+Freddie
+Freddy
+Frederic
+Frederica
+Frederick
+frederik
+fredricite
+free
+freeboard
+freeboot
+freebooter
+freebootery
+freebooting
+freeborn
+Freechurchism
+freed
+freedman
+freedom
+freedwoman
+freehand
+freehanded
+freehandedly
+freehandedness
+freehearted
+freeheartedly
+freeheartedness
+freehold
+freeholder
+freeholdership
+freeholding
+freeing
+freeish
+Freekirker
+freelage
+freeloving
+freelovism
+freely
+freeman
+freemanship
+freemartin
+freemason
+freemasonic
+freemasonical
+freemasonism
+freemasonry
+freen
+freend
+freeness
+freer
+Freesia
+freesilverism
+freesilverite
+freestanding
+freestone
+freet
+freethinker
+freethinking
+freetrader
+freety
+freeward
+freeway
+freewheel
+freewheeler
+freewheeling
+freewill
+freewoman
+freezable
+freeze
+freezer
+freezing
+freezingly
+Fregata
+Fregatae
+Fregatidae
+freibergite
+freieslebenite
+freight
+freightage
+freighter
+freightless
+freightment
+freir
+freit
+freity
+fremd
+fremdly
+fremdness
+fremescence
+fremescent
+fremitus
+Fremontia
+Fremontodendron
+frenal
+Frenatae
+frenate
+French
+frenched
+Frenchification
+frenchification
+Frenchify
+frenchify
+Frenchily
+Frenchiness
+frenching
+Frenchism
+Frenchize
+Frenchless
+Frenchly
+Frenchman
+Frenchness
+Frenchwise
+Frenchwoman
+Frenchy
+frenetic
+frenetical
+frenetically
+Frenghi
+frenular
+frenulum
+frenum
+frenzelite
+frenzied
+frenziedly
+frenzy
+Freon
+frequence
+frequency
+frequent
+frequentable
+frequentage
+frequentation
+frequentative
+frequenter
+frequently
+frequentness
+frescade
+fresco
+frescoer
+frescoist
+fresh
+freshen
+freshener
+freshet
+freshhearted
+freshish
+freshly
+freshman
+freshmanhood
+freshmanic
+freshmanship
+freshness
+freshwoman
+Fresison
+fresnel
+fresno
+fret
+fretful
+fretfully
+fretfulness
+fretless
+fretsome
+frett
+frettage
+frettation
+frette
+fretted
+fretter
+fretting
+frettingly
+fretty
+fretum
+fretways
+fretwise
+fretwork
+fretworked
+Freudian
+Freudianism
+Freudism
+Freudist
+Freya
+freyalite
+Freycinetia
+Freyja
+Freyr
+friability
+friable
+friableness
+friand
+friandise
+friar
+friarbird
+friarhood
+friarling
+friarly
+friary
+frib
+fribble
+fribbleism
+fribbler
+fribblery
+fribbling
+fribblish
+fribby
+fricandeau
+fricandel
+fricassee
+frication
+fricative
+fricatrice
+friction
+frictionable
+frictional
+frictionally
+frictionize
+frictionless
+frictionlessly
+frictionproof
+Friday
+Fridila
+fridstool
+fried
+Frieda
+friedcake
+friedelite
+friedrichsdor
+friend
+friended
+friendless
+friendlessness
+friendlike
+friendlily
+friendliness
+friendliwise
+friendly
+friendship
+frier
+frieseite
+Friesian
+Friesic
+Friesish
+frieze
+friezer
+friezy
+frig
+frigate
+frigatoon
+friggle
+fright
+frightable
+frighten
+frightenable
+frightened
+frightenedly
+frightenedness
+frightener
+frightening
+frighteningly
+frighter
+frightful
+frightfully
+frightfulness
+frightless
+frightment
+frighty
+frigid
+Frigidaire
+frigidarium
+frigidity
+frigidly
+frigidness
+frigiferous
+frigolabile
+frigoric
+frigorific
+frigorifical
+frigorify
+frigorimeter
+frigostable
+frigotherapy
+Frija
+frijol
+frijolillo
+frijolito
+frike
+frill
+frillback
+frilled
+friller
+frillery
+frillily
+frilliness
+frilling
+frilly
+frim
+Frimaire
+fringe
+fringed
+fringeflower
+fringeless
+fringelet
+fringent
+fringepod
+Fringetail
+Fringilla
+fringillaceous
+Fringillidae
+fringilliform
+Fringilliformes
+fringilline
+fringilloid
+fringing
+fringy
+fripperer
+frippery
+frisca
+Frisesomorum
+frisette
+Frisian
+Frisii
+frisk
+frisker
+frisket
+friskful
+friskily
+friskiness
+frisking
+friskingly
+frisky
+frisolee
+frison
+frist
+frisure
+frit
+frith
+frithborh
+frithbot
+frithles
+frithsoken
+frithstool
+frithwork
+Fritillaria
+fritillary
+fritt
+fritter
+fritterer
+Fritz
+Friulian
+frivol
+frivoler
+frivolism
+frivolist
+frivolity
+frivolize
+frivolous
+frivolously
+frivolousness
+frixion
+friz
+frize
+frizer
+frizz
+frizzer
+frizzily
+frizziness
+frizzing
+frizzle
+frizzler
+frizzly
+frizzy
+fro
+frock
+frocking
+frockless
+frocklike
+frockmaker
+froe
+Froebelian
+Froebelism
+Froebelist
+frog
+frogbit
+frogeater
+frogeye
+frogface
+frogfish
+frogflower
+frogfoot
+frogged
+froggery
+frogginess
+frogging
+froggish
+froggy
+froghood
+froghopper
+frogland
+frogleaf
+frogleg
+froglet
+froglike
+frogling
+frogman
+frogmouth
+frognose
+frogskin
+frogstool
+frogtongue
+frogwort
+froise
+frolic
+frolicful
+frolicker
+frolicky
+frolicly
+frolicness
+frolicsome
+frolicsomely
+frolicsomeness
+from
+fromward
+fromwards
+frond
+frondage
+fronded
+frondent
+frondesce
+frondescence
+frondescent
+frondiferous
+frondiform
+frondigerous
+frondivorous
+frondlet
+frondose
+frondosely
+frondous
+front
+frontad
+frontage
+frontager
+frontal
+frontalis
+frontality
+frontally
+frontbencher
+fronted
+fronter
+frontier
+frontierlike
+frontierman
+frontiersman
+Frontignan
+fronting
+frontingly
+Frontirostria
+frontispiece
+frontless
+frontlessly
+frontlessness
+frontlet
+frontoauricular
+frontoethmoid
+frontogenesis
+frontolysis
+frontomallar
+frontomaxillary
+frontomental
+frontonasal
+frontooccipital
+frontoorbital
+frontoparietal
+frontopontine
+frontosphenoidal
+frontosquamosal
+frontotemporal
+frontozygomatic
+frontpiece
+frontsman
+frontstall
+frontward
+frontways
+frontwise
+froom
+frore
+frory
+frosh
+frost
+frostation
+frostbird
+frostbite
+frostbow
+frosted
+froster
+frostfish
+frostflower
+frostily
+frostiness
+frosting
+frostless
+frostlike
+frostproof
+frostproofing
+frostroot
+frostweed
+frostwork
+frostwort
+frosty
+frot
+froth
+frother
+Frothi
+frothily
+frothiness
+frothing
+frothless
+frothsome
+frothy
+frotton
+froufrou
+frough
+froughy
+frounce
+frounceless
+frow
+froward
+frowardly
+frowardness
+frower
+frowl
+frown
+frowner
+frownful
+frowning
+frowningly
+frownless
+frowny
+frowst
+frowstily
+frowstiness
+frowsty
+frowy
+frowze
+frowzily
+frowziness
+frowzled
+frowzly
+frowzy
+froze
+frozen
+frozenhearted
+frozenly
+frozenness
+fruchtschiefer
+fructed
+fructescence
+fructescent
+fructicultural
+fructiculture
+Fructidor
+fructiferous
+fructiferously
+fructification
+fructificative
+fructifier
+fructiform
+fructify
+fructiparous
+fructivorous
+fructose
+fructoside
+fructuary
+fructuosity
+fructuous
+fructuously
+fructuousness
+frugal
+frugalism
+frugalist
+frugality
+frugally
+frugalness
+fruggan
+Frugivora
+frugivorous
+fruit
+fruitade
+fruitage
+fruitarian
+fruitarianism
+fruitcake
+fruited
+fruiter
+fruiterer
+fruiteress
+fruitery
+fruitful
+fruitfullness
+fruitfully
+fruitgrower
+fruitgrowing
+fruitiness
+fruiting
+fruition
+fruitist
+fruitive
+fruitless
+fruitlessly
+fruitlessness
+fruitlet
+fruitling
+fruitstalk
+fruittime
+fruitwise
+fruitwoman
+fruitwood
+fruitworm
+fruity
+frumentaceous
+frumentarious
+frumentation
+frumenty
+frump
+frumpery
+frumpily
+frumpiness
+frumpish
+frumpishly
+frumpishness
+frumple
+frumpy
+frush
+frustrate
+frustrately
+frustrater
+frustration
+frustrative
+frustratory
+frustule
+frustulent
+frustulose
+frustum
+frutescence
+frutescent
+fruticetum
+fruticose
+fruticous
+fruticulose
+frutify
+fry
+fryer
+fu
+fub
+fubby
+fubsy
+Fucaceae
+fucaceous
+Fucales
+fucate
+fucation
+fucatious
+Fuchsia
+Fuchsian
+fuchsin
+fuchsine
+fuchsinophil
+fuchsinophilous
+fuchsite
+fuchsone
+fuci
+fucinita
+fuciphagous
+fucoid
+fucoidal
+Fucoideae
+fucosan
+fucose
+fucous
+fucoxanthin
+fucus
+fud
+fuddle
+fuddler
+fuder
+fudge
+fudger
+fudgy
+Fuegian
+fuel
+fueler
+fuelizer
+fuerte
+fuff
+fuffy
+fugacious
+fugaciously
+fugaciousness
+fugacity
+fugal
+fugally
+fuggy
+fugient
+fugitate
+fugitation
+fugitive
+fugitively
+fugitiveness
+fugitivism
+fugitivity
+fugle
+fugleman
+fuglemanship
+fugler
+fugu
+fugue
+fuguist
+fuidhir
+fuirdays
+Fuirena
+fuji
+Fulah
+fulciform
+fulcral
+fulcrate
+fulcrum
+fulcrumage
+fulfill
+fulfiller
+fulfillment
+Fulfulde
+fulgent
+fulgently
+fulgentness
+fulgid
+fulgide
+fulgidity
+fulgor
+Fulgora
+fulgorid
+Fulgoridae
+Fulgoroidea
+fulgorous
+Fulgur
+fulgural
+fulgurant
+fulgurantly
+fulgurata
+fulgurate
+fulgurating
+fulguration
+fulgurator
+fulgurite
+fulgurous
+fulham
+Fulica
+Fulicinae
+fulicine
+fuliginosity
+fuliginous
+fuliginously
+fuliginousness
+Fuligula
+Fuligulinae
+fuliguline
+fulk
+full
+fullam
+fullback
+fuller
+fullering
+fullery
+fullface
+fullhearted
+fulling
+fullish
+fullmouth
+fullmouthed
+fullmouthedly
+fullness
+fullom
+Fullonian
+fully
+fulmar
+Fulmarus
+fulmicotton
+fulminancy
+fulminant
+fulminate
+fulminating
+fulmination
+fulminator
+fulminatory
+fulmine
+fulmineous
+fulminic
+fulminous
+fulminurate
+fulminuric
+fulsome
+fulsomely
+fulsomeness
+fulth
+Fultz
+Fulup
+fulvene
+fulvescent
+fulvid
+fulvidness
+fulvous
+fulwa
+fulyie
+fulzie
+fum
+fumacious
+fumado
+fumage
+fumagine
+Fumago
+fumarate
+Fumaria
+Fumariaceae
+fumariaceous
+fumaric
+fumarine
+fumarium
+fumaroid
+fumaroidal
+fumarole
+fumarolic
+fumaryl
+fumatorium
+fumatory
+fumble
+fumbler
+fumbling
+fume
+fumeless
+fumer
+fumeroot
+fumet
+fumefor use in
+.I visual
+mode.
+.I Lhs
+should be a single character, or the sequence ``#n'', for n a digit,
+referring to function key \fIn\fR.  When this character or function key
+is typed in
+.I visual
+mode, it will be as though the corresponding \fIrhs\fR had been typed.
+On terminals without function keys, you can type ``#n''.
+See section 6.9 of the ``Introduction to Display Editing with Vi''
+for more details.
+.LC
+( \fB.\fR ) \fBmark\fR \fIx\fR
+.ZP
+Gives the specified line mark
+.I x,
+a single lower case letter.
+The
+.I x
+must be preceded by a blank or a tab.
+The addressing form `\'x' then addresses this line.
+The current line is not affected by this command.
+.LC
+( \fB.\fR , \fB.\fR ) \fBmove\fR \fIaddr\fR	abbr: \fBm\fR
+.ZP
+The
+.I move
+command repositions the specified lines to be after
+.I addr .
+The first of the moved lines becomes the current line.
+.LC
+\fBnext\fR	abbr: \fBn\fR
+.ZP
+The next file from the command line argument list is edited.
+.LC
+\fBn!\fR
+.ZP
+The variant suppresses warnings about the modifications to the buffer not
+having been written out, discarding (irretrievably) any changes which may
+have been made.
+.LC
+\fBn\fR \fIfilelist\fR
+.br
+\fBn\fR \fB+\fIcommand\fR \fIfilelist\fR
+.ZP
+The specified
+.I filelist
+is expanded and the resulting list replaces the
+current argument list;
+the first file in the new list is then edited.
+If
+.I command
+is given (it must contain no spaces), then it is executed after editing the first such file.
+.LC
+( \fB.\fR , \fB.\fR ) \fBnumber\fR \fIcount\fR \fIflags\fR	abbr: \fB#\fR or \fBnu\fR
+.ZP
+Prints each specified line preceded by its buffer line
+number.
+The current line is left at the last line printed.
+.KS
+.LC
+( \fB.\fR ) \fBopen\fR \fIflags\fR	abbr: \fBo\fR
+.br
+( \fB.\fR ) \fBopen\fR /\fIpat\|\fR/ \fIflags\fR
+.ZP
+Enters intraline editing \fIopen\fR mode at each addressed line.
+If
+.I pat
+is given,
+then the cursor will be placed initially at the beginning of the
+string matched by the pattern.
+To exit this mode use Q.
+See
+.I "An Introduction to Display Editing with Vi"
+for more details.
+.KE
+.LC
+\fBpreserve\fR
+.ZP
+The current editor buffer is saved as though the system had just crashed.
+This command is for use only in emergencies when a
+.I write
+command has resulted in an error and you don't know how to save your work.
+After a
+.I preserve
+you should seek help.
+.LC
+( \fB.\fR , \fB.\fR )\|\fBprint\fR \fIcount\fR	abbr: \fBp\fR or \fBP\fR
+.ZP
+Prints the specified lines
+with non-printing characters printed as control characters `^\fIx\fR\|';
+delete (octal 177) is represented as `^?'.
+The current line is left at the last line printed.
+.LC
+( \fB.\fR )\|\fBput\fR \fIbuffer\fR	abbr: \fBpu\fR
+.ZP
+Puts back
+previously
+.I deleted
+or
+.I yanked
+lines.
+Normally used with
+.I delete
+to effect movement of lines,
+or with
+.I yank
+to effect duplication of lines.
+If no
+.I buffer
+is specified, then the last
+.I deleted
+or
+.I yanked
+text is restored.*
+.FS
+* But no modifying commands may intervene between the
+.I delete
+or
+.I yank
+and the
+.I put,
+nor may lines be moved between files without using a named buffer.
+.FE
+By using a named buffer, text may be restored that was saved there at any
+previous time.
+.LC
+\fBquit\fR	abbr: \fBq\fR
+.ZP
+Causes 
+.I ex
+to terminate.
+No automatic write of the editor buffer to a file is performed.
+However,
+.I ex
+issues a warning message if the file has changed
+since the last
+.I write
+command was issued, and does not
+.I quit.\(dg
+.FS
+\(dg \fIEx\fR
+will also issue a diagnostic if there are more files in the argument
+list.
+.FE
+Normally, you will wish to save your changes, and you 
+should give a \fIwrite\fR command;
+if you wish to discard them, use the \fBq!\fR command variant.
+.LC
+\fBq!\fR
+.ZP
+Quits from the editor, discarding changes to the buffer without complaint.
+.LC
+( \fB.\fR ) \fBread\fR \fIfile\fR	abbr: \fBr\fR
+.ZP
+Places a copy of the text of the given file in the
+editing buffer after the specified line.
+If no 
+.I file
+is given the current file name is used.
+The current file name is not changed unless there is none in which
+case
+.I file
+becomes the current name.
+The sensibility restrictions for the 
+.I edit
+command apply here also.
+If the file buffer is empty and there is no current name then
+.I ex
+treats this as an
+.I edit
+command.
+.IP
+Address `0' is legal for this command and causes the file to be read at
+the beginning of the buffer.
+Statistics are given as for the 
+.I edit
+command when the 
+.I read
+successfully terminates.
+After a
+.I read
+the current line is the last line read.\(dd
+.FS
+\(dd Within
+.I open
+and
+.I visual
+the current line is set to the first line read rather than the last.
+.FE
+.LC
+( \fB.\fR ) \fBread\fR  \fB!\fR\fIcommand\fR
+.ZP
+Reads the output of the command
+.I command
+into the buffer after the specified line.
+This is not a variant form of the command, rather a read
+specifying a
+.I command
+rather than a 
+.I filename;
+a blank or tab before the \fB!\fR is mandatory.
+.LC
+\fBrecover \fIfile\fR
+.ZP
+Recovers
+.I file
+from the system save area.
+Used after a accidental hangup of the phone**
+.FS
+** The system saves a copy of the file you were editing only if you
+have made changes to the file.
+.FE
+or a system crash** or
+.I preserve
+command.
+Except when you use
+.I preserve
+you will be notified by mail when a file is saved.
+.LC
+\fBrewind\fR	abbr: \fBrew\fR
+.ZP
+The argument list is rewound, and the first file in the list is edited.
+.LC
+\fBrew!\fR
+.ZP
+Rewinds the argument list discarding any changes made to the current buffer.
+.LC
+\fBset\fR \fIparameter\fR
+.ZP
+With no arguments, prints those options whose values have been
+changed from their defaults;
+with parameter
+.I all
+it prints all of the option values.
+.IP
+Giving an option name followed by a `?'
+causes the current value of that option to be printed.
+The `?' is unnecessary unless the option is Boolean valued.
+Boolean options are given values either by the form
+`set \fIoption\fR' to turn them on or
+`set no\fIoption\fR' to turn them off;
+string and numeric options are assigned via the form
+`set \fIoption\fR=value'.
+.IP
+More than one parameter may be given to 
+.I set \|;
+they are interpreted left-to-right.
+.LC
+\fBshell\fR	abbr: \fBsh\fR
+.IP
+A new shell is created.
+When it terminates, editing resumes.
+.LC
+\fBsource\fR \fIfile\fR	abbr: \fBso\fR
+.IP
+Reads and executes commands from the specified file.
+.I Source
+commands may be nested.
+.LC
+( \fB.\fR , \fB.\fR ) \fBsubstitute\fR /\fIpat\fR\|/\fIrepl\fR\|/ \fIoptions\fR \fIcount\fR \fIflags\fR	abbr: \fBs\fR
+.IP
+On each specified line, the first instance of pattern
+.I pat
+is replaced by replacement pattern
+.I repl.
+If the
+.I global
+indicator option character `g'
+appears, then all instances are substituted;
+if the
+.I confirm
+indication character `c' appears,
+then before each substitution the line to be substituted
+is typed with the string to be substituted marked
+with `\(ua' characters.
+By typing an `y' one can cause the substitution to be performed,
+any other input causes no change to take place.
+After a
+.I substitute
+the current line is the last line substituted.
+.IP
+Lines may be split by substituting
+new-line characters into them.
+The newline in
+.I repl
+must be escaped by preceding it with a `\e'.
+Other metacharacters available in
+.I pat
+and
+.I repl
+are described below.
+.LC
+.B stop
+.ZP
+Suspends the editor, returning control to the top level shell.
+If
+.I autowrite
+is set and there are unsaved changes,
+a write is done first unless the form
+.B stop !
+is used.
+This commands is only available where supported by the teletype driver
+and operating system.
+.LC
+( \fB.\fR , \fB.\fR ) \fBsubstitute\fR \fIoptions\fR \fIcount\fR \fIflags\fR	abbr: \fBs\fR
+.ZP
+If
+.I pat
+and
+.I repl
+are omitted, then the last substitution is repeated.
+This is a synonym for the
+.B &
+command.
+.LC
+( \fB.\fR , \fB.\fR ) \fBt\fR \fIaddr\fR \fIflags\fR
+.ZP
+The
+.I t
+command is a synonym for 
+.I copy .
+.LC
+\fBta\fR \fItag\fR
+.ZP
+The focus of editing switches to the location of
+.I tag,
+switching to a different line in the current file where it is defined,
+or if necessary to another file.\(dd
+.FS
+\(dd If you have modified the current file before giving a
+.I tag
+command, you must write it out; giving another
+.I tag
+command, specifying no
+.I tte
+fumewort
+fumiduct
+fumiferous
+fumigant
+fumigate
+fumigation
+fumigator
+fumigatorium
+fumigatory
+fumily
+fuminess
+fuming
+fumingly
+fumistery
+fumitory
+fumose
+fumosity
+fumous
+fumously
+fumy
+fun
+funambulate
+funambulation
+funambulator
+funambulatory
+funambulic
+funambulism
+funambulist
+funambulo
+Funaria
+Funariaceae
+funariaceous
+function
+functional
+functionalism
+functionalist
+functionality
+functionalize
+functionally
+functionarism
+functionary
+functionate
+functionation
+functionize
+functionless
+fund
+fundable
+fundal
+fundament
+fundamental
+fundamentalism
+fundamentalist
+fundamentality
+fundamentally
+fundamentalness
+fundatorial
+fundatrix
+funded
+funder
+fundholder
+fundi
+fundic
+fundiform
+funditor
+fundless
+fundmonger
+fundmongering
+funds
+Fundulinae
+funduline
+Fundulus
+fundungi
+fundus
+funebrial
+funeral
+funeralize
+funerary
+funereal
+funereally
+funest
+fungaceous
+fungal
+Fungales
+fungate
+fungation
+fungi
+Fungia
+fungian
+fungibility
+fungible
+fungic
+fungicidal
+fungicide
+fungicolous
+fungiferous
+fungiform
+fungilliform
+fungin
+fungistatic
+fungivorous
+fungo
+fungoid
+fungoidal
+fungological
+fungologist
+fungology
+fungose
+fungosity
+fungous
+fungus
+fungused
+funguslike
+fungusy
+funicle
+funicular
+funiculate
+funicule
+funiculitis
+funiculus
+funiform
+funipendulous
+funis
+Funje
+funk
+funker
+Funkia
+funkiness
+funky
+funmaker
+funmaking
+funnel
+funneled
+funnelform
+funnellike
+funnelwise
+funnily
+funniment
+funniness
+funny
+funnyman
+funori
+funt
+Funtumia
+Fur
+fur
+furacious
+furaciousness
+furacity
+fural
+furaldehyde
+furan
+furanoid
+furazan
+furazane
+furbelow
+furbish
+furbishable
+furbisher
+furbishment
+furca
+furcal
+furcate
+furcately
+furcation
+Furcellaria
+furcellate
+furciferine
+furciferous
+furciform
+Furcraea
+furcula
+furcular
+furculum
+furdel
+Furfooz
+furfur
+furfuraceous
+furfuraceously
+furfural
+furfuralcohol
+furfuraldehyde
+furfuramide
+furfuran
+furfuration
+furfurine
+furfuroid
+furfurole
+furfurous
+furfuryl
+furfurylidene
+furiant
+furibund
+furied
+Furies
+furify
+furil
+furilic
+furiosa
+furiosity
+furioso
+furious
+furiously
+furiousness
+furison
+furl
+furlable
+Furlan
+furler
+furless
+furlong
+furlough
+furnace
+furnacelike
+furnaceman
+furnacer
+furnacite
+furnage
+Furnariidae
+Furnariides
+Furnarius
+furner
+furnish
+furnishable
+furnished
+furnisher
+furnishing
+furnishment
+furniture
+furnitureless
+furodiazole
+furoic
+furoid
+furoin
+furole
+furomethyl
+furomonazole
+furor
+furore
+furphy
+furred
+furrier
+furriered
+furriery
+furrily
+furriness
+furring
+furrow
+furrower
+furrowless
+furrowlike
+furrowy
+furry
+furstone
+further
+furtherance
+furtherer
+furtherest
+furtherly
+furthermore
+furthermost
+furthersome
+furthest
+furtive
+furtively
+furtiveness
+Furud
+furuncle
+furuncular
+furunculoid
+furunculosis
+furunculous
+fury
+furyl
+furze
+furzechat
+furzed
+furzeling
+furzery
+furzetop
+furzy
+fusain
+fusarial
+fusariose
+fusariosis
+Fusarium
+fusarole
+fusate
+fusc
+fuscescent
+fuscin
+fuscohyaline
+fuscous
+fuse
+fuseboard
+fused
+fusee
+fuselage
+fuseplug
+fusht
+fusibility
+fusible
+fusibleness
+fusibly
+Fusicladium
+Fusicoccum
+fusiform
+Fusiformis
+fusil
+fusilier
+fusillade
+fusilly
+fusinist
+fusion
+fusional
+fusionism
+fusionist
+fusionless
+fusoid
+fuss
+fusser
+fussification
+fussify
+fussily
+fussiness
+fussock
+fussy
+fust
+fustanella
+fustee
+fusteric
+fustet
+fustian
+fustianish
+fustianist
+fustianize
+fustic
+fustigate
+fustigation
+fustigator
+fustigatory
+fustilugs
+fustily
+fustin
+fustiness
+fustle
+fusty
+Fusulina
+fusuma
+fusure
+Fusus
+fut
+futchel
+fute
+futhorc
+futile
+futilely
+futileness
+futilitarian
+futilitarianism
+futility
+futilize
+futtermassel
+futtock
+futural
+future
+futureless
+futureness
+futuric
+futurism
+futurist
+futuristic
+futurition
+futurity
+futurize
+futwa
+fuye
+fuze
+fuzz
+fuzzball
+fuzzily
+fuzziness
+fuzzy
+fyke
+fylfot
+fyrd
+G
+g
+Ga
+ga
+gab
+gabardine
+gabbard
+gabber
+gabble
+gabblement
+gabbler
+gabbro
+gabbroic
+gabbroid
+gabbroitic
+gabby
+Gabe
+gabelle
+gabelled
+gabelleman
+gabeller
+gaberdine
+gaberlunzie
+gabgab
+gabi
+gabion
+gabionade
+gabionage
+gabioned
+gablatores
+gable
+gableboard
+gablelike
+gablet
+gablewise
+gablock
+Gaboon
+Gabriel
+Gabriella
+Gabrielrache
+Gabunese
+gaby
+Gad
+gad
+Gadaba
+gadabout
+Gadarene
+Gadaria
+gadbee
+gadbush
+Gaddang
+gadded
+gadder
+Gaddi
+gaddi
+gadding
+gaddingly
+gaddish
+gaddishness
+gade
+gadfly
+gadge
+gadger
+gadget
+gadid
+Gadidae
+gadinine
+Gaditan
+gadling
+gadman
+gadoid
+Gadoidea
+gadolinia
+gadolinic
+gadolinite
+gadolinium
+gadroon
+gadroonage
+Gadsbodikins
+Gadsbud
+Gadslid
+gadsman
+Gadswoons
+gaduin
+Gadus
+gadwall
+Gadzooks
+Gael
+Gaeldom
+Gaelic
+Gaelicism
+Gaelicist
+Gaelicization
+Gaelicize
+Gaeltacht
+gaen
+Gaertnerian
+gaet
+Gaetulan
+Gaetuli
+Gaetulian
+gaff
+gaffe
+gaffer
+Gaffkya
+gaffle
+gaffsman
+gag
+gagate
+gage
+gageable
+gagee
+gageite
+gagelike
+gager
+gagership
+gagger
+gaggery
+gaggle
+gaggler
+gagman
+gagor
+gagroot
+gagtooth
+gahnite
+Gahrwali
+Gaia
+gaiassa
+Gaidropsaridae
+gaiety
+Gail
+Gaillardia
+gaily
+gain
+gainable
+gainage
+gainbirth
+gaincall
+gaincome
+gaine
+gainer
+gainful
+gainfully
+gainfulness
+gaining
+gainless
+gainlessness
+gainliness
+gainly
+gains
+gainsay
+gainsayer
+gainset
+gainsome
+gainspeaker
+gainspeaking
+gainst
+gainstrive
+gainturn
+gaintwist
+gainyield
+gair
+gairfish
+gaisling
+gait
+gaited
+gaiter
+gaiterless
+gaiting
+gaize
+gaj
+gal
+gala
+Galacaceae
+galactagogue
+galactagoguic
+galactan
+galactase
+galactemia
+galacthidrosis
+Galactia
+galactic
+galactidrosis
+galactite
+galactocele
+galactodendron
+galactodensimeter
+galactogenetic
+galactohemia
+galactoid
+galactolipide
+galactolipin
+galactolysis
+galactolytic
+galactoma
+galactometer
+galactometry
+galactonic
+galactopathy
+galactophagist
+galactophagous
+galactophlebitis
+galactophlysis
+galactophore
+galactophoritis
+galactophorous
+galactophthysis
+galactophygous
+galactopoiesis
+galactopoietic
+galactopyra
+galactorrhea
+galactorrhoea
+galactoscope
+galactose
+galactoside
+galactosis
+galactostasis
+galactosuria
+galactotherapy
+galactotrophy
+galacturia
+galagala
+Galaginae
+Galago
+galah
+galanas
+galanga
+galangin
+galant
+Galanthus
+galantine
+galany
+galapago
+Galatae
+galatea
+Galatian
+Galatic
+galatotrophic
+Galax
+galaxian
+Galaxias
+Galaxiidae
+galaxy
+galban
+galbanum
+Galbula
+Galbulae
+Galbulidae
+Galbulinae
+galbulus
+Galcha
+Galchic
+gale
+galea
+galeage
+galeate
+galeated
+galee
+galeeny
+Galega
+galegine
+Galei
+galeid
+Galeidae
+galeiform
+galempung
+Galen
+galena
+Galenian
+Galenic
+galenic
+Galenical
+galenical
+Galenism
+Galenist
+galenite
+galenobismutite
+galenoid
+Galeodes
+Galeodidae
+galeoid
+Galeopithecus
+Galeopsis
+Galeorchis
+Galeorhinidae
+Galeorhinus
+galeproof
+galera
+galericulate
+galerum
+galerus
+Galesaurus
+galet
+Galeus
+galewort
+galey
+Galga
+galgal
+Galgulidae
+gali
+Galibi
+Galician
+Galictis
+Galidia
+Galidictis
+Galik
+Galilean
+galilee
+galimatias
+galingale
+Galinsoga
+galiongee
+galiot
+galipidine
+galipine
+galipoidin
+galipoidine
+galipoipin
+galipot
+Galium
+gall
+Galla
+galla
+gallacetophenone
+gallah
+gallanilide
+gallant
+gallantize
+gallantly
+gallantness
+gallantry
+gallate
+gallature
+gallberry
+gallbush
+galleass
+galled
+Gallegan
+gallein
+galleon
+galler
+Galleria
+gallerian
+galleried
+Galleriidae
+gallery
+gallerylike
+gallet
+galley
+galleylike
+galleyman
+galleyworm
+gallflower
+gallfly
+Galli
+galliambic
+galliambus
+Gallian
+galliard
+galliardise
+galliardly
+galliardness
+Gallic
+gallic
+Gallican
+Gallicanism
+Gallicism
+Gallicization
+Gallicize
+Gallicizer
+gallicola
+Gallicolae
+gallicole
+gallicolous
+galliferous
+Gallification
+gallification
+galliform
+Galliformes
+Gallify
+galligaskin
+gallimaufry
+Gallinaceae
+gallinacean
+Gallinacei
+gallinaceous
+Gallinae
+Gallinago
+gallinazo
+galline
+galling
+gallingly
+gallingness
+gallinipper
+Gallinula
+gallinule
+Gallinulinae
+gallinuline
+gallipot
+Gallirallus
+gallisin
+gallium
+gallivant
+gallivanter
+gallivat
+gallivorous
+galliwasp
+gallnut
+gallocyanin
+gallocyanine
+galloflavine
+galloglass
+Galloman
+Gallomania
+Gallomaniac
+gallon
+gallonage
+galloner
+galloon
+gallooned
+gallop
+gallopade
+galloper
+Galloperdix
+Gallophile
+Gallophilism
+Gallophobe
+Gallophobia
+galloping
+galloptious
+gallotannate
+gallotannic
+gallotannin
+gallous
+Gallovidian
+Galloway
+galloway
+gallowglass
+gallows
+gallowsmaker
+gallowsness
+gallowsward
+gallstone
+Gallus
+galluses
+gallweed
+gallwort
+gally
+gallybagger
+gallybeggar
+gallycrow
+Galoisian
+galoot
+galop
+galore
+galosh
+galp
+galravage
+galravitch
+galt
+Galtonia
+Galtonian
+galuchat
+galumph
+galumptious
+Galusha
+galuth
+galvanic
+galvanical
+galvanically
+galvanism
+galvanist
+galvanization
+galvanize
+galvanized
+galvanizer
+galvanocauterization
+galvanocautery
+galvanocontractility
+galvanofaradization
+galvanoglyph
+galvanoglyphy
+galvanograph
+galvanographic
+galvanotag
+will reuse the previous tag.
+.FE
+.IP
+The tags file is normally created by a program such as
+.I ctags,
+and consists of a number of lines with three fields separated by blanks
+or tabs.  The first field gives the name of the tag,
+the second the name of the file where the tag resides, and the third
+gives an addressing form which can be used by the editor to find the tag;
+this field is usually a contextual scan using `/\fIpat\fR/' to be immune
+to minor changes in the file.  Such scans are always performed as if
+.I nomagic
+was set.
+.PP
+The tag names in the tags file must be sorted alphabetically.
+.LC
+\fBunabbreviate\fR \fIword\fP	abbr: \fBuna\fP
+.ZP
+Delete
+.I word
+from the list of abbreviations.
+.LC
+\fBundo\fR	abbr: \fBu\fR
+.ZP
+Reverses the changes made in the buffer by the last
+buffer editing command.
+Note that
+.I global
+commands are considered a single command for the purpose of 
+.I undo
+(as are
+.I open
+and
+.I visual.)
+Also, the commands
+.I write
+and
+.I edit
+which interact with the
+file system cannot be undone.
+.I Undo
+is its own inverse.
+.IP
+.I Undo
+always marks the previous value of the current line `\fB.\fR'
+as `\'\''.
+After an
+.I undo
+the current line is the first line restored
+or the line before the first line deleted if no lines were restored.
+For commands with more global effect
+such as
+.I global
+and
+.I visual
+the current line regains it's pre-command value after an
+.I undo.
+.LC
+\fBunmap\fR \fIlhs\fR
+.ZP
+The macro expansion associated by
+.I map
+for
+.I lhs
+is removed.
+.LC
+( 1 , $ ) \fBv\fR /\fIpat\fR\|/ \fIcmds\fR
+.ZP
+A synonym for the
+.I global
+command variant \fBg!\fR, running the specified \fIcmds\fR on each
+line which does not match \fIpat\fR.
+.LC
+\fBversion\fR	abbr: \fBve\fR
+.ZP
+Prints the current version number of the editor
+as well as the date the editor was last changed.
+.LC
+( \fB.\fR ) \fBvisual\fR \fItype\fR \fIcount\fR \fIflags\fR	abbr: \fBvi\fR
+.ZP
+Enters visual mode at the specified line.
+.I Type
+is optional and may be `\-' , `\(ua' or `\fB.\fR'
+as in the
+.I z
+command to specify the placement of the specified line on the screen.
+By default, if
+.I type
+is omitted, the specified line is placed as the first on the screen.
+A
+.I count
+specifies an initial window size; the default is the value of the option
+.I window.
+See the document
+.I "An Introduction to Display Editing with Vi"
+for more details.
+To exit this mode, type Q.
+.LC
+\fBvisual\fP file
+.br
+\fBvisual\fP +\fIn\fP file
+.ZP
+From visual mode,
+this command is the same as edit.
+.LC
+( 1 , $ ) \fBwrite\fR \fIfile\fR	abbr: \fBw\fR
+.ZP
+Writes changes made back to \fIfile\fR, printing the number of lines and
+characters written.
+Normally \fIfile\fR is omitted and the text goes back where it came from.
+If a \fIfile\fR is specified, then text will be written to that file.*
+.FS
+* The editor writes to a file only if it is
+the current file and is
+.I edited ,
+if the file does not exist,
+or if the file is actually a teletype,
+.I /dev/tty,
+.I /dev/null.
+Otherwise, you must give the variant form \fBw!\fR to force the write.
+.FE
+If the file does not exist it is created.
+The current file name is changed only if there is no current file
+name; the current line is never changed.
+.IP
+If an error occurs while writing the current and
+.I edited
+file, the editor
+considers that there has been ``No write since last change''
+even if the buffer had not previously been modified.
+.LC
+( 1 , $ ) \fBwrite>>\fR \fIfile\fR	abbr: \fBw>>\fR
+.ZP
+Writes the buffer contents at the end of
+an existing file.
+.IP
+.LC
+\fBw!\fR \fIname\fR
+.ZP
+Overrides the checking of the normal \fIwrite\fR command,
+and will write to any file which the system permits.
+.LC
+( 1 , $ ) \fBw\fR  \fB!\fR\fIcommand\fR
+.ZP
+Writes the specified lines into 
+.I command.
+Note the difference between \fBw!\fR which overrides checks and
+\fBw\ \ !\fR which writes to a command.
+.LC
+\fBwq\fR \fIname\fR
+.ZP
+Like a \fIwrite\fR and then a \fIquit\fR command.
+.LC
+\fBwq!\fR \fIname\fR
+.ZP
+The variant overrides checking on the sensibility of the
+.I write
+command, as \fBw!\fR does.
+.LC
+\fBxit\fP \fIname\fR
+.ZP
+If any changes have been made and not written, writes the buffer out.
+Then, in any case, quits.
+.LC
+( \fB.\fR , \fB.\fR )\|\fByank\fR \fIbuffer\fR \fIcount\fR	abbr: \fBya\fR
+.ZP
+Places the specified lines in the named
+.I buffer,
+for later retrieval via
+.I put.
+If no buffer name is specified, the lines go to a more volatile place;
+see the \fIput\fR command description.
+.LC
+( \fB.+1\fR ) \fBz\fR \fIcount\fR
+.ZP
+Print the next \fIcount\fR lines, default \fIwindow\fR.
+.LC
+( \fB.\fR ) \fBz\fR \fItype\fR \fIcount\fR
+.ZP
+Prints a window of text with the specified line at the top.
+If \fItype\fR is `\-' the line is placed at the bottom; a `\fB.\fR' causes
+the line to be placed in the center.*
+A count gives the number of lines to be displayed rather than
+double the number specified by the \fIscroll\fR option.
+On a \s-2CRT\s0 the screen is cleared before display begins unless a
+count which is less than the screen size is given.
+The current line is left at the last line printed.
+.FS
+* Forms `z=' and `z\(ua' also exist; `z=' places the current line in the
+center, surrounds it with lines of `\-' characters and leaves the current
+line at this line.  The form `z\(ua' prints the window before `z\-'
+would.  The characters `+', `\(ua' and `\-' may be repeated for cumulative
+effect.
+On some v2 editors, no
+.I type
+may be given.
+.FE
+.LC
+\fB!\fR \fIcommand\fR\fR
+.ZP
+The remainder of the line after the `!' character is sent to a shell
+to be executed.
+Within the text of
+.I command
+the characters 
+`%' and `#' are expanded as in filenames and the character
+`!' is replaced with the text of the previous command.
+Thus, in particular,
+`!!' repeats the last such shell escape.
+If any such expansion is performed, the expanded line will be echoed.
+The current line is unchanged by this command.
+.IP
+If there has been ``[No\ write]'' of the buffer contents since the last
+change to the editing buffer, then a diagnostic will be printed
+before the command is executed as a warning.
+A single `!' is printed when the command completes.
+.LC
+( \fIaddr\fR , \fIaddr\fR ) \fB!\fR \fIcommand\fR\fR
+.ZP
+Takes the specified address range and supplies it as
+standard input to
+.I command;
+the resulting output then replaces the input lines.
+.LC
+( $ ) \fB=\fR
+.ZP
+Prints the line number of the
+addressed line.
+The current line is unchanged.
+.KS
+.LC
+( \fB.\fR , \fB.\fR ) \fB>\fR \fIcount\fR \fIflags\fR
+.br
+( \fB.\fR , \fB.\fR ) \fB<\fR \fIcount\fR \fIflags\fR
+.IP
+Perform intelligent shifting on the specified lines;
+\fB<\fR shifts left and \fB>\fR shift right.
+The quantity of shift is determined by the
+.I shiftwidth
+option and the repetition of the specification character.
+Only white space (blanks and tabs) is shifted;
+no non-white characters are discarded in a left-shift.
+The current line becomes the last line which changed due to the
+shifting.
+.KE
+.LC
+\fB^D\fR
+.ZP
+An end-of-file from a terminal input scrolls through the file.
+The
+.I scroll
+option specifies the size of the scroll, normally a half screen of text.
+.LC
+( \fB.\fR+1 , \fB.\fR+1 )
+.br
+( \fB.\fR+1 , \fB.\fR+1 ) |
+.ZP
+An address alone causes the addressed lines to be printed.
+A blank line prints the next line in the file.
+.LC
+( \fB.\fR , \fB.\fR ) \fB&\fR \fIoptions\fR \fIcount\fR \fIflags\fR
+.ZP
+Repeats the previous
+.I substitute
+command.
+.LC
+( \fB.\fR , \fB.\fR ) \fB\s+2~\s0\fR \fIoptions\fR \fIcount\fR \fIflags\fR
+.ZP
+Replaces the previous regular expression with the previous
+replacement pattern from a substitution.
+.NH 1
+Regular expressions and substitute replacement patterns
+.NH 2
+Regular expressions
+.PP
+A regular expression specifies a set of strings of characters.
+A member of this set of strings is said to be
+.I matched
+by the regular expression.
+.I Ex
+remembers two previous regular expressions:
+the previous regular expression used in a
+.I substitute
+command
+and the previous regular expression used elsewhere
+(referred to as the previous \fIscanning\fR regular expression.)
+The previous regular expression
+can always be referred to by a null \fIre\fR, e.g. `//' or `??'.
+.NH 2
+Magic and nomagic
+.PP
+The regular expressions allowed by
+.I ex 
+are constgraphy
+galvanologist
+galvanology
+galvanolysis
+galvanomagnet
+galvanomagnetic
+galvanomagnetism
+galvanometer
+galvanometric
+galvanometrical
+galvanometrically
+galvanometry
+galvanoplastic
+galvanoplastical
+galvanoplastically
+galvanoplastics
+galvanoplasty
+galvanopsychic
+galvanopuncture
+galvanoscope
+galvanoscopic
+galvanoscopy
+galvanosurgery
+galvanotactic
+galvanotaxis
+galvanotherapy
+galvanothermometer
+galvanothermy
+galvanotonic
+galvanotropic
+galvanotropism
+galvayne
+galvayning
+Galways
+Galwegian
+galyac
+galyak
+galziekte
+gam
+gamahe
+Gamaliel
+gamashes
+gamasid
+Gamasidae
+Gamasoidea
+gamb
+gamba
+gambade
+gambado
+gambang
+gambeer
+gambeson
+gambet
+gambette
+gambia
+gambier
+gambist
+gambit
+gamble
+gambler
+gamblesome
+gamblesomeness
+gambling
+gambodic
+gamboge
+gambogian
+gambogic
+gamboised
+gambol
+gambrel
+gambreled
+gambroon
+Gambusia
+gamdeboo
+game
+gamebag
+gameball
+gamecock
+gamecraft
+gameful
+gamekeeper
+gamekeeping
+gamelang
+gameless
+gamelike
+Gamelion
+gamelotte
+gamely
+gamene
+gameness
+gamesome
+gamesomely
+gamesomeness
+gamester
+gamestress
+gametal
+gametange
+gametangium
+gamete
+gametic
+gametically
+gametocyst
+gametocyte
+gametogenesis
+gametogenic
+gametogenous
+gametogeny
+gametogonium
+gametogony
+gametoid
+gametophagia
+gametophore
+gametophyll
+gametophyte
+gametophytic
+gamic
+gamily
+gamin
+gaminesque
+gaminess
+gaming
+gaminish
+gamma
+gammacism
+gammacismus
+gammadion
+gammarid
+Gammaridae
+gammarine
+gammaroid
+Gammarus
+gammation
+gammelost
+gammer
+gammerel
+gammerstang
+Gammexane
+gammick
+gammock
+gammon
+gammoner
+gammoning
+gammy
+gamobium
+gamodesmic
+gamodesmy
+gamogenesis
+gamogenetic
+gamogenetical
+gamogenetically
+gamogony
+Gamolepis
+gamomania
+gamont
+Gamopetalae
+gamopetalous
+gamophagia
+gamophagy
+gamophyllous
+gamori
+gamosepalous
+gamostele
+gamostelic
+gamostely
+gamotropic
+gamotropism
+gamp
+gamphrel
+gamut
+gamy
+gan
+ganam
+ganancial
+Ganapati
+ganch
+Ganda
+gander
+ganderess
+gandergoose
+gandermooner
+ganderteeth
+Gandhara
+Gandharva
+Gandhiism
+Gandhism
+Gandhist
+gandul
+gandum
+gandurah
+gane
+ganef
+gang
+Ganga
+ganga
+Gangamopteris
+gangan
+gangava
+gangboard
+gangdom
+gange
+ganger
+Gangetic
+ganggang
+ganging
+gangism
+gangland
+ganglander
+ganglia
+gangliac
+ganglial
+gangliar
+gangliasthenia
+gangliate
+gangliated
+gangliectomy
+gangliform
+gangliitis
+gangling
+ganglioblast
+gangliocyte
+ganglioform
+ganglioid
+ganglioma
+ganglion
+ganglionary
+ganglionate
+ganglionectomy
+ganglioneural
+ganglioneure
+ganglioneuroma
+ganglioneuron
+ganglionic
+ganglionitis
+ganglionless
+ganglioplexus
+gangly
+gangman
+gangmaster
+gangplank
+gangrel
+gangrene
+gangrenescent
+gangrenous
+gangsman
+gangster
+gangsterism
+gangtide
+gangue
+Ganguela
+gangway
+gangwayman
+ganister
+ganja
+ganner
+gannet
+Ganocephala
+ganocephalan
+ganocephalous
+ganodont
+Ganodonta
+Ganodus
+ganoid
+ganoidal
+ganoidean
+Ganoidei
+ganoidian
+ganoin
+ganomalite
+ganophyllite
+ganosis
+Ganowanian
+gansel
+gansey
+gansy
+gant
+ganta
+gantang
+gantlet
+gantline
+ganton
+gantries
+gantry
+gantryman
+gantsl
+Ganymede
+Ganymedes
+ganza
+ganzie
+gaol
+gaolbird
+gaoler
+Gaon
+Gaonate
+Gaonic
+gap
+Gapa
+gapa
+gape
+gaper
+gapes
+gapeseed
+gapeworm
+gaping
+gapingly
+gapingstock
+gapo
+gappy
+gapy
+gar
+gara
+garabato
+garad
+garage
+garageman
+Garamond
+garance
+garancine
+garapata
+garava
+garavance
+garawi
+garb
+garbage
+garbardine
+garbel
+garbell
+garbill
+garble
+garbleable
+garbler
+garbless
+garbling
+garboard
+garboil
+garbure
+garce
+Garcinia
+gardant
+gardeen
+garden
+gardenable
+gardencraft
+gardened
+gardener
+gardenership
+gardenesque
+gardenful
+gardenhood
+Gardenia
+gardenin
+gardening
+gardenize
+gardenless
+gardenlike
+gardenly
+gardenmaker
+gardenmaking
+gardenwards
+gardenwise
+gardeny
+garderobe
+gardevin
+gardy
+gardyloo
+gare
+garefowl
+gareh
+garetta
+garewaite
+garfish
+garganey
+Gargantua
+Gargantuan
+garget
+gargety
+gargle
+gargol
+gargoyle
+gargoyled
+gargoyley
+gargoylish
+gargoylishly
+gargoylism
+Garhwali
+garial
+gariba
+garibaldi
+Garibaldian
+garish
+garishly
+garishness
+garland
+garlandage
+garlandless
+garlandlike
+garlandry
+garlandwise
+garle
+garlic
+garlicky
+garliclike
+garlicmonger
+garlicwort
+garment
+garmentless
+garmentmaker
+garmenture
+garmentworker
+garn
+garnel
+garner
+garnerage
+garnet
+garnetberry
+garneter
+garnetiferous
+garnets
+garnett
+garnetter
+garnetwork
+garnetz
+garnice
+garniec
+garnierite
+garnish
+garnishable
+garnished
+garnishee
+garnisheement
+garnisher
+garnishment
+garnishry
+garniture
+Garo
+garoo
+garookuh
+garrafa
+garran
+Garret
+garret
+garreted
+garreteer
+garretmaster
+garrison
+Garrisonian
+Garrisonism
+garrot
+garrote
+garroter
+Garrulinae
+garruline
+garrulity
+garrulous
+garrulously
+garrulousness
+Garrulus
+garrupa
+Garrya
+Garryaceae
+garse
+Garshuni
+garsil
+garston
+garten
+garter
+gartered
+gartering
+garterless
+garth
+garthman
+Garuda
+garum
+garvanzo
+garvey
+garvock
+gas
+Gasan
+gasbag
+gascoigny
+Gascon
+gasconade
+gasconader
+Gasconism
+gascromh
+gaseity
+gaselier
+gaseosity
+gaseous
+gaseousness
+gasfiring
+gash
+gashes
+gashful
+gashliness
+gashly
+gasholder
+gashouse
+gashy
+gasifiable
+gasification
+gasifier
+gasiform
+gasify
+gasket
+gaskin
+gasking
+gaskins
+gasless
+gaslight
+gaslighted
+gaslighting
+gaslit
+gaslock
+gasmaker
+gasman
+gasogenic
+gasoliery
+gasoline
+gasolineless
+gasoliner
+gasometer
+gasometric
+gasometrical
+gasometry
+gasp
+Gaspar
+gasparillo
+gasper
+gaspereau
+gaspergou
+gaspiness
+gasping
+gaspingly
+gasproof
+gaspy
+gasser
+Gasserian
+gassiness
+gassing
+gassy
+gast
+gastaldite
+gastaldo
+gaster
+gasteralgia
+Gasterolichenes
+gasteromycete
+Gasteromycetes
+gasteromycetous
+Gasterophilus
+gasteropod
+Gasteropoda
+gasterosteid
+Gasterosteidae
+gasterosteiform
+gasterosteoid
+Gasterosteus
+gasterotheca
+gasterothecal
+Gasterotricha
+gasterotrichan
+gasterozooid
+gastight
+gastightness
+Gastornis
+Gastornithidae
+gastradenitis
+gastraea
+gastraead
+Gastraeadae
+gastraeal
+gastraeum
+gastral
+gastralgia
+gastralgic
+gastralgy
+gastraneuria
+gastrasthenia
+gastratrophia
+gastrectasia
+gastrectasis
+gastrectomy
+gastrelcosis
+gastric
+gastricism
+gastrilegous
+gastriloquial
+gastriloquism
+gastriloquist
+gastriloquous
+gastriloquy
+gastrin
+gastritic
+gastritis
+gastroadenitis
+gastroadynamic
+gastroalbuminorrhea
+gastroanastomosis
+gastroarthritis
+gastroatonia
+gastroatrophia
+gastroblennorrhea
+gastrocatarrhal
+gastrocele
+gastrocentrous
+Gastrochaena
+Gastrochaenidae
+gastrocnemial
+gastrocnemian
+gastrocnemius
+gastrocoel
+gastrocolic
+gastrocoloptosis
+gastrocolostomy
+gastrocolotomy
+gastrocolpotomy
+gastrocystic
+gastrocystis
+gastrodialysis
+gastrodiaphanoscopy
+gastrodidymus
+gastrodisk
+gastroduodenal
+gastroduodenitis
+gastroduodenoscopy
+gastroduodenotomy
+gastrodynia
+gastroelytrotomy
+gastroenteralgia
+gastroenteric
+gastroenteritic
+gastroenteritis
+gastroenteroanastomosis
+gastroenterocolitis
+gastroenterocolostomy
+gastroenterological
+gastroenterologist
+gastroenterology
+gastroenteroptosis
+gastroenterostomy
+gastroenterotomy
+gastroepiploic
+gastroesophageal
+gastroesophagostomy
+gastrogastrotomy
+gastrogenital
+gastrograph
+gastrohelcosis
+gastrohepatic
+gastrohepatitis
+gastrohydrorrhea
+gastrohyperneuria
+gastrohypertonic
+gastrohysterectomy
+gastrohysteropexy
+gastrohysterorrhaphy
+gastrohysterotomy
+gastroid
+gastrointestinal
+gastrojejunal
+gastrojejunostomy
+gastrolater
+gastrolatrous
+gastrolienal
+gastrolith
+Gastrolobium
+gastrologer
+gastrological
+gastrologist
+gastrology
+gastrolysis
+gastrolytic
+gastromalacia
+gastromancy
+gastromelus
+gastromenia
+gastromyces
+gastromycosis
+gastromyxorrhea
+gastronephritis
+gastronome
+gastronomer
+gastronomic
+gastronomical
+gastronomically
+gastronomist
+gastronomy
+g

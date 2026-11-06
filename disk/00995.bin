@@ -1,0 +1,2811 @@
+or
+.ng net.announce
+newsgroups
+.lp \(bu \w'\(bu\ 'u
+Do not post to
+.ng net.general
+.lp \(bu \w'\(bu\ 'u
+Ask someone if you can't figure out where to post your article
+.lp \(bu \w'\(bu\ 'u
+Be sure there is a consensus before creating a new newsgroup
+.lp \(bu \w'\(bu\ 'u
+Watch out for newsgroups which have special rules about posting
+.ei
+.lp \(rh \w'\(rh\ 'u
+Writing the Article
+.si
+.lp \(bu \w'\(bu\ 'u
+Write for your audience
+.lp \(bu \w'\(bu\ 'u
+Be clear and concise
+.lp \(bu \w'\(bu\ 'u
+Proofread your article
+.lp \(bu \w'\(bu\ 'u
+Be extra careful with announcements of products or services
+.lp \(bu \w'\(bu\ 'u
+Indicate sarcasm and humor
+.lp \(bu \w'\(bu\ 'u
+Mark postings which spoil surprises
+.lp \(bu \w'\(bu\ 'u
+Rotate offensive postings
+.lp \(bu \w'\(bu\ 'u
+The shorter your signature, the better
+.ei
+.ei
+.pg
+The USENET can be a great place for us all.
+Sadly,
+not enough people are following the customs that have been established
+to keep the USENET civilized.
+This document was written to educate all users of the.\"	@(#)ae3	6.1 (Berkeley) 5/22/86
+.\"
+.NH
+LINE ADDRESSING IN THE EDITOR
+.PP
+The next general area we will discuss is that of
+line addressing in
+.UL ed ,
+that is, how you specify what lines are to be
+affected by editing commands.
+We have already used constructions like 
+.P1
+1,$s/x/y/
+.P2
+to specify a change on all lines.
+And most users are long since familiar with
+using a single newline (or return) to print the next line,
+and with
+.P1
+/thing/
+.P2
+to find a line that contains `thing'.
+Less familiar, surprisingly enough, is the
+use of
+.P1
+?thing?
+.P2
+to scan
+.ul
+backwards
+for the previous occurrence of `thing'.
+This is especially handy when you realize that the thing
+you want to operate on is back up the page from
+where you are currently editing.
+.PP
+The slash and question mark are the only characters you can
+use to delimit a context search, though you can use
+essentially any character in a substitute command.
+.SH
+Address Arithmetic
+.PP
+The next step is to combine the line numbers
+like `\*.', `$', `/.../' and `?...?'
+with `+' and `\-'.
+Thus
+.P1
+$-1
+.P2
+is a command to print the next to last line of
+the current file (that is, one line before line `$').
+For example, to recall how far you got in a previous editing session,
+.P1
+$-5,$p
+.P2
+prints the last six lines.
+(Be sure you understand why it's six, not five.)
+If there aren't six, of course, you'll get an error message.
+.PP
+As another example,
+.P1
+\&\*.-3,\*.+3p
+.P2
+prints from three lines before where you are now
+(at line dot)
+to three lines after,
+thus giving you a bit of context.
+By the way, the `+' can be omitted:
+.P1
+\&\*.-3,\*.3p
+.P2
+is absolutely identical in meaning.
+.PP
+Another area in which you can save typing effort
+in specifying lines is to use `\-' and `+' as line numbers
+by themselves.
+.P1
+-
+.P2
+by itself is a command to move back up one line in the file.
+In fact, you can string several minus signs together to move
+back up that many lines:
+.P1
+---
+.P2
+moves up three lines, as does `\-3'.
+Thus
+.P1
+-3,+3p
+.P2
+is also identical to the examples above.
+.PP
+Since `\-' is shorter than `\*.\-1',
+constructions like
+.P1
+-,\*.s/bad/good/
+.P2
+are useful. This changes `bad' to `good' on the previous line and
+on the current line.
+.PP
+`+' and `\-' can be used in combination with searches using `/.../' and `?...?',
+and with `$'.
+The search
+.P1
+/thing/--
+.P2
+finds the line containing `thing', and positions you
+two lines before it.
+.SH
+Repeated Searches
+.PP
+Suppose you ask for the search
+.P1
+/horrible thing/
+.P2
+and when the line is printed you discover that it
+isn't the horrible thing that you wanted,
+so it is necessary to repeat the search again.
+You don't have to re-type the search,
+for the construction
+.P1
+//
+.P2
+is a shorthand for `the previous thing that was searched for',
+whatever it was.
+This can be repeated as many times as necessary.
+You can also go backwards:
+.P1
+??
+.P2
+searches for the same thing,
+but in the reverse direction.
+.PP
+Not only can you repeat the search, but you can
+use `//' as the left side of a substitute command,
+to mean
+`the most recent pattern'.
+.P1
+/horrible thing/
+.ft I
+ .... ed prints line with `horrible thing' ...
+.ft R
+s//good/p
+.P2
+To go backwards and change a line, say
+.P1
+??s//good/
+.P2
+Of course, you can still use the `&' on the right hand side of a substitute to stand for
+whatever got matched:
+.P1
+//s//&\*(BL&/p
+.P2
+finds the next occurrence of whatever you searched for last,
+replaces it by two copies of itself,
+then prints the line just to verify that it worked.
+.SH
+Default Line Numbers and the Value of Dot
+.PP
+One of the most effective ways to speed up your editing
+is always to know what lines will be affected
+by a command if you don't specify the lines it is to act on,
+and on what line you will be positioned (i.e., the value of dot) when a command finishes.
+If you can edit without specifying unnecessary
+line numbers, you can save a lot of typing.
+.PP
+As the most obvious example, if you issue a search command
+like
+.P1
+/thing/
+.P2
+you are left pointing at the next line that contains `thing'.
+Then no address is required with commands like
+.UL s
+to make a substitution on that line,
+or
+.UL p
+to print it,
+or
+.UL l
+to list it,
+or
+.UL d
+to delete it,
+or
+.UL a
+to append text after it,
+or
+.UL c
+to change it,
+or
+.UL i
+to insert text before it.
+.PP
+What happens if there was no `thing'?
+Then you are left right where you were _
+dot is unchanged.
+This is also true if you were sitting
+on the only `thing' when you issued the command.
+The same rules hold for searches that use
+`?...?'; the only difference is the direction
+in which you search.
+.PP
+The delete command
+.UL d 
+leaves dot pointing
+at the line that followed the last deleted line.
+When line `$' gets deleted,
+however,
+dot points at the
+.ul
+new
+line `$'.
+.PP
+The line-changing commands
+.UL a ,
+.UL c
+and
+.UL i
+by default all affect the current line _
+if you give no line number with them,
+.UL a
+appends text after the current line,
+.UL c
+changes the current line,
+and
+.UL i
+inserts text before the current line.
+.PP
+.UL a ,
+.UL c ,
+and
+.UL i
+behave identically in one respect _
+when you stop appending, changing or inserting,
+dot points at the last line entered.
+This is exactly what you want for typing and editing on the fly.
+For example, you can say
+.P1
+.ta 1.5i
+a
+ ... text ...
+ ... botch ...	(minor error)
+\&\*.
+s/botch/correct/	(fix botched line)
+a
+ ... more text ...
+.P2
+without specifying any line number for the substitute command or for
+the second append command.
+Or you can say
+.P1 2
+.ta 1.5i
+a
+ ... text ...
+ ... horrible botch ...	(major error)
+\&\*.
+c	(replace entire line)
+ ... fixed up line ...
+.P2
+.PP
+You should experiment to determine what happens if you add
+.ul
+no
+lines with
+.UL a ,
+.UL c
+or
+.UL i .
+.PP
+The
+.UL r
+command will read a file into the text being edited,
+either at the end if you give no address,
+or after the specified line if you do.
+In either case, dot points at the last line read in.
+Remember that you can even say
+.UL 0r
+to read a file in at the beginning of the text.
+(You can also say
+.UL 0a
+or
+.UL 1i
+to start adding text at the beginning.)
+.PP
+The
+.UL w
+command writes out the entire file.
+If you precede the command by one line number,
+that line is written,
+while if you precede it by two line numbers,
+that range of lines is written.
+The 
+.UL w
+command does
+.ul
+not
+change dot:
+the current line remains the same,
+regardless of what lines are written.
+This is true even if you say something like
+.P1
+/^\*e\*.AB/,/^\*e\*.AE/w abstract
+.P2
+which involves a context search.
+.PP
+Since the
+.UL w
+command is so easy to use,
+you should save what you are editing regularly
+as you go along
+just in case the system crashes, or in case you do something foolish,
+like clobbering what you're editing.
+.PP
+The least intuitive behavior, in a sense, is that of the
+.UL s
+command.
+The rule is simple _
+you are left sitting on the last line that got changed.
+If there were no changes, then dot is unchanged.
+.PP
+To illustrate,
+suppose that there are three lines in the buffer, and you are sitting on
+the middle one:
+.P1
+x1
+x2
+x3
+.P2
+Then the command
+.P1
+\&-,+s/x/y/p
+.P2
+prints the third line, which is the last one changed.
+But if the three lines had been
+.P1
+x1
+y2
+y3
+.P2
+and the same command had been issued while
+dot pointed
+at the second line, then the result
+would be to change and print only the first line,
+and that is where dot would be set.
+.SH
+Semicolon `;'
+.PP
+Searches with `/.../' and `?...?' start
+at the current line and move
+forward or backward respectively
+until they either find the pattern or get back to the current line.
+Sometimes this is not what is wanted.
+Suppose, for example, that the buffer contains lines like this:
+.P1
+ \*.
+ \*.
+ \*.
+ ab
+ \*.
+ \*.
+ \*.
+ bc
+ \*. 
+ \*.
+.P2
+Starting at line 1, one would expect that the command
+.P1
+/a/,/b/p
+.P2
+prints all the lines from the `ab' to the `bc' inclusive.
+Actually this is not what happens.
+.ul
+Both
+searches
+(for `a' and for `b')
+start from the same point, and thus they both find the line
+that contains `ab'.
+The result is to print a single line.
+Worse, if there had been a line with a `b' in it
+before the `ab' line, then the print command
+would be in error, since the second l USENET
+on their responsibilities.
+Let's clean up the USENET,
+and turn it into a friendly,
+helpful community again!
+.sp
+.bi Acknowledgements:
+The writing of this document was inspired by Chuq von Rospach's posting
+on USENET etiquette,
+and it draws on previous work by Mark Horton,
+A. Jeff Offutt,
+Gene Spafford,
+and
+Chuq von Rospach.
+.bp
+.hu 1
+Appendix I.  Answers to Frequently Asked Questions
+.pg l
+.i
+originally from Jerry Schwarz (jerry@eagle.UUCP)
+.br
+modified by Gene Spafford (spaf@gatech.UUCP)
+.br
+modified by Matt Bishop (mab@riacs.ARPA)
+.r
+.sp
+.pg
+This document discusses some items that occur repeatedly on USENET.
+They frequently are submitted by new users,
+and result in many followups,
+sometimes swamping groups for weeks.
+The purpose of this note is to head off these annoying events
+by answering some questions
+and warning about the inevitable consequence of asking others.
+If you don't like my answers,
+let me know and I may include revisions in future versions of this note.
+.nr Qs \w'\0\0.\ 'u
+.de Lp
+.lp "\\$1" \\n(Qsu
+..
+.Lp \01.
+What does
+.ux
+stand for?
+.Lp
+It is not an acronym,
+but is a pun on \*(lqMULTICS.\*(rq
+MULTICS is a large operating system that was being developed shortly before
+.ux
+was created.
+.Lp \02.
+What is the derivation of \*(lqfoo\*(rq as a filler word?
+.Lp ""
+The favorite story is that it comes from \*(lqfubar\*(rq
+which is an acronym for \*(lqfouled up beyond all recognition,\*(rq
+which is supposed to be a military term.
+(Various forms of this exist,
+\*(lqfouled\*(rq usually being replaced by a stronger word.)
+\*(lqFoo\*(rq and \*(lqBar\*(rq have the same derivation.
+.Lp \03.
+Is a machine at \*(lqfoo\*(rq on the net?
+.Lp
+These questions belong in
+.ng net.news.config
+if anywhere,
+but in fact your best bet is usually to phone somebody
+at \*(lqfoo\*(rq to find out.
+If you don't know anybody at \*(lqfoo\*(rq you can always try calling
+and asking for the \*(lqcomputer center.\*(rq
+Also,
+see the newsgroup
+.ng mod.map ,
+where maps of USENET and the UUCP network are posted regularly.
+.Lp \04.
+What does \*(lqrc\*(rq at the end of files like
+.i .newsrc
+mean?
+.Lp
+According to Dennis Ritchie,
+\*(lqThe name
+.i rc
+comes from RUNCOM, which was the rough equivalent
+on the MIT CTSS system of what
+.ux
+calls shell scripts.  Of course
+RUNCOM derives from 
+.i "run commands.\*(rq"
+.Lp \05.
+What do \*(lq- (nf)\*(rq and \*(lqOrphaned Response\*(rq in an item's title mean?
+.Lp
+It means that the item was created by \*(lqnotefiles,\*(rq
+an alternative news handling interface that many people prefer.
+If you want to find out more you can read the
+.i \*(lqNotesfile
+System Reference Manual\*(rq or contact
+.cn uiucdcs!essick .
+.Lp \06.
+What does \*(lq:\-)\*(rq mean?
+.Lp
+This is the net convention for a \*(lqsmiley face.\*(rq
+It means that something is being said in jest.
+If it doesn't look like a smiley face to you,
+flop your head over to the left and look again.
+.Lp \07.
+How do I decrypt jokes in
+.ng net.jokes ?
+.Lp
+The standard cipher used in
+.ng net.jokes
+in called \*(lqrot13.\*(rq
+Each letter is replaced by the letter 13 further along in the alphabet
+(cycling around at the end).
+Most systems have a built in command to decrypt such articles;
+.i readnews (1)
+and
+.i vnews (1)
+have the
+.qp D
+command,
+.i rn (1)
+(another popular public-domain full screen news reader) has the
+.qp X
+or
+.qc CONTROL-X
+commands,
+.i notes (1)
+has
+.qp %
+or
+.qp R .
+If your system doesn't have a program to encrypt and decrypt these,
+you can quickly create a shell script using
+.i tr (1):
+.sd c
+tr A\-Za\-z N\-ZA\-Mn\-za\-m
+.ed
+On some versions of
+.ux ,
+the
+.i tr
+command should be written as:
+.sd c
+tr \*(lq[a\-m][n\-z][A\-M][N\-Z]\*(rq \*(lq[n\-z][a\-m][N\-Z][A\-M]\*(rq
+.ed
+.Lp \08.
+.ng net.general :
+Is John Doe out there anywhere?
+.Lp
+I suspect that these items are people looking for freshman roommates
+that they haven't seen in ten years.
+If you have some idea where the person is
+you are usually better off calling the organization.
+For example,
+if you call any Bell Labs location and request John Doe's number.
+They can give it to you even if he works at a different location.
+If you must try the net,
+use newsgroup
+.ng net.net-people ,
+.i not
+.ng net.general .
+.Lp \09.
+.ng net.math :
+Proofs that 1 \(eq 0.
+.Lp
+Almost everyone has seen one or more of these in high school.
+They are almost always based on either division by 0
+or taking the square root of a negative number.
+.Lp 10.
+.ng net.games :
+Where can I get the source for
+.i empire (6)
+or
+.i rogue (6)?
+.Lp
+You can't.
+The authors of these games,
+as is their right,
+have chosen not to make the sources available.
+.Lp 11.
+.ng net.unix-wizards :
+How do I remove files with
+.sm ASCII "" non-
+characters in their names?
+.Lp
+You can try to find a pattern that uniquely identifies the file.
+This sometimes fails because a peculiarity of some shells is that
+they strip off the high-order bit of characters in command lines.
+Next,
+you can try an \*(lqrm \-i\*(rq, or \*(lqrm \-r\*(rq
+(see
+.i rm (1).)
+Finally,
+you can mess around with i-node numbers and
+.i find (1).
+.Lp 12.
+.ng net.unix-wizards :
+There is a bug in the way
+.ux
+handles protection for programs that run setuid.
+.Lp
+There are indeed problems with the treatment of protection in setuid programs.
+When this is brought up,
+suggestions for changes range from implementing a full capability list
+arrangement to new kernel calls for allowing more control over when
+the effective id is used and when the real id is used to control accesses.
+Sooner or later you can expect this to be improved.
+For now you just have to live with it.
+.Lp 13.
+.ng net.women :
+What do you think about abortion?
+.Lp
+Although abortion might appear to be an appropriate topic for
+.ng net.women ,
+more heat than light is generated when it is brought up.
+Since the newsgroup
+.ng net.abortion
+has been created,
+all abortion-related discussion should take place there.
+.Lp 14.
+.ng net.singles :
+What do \*(lqMOTOS,\*(rq
+\*(lqMOTSS,\*(rq, \*(lqMOTAS\*(rq,
+and \*(lqSO\*(rq stand for?
+.Lp
+Member of the opposite sex,
+member of the same sex,
+member of the appropriate sex,
+and significant other,
+respectively.
+.Lp 15
+.ng net.columbia :
+Shouldn't this name be changed?
+.Lp
+The name was devised to honor the first space shuttle.
+It was realized at the time the group began that
+the name would quickly become out of date.
+The intent was to create a bit of instant nostalgia.
+.Lp 16.
+.ng net.columbia :
+Shouldn't this group be merged with
+.ng net.space ?
+No.
+.ng Net.columbia
+is for timely news bulletins.
+.ng Net.space
+is for discussions.
+.Lp 17.
+How do I use the
+.hf Distribution
+feature?
+.Lp
+When
+.i postnews (1)
+prompts you for a distribution,
+it's asking how widely distributed you want your article.
+The set of possible replies is different,
+depending on where you are,
+but at Bell Labs in Murray Hill,
+New Jersey,
+possibilities include:
+.sd c
+\!.ta 8n
+mh3bc1\tlocal to this machine
+mh\tBell Labs, Murray Hill Branch
+nj\tall sites in New Jersey
+btl\tAll Bell Labs machines
+att\tAll AT&T machines
+usa\tEverywhere in the USA
+na\tEverywhere in North America
+net\tEverywhere on USENET in the world (same as "world")
+.ed
+If you hit
+.qc RETURN ,
+you'll get the default,
+which is the first part of the newsgroup name.
+This default is often not appropriate \-
+.i please
+take a moment to think about how far away people are likely
+to be interested in what you have to say.
+Used car ads,
+housing wanted ads,
+and things for sale other than specialized equipment like computers
+certainly shouldn't be distributed to Europe and Korea,
+or even to the next state.
+.Lp
+The newsgroup
+.ng na.forsale
+exists for postings of sale announcements.
+Its distribution is limited to North America;
+posters should restrict this distribution even further,
+if possible and appropriate.
+.Lp 18.
+Why do some people put funny lines
+(\*(lqbug killers\*(rq)
+at the beginning of their articles?
+.Lp
+Some earlier versions of news had a bug which would drop
+the first 512 or 1024 bytes of text of certain articles.
+The bug was triggered whenever the article started with whitespace
+(a blank or a tab).
+A fix many people adopted was to begin their articles
+with a line containing a character other than white space.
+ine number
+would be less than the first, and it is illegal to
+try to print lines in reverse order.
+.PP
+This is because the comma separator
+for line numbers doesn't set dot as each address is processed;
+each search starts from the same place.
+In 
+.UL ed ,
+the semicolon `;' can be used just like comma,
+with the single difference that use of a semicolon
+forces dot to be set at that point
+as the line numbers are being evaluated.
+In effect, the semicolon `moves' dot.
+Thus in our example above, the command
+.P1
+/a/;/b/p
+.P2
+prints the range of lines from `ab' to `bc',
+because after the `a' is found, dot is set to that line,
+and then `b' is searched for, starting beyond that line.
+.PP
+This property is most often useful in a very simple situation.
+Suppose you want to find the 
+.ul
+second
+occurrence of `thing'.
+You could say
+.P1
+/thing/
+//
+.P2
+but this prints the first occurrence as well as the second,
+and is a nuisance when you know very well that it is only
+the second one you're interested in.
+The solution is to say
+.P1
+/thing/;//
+.P2
+This says to find the first occurrence of `thing', set dot to that line, then find the second
+and print only that.
+.PP
+Closely related is searching for the second previous
+occurrence of something, as in
+.P1
+?something?;??
+.P2
+Printing the third or fourth or ...
+in either direction is left as an exercise.
+.PP
+Finally, bear in mind that if you want to find the first occurrence of
+something in a file, starting at an arbitrary place within the file,
+it is not sufficient to say
+.P1
+1;/thing/
+.P2
+because this fails if `thing' occurs on line 1.
+But it is possible to say
+.P1
+0;/thing/
+.P2
+(one of the few places where 0 is a legal line number),
+for this starts the search at line 1.
+.SH
+Interrupting the Editor
+.PP
+As a final note on what dot gets set to,
+you should be aware that if you hit the interrupt or delete
+or rubout or break key
+while
+.UL ed
+is doing a command, things are put back together again and your state
+is restored as much as possible to what it was before the command
+began.
+Naturally, some changes are irrevocable _
+if you are reading or writing a file or making substitutions or deleting lines, these will be stopped
+in some clean but unpredictable state in the middle
+(which is why it is not usually wise to stop them).
+Dot may or may not be changed.
+.PP
+Printing is more clear cut.
+Dot is not changed until the printing is done.
+Thus if you print until you see an interesting line,
+then hit delete, you are
+.ul
+not
+sitting on that line or even near it.
+Dot is left where it was when the
+.UL p
+command was started.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            .\"	@(#)ae4	6.1 (Berkeley) 5/22/86
+.\"
+.NH
+GLOBAL COMMANDS
+.PP
+The global commands
+.UL g
+and
+.UL v
+are used to perform one or more editing commands on all lines that either
+contain
+.UL g ) (
+or don't contain
+.UL v ) (
+a specified pattern.
+.PP
+As the simplest example, the command
+.P1
+g/UNIX/p
+.P2
+prints all lines that contain the word `UNIX'.
+The pattern that goes between the slashes can be anything
+that could be used in a line search or in a substitute command;
+exactly the same rules and limitations apply.
+.PP
+As another example, then,
+.P1
+g/^\*e\*./p
+.P2
+prints all the formatting commands in a file (lines that begin with `\*.').
+.PP
+The
+.UL v
+command is identical to
+.UL g ,
+except that it operates on those line that do
+.ul
+not
+contain an occurrence of the pattern.
+(Don't look too hard for mnemonic significance to
+the letter `v'.)
+So
+.P1
+v/^\*e\*./p
+.P2
+prints all the lines that don't begin with `\*.' _
+the actual text lines.
+.PP
+The command that follows
+.UL g
+or
+.UL v
+can be anything:
+.P1
+g/^\*e\*./d
+.P2
+deletes all lines that begin with `\*.',
+and
+.P1
+g/^$/d
+.P2
+deletes all empty lines.
+.PP
+Probably the most useful command that can follow a global is the
+substitute command, for this can be used to make a change
+and print each affected line for verification.
+For example, we could change the word `Unix' to `UNIX'
+everywhere, and verify that 
+it really worked, 
+with
+.P1
+g/Unix/s//UNIX/gp
+.P2
+Notice that we used `//' in the substitute command to mean
+`the previous pattern', in this case, `Unix'.
+The 
+.UL p
+command is done on every line
+that matches the pattern,
+not just those on which a substitution took place.
+.PP
+The global command operates by making
+two passes over the file.
+On the first pass, all lines that match the pattern are marked.
+On the second pass, each marked line in turn is examined,
+dot is set to that line, and the command executed.
+This means that it is possible for the command that follows a
+.UL g
+or
+.UL v
+to use addresses, set dot, and so on, quite freely.
+.P1
+g/^\*e\*.PP/+
+.P2
+prints the line that follows each `.PP' command (the signal for
+a new paragraph in some formatting packages).
+Remember that `+' means `one line past dot'.
+And
+.P1
+g/topic/?^\*e\*.SH?1
+.P2
+searches for each line that contains `topic', scans backwards until it finds
+a line that begins `.SH' (a section heading) and prints the line
+that follows that,
+thus showing the section headings under which `topic' is mentioned.
+Finally,
+.P1
+g/^\*e\*.EQ/+,/^\*e\*.EN/-p
+.P2
+prints all the lines that lie between
+lines beginning with `.EQ' and `.EN' formatting commands.
+.PP
+The
+.UL g
+and
+.UL v
+commands can also be
+preceded by line numbers, in which case the lines searched
+are only those in the range specified.
+.SH
+Multi-line Global Commands
+.PP
+It is possible to do more than one command under the control of a
+global command, although the syntax for expressing the operation
+is not especially natural or pleasant.
+As an example,
+suppose the task is to change `x' to `y' and `a' to `b' on all lines
+that contain `thing'.
+Then
+.P1
+g/thing/s/x/y/\*e
+s/a/b/
+.P2
+is sufficient.
+The `\*e' signals the
+.UL g
+command that the set of commands continues on the next line;
+it terminates on the first line that does not end with `\*e'.
+(As a minor blemish, you can't use a substitute command
+to insert a newline within a 
+.UL g
+command.)
+.PP
+You should watch out for this problem:
+the command
+.P1
+g/x/s//y/\*e
+s/a/b/
+.P2
+does
+.ul
+not
+work as you expect.
+The remembered pattern is the last pattern that was actually
+executed,
+so sometimes it will be
+`x' (as expected), and sometimes it will be `a'
+(not expected).
+You must spell it out, like this:
+.P1
+g/x/s/x/y/\*e
+s/a/b/
+.P2
+.PP
+It is also possible to execute 
+.UL a ,
+.UL c
+and
+.UL i
+commands under a global command; as with other multi-line constructions,
+all that is needed is to add a `\*e' at the end of each line except the last.
+Thus to add a `.nf' and `.sp' command before each `.EQ' line, type
+.P1
+g/^\*e\*.EQ/i\*e
+\&\*.nf\*e
+\&\*.sp
+.P2
+There is no need for a final line containing a
+`\*.' to terminate the 
+.UL i
+command,
+unless there are further commands
+being done under the global.
+On the other hand, it does no harm to put it in either.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            .\"	@(#)ae5	6.1 (Berkeley) 5/22/86
+.\"
+.NH
+CUT AND PASTE WITH UNIX COMMANDS
+.PP
+One editing area in which non-programmers
+seem not very confident
+is in what might be called
+`cut and paste' operations _
+changing the name of a file,
+making a copy of a file somewhere else,
+moving a few lines from one place to another in a file,
+inserting one file in the middle of another,
+splitting a file into pieces,
+and
+splicing two or more files together.
+.PP
+Yet most of these operations are actually quite easy,
+if you keep your wits about you
+and go cautiously.
+The next several sections talk about cut and paste.
+We will begin with the
+.UX
+commands
+for moving entire files around,
+then discuss
+.UL ed
+commands
+for operating on pieces of files.
+.SH
+Changing the Name of a File
+.PP
+You have a file named 
+`memo'
+and you want it to be called
+`paper'
+instead.
+How is it done?
+.PP
+The
+.UX
+program that renames files
+is called
+.UL mv
+(for `move');
+it `moves' the file from one name to another, like this:
+.P1
+mv  memo  paper
+.P2
+That's all there is to it:
+.UL mv
+from the old name to the new name.
+.P1
+mv  oldname  newname
+.P2
+Warning: if there is already a file around with the new name,
+its present contents will be
+silently
+clobbered
+by the information from the other file.
+The one exception is that you can't move a file
+to itself _
+.P1
+mv  x  x
+.P2
+is illegal.
+.SH
+Making a Copy of a File
+.PP
+Sometimes what you want is a copy of a file _
+an entirely fresh version.
+This might be because you want to work on a file, and
+yet save a copy in case something gets fouled up,
+or just because you're paranoid.
+.PP
+In any case, the way to do it is with the
+.UL cp
+command.
+.UL cp \& (
+stands for `copy';
+the
+.UC UNIX
+system
+is big on short command names,
+which are appreciated by heavy users,
+but sometimes a strain for novices.)
+Suppose you have a file called
+`good'
+and
+you want to save a copy before you make some
+dramatic editing changes.
+Choose a name _
+`savegood'
+might be acceptable _ then type
+.P1
+cp  good  savegood
+.P2
+This copies
+`good'
+onto
+`savegood',
+and you now have two identical copies of the file
+`good'.
+(If
+`savegood'
+previously contained something,
+it gets overwritten.)
+.PP
+Now if you decide at some time that you want to get
+back to the original state of
+`good',
+you can say
+.P1
+mv  savegood  good
+.P2
+(if you're not interested in
+`savegood'
+any more), or
+.P1
+cp  savegood  good
+.P2
+if you still want to retain a safe copy.
+.PP
+In summary, 
+.UL mv
+just renames a file;
+.UL cp
+makes a duplicate copy.
+Both of them clobber the `target' file
+if it already exists, so you had better
+be sure that's what you want to do
+.ul
+before
+you do it.
+.SH
+Removing a File
+.PP
+If you decide you are really done with a file
+forever, you can remove it
+with the
+.UL rm
+command:
+.P1
+rm  savegood
+.P2
+throws away (irrevocably) the file called
+`savegood'.
+.SH
+Putting Two or More Files Together
+.PP
+The next step is the familiar one of collecting two or more
+files into one big one.
+This will be needed, for example,
+when the author of a paper
+decides that several sections need to be combined
+into one.
+There are several ways to do it,
+of which the cleanest, once you get used to it,
+is a program called
+.UL cat .
+(Not 
+.ul
+all
+.UC UNIX 
+programs have two-letter names.)
+.UL cat
+is short for
+`concatenate', which is exactly
+what we want to do.
+.PP
+Suppose the job is to combine the files
+`file1'
+and
+`file2'
+into a single file called
+`bigfile'.
+If you say
+.P1
+cat  file
+.P2
+the contents of
+`file'
+will get printed on your terminal.
+If you say
+.P1
+cat  file1  file2
+.P2
+the contents of
+`file1'
+and then the contents of
+`file2'
+will
+.ul
+both
+be printed on your terminal,
+in that order.
+So
+.UL cat
+combines the files, all right,
+but it's not much help to print them on the terminal _
+we want them in 
+`bigfile'.
+.PP
+Fortunately, there is a way.
+You can tell
+the system
+that instead of printing on your terminal,
+you want the same information put in a file. 
+The way to do it is to add to the command line
+the character
+.UL >
+and the name of the file
+where you want the output to go.
+Then you can say
+.P1
+cat  file1  file2  >bigfile
+.P2
+and the job is done.
+(As with
+.UL cp
+and
+.UL mv ,
+you're putting something into
+`bigfile',
+and anything that was already there is destroyed.)
+.PP
+This ability to
+`capture' the output of a program
+is one of the most useful aspects of
+the 
+.UC UNIX
+system.
+Fortunately it's not limited to the
+.UL cat 
+program _
+you can use it with 
+.ul
+any
+program that prints on your terminal.
+We'll see some more uses for it in a moment.
+.PP
+Naturally, you can combine several files,
+not just two:
+.P1
+cat  file1  file2  file3  ...  >bigfile
+.P2
+collects a whole bunch.
+.PP
+Question:
+is there any difference between
+.P1
+cp  good  savegood
+.P2
+and
+.P1
+cat  good  >savegood
+.P2
+Answer: for most purposes, no.
+You might reasonably ask why there are two programs
+in that case,
+since
+.UL cat
+is obviously all you need.
+The answer is that 
+.UL cp
+can do some other things as well,
+which you can investigate for yourself
+by reading the manual.
+For now we'll stick to simple usages.
+.SH
+Adding Something to the End of a File
+.PP
+Sometimes you want to add one file to the end of another.
+We have enough building blocks now that you can do it;
+in fact before reading further it would be valuable
+if you figured out how.
+To be specific,
+how would you use
+.UL cp ,
+.UL mv
+and/or
+.UL cat
+to add the file
+`good1'
+to the end of the file
+`good'?
+.PP
+You could try
+.P1
+cat  good  good1  >temp
+mv  temp  good
+.P2
+which is probably most direct.
+You should also understand why
+.P1
+cat  good  good1  >good
+.P2
+doesn't work.
+(Don't practice with a good `good'!)
+.PP
+The easy way is to use a variant of
+.UL > ,
+called
+.UL >> .
+In fact,
+.UL >> 
+is identical to
+.UL >
+except that instead of clobbering the old file,
+it simply tacks stuff on at the end.
+Thus you could say
+.P1
+cat  good1  >>good
+.P2
+and
+`good1'
+is added to the end of
+`good'.
+(And if
+`good'
+didn't exist,
+this makes a copy of
+`good1'
+called
+`good'.)
+                                                                                                                                                         
+#
+# Copyright (c) 1986 Regents of the University of California.
+# All rights reserved.  The Berkeley software License Agreement
+# specifies the terms and conditions for redistribution.
+#
+#	%W% (Berkeley) %G%
+#
+SRCS=	 tmac.n install.mn
+PRINTER=Pdp
+TROFF=	ditroff -${PRINTER}
+
+paper:	paper.${PRINTER}
+	lpr -${PRINTER} -n paper.${PRINTER}
+
+paper.${PRINTER}: ${SRCS}
+	 ${TROFF} -t ${SRCS} > paper.${PRINTER}
+
+clean:
+	rm -f paper.[PT]* *.spell errs Errs make.out
+
+spell:	${SRCS}
+	@for i in ${SRCS}; do \
+		echo $$i; spell $$i | sort | comm -23 - spell.ok > $$i.spell; \
+	done
+
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                   M     .   Lx    ..  X  è tests  k                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        .\"	@(#)ae6	6.1 (Berkeley) 6/5/86
+.\"
+.NH
+CUT AND PASTE WITH THE EDITOR
+.PP
+Now we move on to manipulating pieces of files _
+individual lines or groups of lines.
+This is another area where new users seem
+unsure of themselves.
+.SH
+Filenames
+.PP
+The first step is to ensure that you know the
+.UL ed
+commands for reading and writing files.
+Of course you can't go very far without knowing
+.UL r
+and
+.UL w .
+Equally useful, but less well known, is the `edit' command
+.UL e .
+Within
+.UL ed ,
+the command
+.P1
+e  newfile
+.P2
+says `I want to edit a new file called
+.ul
+newfile,
+without leaving the editor.'
+The
+.UL e
+command discards whatever you're currently working on
+and starts over on 
+.ul
+newfile.
+It's exactly the same as if you had quit with the
+.UL q
+command, then re-entered
+.UL ed
+with a new file name,
+except that if you have a pattern remembered, then a command
+like
+.UL //
+will still work.
+.PP
+If you enter
+.UL ed
+with the command
+.P1
+ed  file
+.P2
+.UL ed 
+remembers the name of the file,
+and any subsequent
+.UL e ,
+.UL r
+or
+.UL w
+commands that don't contain a filename
+will refer to this remembered file.
+Thus
+.P1 2
+.ta .5i .6i .7i
+ed  file1
+ ... (editing) ...
+w	(writes back in file1)
+e  file2	(edit new file, without leaving editor)
+ ... (editing on file2) ...
+w	(writes back on file2)
+.P2
+(and so on) does a series of edits on various files
+without ever leaving
+.UL ed
+and without typing the name of any file more than once.
+(As an aside, if you examine the sequence of commands here,
+you can see why many
+UNIX
+systems use
+.UL e
+as a synonym
+for
+.UL ed .)
+.PP
+You can find out the remembered file name at any time
+with the
+.UL f
+command;
+just type
+.UL f
+without a file name.
+You can also change the name of the remembered file name with
+.UL f ;
+a useful sequence is
+.P1
+ed  precious
+f  junk
+ ... (editing) ...
+.P2
+which gets a copy of a precious file,
+then uses
+.UL f
+to guarantee that a careless 
+.UL w
+command won't clobber the original.
+.SH
+Inserting One File into Another
+.PP
+Suppose you have a file called
+`memo',
+and you want the file called
+`table'
+to be inserted just after the reference to
+Table 1.
+That is, in
+`memo'
+somewhere is a line that says
+.IP
+Table 1 shows that ...
+.LP
+and the data contained in
+`table'
+has to go there,
+probably so it will be formatted
+properly by
+.UL nroff
+or
+.UL troff .
+Now what?
+.PP
+This one is easy.
+Edit
+`memo',
+find
+`Table 1',
+and add the file
+`table'
+right there:
+.P1
+ed  memo
+/Table 1/
+.ft I
+Table 1 shows that ... [response from ed]
+.ft
+\&\*.r  table
+.P2
+The critical line is the last one.
+As we said earlier, the
+.UL r
+command reads a file;
+here you asked for it to be read in right after
+line dot.
+An
+.UL r
+command without any address
+adds lines at the end,
+so it is the same as
+.UL $r .
+.SH
+Writing out Part of a File
+.PP
+The other side of the coin is writing out part of
+the document you're editing.
+For example, maybe
+you want to copy out into a separate file
+that table from the previous example,
+so it can be formatted and tested separately.
+Suppose that in the file being edited 
+we have
+.P1
+\&\*.TS
+ ...[lots of stuff]
+\&\*.TE
+.P2
+which is the way a table is set up for the
+.UL tbl
+program.
+To isolate
+the table
+in a separate file called
+`table',
+first find the start of the table
+(the `.TS' line), then write out the interesting part:
+.P1
+/^\*e\*.TS/
+.ft I
+\&\*.TS  [ed prints the line it found]
+.ft R
+\&\*.,/^\*e\*.TE/w table
+.P2
+and the job is done.
+If you are confident, you can do it all at once with
+.P1
+/^\*e\*.TS/;/^\*e\*.TE/w table
+.P2
+and now you have two copies, one in the file you're still editing,
+one in the file `table' you've just written.
+.PP
+The point is that the
+.UL w
+command can
+write out a group of lines, instead of the whole file.
+In fact, you can write out a single line if you like;
+just give one line number instead of two.
+For example, if you have just typed a horribly complicated line
+and you know that it (or something like it) is going to be needed later,
+then save it _ don't re-type it.
+In the editor, say
+.P1
+a
+\&...lots of stuff...
+\&...horrible line...
+\&\*.
+\&\*.w  temp
+a
+\&\*.\*.\*.more stuff\*.\*.\*.
+\&\*.
+\&\*.r temp
+a
+\&\*.\*.\*.more stuff\*.\*.\*.
+\&\*.
+.P2
+This last example is worth studying, to be sure you appreciate
+what's going on.
+.SH
+Moving Lines Around
+.PP
+Suppose you want to 
+move a paragraph from its present position in a paper
+to the end.
+How would you do it?
+As a concrete example, suppose each paragraph in the paper
+begins with the formatting command
+`.PP'.
+Think about it and write down the details before reading on.
+.PP
+The brute force way
+(not necessarily bad)
+is to write the paragraph onto a temporary file,
+delete it from its current position,
+then read in the temporary file at the end.
+Assuming that you are sitting on the 
+`.PP' command that begins
+the paragraph, this is the sequence of commands:
+.P1
+\&\*.,/^\*e\*.PP/-w temp
+\&\*.,//-d
+$r temp
+.P2
+That is, from where you are now
+(`\*.')
+until one line before the next `\*.PP'
+(`/^\*e\*.PP/\-')
+write onto
+`temp'.
+Then delete the same lines.
+Finally, read
+`temp'
+at the end.
+.PP
+As we said, that's the brute force way.
+The easier way (often)
+is to use the
+.ul
+move
+command
+.UL m
+that 
+.UL ed
+provides _
+it lets you do the whole set of operations
+at one crack,
+without any temporary file.
+.PP
+The 
+.UL m
+command
+is like many other
+.UL ed
+commands in that it takes up to two line numbers in front
+that tell what lines are to be affected.
+It is also
+.ul
+followed
+by a line number that tells where the lines are to go.
+Thus
+.P1
+line1, line2 m line3
+.P2
+says to move all the lines between
+`line1'
+and
+`line2'
+after
+`line3'.
+Naturally, any of
+`line1'
+etc., can be patterns between slashes,
+$
+signs, or other ways to specify lines.
+.PP
+Suppose again that you're sitting at the first line of the
+paragraph.
+Then you can say
+.P1
+\&\*.,/^\*e\*.PP/-m$
+.P2
+That's all.
+.PP
+As another example of a frequent operation,
+you can reverse the order of two adjacent lines
+by moving the first one
+to after the second.
+Suppose that you are positioned at the first.
+Then
+.P1
+m+
+.P2
+does it.
+It says to move line dot to after one line after line dot.
+If you are positioned on the second line,
+.P1
+m--
+.P2
+does the interchange.
+.PP
+As you can see, the
+.UL m
+command is more succinct and direct than
+writing, deleting and re-reading.
+When is brute force better anyway?
+This is a matter of personal taste _
+do what you have most confidence in.
+The main difficulty with the
+.UL m
+command
+is that if you use patterns to specify both the lines
+you are moving and the target,
+you have to take care that you specify them properly,
+or you may well not move the lines you thought you did.
+The result of a botched
+.UL m
+command can be a ghastly mess.
+Doing the job a step at a time
+makes it easier for you to verify at each step
+that you accomplished what you wanted to.
+It's also a good idea to issue a 
+.UL w
+command
+before doing anything complicated;
+then if you goof, it's easy to back up
+to where you were.
+.SH
+Marks
+.PP
+.UL ed
+provides a facility for marking a line
+with a particular name so you can later reference it
+by name
+regardless of its actual line number.
+This can be handy for moving lines,
+and for keeping track of them even after they've been moved.
+The
+.ul
+mark
+command is
+.UL k ;
+the command
+.P1
+kx
+.P2
+marks the current line with the name `x'.
+If a line number precedes the
+.UL k ,
+that line is marked.
+(The mark name must be a single lower case letter.)
+Now you can refer to the marked line with the address
+.P1
+\(fmx
+.P2
+.PP
+Marks are most useful for moving things around.
+Find the first line of the block to be moved, and mark it
+with
+.ul
+\(fma.
+Then find the last line and mark it with
+.ul
+\(fmb.
+Now position yourself at the place where the stuff is to go
+and say
+.P1
+\(fma,\(fmbm\*.
+.P2
+.PP
+Bear in mind that only one line can have a particular
+mark name associated with it
+at any given time.
+.SH
+Copying Lines
+.PP
+We mentioned earlier the idea of saving a line
+that was hard to type or used often,
+so as to cut down on typing time.
+Of course this could be more than one line;
+then the saving is presumably even greater.
+.PP
+.UL ed
+provides another command,
+called
+.UL t
+(for `transfer')
+for making a copy of a .\"	@(#)ae7	6.1 (Berkeley) 6/5/86
+.\"
+.NH
+SUPPORTING TOOLS
+.PP
+There are several tools and techniques that go along with the
+editor, all of which are relatively easy once you
+know how
+.UL ed
+works,
+because they are all based on the editor.
+In this section we will give some fairly cursory examples
+of these tools,
+more to indicate their existence than to provide
+a complete tutorial.
+More information on each can be found in
+[3].
+.SH
+Grep
+.PP
+Sometimes you want to find all occurrences of some word or pattern in
+a set of files, to edit them
+or perhaps just to verify their presence or absence.
+It may be possible to edit each file separately and look
+for the pattern of interest, but if there are many files
+this can get very tedious,
+and if the files are really big,
+it may be impossible because of limits in 
+.UL ed .
+.PP
+The program
+.UL grep
+was invented to get around these limitations.
+The search patterns that we have described in the paper are often
+called `regular expressions', and
+`grep' stands for
+.P1
+g/re/p
+.P2
+That describes exactly what
+.UL grep
+does _
+it prints every line in a set of files that contains a
+particular pattern.
+Thus
+.P1
+grep  \(fmthing\(fm  file1  file2  file3  ...
+.P2
+finds `thing' wherever it occurs in any of the files
+`file1',
+`file2',
+etc.
+.UL grep
+also indicates the file in which the line was found,
+so you can later edit it if you like.
+.PP
+The pattern represented by `thing' can be any
+pattern you can use in the editor,
+since
+.UL grep
+and
+.UL ed
+use exactly the same mechanism for
+pattern searching.
+It is wisest always to enclose the pattern in the
+single quotes \(fm...\(fm if it contains any non-alphabetic
+characters, since many such characters also mean something
+special to the
+.UX
+command interpreter
+(the `shell').
+If you don't quote them, the command interpreter will
+try to interpret them before
+.UL grep
+gets a chance.
+.PP
+There is also a way to find lines that
+.ul
+don't 
+contain a pattern:
+.P1
+grep  -v  \(fmthing\(fm  file1  file2  ...
+.P2
+finds all lines that
+don't contains `thing'.
+The
+.UL \-v
+must occur in the position shown.
+Given
+.UL grep
+and
+.UL grep\ \-v ,
+it is possible to do things like selecting all lines that
+contain some combination of patterns.
+For example, to get all lines that contain `x' but not `y':
+.P1
+grep  x  file...  |  grep  -v  y
+.P2
+(The notation | is a `pipe',
+which causes the output of the first command to be used as
+input to the second command; see [2].)
+.SH
+Editing Scripts
+.PP
+If a fairly complicated set of editing operations 
+is to be done on a whole set of files,
+the easiest thing to do is to make up a `script',
+i.e., a file that contains the operations you want to perform,
+then apply this script to each file in turn.
+.PP
+For example, suppose you want to change every
+`Unix' to `UNIX' and every `Gcos' to `GCOS' in a large number of files.
+Then put into the file `script' the lines
+.P1
+g/Unix/s//UNIX/g
+g/Gcos/s//GCOS/g
+w
+q
+.P2
+Now you can say
+.P1
+ed file1 <script
+ed file2 <script
+\&...
+.P2
+This causes
+.UL ed
+to take its commands from the prepared script.
+Notice that the whole job has to be planned in advance.
+.PP
+And of course by using the
+.UX
+command interpreter, you can
+cycle through a set of files
+automatically, with varying degrees of ease.
+.SH
+Sed
+.PP
+.UL sed
+(`stream editor')
+is a version of the editor with restricted capabilities
+but which is capable of processing unlimited amounts of input.
+Basically
+.UL sed
+copies its input to its output, applying one or more
+editing commands to each line of input.
+.PP
+As an example, suppose that we want to do the `Unix' to `UNIX'
+part of the
+example given above,
+but without rewriting the files.
+Then the command
+.P1
+sed  \(fms/Unix/UNIX/g\(fm  file1  file2  ...
+.P2
+applies the command
+`s/Unix/UNIX/g'
+to all lines from `file1', `file2', etc.,
+and copies all lines to the output.
+The advantage of using
+.UL sed
+in such a case is that it can be used
+with input too large for
+.UL ed
+to handle.
+All the output can be collected in one place,
+either in a file or perhaps piped into another program.
+.PP
+If the editing transformation is so complicated
+that
+more than one editing command is needed,
+commands can be supplied from a file,
+or on the command line,
+with a slightly more complex syntax.
+To take commands from a file, for example,
+.P1
+sed  -f  cmdfile  input-files...
+.P2
+.PP
+.UL sed
+has further capabilities, including conditional testing
+and branching, which we cannot go into here, but which are
+described in detail in 
+.ul
+Sed \- A Non-interactive Text Editor.
+
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               .	\" TL - title and initialization
+.de TL
+.if \\n(TM .nr ST 1
+.if \\n(TM .pn 0
+.br
+.nr TV 1
+.nr YE 1
+.nr SJ \\n(.j
+.di WT
+.na
+.fi
+.ll 5.0i
+.ft 3
+.ps 12
+.hy 0
+..
+.	\" TX - actually print title
+.de TX
+.rs
+.sp .5i
+.ce 1000
+.if n .ul 1000
+.ps 12
+.ft 3
+.vs 15p
+.ne 4
+.hy 0
+.WT
+.hy 14
+.ce 0
+.ul 0
+..
+.	\" AU - author(s)
+.de AU
+.nr AV 1
+.ad \\n(SJ
+.br
+.di
+.br
+.nf
+.nr NA +1
+.di A\\n(NA
+.ll \\n(LLu
+.if t .ft 2
+.if n .ft 1
+.ps 10
+..
+.	\" AI - author's institution
+.de AI
+.br
+.ft 1
+.di
+.di I\\n(NA
+.nf
+..
+.	\" AX - actually print authors and institutions
+.de AX
+.ft 1
+.rs
+.ce 1000
+.if n .ul 0
+.ps 10
+.vs 12p
+.if n .sp 2
+.if t .sp
+.A1
+.if n .sp 
+.if t .sp .5
+.ns
+.I1
+.if \\n(NA-1 .if n .sp 2
+.if \\n(NA-1 .if t .sp
+.A2
+.if \\n(NA-1 .if n .sp
+.if \\n(NA-1 .if t .sp .5
+.ns
+.I2
+.if \\n(NA-2 .if t .sp
+.if \\n(NA-2 .if n .sp 2
+.A3
+.if \\n(NA-2 .if t .sp .5
+.if \\n(NA-2 .if n .sp
+.ns
+.I3
+.if \\n(NA-3 .if t .sp
+.if \\n(NA-3 .if n .sp 2
+.A4
+.if \\n(NA-3 .if t .sp .5
+.if \\n(NA-3 .if n .sp
+.ns
+.I4
+.if \\n(NA-4 .if t .sp
+.if \\n(NA-4 .if n .sp 2
+.A5
+.if \\n(NA-4 .if n .sp
+.if \\n(NA-4 .if t .sp .5
+.ns
+.I5
+.if \\n(NA-5 .if t .sp
+.if \\n(NA-5 .if n .sp 2
+.A6
+.if \\n(NA-5 .if n .sp
+.if \\n(NA-5 .if t .sp .5
+.ns
+.I6
+.if \\n(NA-6 .if t .sp
+.if \\n(NA-6 .if n .sp 2
+.A7
+.if \\n(NA-6 .if n .sp
+.if \\n(NA-6 .if t .sp .5
+.ns
+.I7
+.if \\n(NA-7 .if t .sp
+.if \\n(NA-7 .if n .sp 2
+.A8
+.if \\n(NA-7 .if n .sp
+.if \\n(NA-7 .if t .sp .5
+.ns
+.I8
+.if \\n(NA-8 .if t .sp
+.if \\n(NA-8 .if n .sp 2
+.A9
+.if \\n(NA-8 .if n .sp
+.if \\n(NA-8 .if t .sp .5
+.ns
+.I9
+..
+.	\" AB - abstract begin
+.de AB
+.br
+.di
+.ul 0
+.ce 0
+.nr 1T 1
+.nr IK 1
+.nr KI 1
+.di WB
+.rs
+.nr AJ 1
+.ce 1
+.ft 2
+.if n .ul
+.ll \\n(LLu
+.if \\n(.$=0 ABSTRACT
+.if \\n(.$>0 .if !\\$1no  \\$1
+.if \\n(.$=0 .sp
+.if \\n(.$>0 .if !\\$1no .sp
+.hy 14
+.ul 0
+.ce 0
+.fi
+.ft 1
+.nr OJ \\n(.i
+.in +\\n(.lu/12u
+.ll -\\n(.lu/12u
+.br
+.ps \\n(PS
+.if \\n(VS>=40 .vs \\n(VSu
+.if \\n(VS<=39 .vs \\n(VSp
+.ti +\\n(PIu
+.if \\n(TM .ls 1
+..
+.	\" AE - abstract end
+.de AE
+.br
+.di
+.ll \\n(LLu
+.ps \\n(PS
+.if \\n(VS>=40 .vs \\n(VSu
+.if \\n(VS<=39 .vs \\n(VSp
+.nr 1T 0
+.nr IK 0
+.in \\n(OJu
+.nr AJ 0
+.di
+.ce 0
+.if \\n(ST>0 .SY
+.if \\n(ST<3 .rm SY
+.if \\n(TM .ls 2
+..
+.	\" SY - cover sheet of released paper
+.de SY
+.ll \\n(LLu
+.if !\\n(LT .nr LT \\n(LLu
+.ns
+.if \\n(TV .TX
+.if \\n(AV .AX
+.rs
+.ce 0
+.nf
+.sp 3
+.pn 2
+.af PN i
+.ls 1
+.WB
+.ls 
+.sp 3v
+\\*(DY
+.af PN 1
+.sp |9i
+.if \\n(FP>0 .FA
+.FG
+.fi
+..
+.	\" S2 - cover and page 1 of RP
+.de S2
+.ce 0
+.br
+.SY
+.rm SY
+.bp 1
+.if \\n(TV .TX
+.if \\n(AV .AX
+.rs
+.ce 0
+.ft 1
+.ad \\n(SJ
+..
+.	\" S1 - cover and page 1 of RP (no p.1 title)
+.de S1
+.ce 0
+.br
+.SY
+.rm SY
+.bp 1
+.rs
+.ce 0
+.ft 1
+.ad \\n(SJ
+..
+.	\" S0 - conserve paper format (without RP)
+.de S0
+.ce 0
+.br
+.ll \\n(LLu
+.if \\n(TV+\\n(AV>0 .ns
+.if \\n(TV .TX
+.if \\n(AV .AX
+.if \\n(TV+\\n(AV>0 .rs
+.ce 0
+.if \\n(TV>0 .sp 2
+.ls 1
+.if \\n(FP>0 \{\
+.	FJ
+.	nf
+.	FG
+.	fi
+.	FK
+.	nr FP 0
+.\}
+.nf
+.WB
+.ls
+.fi
+.ad \\n(SJ
+..
+                                                                                                                                                                     .\" Copyright (c) 1986 Regents of the University of California.
+.\" All rights reserved.  The Berkeley software License Agreement
+.\" specifies the terms and conditions for redistribution.
+.\"
+.\"	@(#)install.mn	6.2 (Berkeley) 5/30/86
+.\"
+.ds h0 "USENET Version B Installation
+.ds h1
+.ds h2 "SMM:10-%
+.ds f0 
+.ds f1
+.ds f2 
+.mt
+USENET Version B Installation
+.au
+Matt Glickman
+.ai
+Computer Science Division
+Department of Electrical Engineering and Computer Sciences
+University of California
+Berkeley, California 94720
+.au
+Revised by Mark Horton for version 2.10
+Revised by Rick Adams for version 2.10.3
+.hn
+Introduction
+.pg
+This document is intended to help
+a USENET site install and maintain the network news software.
+Please ask questions of Rick Adams\*(dg;
+.fn
+\*(dg ARPANET: rick@seismo.CSS.GOV, UUCP: seismo!rick
+.ef
+such questions will help to point out areas that need
+to be addressed here.
+.pg
+The overall order of things to do is:
+.lp (a)
+Find somebody to link up with.
+You need a network connection of some kind,
+for example,
+ARPANET or UUCP.
+If you must use UUCP and have no connections,
+you must have at least a dialup and preferably a dialer,
+and find someone willing to call your machine.
+The USENET directory may be helpful in finding some other site geographically
+near yours to hook up to.
+.lp (b)
+Create a
+.i localize.sh
+script to make local changes to the makefile and
+.i defs.h
+files. (Section 2 gives more details about creating
+.i localize.sh \&.)
+Once you're finished editing
+.i localize.sh ,
+create a
+.i defs.h
+and
+.i Makefile
+tailored
+for your site with the command
+.ce
+sh localize.sh
+Inspect
+.i defs.h
+and
+.i Makefile
+to ensure that all your local customizations
+got into your final versions. If you saw a \*(lq?\*(rq when you ran
+.i localize.sh ,
+one or both of the files is certainly wrong. It's a good idea to
+anchor the patterns in
+.i localize.sh \&'s
+.i ed (1)
+scripts, especially in its
+.i Makefile -editing
+lines. For instance, use
+.b /^UUXFLAGS/
+instead of
+.b /UUXFLAGS/ .
+.lp (c)
+Compile the software using the
+.i make (1)
+command.
+.lp (d)
+.i Su (1)
+and type \*(lqmake install\*(rq.
+This will copy the files out to the right place and
+make directories containing most of the important files.
+It will configure you in with a connection to
+.cn oopsvax
+via UUCP links.
+This is undoubtedly wrong,
+so you will have to configure links as needed.
+If you are upgrading from a version older than 2.10.3, do \*(lqmake update\*(rq.
+This will cause various checks to be performed on important
+files in
+.b LIBDIR .
+The results will be reported to you.
+If you are not sure if you should do \*(lqmake update\*(rq, do it.
+It will not hurt anything if you have already done it.
+.lp (e)
+After editing the configuration table,
+get your contact at the other end of the link to add you to their netnews
+.i sys
+file.
+.lp (f)
+Post a message to the
+.bi sysname "" \f3to.\fP
+newsgroup which should be set up to go only to the site you are linked to,
+as a test.
+Have the other person send a message to your system using the same mechanism.
+If this doesn't work,
+find the problem and fix it.
+(Please don't use
+.ng net.test
+unless there is no alternative.
+It is almost always possible to use
+.ng test ,
+or
+.bi sysname "" \f3to.\fP
+or some
+.bi local \f3.test\fP
+group,
+instead of
+.ng net.test .)
+.lp (g)
+Fill out a USENET directory form (the file
+.i dirform
+in the
+.i misc
+directory).
+Post a copy to the USENET newsgroup
+.ng net.news.newsite
+and mail a copy to
+.i cbosgd!uucpmap .
+.lp (h)
+Format the document
+.i "\*(lqHow to Read the Network News\*(rq"
+(the file
+.i howto.mn
+in the
+.i doc
+directory),
+the document
+.i "\*(lqHow to Use USENET Effectively\*(rq"
+(the file
+.i manner.mn
+in the
+.i doc
+directory)
+and the document
+.i "\*(lqCopyright Law\*(rq"
+(the file
+.i copyright.mn
+in the
+.i doc
+directory)
+and post them to your
+.ng general
+newsgroup with a long expiration date.
+You can use
+.i inews (1)
+or
+.i postnews (1)
+to do this.
+.lp (i)
+It will probably be necessary to fix your uucp commands
+to allow
+.i rnews
+and to support the
+.op \-z
+and
+.op \-n
+options (if you are lucky enought to have the source).
+.hn
+Installation
+.hn 2
+Configuration
+.pg
+Local configuration of the USENET
+version B software requires you to edit a few files.
+Most importantly,
+the
+.i defs.h
+and
+.i Makefile
+files must be created from their templates
+.i defs.dist
+and
+.i Makefile.dst .
+You should create a shell script called
+.i localize.sh
+which copies the files and makes local changes to the copies.
+Even for a completely vanilla site,
+some changes will be necessary.
+For example,
+your script should start with
+.i localize.v7
+or
+.i localize.usg .
+You should include the name of the local organization
+.b MYORG ) (
+and the uid of the local news super user
+.b ROOTID ). (
+You should also choose how your hostname will be determined.
+If you are a USG site,
+define
+.b UNAME
+in
+.i defs.h .
+If you are
+running 4.[23] BSD,
+define
+.b GHNAME
+in
+.i defs.h .
+If you have your UUCP name in 
+.i /etc/uucpname ,
+define
+.b UUNAME
+in
+.i defs.h .
+Otherwise,
+news will look in the file
+.i /usr/include/whoami.h
+for a line of the form
+.sd c
+#define sysname your-sysname
+.ed
+.pg
+If you are running System 3 or System 5,
+you are a USG site.
+Otherwise,
+unless you are in AT&T,
+you are probably a V7 site.
+The previously mentioned defines are the only modifications that are
+.i necessary
+to install news at your site.
+However,
+you will probably want to change some of the ones listed below.
+If your compiler does not accept \*(lq(void)\*(rq,
+the simplest thing to do is add \*(lq\-Dvoid=int\*(rq to the
+.b CFLAGS
+line in the
+.i Makefile .
+.pg
+A sample localize shell script can be found in
+.i localize.sample .
+The most important parameters are:
+.hn 3
+ROOTID
+.pg
+The numerical uid of the person who is the news super user.
+This should not be set to 0.
+Normally it is set to the uid of the news contact person for the site.
+If it is not defined,
+the uid of
+.b NOTIFY
+will be looked up in
+.i /etc/passwd
+and used instead.
+.hn 3
+N_UMASK
+.pg
+Mask for
+.i umask (2)
+system call.
+Set it to something like 022 for a secure system.
+Unsecure systems might want 002 or 000.
+This mask controls the mode of news files created by the software.
+Insecure modes would allow people to edit the files directly.
+.hn 3
+DFLTEXP
+.pg
+The default number of seconds after which an article will expire.
+Two weeks (1,209,600 seconds) is the default choice.
+If you wish to expire articles faster than two weeks,
+it is recommended that you use the
+.op \-e
+flag to expire instead of decreasing
+.b DFLTEXP .
+.hn 3
+HISTEXP
+.pg
+Articles which were posted more than
+.b HISTEXP
+ago are considered too old and are moved into the junk directory.
+This is because they are too old to be in the history file,
+so it is impossible to tell if they really should be accepted
+or are endlessly looping around the network.
+(This was theoretically possible before this feature was added.)
+The articles are removed after
+.b DFLTEXP
+seconds,
+but a copy of their
+.hf Message-ID
+is kept in the history file for
+.b HISTEXP
+seconds (the default is 4 weeks).
+.hn 3
+DFLTSUB
+.pg
+The default subscription list.
+If a user does not specify any list of newsgroups,
+this will be used.
+Popular choices are
+.ng all
+and
+.ng general\f1,\fPall.general .
+.hn 3
+TMAIL
+.pg
+This is the version of the Berkeley
+.i Mail (1)
+program that has the
+.op \-T
+option.
+If left undefined,
+the
+.op \-M
+option to
+.i readnews (1)
+will be disabled.
+.hn 3
+ADMSUB
+.pg
+This newsgroup (or newsgroup list) will always be selected
+unless the user specifies a newsgroup list that doesn't include
+.b ADMSUB
+on the command line.
+That is,
+as long as the user doesn't use the
+.op \-n
+flag to
+.i readnews
+on the command line,
+.b ADMSUB
+will always be selected.
+This is usually set to
+.ng general .
+(The intent of this parameter is to have certain newsgroups
+which users are required to subscribe to.
+A typical site might require
+.op general .)
+.hn 3
+PAGE
+.pg
+The default program to which articles should be piped for paging.
+This can be disabled or changed by the environment variable
+.b PAGER .
+If you have it,
+the Berkeley
+.i more (1)
+command should be used,
+since the
+.op +
+option allows the headers to be skipped.
+.hn 3
+NOTI.ds h0 "Standard for Interchange of USENET Messages
+.ds h1
+.ds h2 %
+.ds f0 "\*(vr
+.ds f1
+.ds f2 "January 17, 1986
+.mt
+Standard for Interchange of USENET Messages
+.au
+Mark R. Horton
+.ai
+Bell Laboratories
+Columbus, OH  43213
+.au
+Revised for 2.10.3 by Rick Adams
+.hn
+Introduction
+.pg
+This document defines the standard format for the interchange
+of network Nnws articles among USENET sites.
+It describes the format for articles themselves,
+and gives partial standards for transmission of news.
+The news transmission is not entirely standardized
+in order to give a good deal of flexibility
+to the individual hosts to choose transmission hardware and software,
+whether to batch news,
+and so on.
+.pg
+There are five sections to this document.
+Section two section defines the format.
+Section three defines the valid control messages.
+Section four specifies some valid transmission methods.
+Section five describes the overall news propagation algorithm.
+.hn
+Article Format
+.pg
+The primary consideration in choosing an article format is
+that it fit in with existing tools as well as possible.
+Existing tools include both implementations of mail and news.
+(The
+.i notesfiles
+system from the University of Illinois
+is considered a news implementation.)
+A standard format for mail messages has existed for many years on the ARPANET,
+and this format meets most of the needs of USENET.
+Since the ARPANET format is extensible,
+extensions to meet the additional needs of USENET
+are easily made within the ARPANET standard.
+Therefore,
+the rule is adopted that all USENET news articles
+must be formatted as valid ARPANET mail messages,
+according to the ARPANET standard RFC 822.
+This standard is more restrictive than the ARPANET standard,
+placing additional requirements on each article
+and forbidding use of certain ARPANET features.
+However,
+it should always be possible to use a tool
+expecting an ARPANET message to process a news article.
+In any situation where this standard conflicts with the ARPANET standard,
+RFC 822 should be considered correct and this standard in error.
+.pg
+An example message is included to illustrate the fields.
+.sd
+From: jerry@eagle.uucp (Jerry Schwarz)
+Path: cbosgd!mhuxj!mhuxt!eagle!jerry
+Newsgroups: net.general
+Subject: Usenet Etiquette -- Please Read
+Message-ID: <642@eagle.UUCP>
+Date: Friday, 19 Nov 82 16:14:55 EST
+Followup-To: net.news
+Expires: Saturday, 1 Jan 83 00:00:00 EST
+Organization: Bell Labs, Murray Hill
+
+The body of the article comes here, after a blank line.
+.ed
+Here is an example of a message in the old format
+(before the existence of this standard).
+It is recommended that implementations also accept articles
+in this format to ease upward conversion.
+.sd
+From: cbosgd!mhuxj!mhuxt!eagle!jerry (Jerry Schwarz)
+Newsgroups: net.general
+Title: Usenet Etiquette -- Please Read
+Article-I.D.: eagle.642
+Posted: Fri Nov 19 16:14:55 1982
+Received: Fri Nov 19 16:59:30 1982
+Expires: Mon Jan  1 00:00:00 1990
+
+The body of the article comes here, after a blank line.
+.ed
+Some news systems transmit news in the
+.pa A
+format,
+which looks like this:
+.sd
+Aeagle.642
+net.general
+cbosgd!mhuxj!mhuxt!eagle!jerry
+Fri Nov 19 16:14:55 1982
+Usenet Etiquette - Please Read
+The body of the article comes here, with no blank line.
+.ed
+.pg
+An article consists of several header lines,
+followed by a blank line,
+followed by the body of the message.
+The header lines consist of a keyword,
+a colon,
+a blank,
+and some additional information.
+This is a subset of the ARPANET standard,
+simplified to allow simpler software to handle it.
+The
+.hf From
+line may optionally include a full name,
+in the format above,
+or use the ARPANET angle bracket syntax.
+To keep the implementations simple,
+other formats
+(for example,
+with part of the machine address after the close parenthesis)
+are not allowed.
+The ARPANET convention of continuation header lines
+(beginning with a blank or tab)
+is allowed.
+.pg
+Certain headers are required,
+and certain other headers are optional.
+Any unrecognized headers are allowed,
+and will be passed through unchanged.
+The required headers are
+.hf From ,
+.hf Date ,
+.hf Newsgroups ,
+.hf Subject ,
+.hf Message-ID ,
+and
+.hf Path .
+The optional headers are
+.hf Followup-To ,
+.hf Expires ,
+.hf Reply-To ,
+.hf Sender ,
+.hf References ,
+.hf Control ,
+.hf Distribution ,
+.hf Keywords ,
+.hf Summary ,
+and
+.hf Organization .
+.hn 2
+Required Headers
+.hn 3
+From
+.pg
+The
+.hf From
+line contains the electronic mailing address of the person who sent the message,
+in the ARPA internet syntax.
+It may optionally also contain the full name of the person,
+in parentheses,
+after the electronic address.
+The electronic address is the same as the entity responsible
+for originating the article,
+unless the
+.hf Sender
+header is present,
+in which case the
+.hf From
+header might not be verified.
+Note that in all site and domain names,
+upper and lower case are considered the same,
+thus
+.cf mark@cbosgd.UUCP ,
+.cf mark@cbosgd.uucp ,
+and
+.cf mark@CBosgD.UUcp
+are all equivalent.
+User names may or may not be case sensitive, for example,
+.cf Billy@cbosgd.UUCP
+might be different from
+.cf BillY@cbosgd.UUCP .
+Programs should avoid changing the case of electronic addresses
+when forwarding news or mail.
+.pg
+RFC 822 specifies that all text in parentheses is to be interpreted as a comment.
+It is common in ARPANET mail to place the full name of the user
+in a comment at the end of the
+.hf From
+line.
+This standard specifies a more rigid syntax.
+The full name is not considered a comment,
+but an optional part of the header line.
+Either the full name is omitted, 
+or it appears in parentheses after the electronic address
+of the person posting the article,
+or it appears before an electronic address enclosed in angle brackets.
+Thus,
+the three permissible forms are:
+.sd
+From: mark@cbosgd.UUCP
+From: mark@cbosgd.UUCP (Mark Horton)
+From: Mark Horton <mark@cbosgd.UUCP>
+.ed
+Full names may contain any printing ASCII characters from space through tilde,
+with the exceptions that they may not contain
+\&\*(lq(\*(rq (left parenthesis),
+\&\*(lq)\*(rq (right parenthesis),
+\&\*(lq<\*(rq (left angle bracket),
+or \*(lq>\*(rq (right angle bracket).
+Additional restrictions may be placed on full names by the mail standard,
+in particular,
+the characters
+\&\*(lq,\*(rq (comma),
+\&\*(lq:\*(rq (colon),
+and \*(lq;\*(rq (semicolon) are inadvisable in full names.
+.hn 3
+Date
+.pg
+The
+.hf Date
+line (formerly
+.hf Posted )
+is the date,
+in a format that must be acceptable both to the ARPANET
+and to the
+.i getdate (3)
+routine,
+that the article was originally posted to the network.
+This date remains unchanged as the article is propagated
+throughout the network.
+One format that is acceptable to both is
+.sd c
+\f2Wdy\fP, \f2DD\fP\ \f2Mon\fP\ \f2YY\fP \f2HH\fP:\f2MM\fP:\f2SS\fP \f2TIMEZONE\fP
+.ed
+Several examples of valid dates appear in the sample
+article above.
+Note in particular that
+.i ctime (3)
+format:
+.sd c
+\f2Wdy\fP \f2Mon\fP \f2DD\fP \f2HH\fP:\f2MM\fP:\f2SS\fP \f2YYYY\fP
+.ed
+is
+.i not
+acceptable because it is not a valid ARPANET date.
+However,
+since older software still generates this format,
+news implementations are encouraged to accept this format
+and translate it into a

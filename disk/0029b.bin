@@ -1,0 +1,3703 @@
+ examiner
+insurance messenger
+insurance patrol
+insurance reserve
+insurance salesman
+insurance solicitor
+insurance tester
+insurance traveler
+insurance underwriter
+intaglio printing
+intake valve
+integrable group
+integral calculus
+integral cover
+integral curvature
+integral cylinder head
+integral equation
+integral function
+integral photography
+integral unit
+integral whole
+intelligence bureau
+intelligence office
+intelligence officer
+intelligence quotient
+intelligence test
+Inter-american
+Inter-andean
+interesse termini
+interest lottery
+Inter-european
+interference color
+interference figure
+interference fit
+interference pattern
+interference phenomenon
+interference-proof
+interference spectrum
+interim certificate
+interim dividend
+Inter-imperial
+interior decorator
+interior planet
+interior point
+interior polygon
+interior side
+interior slope
+interjection point
+interline rate
+intermedio-lateral
+internal-combustion
+internal medicine
+international-minded
+inter-plane
+interpretation clause
+interrogation point
+intersection locus bad style, usually unnecessary, and frequently a bug.
+.SH
+Ancient History
+.PP
+There are several forms of older syntax which are being officially
+discouraged.
+These fall into two classes, assignment operators and initialization.
+.PP
+The older forms of assignment operators (e.g., =+, =\-, . . . )
+could cause ambiguous expressions, such as
+.DS
+a  =\-1 ;
+.DE
+which could be taken as either
+.DS
+a =\-  1 ;
+.DE
+or
+.DS
+a  =  \-1 ;
+.DE
+The situation is especially perplexing if this
+kind of ambiguity arises as the result of a macro substitution.
+The newer, and preferred operators (+=, \-=, etc. )
+have no such ambiguities.
+To spur the abandonment of the older forms,
+.I lint
+complains about these old fashioned operators.
+.PP
+A similar issue arises with initialization.
+The older language allowed
+.DS
+int  x  \fR1 ;
+.DE
+to initialize
+.I x
+to 1.
+This also caused syntactic difficulties: for example,
+.DS
+int  x  ( \-1 ) ;
+.DE
+looks somewhat like the beginning of a function declaration:
+.DS
+int  x  ( y ) {  . . .
+.DE
+and the compiler must read a fair ways past
+.I x
+in order to sure what the declaration really is..
+Again, the problem is even more perplexing when the
+initializer involves a macro.
+The current syntax places an equals sign between the
+variable and the initializer:
+.DS
+int  x  =  \-1 ;
+.DE
+This is free of any possible syntactic ambiguity.
+.SH
+Pointer Alignment
+.PP
+Certain pointer assignments may be reasonable on some machines,
+and illegal on others, due entirely to
+alignment restrictions.
+For example, on the PDP-11, it is reasonable
+to assign integer pointers to double pointers, since
+double precision values may begin on any integer boundary.
+On the Honeywell 6000, double precision values must begin
+on even word boundaries;
+thus, not all such assignments make sense.
+.I Lint
+tries to detect cases where pointers are assigned to other
+pointers, and such alignment problems might arise.
+The message ``possible pointer alignment problem''
+results from this situation whenever either the
+.B \-p
+or
+.B \-h
+flags are in effect.
+.SH
+Multiple Uses and Side Effects
+.PP
+In complicated expressions, the best order in which to evaluate
+subexpressions may be highly machine dependent.
+For example, on machines (like the PDP-11) in which the stack
+runs backwards, function arguments will probably be best evaluated
+from right-to-left; on machines with a stack running forward,
+left-to-right seems most attractive.
+Function calls embedded as arguments of other functions
+may or may not be treated similarly to ordinary arguments.
+Similar issues arise with other operators which have side effects,
+such as the assignment operators and the increment and decrement operators.
+.PP
+In order that the efficiency of C on a particular machine not be
+unduly compromised, the C language leaves the order
+of evaluation of complicated expressions up to the
+local compiler, and, in fact, the various C compilers have considerable
+differences in the order in which they will evaluate complicated
+expressions.
+In particular, if any variable is changed by a side effect, and
+also used elsewhere in the same expression, the result is explicitly undefined.
+.PP
+.I Lint
+checks for the important special case where
+a simple scalar variable is affected.
+For example, the statement
+.DS
+\fIa\fR[\fIi\|\fR] = \fIb\fR[\fIi\fR++] ;
+.DE
+will draw the complaint:
+.DS
+warning: \fIi\fR evaluation order undefined
+.DE
+.SH
+Implementation
+.PP
+.I Lint
+consists of two programs and a driver.
+The first program is a version of the
+Portable C Compiler
+.[
+Johnson Ritchie BSTJ Portability Programs System
+.]
+.[
+Johnson portable compiler  1978
+.]
+which is the basis of the
+IBM 370, Honeywell 6000, and Interdata 8/32 C compilers.
+This compiler does lexical and syntax analysis on the input text,
+constructs and maintains symbol tables, and builds trees for expressions.
+Instead of writing an intermediate file which is passed to
+a code generator, as the other compilers
+do,
+.I lint
+produces an intermediate file which consists of lines of ascii text.
+Each line contains an external variable name,
+an encoding of the context in which it was seen (use, definition, declaration, etc.),
+a type specifier, and a source file name and line number.
+The information about variables local to a function or file
+is collected
+by accessing the symbol table, and examining the expression trees.
+.PP
+Comments about local problems are produced as detected.
+The information about external names is collected
+onto an intermediate file.
+After all the source files and library descriptions have
+been collected, the intermediate file is sorted
+to bring all information collected about a given external
+name together.
+The second, rather small, program then reads the lines
+from the intermediate file and compares all of the
+definitions, declarations, and uses for consistency.
+.PP
+The driver controls this
+process, and is also responsible for making the options available
+to both passes of
+.I lint .
+.SH
+Portability
+.PP
+C on the Honeywell and IBM systems is used, in part, to write system code for the host operating system.
+This means that the implementation of C tends to follow local conventions rather than
+adhere strictly to
+.UX
+system conventions.
+Despite these differences, many C programs have been successfully moved to GCOS and the various IBM
+installations with little effort.
+This section describes some of the differences between the implementations, and
+discusses the
+.I lint
+features which encourage portability.
+.PP
+Uninitialized external variables are treated differently in different
+implementations of C.
+Suppose two files both contain a declaration without initialization, such as
+.DS
+int a ;
+.DE
+outside of any function.
+The
+.UX
+loader will resolve these declarations, and cause only a single word of storage
+to be set aside for \fIa\fR.
+Under the GCOS and IBM implementations, this is not feasible (for various stupid reasons!)
+so each such declaration causes a word of storage to be set aside and called \fIa\fR.
+When loading or library editing takes place, this causes fatal conflicts which prevent
+the proper operation of the program.
+If
+.I lint
+is invoked with the \fB\-p\fR flag,
+it will detect such multiple definitions.
+.PP
+A related difficulty comes from the amount of information retained about external names during the
+loading process.
+On the
+.UX
+system, externally known names have seven significant characters, with the upper/lower
+case distinction kept.
+On the IBM systems, there are eight significant characters, but the case distinction
+is lost.
+On GCOS, there are only six characters, of a single case.
+This leads to situations where programs run on the
+.UX
+system, but encounter loader
+problems on the IBM or GCOS systems.
+.I Lint
+.B \-p
+causes all external symbols to be mapped to one case and truncated to six characters,
+providing a worst-case analysis.
+.PP
+A number of differences arise in the area of character handling: characters in the
+.UX
+system are eight bit ascii, while they are eight bit ebcdic on the IBM, and
+nine bit ascii on GCOS.
+Moreover, character strings go from high to low bit positions (``left to right'')
+on GCOS and IBM, and low to high (``right to left'') on the PDP-11.
+This means that code attempting to construct strings
+out of character constants, or attempting to use characters as indices
+into arrays, must be looked at with great suspicion.
+.I Lint
+is of little help here, except to flag multi-character character constants.
+.PP
+Of course, the word sizes are different!
+This causes less trouble than might be expected, at least when
+moving from the
+.UX
+system (16 bit words) to the IBM (32 bits) or GCOS (36 bits).
+The main problems are likely to arise in shifting or masking.
+C now supports a bit-field facility, which can be used to write much of
+this code in a reasonably portable way.
+Frequently, portability of such code can be enhanced by
+slight rearrangements in coding style.
+Many of the incompatibilities seem to have the flavor of writing
+.DS
+x &= 0177700 ;
+.DE
+to clear the low order six bits of \fIx\fR.
+This suffices on the PDP-11, but fails badly on GCOS and IBM.
+If the bit field feature cannot be used, the same effect can be obtained by
+writing
+.DS
+x &= 
+inter-varsity
+intervertebral substance
+in-to-out
+intra-abdominal
+intra-abdominally
+intra-acinous
+intra-alveolar
+intra-appendicular
+intra-arachnoid
+intra-arterial
+intra-articular
+intra-atomic
+intra-atrial
+intra-aural
+intra-auricular
+intracranial cast
+intra-mercurial
+intransitive relation
+intra-urban
+intra-urethral
+intra-uterine
+intra-vitam
+inversion point
+inversion temperature
+inverting telescope
+invert soap
+investment bank
+investment banker
+investment banking
+investment bill
+investment broker
+investment credit
+investment reserve
+investment trust
+involute-leaved
+inward-flow turbine
+Iodeosin b
+iodine absorption
+iodine bush
+iodine pentoxide
+iodine scarlet
+iodine value
+iodine weed
+iodobehenic acid
+Io moth
+Ione formation
+ion exchange
+ionization constant
+ionization current
+iota subscript
+ipecac spurge
+ippi-appa
+ipse dixit
+I-railed
+Irano-semite
+iridium black
+iris blue
+iris diaphragm
+iris family
+iris green
+Irish-american
+Irish-born
+Irish-bred
+Irish-canadian
+Irish-english
+Irish-gaelic
+Irish-grown
+Irish-speaking
+iris mauve
+iris stop
+Irob-saho
+Iron age
+iron alum
+iron bacteria
+iron-banded
+ironbark acacia
+ironbark box
+iron-barred
+iron-black
+iron blue
+iron-blue dun
+iron-blue spinner
+iron-boweled
+iron-braced
+iron-branded
+iron brown
+iron buff
+iron bullet
+iron-burnt
+iron-calked
+iron calker
+iron-capped
+iron carbide
+iron carbonate
+iron-cased
+iron caster
+iron cement
+iron chloride
+iron citrate
+iron clay
+iron-clenched
+iron-coated
+iron coating
+iron-colored
+iron concrete
+iron-cored
+iron corer
+iron-core transformer
+iron curtain
+iron discharger
+iron dog
+iron-enameled
+ironer-up
+iron-faced
+iron family
+iron-fastened
+iron filing
+iron fitter
+iron-forged
+iron forger
+iron founder
+iron foundry
+iron-free
+iron glance
+iron-gloved
+iron grass
+iron-grated
+iron gray
+iron-guarded
+iron gum
+iron-hard
+iron heater
+iron-heeled
+iron-hooped
+iron hydroxide
+ironing board
+iron-jawed
+iron-jointed
+iron-knotted
+iron-lined
+iron liquor
+iron loss
+iron lung
+iron-man
+iron manufacturer
+iron-marked
+iron-mine
+iron miner
+iron mining
+iron minium
+iron-mold
+iron molder
+iron-mooded
+iron-nailed
+iron-nerved
+iron oak
+iron ore
+iron oxide
+iron-oxide red
+iron-pated
+iron planer
+iron plate
+iron plater
+iron prospector
+iron protosulphate
+iron puddler
+iron putty
+iron pyrites
+iron-railed
+iron ration
+iron red
+iron-ribbed
+iron-riveted
+iron roller
+iron roofer
+iron sand
+iron scale
+iron-sceptered
+iron scrap
+iron shearer
+iron-sheathed
+iron-souled
+iron spinel
+iron-spotted
+iron-stained
+iron stand
+ironstone china
+iron-strapped
+iron stretcher
+iron-studded
+iron sulphate
+iron sulphide
+iron-tipped
+iron-tired
+iron-toothed
+iron tree
+iron trimmer
+iron-vane meter
+iron-visaged
+iron-willed
+iron-winged
+iron-witted
+iron-worded
+iron yellow
+irony-proof
+irrigation engineer
+irrigation engineering
+irritation-proof
+Irtysh ostyak
+Ish-bosheth
+I-ship
+ising-star
+island-belted
+island-born
+Island carib
+island-contained
+island continent
+island-dotted
+island-strewn
+island-studded
+island universe
+isolation hospital
+iso-octane
+isopropyl alcohol
+iso-urea
+iso-uretine
+iso-uric
+isoxylic acid
+Italian school
+Italo-austrian
+Italo-byzantine
+Italo-celt
+Italo-classic
+Italo-grecian
+Italo-greek
+Italo-hellenic
+Italo-hispanic
+Italo-serb
+Italo-slav
+Italo-swiss
+Italo-turkish
+itch louse
+itch mite
+itch tree
+itchwood tree
+ivory-backed
+ivory-beaked
+ivory-billed
+ivory bleacher
+ivory board
+ivory-bound
+ivory brown
+ivory carver
+ivory carving
+ivory cutter
+ivory engraver
+ivory-faced
+ivory-finished
+ivory fluter
+ivory gull
+ivory-hafted
+ivory-handled
+ivory-headed
+ivory-hilted
+ivory hunter
+ivory hunting
+ivory nut
+ivory palm
+ivory paper
+ivory plant
+ivory plum
+ivory polisher
+ivory porcelain
+ivory rounder
+ivory slabber
+ivory sorter
+ivory-studded
+ivory-tinted
+ivory-toned
+ivory tree
+ivory-white
+ivory-wristed
+ivory yellow
+ivy bush
+ivy green
+ivy gum
+ivy tree
+jaal goat
+Jablochkoff candle
+Jablochkoff lamp
+jacaranda brown
+jacitara palm
+jack-a-dandy
+jack-a-dandyism
+jackal buzzard
+Jack-a-lent
+jack arch
+jackass bark
+jackass clover
+jackass copal
+jackass deer
+jackass fish
+jackass hare
+jackass kingfisher
+jackass penguin
+jackass rig
+jackass-rigged
+jack baker
+jack bean
+jack block
+jack boot
+jack-booted
+jack bowl
+jack chain
+jack crosstrees
+jack crow
+jack curlew
+jack dog
+jacket crown
+Jackfield ware
+Jack-fool
+jack fruit
+jack head
+jackhead pit
+jack hern
+jack ladder
+jack lagging
+jack lamp
+jack lantern
+jack light
+jack line
+Jack mormon
+Jack nasty
+jack nicker
+jack oak
+jacko bush
+jack-o-lantern
+jack pigeon
+jack pin
+jack pine
+jack pit
+jack plane
+jack plum
+jack post
+jack pot
+jack press
+jack rabbit
+jack rafter
+jack rib
+jack roll
+jack rope
+Jack rose
+jack saddle
+jack salmon
+jack shave
+Jackson vine
+jack-spaniard
+jack spinner
+jack spring
+jack staff
+jack stop
+jack stretcher
+jack stringer
+jack-tar
+jack timber
+jack towel
+jack tree
+jack truss
+jack worm
+jack yard
+jack-yarder
+jacky winter
+jade green
+jag bolt
+jagged-toothed
+jagger spring
+jaggery palm
+jagging iron
+jag spear
+jag spike
+jail delivery
+jail fever
+jalee work
+jamb shaft
+jam nut
+jam-pack
+jam riveter
+jam session
+jam weld
+janca tree
+jangada fiber
+jangada tree
+Janizary music
+Janus-face
+Janus-faced
+janus geminus
+Janus-headed
+japan drier
+japanic acid
+jara-assu
+jar-burial
+jargon aphasia
+jar-owl
+jasper gray
+jasper green
+jasper opal
+jasper pink
+jasper red
+jasper ware
+jaundice berry
+jaundice tree
+Java almond
+Java canvas
+Java coca
+Java cotton
+Javel green
+javelin bat
+javelin man
+jaw bit
+jaw clutch
+jaw coupling
+jaw-cracking
+jaw crusher
+jaw jerk
+jaw-locked
+jaw rope
+jaw slide
+jaw-tied
+jaw-twister
+jaw wrench
+jay bird
+jay blue
+jay teal
+jazz stick
+jealous-hood
+jealous-pated
+jealousy-proof
+jecoric acid
+jeer capstan
+Jeffrey pine
+jejuno-colostomy
+jejuno-ileostomy
+jejuno-jejunostomy
+jelly bag
+jelly bean
+jelly boiler
+jelly lichen
+jelly nut
+jelly plant
+jelly poke
+jelly powder
+jelly roll
+Jemlah goat
+jennie harp
+jenny ass
+jenny cutthroat
+jenny howlet
+jenny scaffold
+jenny winch
+Jenny wood
+jenny wren
+jeopardy assessment
+jerboa kangaroo
+jerboa mouse
+jerboa rat
+jerkin-head
+jerk pump
+jerry-build
+jerry-builder
+jerry hat
+jerry shop
+Jersey centaury
+Jersey cloth
+Jersey cream
+Jersey elm
+Jersey fir
+Jersey lightning
+Jerusalem artichoke
+Jerusalem cherry
+Jerusalem corn
+Jesuit bark
+Jesuit berry
+Jesuit style
+Jesus bug
+Jesus day
+jet airplane
+jet-black
+jet break
+jet coal
+jet engine
+jet interrupter
+jet motor
+jet-pile
+jet plane
+jet-propelled
+jet propeller
+jet propulsion
+jet pump
+jet rock
+Jew-bait
+Jew-baiter
+jew crow
+jewel block
+jewel-bright
+jewel-colored
+jewel-enshrined
+jewel-gleaming
+jewel-headed
+jewel-loving
+jewel-proof
+jewel-studded
+jewelweed family
+Jew lizard
+Jew monkey
+jew nail
+Jew plum
+jib boom
+jib crane
+jib door
+jib guy
+jib-headed
+jib-header
+jib iron
+jib netting
+jib-o-jib
+jib pole
+jib sheet
+jib topsail
+jib traveler
+jig-back
+jig borer
+jig brow
+jig bushing
+jig button
+jig-drill
+jig-file
+jigger boom
+jigger mast
+jigger pump
+jigger saw
+jigger weed
+jiggery-pokery
+jig indicator
+jig-jig
+jig-jog
+jig-joggy
+jigog ring
+jig saw
+jigsaw puzzle
+Jim crow
+Jim crowism
+jim-dandy
+jingle bell
+jingle shell
+jingle stick
+jinny road
+job analysis
+job card
+job font
+job lot
+job order
+job press
+job printer
+job printing
+job ticket
+job type
+job watch
+jockey backstay
+jockey bar
+jockey boot
+jockey box
+jockey cap
+jockey club
+jockey coat
+jockey gear
+jockey pulley
+jockey weight
+jockey wheel
+jock strap
+jo-darter
+Jodo-shu
+Joe miller
+Joe-millerism
+Joe-millerize
+joe-pye weed
+joe rocker
+joggle beam
+joggle piece
+joggle plating
+joggle post
+jog-jog
+jog trot
+John-apple
+John bull
+John-bullish
+John-bullism
+John-bullist
+John chinaman
+John doe
+John hancock
+John law
+Johnny darter
+Johnny jump
+Johnny verde
+joiner hardware
+joiner work
+joint account
+joint bar
+joint-bedded
+joint box
+joint chair
+joint clay
+joint filler
+joint fir
+joint gap
+joint grass
+joint hinge
+joint making
+joint pin
+joint rate
+joint runner
+joint rust
+joint sensation
+joint sense
+joint snake
+joint stock
+joint-stockism
+joint wire
+joking-relative
+jolly boat
+jolly jumper
+jonquil yellow
+joss flower
+joss house
+joss paper
+joss pidgin
+joss stick
+journal bearing
+journal box
+journal turbine
+journal voucher
+journey weight
+jouvence blue
+joy-bereft
+joy-bright
+joy-bringing
+joy-deserted
+joy-dispelling
+joy-encompassed
+joy-inspiring
+joy-killer
+joy-mixed
+joy powder
+joy-rapt
+joy-resounding
+joy ride
+joy rider\(ap 077 ;
+.DE
+which will work on all these machines.
+.PP
+The right shift operator is arithmetic shift on the PDP-11, and logical shift on most
+other machines.
+To obtain a logical shift on all machines, the left operand can be
+typed \fBunsigned\fR.
+Characters are considered signed integers on the PDP-11, and unsigned on the other machines.
+This persistence of the sign bit may be reasonably considered a bug in the PDP-11 hardware
+which has infiltrated itself into the C language.
+If there were a good way to discover the programs which would be affected, C could be changed;
+in any case,
+.I lint
+is no help here.
+.PP
+The above discussion may have made the problem of portability seem
+bigger than it in fact is.
+The issues involved here are rarely subtle or mysterious, at least to the
+implementor of the program, although they can involve some work to straighten out.
+The most serious bar to the portability of
+.UX
+system utilities has been the inability to mimic
+essential
+.UX
+system functions on the other systems.
+The inability to seek to a random character position in a text file, or to establish a pipe
+between processes, has involved far more rewriting
+and debugging than any of the differences in C compilers.
+On the other hand,
+.I lint
+has been very helpful
+in moving the
+.UX
+operating system and associated
+utility programs to other machines.
+.SH
+Shutting Lint Up
+.PP
+There are occasions when
+the programmer is smarter than
+.I lint .
+There may be valid reasons for ``illegal'' type casts,
+functions with a variable number of arguments, etc.
+Moreover, as specified above, the flow of control information
+produced by
+.I lint
+often has blind spots, causing occasional spurious
+messages about perfectly reasonable programs.
+Thus, some way of communicating with
+.I lint ,
+typically to shut it up, is desirable.
+.PP
+The form which this mechanism should take is not at all clear.
+New keywords would require current and old compilers to
+recognize these keywords, if only to ignore them.
+This has both philosophical and practical problems.
+New preprocessor syntax suffers from similar problems.
+.PP
+What was finally done was to cause a number of words
+to be recognized by
+.I lint
+when they were embedded in comments.
+This required minimal preprocessor changes;
+the preprocessor just had to agree to pass comments
+through to its output, instead of deleting them
+as had been previously done.
+Thus,
+.I lint
+directives are invisible to the compilers, and
+the effect on systems with the older preprocessors
+is merely that the
+.I lint
+directives don't work.
+.PP
+The first directive is concerned with flow of control information;
+if a particular place in the program cannot be reached,
+but this is not apparent to
+.I lint ,
+this can be asserted by the directive
+.DS
+/* NOTREACHED */
+.DE
+at the appropriate spot in the program.
+Similarly, if it is desired to turn off
+strict type checking for
+the next expression, the directive
+.DS
+/* NOSTRICT */
+.DE
+can be used; the situation reverts to the
+previous default after the next expression.
+The
+.B \-v
+flag can be turned on for one function by the directive
+.DS
+/* ARGSUSED */
+.DE
+Complaints about variable number of arguments in calls to a function
+can be turned off by the directive
+.DS
+/* VARARGS */
+.DE
+preceding the function definition.
+In some cases, it is desirable to check the
+first several arguments, and leave the later arguments unchecked.
+This can be done by following the VARARGS keyword immediately
+with a digit giving the number of arguments which should be checked; thus,
+.DS
+/* VARARGS2 */
+.DE
+will cause the first two arguments to be checked, the others unchecked.
+Finally, the directive
+.DS
+/* LINTLIBRARY */
+.DE
+at the head of a file identifies this file as
+a library declaration file; this topic is worth a
+section by itself.
+.SH
+Library Declaration Files
+.PP
+.I Lint
+accepts certain library directives, such as
+.DS
+\-ly
+.DE
+and tests the source files for compatibility with these libraries.
+This is done by accessing library description files whose
+names are constructed from the library directives.
+These files all begin with the directive
+.DS
+/* LINTLIBRARY */
+.DE
+which is followed by a series of dummy function
+definitions.
+The critical parts of these definitions
+are the declaration of the function return type,
+whether the dummy function returns a value, and
+the number and types of arguments to the function.
+The VARARGS and ARGSUSED directives can
+be used to specify features of the library functions.
+.PP
+.I Lint
+library files are processed almost exactly like ordinary
+source files.
+The only difference is that functions which are defined on a library file,
+but are not used on a source file, draw no complaints.
+.I Lint
+does not simulate a full library search algorithm,
+and complains if the source files contain a redefinition of
+a library routine (this is a feature!).
+.PP
+By default,
+.I lint
+checks the programs it is given against a standard library
+file, which contains descriptions of the programs which
+are normally loaded when
+a C program
+is run.
+When the
+.B -p
+flag is in effect, another file is checked containing
+descriptions of the standard I/O library routines
+which are expected to be portable across various machines.
+The
+.B -n
+flag can be used to suppress all library checking.
+.SH
+Bugs, etc.
+.PP
+.I Lint
+was a difficult program to write, partially
+because it is closely connected with matters of programming style,
+and partially because users usually don't notice bugs which cause
+.I lint
+to miss errors which it should have caught.
+(By contrast, if
+.I lint
+incorrectly complains about something that is correct, the
+programmer reports that immediately!)
+.PP
+A number of areas remain to be further developed.
+The checking of structures and arrays is rather inadequate;
+size
+incompatibilities go unchecked,
+and no attempt is made to match up structure and union
+declarations across files.
+Some stricter checking of the use of the
+.B typedef
+is clearly desirable, but what checking is appropriate, and how
+to carry it out, is still to be determined.
+.PP
+.I Lint
+shares the preprocessor with the C compiler.
+At some point it may be appropriate for a
+special version of the preprocessor to be constructed
+which checks for things such as unused macro definitions,
+macro arguments which have side effects which are
+not expanded at all, or are expanded more than once, etc.
+.PP
+The central problem with
+.I lint
+is the packaging of the information which it collects.
+There are many options which
+serve only to turn off, or slightly modify,
+certain features.
+There are pressures to add even more of these options.
+.PP
+In conclusion, it appears that the general notion of having two
+programs is a good one.
+The compiler concentrates on quickly and accurately turning the
+program text into bits which can be run;
+.I lint
+concentrates on issues
+of portability, style, and efficiency.
+.I Lint
+can afford to be wrong, since incorrectness and over-conservatism
+are merely annoying, not fatal.
+The compiler can be fast since it knows that
+.I lint
+will cover its flanks.
+Finally, the programmer can
+concentrate at one stage
+of the programming process solely on the algorithms,
+data structures, and correctness of the
+program, and then later retrofit,
+with the aid of
+.I lint ,
+the desirable properties of universality and portability.
+.SG MH-1273-SCJ-unix
+.\".bp
+.[
+$LIST$
+.]
+.bp
+.SH
+Appendix:   Current Lint Options
+.PP
+The command currently has the form
+.DS
+lint\fR [\fB\-\fRoptions ] files... library-descriptors...
+.DE
+The options are
+.IP \fBh\fR
+Perform heuristic checks
+.IP \fBp\fR
+Perform portability checks
+.IP \fBv\fR
+Don't report unused arguments
+.IP \fBu\fR
+Don't report unused or undefined externals
+.IP \fBb\fR
+Report unreachable
+.B break
+statements.
+.IP \fBx\fR
+Report unused external declarations
+.IP \fBa\fR
+Report assignments of
+.B long
+to
+.B int
+or shorter.
+.IP \fBc\fR
+Complain about questionable casts
+.IP \fBn\fR
+No library checking is done
+.IP \fBs\fR
+Same as
+.B h
+(for historical reasons)
+                                                                                                                                                                                                            
+joy riding
+joy stick
+joy-wrung
+Judaeo-arabic
+Judaeo-christian
+Judaeo-german
+Judaeo-persian
+Judaeo-spanish
+Judaeo-tunisian
+Judas candlestick
+Judas-ear
+Judas light
+Judas torch
+judex ordinarius
+judex pedaneus
+judge advocate
+judge delegate
+judge-made
+judge ordinary
+judgment book
+judgment cap
+judgment creditor
+judgment day
+judgment debt
+judgment debtor
+judgment hall
+judgment lien
+judgment note
+judgment-proof
+judgment rate
+judgment seat
+judgment summons
+jugal point
+jug-handle
+jug-jug
+jug plant
+juice pear
+jujube plum
+Julyflower grass
+jumbee bean
+jump ball
+jump bid
+jumper sled
+jumper stay
+jumper wire
+jump frog
+jump head
+jumping disease
+jumping-off-place
+jump joint
+jump-off
+jump ring
+jump rope
+jump saw
+jump scrape
+jump seat
+jump shot
+jump spark
+jump-spark coil
+jump stroke
+jump weld
+jump wire
+junction box
+June beetle
+June drop
+June grass
+June pink
+June sucker
+jungle bear
+jungle bendy
+jungle cat
+jungle-clad
+jungle cock
+jungle-covered
+jungle fever
+jungle fowl
+jungle green
+jungle hen
+jungle ox
+jungle rice
+jungle sheep
+jungle-traveling
+jungle-walking
+jungle-worn
+Junior league
+Junior leaguer
+juniper bay
+juniper berry
+juniper-berry oil
+juniper cedar
+juniper gum tree
+juniperic acid
+juniper oil
+juniper-tar oil
+juniper tree
+juniper webworm
+junk bottle
+junk collector
+junk dealer
+junk heap
+junk peddler
+junk ring
+junk shop
+junk yard
+Jura-trias
+Jura-triassic
+jury chancellor
+jury-fixer
+jury fixing
+jury-rigged
+jury-shy
+jury-squaring
+jury wheel
+justice box
+justice-dealing
+Justice general
+Justice-generalship
+justice-loving
+justice-proof
+justice seat
+justice-slighting
+jute board
+jute butts
+jute crusher
+jute opener
+jute tier
+juxta-ampullar
+juxta-articular
+kaawi yam
+Kabuli rupee
+Kaffir ant
+Kaffir boom
+Kaffir bread
+Kaffir chestnut
+kaffir corn
+Kaffir cotton
+kai-kai
+kaiser brown
+kaju apple
+kala azar
+kale brose
+kale gully
+kale runt
+kale worm
+kambing utan
+kamoot tree
+kanal rays
+kangaroo acacia
+kangaroo apple
+kangaroo bear
+kangaroo beetle
+kangaroo closure
+kangaroo court
+kangaroo feathers
+kangaroo grass
+kangaroo hare
+kangaroo jerboa
+kangaroo mouse
+kangaroo rat
+kangaroo vine
+kanya butter
+kanya tree
+kapok oil
+kapok tree
+Kara kalmuck
+Kara-kalpak
+Kara kirghiz
+karroo bush
+katsura tree
+kauri pine
+kauri resin
+Kaus australis
+Kaus borealis
+Kaus meridionalis
+kava gum
+Kazan tatar
+kedani fever
+kedani mite
+keekwilee-house
+keel-bully
+keeled snake
+keel line
+keel petal
+keel rope
+keelson rider
+keena nuts
+keen-biting
+keen-eared
+keen-edged
+keen-eyed
+keen-scented
+keen-sighted
+keen-witted
+keg fig
+keg spring
+kelp ash
+kelp crab
+kelp goose
+kelp gull
+kelp hen
+kelp pigeon
+kelp plover
+kelp raft
+kemiri nut
+kemp-haired
+keno goose
+kent cap
+kerat kamel
+kermes mineral
+kermes oak
+kernel smut
+kernel spot
+kestner plant
+ketch-rigged
+keto-enol isomerism
+keto form
+ketone alcohol
+ketone body
+ketone group
+kettle-bottom
+kettle-bottomed
+kettle hole
+kettle moraine
+kettle net
+kettle stitch
+kew tree
+key bed
+key bit
+key block
+key bolt
+key bugle
+key chord
+key-cold
+key desk
+key-drawing
+key drift
+key file
+key filer
+key frame
+key fruit
+key harp
+key holder
+keyhole limpet
+Keyhole nebula
+keyhole saw
+keyhole urchin
+key horizon
+key industry
+key line
+key man
+key money
+keynote address
+key pad
+key pattern
+key pin
+key pipe
+key plate
+key plug
+key ring
+key rocker
+key seat
+key-seat rule
+key sentence
+key signature
+key size
+key station
+Keystone state
+key stop
+key tone
+key trumpet
+keyway caliper
+keyway drill
+key word
+khaki bush
+khaki-clad
+khaki-clothed
+khaki-colored
+khaki-hued
+khaki weed
+Khas-kura
+kheu tree
+Khoi-khoin
+kiabooca wood
+kick-about
+kicking coil
+kicking-colt
+kicking-horses
+kicking strap
+kick plait
+kick plate
+kicksy-wicksy
+kick turn
+kick wheel
+Kidderminster carpet
+kid-glove
+kid-gloved
+kid-glove orange
+kidney bean
+kidney-bean tree
+kidney corpuscle
+kidney cotton
+kidney-leaved
+kidney liverleaf
+kidney oil
+kidney ore
+kidney-shaped
+kidney stone
+kidney vetch
+kidney worm
+kid point
+Kiffa australis
+Kiffa borealis
+kikuyu grass
+Kikuyu grass
+Kildare green
+Killarney fern
+Killarney green
+kill-courtesy
+kill-cow
+kill-devil
+killed bowl
+killed spirits
+killer whale
+killing bottle
+killing frost
+killing time
+kill-joy
+kill-kid
+kill-time
+kill-wart
+killy hawk
+Kilmarnock bonnet
+Kilmarnock willow
+kiln-burnt
+kiln-dried
+kiln-dry
+kiln evaporator
+kiln foreman
+kiln scum
+kilogram-calorie
+kilogram-meter
+kilovolt-ampere
+kilowatt-hour
+kim-kam
+kimono sleeve
+Kimura term
+kindling wood
+kind-mannered
+kinematic viscosity
+kinetic potential
+king auk
+king ball
+king bee
+king card
+king carp
+King charles spaniel
+king closer
+king clover
+king cobra
+king conch
+king crab
+king crow
+king devil
+kingdom come
+king eagle
+king eider
+king fern
+king leg
+king lory
+king mackerel
+king monkey
+king mullet
+king nut
+king ortolan
+king parakeet
+king penguin
+king plant
+king post
+king-post truss
+king quail
+king rail
+king-ridden
+king rod
+king row
+king salmon
+king-size
+king snake
+king sora
+king spoke
+king tody
+king truss
+king vulture
+Kinkozan ware
+Kipp generator
+kirby hook
+kirk master
+kirk session
+kirk-shot
+kirk skail
+kirn baby
+kirn cut
+kislar aga
+kissing bug
+kissing crust
+kissing dance
+kissing gate
+kissing strings
+kiss-me
+kiss-me-quick
+kitchen bob
+kitchen cabinet
+kitchen fee
+kitchen garden
+kitchen ground
+kitchen midden
+kitchen police
+kitchen rose
+kitchen servant
+kitchen space
+kitchen stuff
+kitchen work
+Kitchi-juz
+kite balloon
+kite bar
+kite eagle
+kite falcon
+kite sausage
+kite-tailed
+kite track
+kit fox
+kitten-breeches
+kitten moth
+kittly-benders
+kitty-cat
+kitty needy
+kitty witch
+kitty wren
+kit violin
+ki-yi
+Kizi-kumuk
+Kjeldahl digestion
+Kjeldahl flask
+Klamath weed
+klieg eyes
+klieg light
+K line
+klook-klook
+knapsack sprayer
+knee-bent
+knee bone
+knee-bowed
+knee brace
+knee-braced
+knee-breeched
+knee breeches
+knee colter
+knee-crooking
+knee-deep
+kneed grass
+knee drill
+knee grass
+knee halter
+knee-high
+knee holly
+knee holm
+knee jerk
+knee joint
+knee-jointed
+kneeling rafter
+knee pine
+knee plate
+knee puff
+knee punch
+knee rafter
+knee roof
+knee-shaking
+knee-shaped
+knee-sprung
+knee strap
+knee swell
+knee-tied
+knee timber
+knee tool
+knee viol
+knee-worn
+knife-backed
+knife bar
+knife bayonet
+knife-bladed
+knife box
+knife colter
+knife-edge
+knife-edged
+knife-featured
+knife file
+knife grass
+knife grinder
+knife-handle
+knife-jawed
+knife key
+knife lanyard
+knife money
+knife plait
+knife-plaited
+knife plaiting
+knife rest
+knife-shaped
+knife stone
+knife-stripped
+knife switch
+knife tool
+Kniffin system
+knifing tool
+knight adventure
+knight bachelor
+knight banneret
+knight baronet
+knight commander
+knight cross
+knight-errant
+knight-errantry
+knight-errantship
+knight grand commander
+knight grand cross
+knighthood-errant
+Knight hospitaler
+knight marshal
+knights adventurers
+knights bachelors
+knights bannerets
+knights baronets
+knights commanders
+knights-errant
+knight service
+knights grand commanders
+knights grand cross
+Knights hospitalers
+knights marshals
+Knights templars
+Knight templar
+knit goods
+knitting case
+knitting machine
+knitting needle
+knitting pin
+knitting sheath
+knitting stick
+knitting wire
+knob-billed
+knobbling fire
+knobcone pine
+knob latch
+knob lock
+knob-nosed
+knocker-off
+knocker-up
+knock-knee
+knock-kneed
+knock-me-down
+knock-on
+knockout drops
+knol-khol
+knop yarn
+knot bindweed
+knot clipper
+knot gall
+knotgrass spurge
+knot-jointed
+knot-jointed rice grass
+knot porter
+knot-portering
+knotroot grass
+knot stitch
+knotter bill
+knotter hook
+knot tier
+knotting bill
+knotty-leaved
+knotty-pated
+knotweed spurge
+know-all
+know-how
+know-it-all
+know-little
+know-nothing
+Know-nothingism
+know-nothingness
+Knox dolomite
+Knox system
+knuckle ball
+knuckle bow
+knuckle-deep
+knuckle-duster
+knuckle gear
+knuckle gearing
+knuckle guard
+knuckle joint
+knuckle-joint press
+knuckle-kneed
+knuckle line
+knuckle molding
+knuckle pin
+knuckle post
+knuckle timber
+knuckle tip
+knuckle tooth
+K o
+koa finch
+koda millet
+Kodiak bear
+Koettstorfer number
+Koh-i-noor
+Kohlrausch flask
+koi-kopal
+kokra wood
+kokum butter
+kokum oil
+kola nut
+koloa mapu
+koloa moha
+komma-ichi-da
+Konda vogul
+Konia-ladik
+konker tree
+Kordofan gum
+kosam seeds
+Kossuth hat
+Kottstorfer number
+Kottstorfer value
+kousso flower
+K radiation
+kraft paper
+Kralitz bible
+kraut grass
+K rays
+Kremnitz white
+Kremser white
+krems lead
+krenging hook
+Kriss kringle
+Krita yuga
+kriya-sakti
+kriya-shakti
+krym-saghyz
+K series
+K-shaped
+K star
+K-term.\" Copyright (c) 1980 Regents of the University of California.
+.\" All rights reserved.  The Berkeley software License Agreement
+.\" specifies the terms and conditions for redistribution.
+.\"
+.\"	@(#)manApp.rno	6.2 (Berkeley) 5/10/86
+.\"
+.sx 0
+.AP "Appendix A: Local Modifications"
+.NS 1 "Character Set Changes"
+.sp
+.pp
+Backus [Ba78] used some
+characters that do not appear on our
+ASCII terminals, so  we have made the following substitutions:
+.sp 2
+.TS
+center box;
+l|c|c.
+\fBconstant\fP	 $x bar$	%\fIx\fP
+\fBinsert\fP	\(sl	!
+\fBapply-to-all\fP	\(*a	&
+\fBcomposition\fP	\*(cm	@
+\fBarrow\fP	$->$	->
+\fBempty set\fP	\(*f	<>
+\fBbottom\fP	\*(bt	?
+\fBdivide\fP	\(di	\(sl
+\fBmultiply\fP	\(mu	\(**
+.TE
+.sp
+.NS 1 "Syntactic Modifications"
+.NS 2 "While and Conditional"
+.pp
+\fBWhile\fP and conditional functional expressions
+\fImust\fP be enclosed in parenthesis, \*(EG
+.sp
+.(c
+(\fBwhile\fP \fIf g\fP)
+.sp
+(\fIp\fP \fB->\fP \fIf\fP \fB;\fP \fIg\fP)
+.)c
+.sp
+.NS 2 "Function Definitions"
+.pp
+Function definitions are 
+enclosed by curly braces; they
+consist of a name-definition pair,
+separated by blanks.  For example:
+.sp
+.ce 1
+.b "{fact$~$ !\(** @ iota}"
+.sp
+defines the function \fBfact\fP (the reader should recognize this as the
+non-recursive factorial function).
+.sp
+.NS 2 "Sequence Construction"
+.pp
+It is not necessary to  separate elements of a sequences with
+a comma; a blank will suffice:
+.sp
+.nf
+.ce 1
+<1,2,3> $==$ <1 2 3>
+.sp
+.fi
+.pp
+For nested sequences, the terminating right angle bracket
+acts as the delimiter:
+.sp
+.nf
+.ce 1
+<<1,2,3>,<4,5,6>> $==$ <<1 2 3><4 5 6>>
+.sp
+.fi
+.sp 2
+.NS 1 "User Interface"
+.sp
+.pp
+We have provided a rich set of commands that allow the user to
+catalog, print, and
+delete functions, to load them from a file and to save them away.
+The user may generate script files, dynamically trace and
+measure functional expression execution, generate debugging output,
+and, temporarily exit to the \s-2FRANZ LISP\s+2 system.
+A command must begin with a right parenthesis.  
+Consult Appendix C for a complete description of the command syntax.
+.pp
+Debugging in FP is difficult;
+all undefined results map to a single
+atom \- \fIbottom\fP (\*(lq?\*(rq).
+To pinpoint the cause of an error the user can use
+the special debugging output function, \fBout\fP, or the tracer.
+.sp
+.NS 1 "Additions and Ommissions"
+.sp
+.pp
+Many relational functions have been added: $<,~~>,~~=,~~ \(!=, ~~<=,~~>=$;
+their
+syntax is: <, >, =, ~=, <=, >=.
+Also added are the \fBiota\fP function (This is the \s-2APL\s+2
+iota function
+an n-element sequence
+of natural numbers) and the exclusive OR (\z\(ci\(pl) function.
+.pp
+Several new structural functions have been added:  \fBpair\fP
+pairs up successive elements of a sequence, \fBsplit\fP splits
+a sequence into two (roughly) equal halves, \fBlast\fP returns
+the last element of the sequence (<> if the sequence is empty),
+\fBfirst\fP returns the first element of the sequence
+(<> if it is empty), and \fBconcat\fP
+concatenates all subsequences of a sequence, squeezing out null sequences (<>).
+\fBFront\fP is equivalent to \fBtlr\fP.
+\fBPick\fP is a parameterized form of
+the selector function; the first component of the argument selects
+a single element from the second component.
+\fBOut\fP is the only side-effect function; it is equivalent
+to the \fBid\fP function but it also prints its argument out at the
+terminal.  This function is intended to be used only for debugging.
+.pp
+One new functional form has been added, tree insert.  This
+functional form breaks up the the argument into two roughly equal pieces
+applying itself
+recursively to the two halves.  The functional parameter is applied to the
+result.
+.pp
+The binary-to-unary functions ('\fBbu\fP') has been omitted.
+.pp
+Seven mathematical library functions have been added: sin, cos, asin
+($sin sup {-1}$), acos ($cos sup {-1}$), log, exp, and mod (the
+remainder function)
+.bp
+.sx
+.nf
+.nr ii 18
+.AP "Appendix B: FP Grammar"
+\fII. BNF Syntax\fP
+.sp
+.ip "fpInput $->$"
+(fnDef | application | fpCmd\*(sa)\(**  | '^D'
+.ip "fnDef $->$"
+\&'{' name funForm '}'
+.ip "application $->$"
+funForm ':' object
+.ip "name $->$"
+letter (letter | digit | '_')\(**
+.ip "nameList $->$"
+(name)\(**
+.ip "object $->$"
+atom | fpSequence | '?'
+.ip "fpSequence $->$"
+\&'<' (\(*e | object ((',' | ' ') object)\(**) '>'
+.ip "atom $->$"
+\&'T' | 'F' | '<>' | '"' (ascii-char)\(** '"' | (letter | digit)\(** | number
+.ip "funForm $->$"
+simpFn	| composition | construction | conditional |
+.br
+constantFn | insertion | alpha | while | '(' funForm ')'
+.ip "simpFn $->$"
+fpDefined | fpBuiltin
+.ip "fpDefined $->$"
+name
+.ip "fpBuiltin $->$"
+selectFn | 'tl' | 'id' | 'atom' | 'not' | 'eq' | relFn | 'null' | 'reverse' |
+.br
+\&'distl' | 'distr' | 'length' | binaryFn | 'trans' | 'apndl' | 'apndr' |
+.br
+\&'tlr' | 'rotl' | 'rotr' | 'iota' | 'pair' | 'split' | 'concat' | 'last' | 'libFn'
+.ip "selectFn $->$"
+(\(*e | '+' | '-') unsignedInteger
+.ip "relFn $->$"
+\&'<=' | '<' | '=' | '~=' | '>' | '>='
+.ip "binaryFn $->$"
+\&'+' | '-' | '\(**' | '/' | 'or' | 'and' | 'xor'
+.ip "libFn $->$"
+\&'sin' | 'cos' | 'asin' | 'acos' | 'log' | 'exp' | 'mod'
+.ip "composition $->$"
+funForm '@' funForm
+.ip "construction $->$"
+\&'[' formList ']'
+.ip "formList $->$"
+\(*e | funForm (',' funForm)\(**
+.ip "conditional $->$"
+\&'(' funForm '->' funForm ';' funForm ')'
+.ip "constantFn $->$"
+\&'%' object
+.ip "insertion $->$"
+\&'!' funForm | '\fB|\fP' funForm
+.ip "alpha $->$"
+\&'&' funForm
+.ip "while $->$"
+\&'(' 'while' funForm funForm  ')'
+.sp
+.lp
+.nf
+\fIII. Precedences\fP
+.sp
+1.	%, !, &	 		(highest)
+2.	@
+3.	[$...$]
+4.	-> $...$ ; $...$
+5.	while			(least)
+.(q
+.sp 2
+\*(sa Command Syntax is listed in Appendix C.
+.)q
+.fi
+.AP "Appendix C: Command Syntax"
+.pp
+All commands begin with a right parenthesis (\*(lq)\*(rq).
+.sp 2
+.nf
+)fns
+)pfn <nameList>
+)load <UNIX file name>
+)cload <UNIX file name>
+)save <UNIX file name>
+)csave <UNIX file name>
+)fsave <UNIX file name>
+)delete <nameList>
+)stats on
+)stats off
+)stats reset
+)stats print [UNIX file name]
+)trace on  <nameList>
+)trace off <nameList>
+)timer on
+)timer off
+)debug on
+)debug off
+)script open <UNIX file name>
+)script close
+)script append <UNIX file name>
+)help
+)lisp
+.EQ
+delim `'
+.EN
+.AP "Appendix D: Token-Name Correspondences"
+.TS
+center box;
+c|c
+c|l.
+Token	Name
+=
+\&[	lbrack$$
+\&]	rbrack$$
+\&{	lbrace$$
+\&}	rbrace$$
+\&(	lparen$$
+\&)	rparen$$
+\&@	compos$$
+\&!	insert$$
+\&\fB|\fP	ti$$
+\&&	alpha$$
+\&;	semi$$
+\&:	colon$$
+\&,	comma$$
+\&+	builtin$$
+\&+ `mu sup a'	select$$
+\&\(**	builtin$$
+\&/	builtin$$
+\&=	builtin$$
+\&-	builtin$$
+\&->	arrow$$
+\&- `mu'	select$$
+\&>	builtin$$
+\&>=	builtin$$
+\&<	builtin$$
+\&<=	builtin$$
+\&~=	builtin$$
+\&%`omicron sup b'	constant$$
+.TE
+.sp 2
+.(q
+\*(sa \(*m is an optionally signed integer constant.
+.sp
+\*(sb \(*o is any FP object.
+.)q
+.AP "Appendix E: Symbolic Primitive Function Names"
+.pp
+The scanner assigns names to the alphabetic primitive functions by
+appending the string \*(lq$fp\*(rq to the end of the function name.
+The following table designates the
+naming assignments to the non-alphabetic primitive function names.
+.sp
+.TS
+center box;
+c|c
+c|l.
+Function	Name
+=
+\&+	plus$fp
+\&-	minus$fp
+\&\(**	times$fp
+\&/	div$fp
+\&=	eq$fp
+\&>	gt$fp
+\&>=	ge$fp
+\&<	lt$fp
+\&<=	le$fp
+\&~=	ne$fp
+.TE
+.\" want Table of Contents to begin on page 2
+.pn 2
+.TC
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      
+K truss
+K-type star
+Kuan hua
+Kuan yin
+Kudur-lagamar
+kugel granite
+kujira shaku
+Kuki-chin
+Ku-klux
+Ku-klux act
+Ku-kluxer
+Ku-kluxism
+Ku-klux klan
+Ku klux klanner
+kung chih
+kung chin
+kung ching
+kung fen
+kungu cake
+Kunst-lied
+kuo-yu
+Kupffer cell
+kuping tael
+kurchee bark
+Kurume azalea
+kuteera gum
+kutira gum
+Kwakiutl nootka
+kwe-bird
+laap insect
+laap insects
+label stop
+laboratory animal
+laboratory apparatus
+laboratory assistant
+laboratory chemist
+laboratory course
+laboratory equipment
+laboratory experiment
+laboratory method
+laboratory technique
+laboratory test
+laboratory work
+laboratory worker
+labor bank
+labor caucus
+Labor charter
+Labor church
+Labor day
+labor exchange
+laboring oar
+Labor ministry
+labor pains
+Labor party
+labor turnover
+labor union
+labor value theory
+Labrador current
+Labrador dog
+Labrador duck
+Labrador feldspar
+Labrador herring
+Labrador jay
+Labrador pine
+Labrador retriever
+Labrador spar
+Labrador spruce
+Labrador tea
+Labrador violet
+Labrador whitefish
+labyrinth fish
+labyrinth packing
+lac dye
+lace-bordered
+lace bug
+lace coral
+lace-covered
+lace curtain
+lace-curtained
+lace-edged
+lace edging
+lace fern
+lace finisher
+lace-finishing
+lace fly
+lace-fronted
+lace glass
+lace grass
+lace lizard
+lace paper
+lace pigeon
+lace pillow
+lace plant
+lace stitch
+lace tree
+lace-trimmed
+lace trimming
+lace vine
+lace-winged
+lacewing fly
+Lachryma christi
+lachrymatory gas
+L acid
+lack-all
+lack-beard
+lack-brain
+lack-fettle
+lack-learning
+Lack-learning parliament
+lack-linen
+lack-love
+lack-pity
+lac lake
+lacquer red
+lacquer tree
+lacquer ware
+lac resin
+lacrosse stick
+lac sulphuris
+lac sumac
+lac tree
+lac virginis
+lac wax
+Lacy knot
+ladder-back
+ladder-backed
+ladder beetle
+ladder braid
+ladder chain
+ladder company
+ladder jack
+ladder road
+ladder shell
+ladder stitch
+ladder track
+ladder truck
+Ladd-franklin theory
+Ladenburg flask
+la-di-da
+Ladino clover
+ladle board
+Lady altar
+lady apple
+lady beetle
+Lady bell
+lady bracken
+lady brake
+lady chair
+Lady chapel
+lady court
+lady crab
+lady cracker
+Lady day
+Lady eve
+lady fern
+lady grass
+lady hair grass
+lady-killer
+lady-killing
+Lady mass
+lady mayoress
+Lady nicotine
+lady-of-the-night
+lady pea
+Lady psalter
+Lady quarter
+lady whin
+lady wrack
+Laetare sunday
+Lafayette formation
+La fleche
+La france noire
+lag-bed tractor
+lag bolt
+Lag bomer
+lager beer
+lag fault
+lagging load
+lag line
+Lagos bass
+Lagos ebony
+Lagos rubber
+La grande chartreuse
+Lagrima cristi
+lag screw
+Lahaina disease
+laid batonne
+laid embroidery
+laid paper
+laid wool
+laissez-faire
+Laissez faire
+laissez-faireism
+laissez passer
+Lake agassiz
+Lake algonquin
+lake basin
+lake bass
+lake-bound
+lake carp
+lake chub
+lake cress
+lake duck
+lake dweller
+lake dwelling
+lake fever
+lake fly
+lake front
+lake-girt
+lake herring
+lake lawyer
+lake minnow
+lake-moated
+lake perch
+lake pitch
+lake plover
+lake-reflected
+lake-resounding
+lake salmon
+lake shad
+lake sheepshead
+lake shore
+lake sturgeon
+lake-surrounded
+lake trout
+lake water cress
+lake whitefish
+Lake whittlesey
+Lambert pine
+lamb lily
+lamb mint
+lamb pie
+lamb plant
+lamb tail
+lame-born
+lame duck
+lame-footed
+lame-horsed
+lame-legged
+lamellar vector
+Lamotte sandstone
+lamp bearer
+lamp-bearing
+lamp-bedecked
+lamp-blown
+lamp-decked
+lamper eel
+lamp fitter
+lamp-foot
+lamp-heated
+lamp holder
+lamp-hour
+lamp house
+lamp-iron
+lamp jack
+lamp-lined
+lamp oil
+lamp oiler
+lamprey eel
+lamp shade
+lamp shell
+lamp socket
+lamp trimmer
+lamp-warmed
+Lanacyl violet b
+lana dye
+lance-acuminated
+lance-breaking
+lance bucket
+lance corporal
+lance-fashion
+lance head
+lance-headed snake
+lance-knight
+lance-leaved
+lance-linear
+lance-oblong
+lance-oval
+lance-ovate
+lance-pierced
+lance rest
+lance sergeant
+lance-shaped
+lance snake
+lancet arch
+lancet architecture
+lancet fish
+lance tooth
+lancet window
+lance-worn
+land agency
+land agent
+land bank
+land battleship
+land-born
+land-bred
+land breeze
+land bridge
+land broker
+land caltrop
+land-cast
+land certificate
+land chain
+land cod
+land crab
+land crake
+land cress
+land crocodile
+land-damn
+land-devouring
+land drake
+land dreadnought
+land dredge
+Land dyak
+land-eating
+land end
+land force
+land-gavel
+land girl
+land-girt
+land-grabber
+land-grabbing
+land grant
+land-grant bond
+land-grant college
+land-grant road
+land-horse
+land hunger
+land-hungry
+landing angle
+landing chair
+landing craft
+landing field
+landing force
+landing gear
+landing net
+landing party
+landing stage
+landing strake
+landing strip
+landing surveyor
+landing waiter
+land law
+land lead
+land league
+Land league
+Land-leaguer
+Land-leaguism
+land leech
+land mail
+land measure
+land-mere
+land-metster
+land mine
+land-obsessed
+land office
+land-office business
+land otter
+land pike
+land pirate
+land pitch
+land plaster
+land-poor
+land power
+land rail
+land rat
+land rock
+Landsborough grass
+land scale
+landscape architect
+landscape architecture
+landscape gardener
+landscape gardening
+landscape marble
+landscape mirror
+land scrip
+land scurvy
+land seal
+land service
+land settlement
+land shark
+land-sheltered
+land side
+land-slater
+land snail
+land sole
+land spring
+land station
+land steward
+land-surrounded
+land tax
+land-taxer
+land tie
+land tortoise
+land trash
+land trust
+land urchin
+land-visiting
+land warrant
+land wheel
+land wind
+land yard
+lane route
+lane snapper
+lang-kail
+lang lay
+lank-bellied
+lank-blown
+lank-cheeked
+lank-eared
+lank-haired
+lank-jawed
+lank-lean
+lank-sided
+lank-winged
+lantern bellows
+lantern carrier
+lantern clock
+lantern fish
+lantern flounder
+lantern fly
+lantern gear
+lantern gurnard
+lantern jack
+lantern jaw
+lantern-jawed
+lantern light
+lantern lily
+lantern pinion
+lantern shell
+lantern slide
+lantern sprat
+lantern wheel
+lanyard knot
+laparo-uterotomy
+lap box coupling
+lap-butted
+lap dissolve
+lap dog
+lap dovetail
+lap dovetailing
+lap game
+lapidary bee
+lapis lazuli
+lapis lazuli ware
+lap joint
+Laplace pressure
+Laplace station
+Laplacian distribution
+Lapland cornel
+Lapland longspur
+Lapland pine
+lap-lap
+La plata group
+lap-love
+lapped-butt joint
+lappet caterpillar
+lappet loom
+lappet moth
+lappet weaving
+lappet wheel
+lap plate
+lapp owl
+lap ring
+lap-rivet
+lap riveting
+lap robe
+Lapsang souchong
+lap shaver
+lap siding
+lap table
+lap weld
+lap winding
+lapwing gull
+Laramide system
+larboard watch
+larch agaric
+larch canker
+larch pine
+larch sawfly
+larch turpentine
+lardaceous degeneration
+lard compound
+larder beetle
+lard insect
+lard oil
+lard refiner
+lard stearin
+lard stone
+lard type
+lardy-dardy
+large-acred
+large-ankled
+large-bayed
+large-billed
+large-bodied
+large-boned
+large-bore
+large-bracted
+large-browed
+large-built
+large-caliber
+large-celled
+large-crowned
+large-diameter
+large-drawn
+large-eared
+large-eyed
+large-finned
+large-flowered
+large-footed
+large-framed
+large-fronded
+large-fruited
+large-grained
+large-grown
+large-handed
+large-handedness
+large-headed
+large-hipped
+large-horned
+large-leaved
+large-lettered
+large-limbed
+large-looking
+large-lunged
+large-minded
+large-mindedly
+large-mindedness
+large-molded
+large-natured
+large-necked
+large-nostriled
+large-petaled
+large-rayed
+large-scale
+large-scaled
+large-sized
+large-souled
+large-spaced
+large-stomached
+large-tailed
+large-thoughted
+large-throated
+large-toothed
+large-trunked
+large-type
+large-utteranced
+large-viewed
+large-wheeled
+large-wristed
+lariat loop
+lark bunting
+lark-colored
+lark finch
+lark-heel
+lark-heeled
+lark plover
+lark sparrow
+larspur violet
+laryngis stridulus
+lash comb
+lasso cell
+lasso harness
+lastage-free
+last-born
+last-cited
+last ditch
+last-ditcher
+last-erected
+last-made
+last maker
+last making
+last marin
+last-mentioned
+last-named
+last survivor annuity
+latch bolt
+latch locking
+latch needle
+late-begun
+late-betrayed
+late-blooming
+late-born
+late-built
+late-coined
+late-come
+late-comer
+late-cruising
+late-disturbed
+late-embarked
+lateen-rigged
+lateen sail
+late-filled
+late-flowering
+late-found
+late-imprisoned
+late-kissed
+late-lamented
+late-lingering
+late-lost
+late-met
+late-protracted
+late-ripening
+late-sacked
+latest-born
+late-taken
+late-transformed
+late-type star
+late-won
+latex paper
+lath-backed
+lath brick
+lath cutter
+lathe-bore
+lathe chuck
+lathing hammer
+lath-legged
+lath maker
+lath making
+lath nail
+lath nailer
+lath puncher
+lath splitter
+lath tier
+lath trimmer
+Latin-american
+latissimus dorsi
+latter-day
+lattice bar
+lattice beam
+lattice bridge
+lattice girder
+lattice moss
+lattice plant
+lattice-plant family
+lattice st.\" Copyright (c) 1980 Regents of the University of California.
+.\" All rights reserved.  The Berkeley software License Agreement
+.\" specifies the terms and conditions for redistribution.
+.\"
+.\"	@(#)manCh2.rno	6.1 (Berkeley) 4/29/86
+.\"
+.NS 1 "System Description"
+.sp
+.NS 2 "Objects"
+.sp
+.pp
+The set of objects \(*W consists of
+the atoms and  sequences $fs$ (where the $x sub i memberOf OMEGA$).
+(Lisp users should note the similarity to the list structure syntax,
+just replace the parenthesis
+by angle brackets and commas by blanks. There are no 'quoted' objects,
+\*(IE 'abc).
+The atoms uniquely determine the set of valid objects and consist of the 
+numbers (of the type found in \s-2FRANZ LISP\s+2 [Fod80]), quoted ascii strings
+("abcd"), and unquoted alphanumeric strings (abc3).
+There are three predefined atoms, $T$ and $F$, that correspond
+to the logical values 'true' and 'false', and the undefined atom $bold "?"$,
+\fIbottom\fP.
+\fIBottom\fP denotes the value returned as the result of an
+undefined operation, \*(EG division by zero.
+The empty sequence, $<>$ is also an atom.  The following are examples
+of valid FP objects:
+.sp 2
+.(b C
+.TS
+center;
+l l l.
+$?$	$1.47$	$3888888888888$	
+$ab$	"$CD$"	$<1,<2,3>>$
+$<>$	$T$	$<a,<>>$
+.TE
+.)b
+.sp 2
+There is one restriction on object construction: no object may contain
+the undefined atom, such an object is itself undefined, \*(EG
+$<1,?>~==~?$.  This property is the
+so-called \*(lqbottom preserving property\*(rq [Ba78].
+.sp
+.NS 2 "Application"
+.sp
+.pp
+This is the single FP operation and is designated by the colon (":").
+For a function $sigma$ and an object $x$, $sigma : x$  is an application
+and its meaning is the object that results from applying $sigma$ to
+$x$ (\*(IE evaluating $sigma (x)$).
+We say that $sigma$ is the \fIoperator\fP and that $x$ is
+the \fIoperand\fP.
+The following are examples of applications:
+.sp 2
+.TS
+center;
+l c l l c l.
+$bold + : <7,8>$	$==$	$15$	$bold tl :<1,2,3>$	$==$	$<2,3>$
+\fB1\fP $: <a,b,c,d>$	$==$	$a$	\fB2\fP $: <a,b,c,d>$	$==$	$b$
+.TE
+.sp 2
+.nr ii 0.35i
+.NS 2 "Functions"
+.sp
+.pp
+All functions (\fIF\fP) map objects into objects, moreover, they are 
+\fIstrict\fP:
+.sp 6p
+.EQ I (2.1)
+sigma^:^? equiv ?,~~ forAll ^sigma^ memberOf F
+.EN
+.sp 6p
+To formally characterize the primitive functions,
+we use a modification of McCarthy's conditional expressions [Mc60]:
+.sp 6p
+.EQ I (2.2)
+p sub 1~->~ e sub 1~; ... ;~p sub n~->~ e sub n~;~e sub {n + 1}
+.EN
+.sp 6p
+This statement is interpreted as follows:
+return function $e sub 1$ if the predicate '$p sub 1$' is
+true $,...,~e sub n$ if '$p sub n$' is true.
+If none of the predicates are satisfied then default to $e sub {n + 1}$.
+It is assumed that $x ,~x sub i ,~y ,~y sub i ,~z sub i memberOf OMEGA$.
+.sp
+.NS 3 "Structural"
+.sp
+.b "Selector Functions"
+.(b M F
+.sp
+For a nonzero integer $mu$,
+.sp
+.nf
+.ip "$bold mu~ : ~x~ ==$"
+.sp 4p
+\&$x = fs ~ andsign ~0~<~mu~<=~k ~->~ x sub mu ;$
+.sp 4p
+\&$x = fs ~ andsign ~-k <= mu  < 0 ~ ->  ~ x sub {k + mu + 1}; ~ ?$
+.fi
+.)b
+.sp
+.(b
+.nf
+.ip "$bold pick~ : ~<n,x>~ ==$"
+.sp 4p
+\&$x = fs ~ andsign ~0~<~n~<=~k ~->~ x sub n ;$
+.sp 4p
+\&$x = fs ~ andsign ~-k <= n  < 0 ~ ->  ~ x sub {k + n + 1}; ~ ?$
+.fi
+.)b
+.sp 2
+.pp
+The user should note that the function 
+symbols \fB1\fP,\fB2\fP,\fB3\fP$,...$ are
+to be distinguished from the atoms $1,2,3,...$.
+.(b M F
+.sp
+.ip "$bold last ~ : ~x~ ==$"
+.sp 4p
+\&$x = <> ~ ->  ~ <> ~ ;$
+.sp 4p
+\&$x = fs ~ andsign ~ k >= 1 ~ -> ~ x sub k ;~?$
+.)b
+.(b M F
+.sp
+.ip "$bold first ~ : ~x~ ==$"
+.sp 4p
+\&$x = <> ~ ->  ~ <> ~ ;$
+.sp 4p
+\&$x = fs ~ andsign ~ k >= 1 ~ -> ~ x sub 1 ;~?$
+.)b
+.sp
+.(b M F
+.b "Tail Functions"
+.sp
+.ip "$bold tl ~:~x ~==$"
+.sp 4p
+\&$x = <x sub 1 > ~ ->  ~ <> ~ ;$
+.sp 4p
+\&$x = fs ~ andsign  ~ k >= ~ 2 ~ -> ~<x sub 2 ~,..., ~x sub k > ~ ;~  ?$
+.)b
+.sp 6p
+.(b M F
+.ip "$bold tlr  ~ : ~  x~==$"
+.sp 4p
+\&$x = <x sub 1 >  ~ ->  ~ <> ~ ;$
+.sp 4p
+\&$x = fs  ~ andsign ~ k >= ~ 2 ~ -> ~ <x sub 1 ~ ,..., ~x sub {k - 1} > ~ ; ~ ?$
+.)b
+.sp
+.pp
+Note: There is also a function
+\fBfront\fP that is equivalent to \fBtlr\fP.
+.sp
+.(b M F
+.b "Distribute from left and right"
+.sp
+.ip "$bold distl ~:~x~==$"
+.sp 4p
+\&$x = <y,<>>~->~<>;$
+.sp 4p
+\&$x = <y, qz >~->~<<y,z sub 1 >,...,<y,z sub k >>;~?$
+.)b
+.sp 6p
+.(b M F
+.ip "$bold distr ~:~x~==$"
+.sp 4p
+\&$x = <<>,y>~->~<>;$
+.sp 4p
+\&$x = < qy , z >~->~<<y sub 1 , z >,...,<y sub k , z >>;~?$
+.)b
+.sp 6p
+.(b M F
+.b "Identity"
+.sp 6p
+$bold id ~:~x~==~x$
+.)b
+.sp 6p
+$bold out ~:~x~==~x$
+.pp
+\fBOut\fP is similar to \fPid\fP.
+Like \fBid\fP it returns its argument as the result,
+unlike \fPid\fP
+it prints its
+result on \fIstdout\fP \(mi
+It is the only function with a side effect.
+\fPOut\fP is intended to be used for debugging only.
+.sp
+.(b M F
+.b "Append left and right"
+.sp
+.nf
+.ip "$bold apndl ~:~x~==$"
+.sp 4p
+\&$x = <y,<>>~->~<y>;$
+.sp 4p
+\&$x = <y, qz >~->~<y, z sub 1 ,~ z sub 2 ,...,~ z sub k  >;~?$
+.)b
+.sp 6p
+.(b M F
+.ip "$bold apndr ~:~x~==$"
+.sp 4p
+\&$x = <<>,z>~->~<z>;$
+.sp 4p
+\&$x = < qy , z >~->~< y sub 1 ,~ y sub 2 ,...,~ y sub k ,~z >;~?$
+.fi
+.)b
+.sp
+.(b M F
+.b "Transpose"
+.sp
+.nf
+.ip "$bold trans~:~x~==$"
+.sp 4p
+\&$x = <<>,...,<>>~->~<>;$
+.sp 4p
+\&$x = fs ~->~<y sub 1 ,..., y sub m >;~?$
+.sp 8p
+\&where $x sub i ~=~<x sub i1 ,..., x sub im >~andsign
+~ y sub j ~=~<x sub 1j ,..., x sub kj >,$
+.sp 4p
+\&$1<=i<=k ~,~ 1<=j<=m.$
+.)b
+.sp
+.fi
+.(b M F
+.ip "$bold reverse~:~x~==~$"
+.sp 4p
+\&$x =<>~ ->;$
+.sp 4p
+\&$x = fs ~->~ <x sub k ,..., x sub 1 >;~?$
+.)b
+.sp
+.(b M F
+.b "Rotate Left and Right"
+.sp
+.nf
+.ip "$bold rotl~:~x~==$"
+.sp 4p
+\&$x = <>~ -> ~ <>;~x = <x sub 1 >~->~<x sub 1 >;$
+.sp 4p
+\&$x = fs ~ andsign ~k >= 2~ -> ~ <x sub 2 ,..., x sub k , x sub 1 >;~?$
+.)b
+.sp
+.(b M F
+.ip "$bold rotr~:x~==$"
+.sp 4p
+\&$x = <>~ -> ~ <>;~x = <x sub 1 >~->~<x sub 1 >;$
+.sp 4p
+\&$x = fs ~ andsign ~k >= 2~ -> ~
+<x sub k  ,~ x sub 1 ,..., x sub {k - 2},~ x sub {k - 1} >;~?$
+.)b
+.fi
+.sp 2
+.(b M F
+.nf
+.ip "$bold concat~:~x~==$"
+.sp 4p
+\&$x = <<x sub 11 ,..., x sub 1k >,<x sub 21 ,..., x sub 2n >
+,...,<x sub m1 ,..., x sub mp >> ~ andsign ~ k, ~m, ~n, ~p ~>~ 0 ~->$
+\&$<x sub 11 ,..., x sub 1k , x sub 21 ,..., x sub 2n ,..., x sub m1 ,..., x sub mp >; ?$
+.)b
+.sp
+.(b M F
+.pp
+Concatenate removes all occurrences of the null sequence:
+.sp
+.EQ I (2.3)
+bold concat ~ :~ <<1,3>,<>,<2,4>,<>,<5>>  ~==~ <1,3,2,4,5>
+.EN
+.)b
+.sp
+.(b M F
+.ip "$bold pair~:~x~==$"
+.sp 4p
+\&$x = fs ~ andsign ~ k >0 ~ andsign ~ k~is~even~->~ <<x sub 1 , x sub 2 >
+,..., <x sub k-1 , x sub k >>;$
+.sp 4p
+\&$x = fs ~ andsign ~ k >0 ~ andsign ~ k~is~odd~->~ <<x sub 1 , x sub 2 >
+,..., <x sub k >>;~?$
+.)b
+.sp
+.(b M F
+.ip "$bold split~:~x~==$"
+.sp 4p
+\&$x = <x sub 1 > ~->~<<x sub 1 > , <>>;$
+.sp 4p
+\&$x = fs ~ andsign ~ k > 1 ~ ->
+~<<x sub 1 ,..., x sub {left ceiling k/2 right ceiling} >,
+<x sub {left ceiling k/2 right ceiling + 1} ,..., x sub k >>; ?$
+.)b
+.sp
+.(b M F
+.ip "\fBiota\fP$~:x~==$"
+.sp 4p
+\&$x = 0 ~->~ <>;$
+.sp 4p
+\&$x memberOf bold {N sup +} ~ ->~<1,2,...,x>;~?$
+.)b
+.sp
+.NS 3 "Predicate (Test) Functions"
+.sp
+$bold atom~:~x~==~x~ memberOf atoms~-> ~ T ; ~ x$\(!=$? -> ~ F ;~ ?$
+.sp
+$bold eq ~:~x~==~x~=<y,z> ~ andsign ~ y=z ~ -> ~ T ;~x= <y,z> ~ andsign ~y$ \(!= $z ~->~ F ;~?$
+.sp
+.pp
+Also less than ($bold <$), greater than ($bold >$),
+greater than or equal (\fB>=\fP),
+less than or equal (\fB<=\fP), not equal (\fB~=\fP);
+\&'$bold =$' is a synonym for \fBeq\fP. 
+.sp
+$bold null ~ : x~==~x = <> ~ -> ~ T ;~x$\(!=$?~ -> ~ F ;~?$
+.sp 6p
+$bold length ~ :~ x~==~x~= ~ fs ~ -> ~ k; ~ x = <> ~ -> ~0; ~ ?$
+.sp
+.NS 3 "Arithmetic/Logical"
+.sp
+$bold +~:~ x ~ ==~ x = <y,z> ~ andsign ~y,z ~ are ~ numbers ~ ->~ y+z; ~ ?$
+$bold -~:~ x ~ ==~ x = <y,z> ~ andsign ~y,z ~ are ~ numbers ~ -> ~y-z; ~ ?$
+$bold *~:~ x ~ ==~ x = <y,z> ~ andsign ~y,z ~ are ~ numbers ~ -> ~y$\(mu$z; ~ ?$
+\fB/\fP$~:~ x ~ ==~ x = <y,z> ~ andsign ~y,z ~ are ~ numbers ~ andsign 
+~z$\(!= $0 ~ ->~y$\(di$z ;~?$
+.sp
+.b "And, or, not, xor"
+.sp
+$nd~:~<x,y>~==~x = T ~->~ y;~x= F ~->~ F ;~?$
+.sp 8p
+$rr~:~<x,y>~==~x = F ~->~ y;~x= T ~->~ T ;~?$
+.sp 8p
+.(b M F
+.nf
+.ip "$bold xor~:~<x,y>~==$"
+.sp 4p
+\&$x = T ~ andsign ~ y = T ~->~ F ;~ x = F ~ andsign ~ y = F ~->~ F ;$
+.sp 4p
+\&$x = T ~ andsign ~ y = F ~->~ T ;~ x = F ~ andsign ~ y = T ~->~ T ;~?$
+.fi
+.)b
+.sp 6p
+$bold noitch
+lattice strut
+lattice truss
+laughing gas
+laughing muscle
+laughter-dimpled
+laughter-lighted
+laughter-lit
+laughter-loving
+laughter-provoking
+laughter-stirring
+launching ways
+launch-ways
+laundry soap
+laurel bay
+laurel-bearing
+laurel-browed
+laurel butter
+laurel camphor
+laurel cherry
+laurel-crowned
+laurel-decked
+laurel family
+laurel green
+laurel hawthorn
+laurel-leaf
+laurel-leaf oil
+laurel-leaved
+laurel-locked
+laurel oak
+laurel oil
+laurel pink
+laurel sumac
+laurel thyme
+laurel-worthy
+laurel-wreathed
+Laus deo
+lava-capped
+lava cone
+lava-lava
+lava-lit
+lava-paved
+lavender blue
+lavender-flowered
+lavender grass
+lavender oil
+lavender-scented
+lavender-tinted
+lavender water
+lave net
+law-abiding
+law-abidingness
+law agent
+law-beaten
+Law bible
+law binding
+law-borrow
+law-bred
+law buckram
+law-condemned
+law court
+law-fettered
+law-hand
+law-honest
+law-learned
+law-learnedness
+law-loving
+law-magnifying
+law member
+law merchant
+lawn billiards
+lawn green
+lawn meet
+lawn mower
+lawn pennywort
+lawn-sleeved
+lawn tennis
+law office
+law officer
+law-reckoning
+law-revering
+law-ridden
+law sakes
+law school
+law-worthy
+lawyer bush
+lawyer cane
+lawyer palm
+lawyer vine
+lax-flowered
+lay abbot
+lay baptism
+lay-by
+lay chalice
+lay-down
+layer board
+layer cake
+layer-on
+layer-out
+layer-over
+layer-up
+laying duck
+laying press
+laying top
+lay lord
+lay-minded
+lay-on
+layout chart
+lay-over
+Lay parliament
+lay shaft
+lay-up
+lazar house
+Lazarillo de tormes
+lazuli bunting
+lazy bar
+lazy crab
+lazy daisy stitch
+lazy guy
+lazy jack
+lazy painter
+Lazy susan
+lazy tongs
+L bar
+L block
+lead acetate
+lead acid cell
+lead arming
+lead arsenate
+lead ash
+lead azide
+lead-blue
+lead bullion
+lead-burn
+lead-burned
+lead-burner
+lead-burning
+lead carbonate
+lead-chamber process
+lead chloride
+lead chromate
+lead-clad
+lead-coated
+lead colic
+lead color
+lead-colored
+lead-covered
+lead curve
+lead dioxide
+leaded glass
+leaden-blue
+lead-encased
+leaden-colored
+leaden-eyed
+leaden flycatcher
+leaden-footed
+leaden-headed
+leaden-heeled
+leaden-hued
+leaden-natured
+leaden-paced
+leaden-skulled
+leaden-soled
+leaden-souled
+leaden-spirited
+leaden-thoughted
+leaden-weighted
+leaden-willed
+leaden-winged
+leaden-witted
+leader head
+leader pipe
+leader writer
+lead-filled
+lead glass
+lead gray
+lead-hardening
+lead-headed
+lead-in
+leading article
+leading bar
+leading block
+leading man
+leading wheel
+leading wind
+leading wire
+leading woman
+lead-lapped
+lead-lead
+lead line
+lead-lined
+lead-melting
+lead mill
+lead mining
+lead monoxide
+lead nitrate
+lead ocher
+lead-off
+lead oxide
+lead oxychloride
+lead palsy
+lead pencil
+lead peroxide
+lead poisoning
+lead-pulverizing
+lead rammer
+lead-ruled
+lead screw
+lead-sheathed
+lead-smelting
+lead soap
+lead spar
+lead sulphate
+lead sulphide
+lead-tempering
+lead tetraethyl
+lead tolerance
+lead tree
+lead vinegar
+lead vitriol
+lead weed
+leaf-bearing
+leaf beetle
+leaf bite
+leaf blade
+leaf blender
+leaf blight
+leaf-clad
+leaf-climbing
+leaf curl
+leaf-curl fungus
+leaf cutting
+leaf-eating
+leaf fall
+leaf-footed
+leaf-forming
+leaf-fringed
+leaf gold
+leaf-laden
+leaf-nose
+leaf-nosed
+leaf picker
+leaf-shaded
+leaf-shaped
+leaf-sheltered
+leaf sorter
+leaf spring
+leaf-strewn
+leaf stripper
+leafy-stemmed
+leaguer lass
+leakage coefficient
+leakage conductance
+leakage conductor
+leakage flux
+lean-cheeked
+lean-eared
+lean-face
+lean-faced
+lean-fleshed
+lean-headed
+lean-horned
+leaning thread
+leaning tower
+lean-jawed
+lean-limbed
+lean-looking
+lean-minded
+lean-necked
+lean-ribbed
+lean-souled
+lean-to
+lean-witted
+lea oak
+leap day
+leaping head
+leaping spider
+leaping weir
+leap year
+lear board
+lea rig
+leasehold insurance
+leasehold mortgage
+lease-lend
+lease rod
+lease system
+least flycatcher
+least squares
+leather-backed
+leather beetle
+leather-bound
+leather brown
+leather carp
+leather cloth
+leather-colored
+leather-covered
+leather-cushioned
+leather-cutting
+leather dresser
+leather enameler
+leather-faced
+leather fern
+leather-hard
+leather-headed
+leather-lined
+leather-necked
+leather-winged
+leave-taking
+Lebanon cedar
+led farm
+ledged door
+ledger bait
+ledger bark
+ledger blade
+ledum camphor
+lee anchor
+lee-bow
+leech-book
+leech rope
+leech worm
+leek green
+lee sheet
+lee shore
+lee tack
+lee wheel
+lee wheelsman
+left-bank
+left-brained
+left-eyed
+left-eyedness
+left-foot
+left-footed
+left-footedness
+left-hand
+left-handed
+left-handedly
+left-handedness
+left-hand engine
+left-hander
+left-handiness
+left-lay
+left-legged
+left-leggedness
+left-off
+left pedro
+left-sided
+left wing
+left-winger
+left-wingism
+legacy duty
+legalis homo
+leg art
+leg bail
+leg band
+leg before
+leg before wicket
+leg boot
+leg-breaker
+Legenda aurea
+leghorn straw
+Legion etrangere
+leg iron
+legitimate portion
+lego-literary
+leg stump
+leg trap
+leg viol
+Leicester red
+Leipzig yellow
+lekai salmon
+L electron
+lem-
+lemming mouse
+lemon balm
+lemon chrome
+lemon-color
+lemon-colored
+lemon cucumber
+lemon-faced
+lemon-flavored
+lemon grass
+lemon-grass oil
+lemon-green
+lemon lily
+lemon-scented
+lemon-scented gum
+lemon scurvy grass
+lemon-tinted
+lemon yellow
+Lemuel gulliver
+lending library
+lend-lease
+Leni-lenape
+leno brocade
+lens cell
+lens hood
+lens maker
+lens making
+lens-mount
+lens screen
+lens-shaped
+lenticulo-optic
+lentil tare
+lentil weevil
+Lent lily
+Leonine city
+leonine partnership
+leonine rhyme
+Leonine sacramentary
+Leonine verse
+leontiasis ossea
+leopard cat
+leopard flower
+leopard frog
+leopard lily
+leopard lionne
+leopard-man
+Le phoenix
+lepra arabum
+lepto-form
+lepto-type
+lerp insects
+lese majesty
+lesser star grass
+let-out
+letter avocatory
+letter bag
+letter board
+letter-bound
+letter carrier
+letter carver
+letter caster
+letter-copying
+letter cutter
+letter-duplicating
+letter engraver
+letter-erasing
+letter-fed
+letter file
+letter-folding
+letter founding
+letter foundry
+letter hand
+letter-high
+letter-learned
+letter learning
+letter lichen
+letter messenger
+letter name
+letter paper
+letter-perfect
+letter plant
+letter porter
+letter post
+letter press
+letter scales
+letters credential
+letters dimissory
+letters missive
+letter sorter
+letters overt
+letters pacifical
+letters patent
+letters rogatory
+letter stamper
+letters testamentary
+letter telegram
+letter weigher
+letter-winged
+letterwinged kite
+letter writer
+letter writing
+Letto-lithuanian
+Letto-slavic
+Letto-slavonic
+lettuce bird
+lettuce green
+lettuce mildew
+lettuce opium
+lettuce saxifrage
+leucite basalt
+leucite-basanite
+leucite-tephrite
+leuco base
+leucoturic acid
+leuna saltpeter
+Levant company
+Levant cotton
+Levant dollar
+Levantine dollar
+Levantine sponge
+Levant morocco
+Levant nut
+Levant red
+Levant soaproot
+Levant sponge
+Levant wormseed
+level-coil
+level crossing
+level curves
+leveling head
+leveling instrument
+leveling rod
+leveling screw
+leveling stand
+leveling support
+level-jawed
+level line
+level premium
+level staff
+level surfaces
+level-wind
+lever engine
+lever escapement
+lever safety valve
+lever scales
+lever shears
+lever tumbler
+lever watch
+levo camphor
+levo-pinene
+levy court
+lewis bolt
+lew-warm
+Leyden blue
+Leyden jar
+ley pewter
+L-head cylinder
+Lho-ke
+liability insurance
+liberal arts
+Liberal catholic
+Liber aniani
+Liber authenticarum
+liber cell
+Liber legum
+Liber sententiarum
+Liber sextus
+Liberty bell
+Liberty bond
+liberty cap
+liberty green
+liberty hall
+Liberty party
+liberty pole
+liberty tea
+liberty tree
+libra mayor
+library binding
+library ca

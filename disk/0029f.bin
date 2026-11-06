@@ -1,0 +1,3687 @@
+ee
+Philo-yankeeist
+Philo-zionist
+Phi phenomenon
+phloem fiber
+phloem necrosis
+phloem parenchyma
+phoenix fowl
+phoo-phoo
+phosphate rock
+phosphine oxide
+phosphor copper
+phosphorous anhy-dride
+phosphorus chloride
+phosphorus disease
+phosphorus necrosis
+phosphorus oxide
+phosphorus oxychloride
+phosphorus pentachloride
+phosphorus sulphide
+phosphorus trichloride
+phosphoryl chloride
+photo finish
+photoflash lamp
+photogelatin process
+photo-offset
+photo-retouch
+phrase book
+phrase mark
+physical culturist
+physic nut
+pia-arachnitis
+pia-arachnoid
+piacular offering
+pia mater
+pia-matral
+piano action
+piano deal
+piano lamp
+piano nobile
+piano organ
+piano player
+piano-player roll
+piano score
+piano subito
+piano-violin
+piano wire
+pickax team
+pick-bearing
+pick clock
+pick dressing
+picked dogfish
+pickerel frog
+picker-up
+picket fence
+picket fort
+picket guard
+picket line
+picket pin
+picket tail
+pick eye
+pick glass
+pick hammer
+pickle-cured
+pickle grass
+pickle green
+pickle-herring
+pickle moth
+pick-me-up
+pick-nosed
+pick-off
+pick rake
+pick tongccess a file from your own directory,
+changing to another directory won't alter that fact.
+Of course,
+if you forget what directory you're in, type
+.P1
+pwd
+.P2
+to find out.
+.PP
+It is usually convenient to arrange your own files
+so that all the files related to one thing are in a directory separate
+from other projects.
+For example, when you write your book, you might want to keep all the text
+in a directory called
+.UL book .
+So make one with
+.P1
+mkdir book
+.P2
+then go to it with
+.P1
+cd book
+.P2
+then start typing chapters.
+The book is now found in (presumably)
+.P1
+/usr/your\(hyname/book
+.P2
+To remove the directory
+.UL book ,
+type
+.P1
+rm book/*
+rmdir book
+.P2
+The first command removes all files from the directory;
+the second
+removes the empty directory.
+.PP
+You can go up one level in the tree of files 
+by saying
+.P1
+cd ..
+.P2
+.UL .. '' ``
+is the name of the parent of whatever directory you are currently in.
+For completeness,
+.UL . '' ``
+is an alternate name
+for the directory you are in.
+.SH
+Using Files instead of the Terminal
+.PP
+Most of the commands we have seen so far produce output
+on the terminal;
+some, like the editor, also take their input from the terminal.
+It is universal in
+.UC UNIX
+systems
+that the terminal can be replaced by a file
+for either or both of input and output.
+As one example,
+.P1
+ls
+.P2
+makes a list of files on your terminal.
+But if you say
+.P1
+ls >filelist
+.P2
+a list of your files will be placed in the file
+.UL filelist
+(which
+will be created if it doesn't already exist,
+or overwritten if it does).
+The symbol
+.UL >
+means ``put the output on the following file,
+rather than on the terminal.''
+Nothing is produced on the terminal.
+As another example, you could combine
+several files into one by capturing the output of
+.UL cat
+in a file:
+.P1
+cat f1 f2 f3 >temp
+.P2
+.PP
+The symbol
+.UL >>
+operates very much like
+.UL >
+does,
+except that it means
+``add to the end of.''
+That is,
+.P1
+cat f1 f2 f3 >>temp
+.P2
+means to concatenate
+.UL f1 ,
+.UL f2 
+and
+.UL f3
+to the end of whatever is already in
+.UL temp ,
+instead of overwriting the existing contents.
+As with
+.UL > ,
+if 
+.UL temp
+doesn't exist, it will be created for you.
+.PP
+In a similar way, the symbol
+.UL <
+means to take the input
+for a program from the following file,
+instead of from the terminal.
+Thus, you could make up a script of commonly used editing commands
+and put them into a file called
+.UL script .
+Then you can run the script on a file by saying
+.P1
+ed file <script
+.P2
+As another example, you can use
+.UL ed
+to prepare a letter in file
+.UL let ,
+then send it to several people with
+.P1
+mail adam eve mary joe <let
+.P2
+.SH
+Pipes
+.PP
+One of the novel contributions of
+the
+.UC UNIX
+system
+is the idea of a
+.ul
+pipe.
+A pipe is simply a way to connect the output of one program
+to the input of another program,
+so the two run as a sequence of processes \(em
+a pipeline.
+.PP
+For example,
+.P1
+pr f g h
+.P2
+will print the files
+.UL f ,
+.UL g ,
+and
+.UL h ,
+beginning each on a new page.
+Suppose you want
+them run together instead.
+You could say
+.P1
+cat f g h >temp
+pr <temp
+rm temp
+.P2
+but this is more work than necessary.
+Clearly what we want is to take the output of
+.UL cat
+and
+connect it to the input of
+.UL pr .
+So let us use a pipe:
+.P1
+cat f g h | pr
+.P2
+The vertical bar 
+.UL |
+means to
+take the output from
+.UL cat ,
+which would normally have gone to the terminal,
+and put it into
+.UL pr
+to be neatly formatted.
+.PP
+There are many other examples of pipes.
+For example,
+.P1
+ls | pr -3
+.P2
+prints a list of your files in three columns.
+The program
+.UL wc
+counts the number of lines, words and characters in
+its input, and as we saw earlier,
+.UL who
+prints a list of currently-logged on people,
+one per line.
+Thus
+.P1
+who | wc
+.P2
+tells how many people are logged on.
+And of course
+.P1
+ls | wc
+.P2
+counts your files.
+.PP
+Any program
+that reads from the terminal
+can read from a pipe instead;
+any program that writes on the terminal can drive
+a pipe.
+You can have as many elements in a pipeline as you wish.
+.PP
+Many
+.UC UNIX
+programs are written so that they will take their input from one or more files
+if file arguments are given;
+if no arguments are given they will read from the terminal,
+and thus can be used in pipelines.
+.UL pr
+is one example:
+.P1
+pr -3 a b c
+.P2
+prints files
+.UL a ,
+.UL b
+and
+.UL c
+in order in three columns.
+But in
+.P1
+cat a b c | pr -3
+.P2
+.UL pr
+prints the information coming down the pipeline,
+still in
+three columns.
+.SH
+The Shell
+.PP
+We have already mentioned once or twice the mysterious
+``shell,''
+which is in fact
+.UL sh (1).\(dg
+.FS
+\(dg On Berkeley Unix systems, the usual shell for interactive use is the c shell, 
+.UL csh(1).
+.FE
+The shell is the program that interprets what you type as
+commands and arguments.
+It also looks after translating
+.UL * ,
+etc.,
+into lists of filenames,
+and
+.UL < ,
+.UL > ,
+and
+.UL |
+into changes of input and output streams.
+.PP
+The shell has other capabilities too.
+For example, you can run two programs with one command line
+by separating the commands with a semicolon;
+the shell recognizes the semicolon and
+breaks the line into two commands.
+Thus
+.P1
+date; who
+.P2
+does both commands before returning with a prompt character.
+.PP
+You can also have more than one program running
+.ul
+simultaneously
+if you wish.
+For example, if you are doing something time-consuming,
+like the editor script
+of an earlier section,
+and you don't want to wait around for the results before starting something else,
+you can say
+.P1
+ed file <script &
+.P2
+The ampersand at the end of a command line
+says ``start this command running,
+then take further commands from the terminal immediately,''
+that is,
+don't wait for it to complete.
+Thus the script will begin,
+but you can do something else at the same time.
+Of course, to keep the output from interfering
+with what you're doing on the terminal,
+it would be better to say
+.P1
+ed file <script >script.out &
+.P2
+which saves the output lines in a file
+called
+.UL script.out .
+.PP
+When you initiate a command with
+.UL & ,
+the system
+replies with a number
+called the process number,
+which identifies the command in case you later want
+to stop it.
+If you do, you can say
+.P1
+kill process\(hynumber
+.P2
+If you forget the process number,
+the command
+.UL ps
+will tell you about everything you have running.
+(If you are desperate,
+.UL kill\ 0
+will kill all your processes.)
+And if you're curious about other people,
+.UL ps\ a
+will tell you about
+.ul
+all
+programs that are currently running.
+.PP
+You can say
+.P1 1
+(command\(hy1; command\(hy2; command\(hy3) &
+.P2
+to start three commands in the background,
+or you can start a background pipeline with
+.P1
+command\(hy1 | command\(hy2 &
+.P2
+.PP
+Just as you can tell the editor
+or some similar program to take its input
+from a file instead of from the terminal,
+you can tell the shell to read a file
+to get commands.
+(Why not? The shell, after all, is just a program,
+albeit a clever one.)
+For instance, suppose you want to set tabs on
+your terminal, and find out the date
+and who's on the system every time you log in.
+Then you can put the three necessary commands
+.UL tabs , (
+.UL date ,
+.UL who )
+into a file, let's call it
+.UL startup ,
+and then run it with
+.P1
+sh startup
+.P2
+This says to run the shell with the file
+.UL startup
+as input.
+The effect is as if you had typed 
+the contents of
+.UL startup
+on the terminal.
+.PP
+If this is to be a regular thing,
+you can eliminate the 
+need to type
+.UL sh :
+simply type, once only, the command
+.P1
+chmod +x startup
+.P2
+and thereafter you need only say
+.P1
+startup
+.P2
+to run the sequence of commands.
+The
+.UL chmod (1)
+command marks the file executable;
+the shell recognizes this and runs it as a sequence of commands.
+.PP
+If you want 
+.UL startup
+to run automatically every time you log in,
+create a file in your login directory called
+.UL .profile ,
+and place in it the line
+.UL startup .
+When the shell first gains control when you log in,
+it looks for the 
+.UL .profile
+file and does whatever commands it finds in it.\(dg
+.FS
+\(dg The c shell instead reads a file called 
+.UL .login
+.
+.FE
+We'll get back to the shell in the section
+on programming.
+                                                 s
+pickup current
+pickup service
+picot stitch
+picture book
+picture-borrowing
+picture bride
+picture-broidered
+picture-buying
+picture card
+picture-dealing
+picture gallery
+picture-hanging
+picture-hung
+picture marriage
+picture mirror
+picture molding
+picture ore
+picture-painting
+picture-pasted
+picture play
+picture playwright
+picture post card
+picture-seeking
+picture tube
+picture window
+picture wire
+Pidgin english
+pie baker
+pie-baking
+pie board
+piece accent
+piece brace
+piece broker
+piece-dye
+piece goods
+piece mold
+piece price
+piece price system
+piece rate
+piece wage
+pie chart
+piecrust table
+pied-billed
+pied blackbird
+pied-coated
+pied-colored
+pied-faced
+pie dish
+pied-winged
+pie eater
+pie-eyed
+pie filler
+pie filling
+pie-gow
+pie knife
+pie maker
+pie making
+pie meat
+pien check
+pie piece
+pie plate
+pie rack
+pier arch
+pier buttress
+pier dam
+pier glass
+pierre-perdu
+pier table
+pie-stuffed
+pie tin
+pie vendor
+pie wagon
+pie wool
+piezo oscillator
+piezo resonator
+piff-paff
+pig-back
+pig-backed
+pig bed
+pig-bellied
+pig boiling
+pig breaker
+pig-breeding
+pig-bribed
+pig cart
+pig-chested
+pig dealer
+pig-dealing
+pig deer
+pig-driving
+pig-eating
+pigeon breast
+pigeon-breasted
+pigeon-breastedness
+Pigeon english
+pigeon flyer
+pigeon grass
+pigeon hawk
+pigeon house
+pigeon-livered
+pigeon post
+pigeon pox
+pigeon-tailed
+pigeon-toe
+pigeon-toed
+pig-eyed
+pig-faced
+pig-fat
+pig-footed
+piggy bank
+piggy-wiggy
+pig-haired
+pig-haunted
+pig hutch
+pig iron
+pig-jaw
+pig-jawed
+pig-jump
+pig-jumper
+pig-keeping
+Pig latin
+pig lead
+pig man
+pigment cell
+pig metal
+pig-proof
+pig-tailed
+pig-tight
+pig tub
+pig typhoid
+pig wife
+pig yoke
+pikaba hemp
+pike-eyed
+pike-gray
+pike hammer
+pike perch
+pike pole
+pike sauce
+pike-snouted
+pike squirrel
+pike whale
+pilaster mass
+pilaster strip
+pile bent
+pile bridge
+pile builder
+pile building
+pile-built
+pile cap
+pile drawer
+pile-driven
+pile driver
+pile-driving
+pile dweller
+pile dwelling
+pile hammer
+pile weave
+pile weaving
+pile wire
+pile-woven
+pilferage hazard
+pilgrimage psalm
+pilgrim bottle
+pilgrim brown
+pilgrim ring
+pilgrim scallop
+piling strip
+pillar block
+pillar bolt
+pillar box
+pillar crane
+pillar cult
+pillar dollar
+pillar file
+pillar lip
+pillar mount
+pillar plate
+pillar-shaped
+pillar stone
+pill-boasting
+pill bug
+pill-dispensing
+pill-gilding
+pillow block
+pillow fight
+pillow lace
+pillow lava
+pillow sham
+pillow-shaped
+pillow slip
+pillow word
+pill pipe
+pill-rolling
+pill-shaped
+pill slab
+pill-taking
+pill tile
+pill wood louse
+pilose bent grass
+pilot balloon
+pilot bird
+pilot biscuit
+pilot boat
+pilot bread
+pilot burner
+pilot cell
+pilot chart
+pilot driver
+pilot engine
+pilot fish
+pilot flag
+pilot flame
+pilot lamp
+pilot light
+pilot method
+pilot motor
+pilot nut
+pilot pin
+pilot plow
+pilot valve
+pilot whale
+pilot wheel
+pimento cheese
+pimento grass
+pimpernel root
+pimple metal
+pinacate bug
+pina cloth
+pinacone-pinacolin
+pinball machine
+pin basket
+pin bit
+pin block
+pin borer
+pin boy
+pin bridge
+pin buttock
+pin-buttocked
+pince-nez
+pincer-shaped
+pincers-shaped
+pinch bar
+pin cherry
+pinch-faced
+pinchgut money
+pinch-hit
+pinch hitter
+pinch out
+pinch phenomenon
+pinch point
+pinch-spotted
+pin curl
+pindo palm
+pindova palm
+pineal body
+pineal gland
+pineapple disease
+pineapple fiber
+pineapple fungus
+pineapple oil
+pine bark
+pine bark aphid
+pine barren
+pine-bearing
+pine-bordered
+pine borer
+pine-built
+pine-capped
+pine-clad
+pine cone
+pine-cone fish
+pine-covered
+pine-crested
+pine-crowned
+pine-dotted
+pine-encircled
+pine-fringed
+pine grass
+pine-leaf scale
+pine needle
+pine-needle oil
+pine oil
+pine sawfly
+pine sawyer
+pine-sequestered
+pine-shaded
+pine-shipping
+pine snake
+pine tag
+pine-tar oil
+pine-tip moth
+pine tree
+pine-tree flag
+pine-wood
+pine wool
+pine worm
+piney dammar
+pin-eyed
+piney tallow
+piney woods
+pin fallow
+pin-fire
+pin gear
+ping-pong
+Ping-pong
+pinhole camera
+pinhole decay
+pinhole pupil
+pin horse
+pink-blossomed
+pink-bound
+pink-breasted
+pink-checked
+pink-cheeked
+pink-coated
+pink-colored
+pink disease
+pink-eared
+pink eye
+pink-eyed
+pink-faced
+pink-fleshed
+pink-flowered
+pink-foot
+pink-footed
+pink grass
+pink in
+pinking iron
+pinking shears
+pink lady
+pink-leaved
+pink-lipped
+pin knot
+pink-ribbed
+pink salt
+pink-shaded
+pink-shelled
+pink-skinned
+pink spray
+pinkster flower
+pink-sterned
+pink-striped
+pink-tinted
+pink-veined
+pink-violet
+pink-white
+pin mill
+pin money
+pinnate-leaved
+pinnate-ribbed
+pinnate-veined
+pinnatifid-lobed
+pin oak
+pinon grass
+pinon pine
+pin pallet
+pin point
+pin pool
+pin prod
+pin rack
+pin rod
+pin setter
+pin-spotted
+pin-striped
+pintado petrel
+pin-tailed
+pintle chain
+pintle hook
+pinto bean
+pin-toed
+pin tooth
+pint pot
+pin tuck
+pin tumbler
+pin-up
+pin valve
+pin vise
+pin wheel
+pin-wing
+pin wire
+pin wrench
+pioneer tunnel
+pip card
+pipe amygdules
+pipe beetle
+pipe-bending
+pipe binder
+pipe-boring
+pipe box
+pipe-caulking
+pipe clay
+pipe-clayey
+pipe-clayish
+pipe-cleaning
+pipe coupling
+pipe-cutting
+pipe die
+pipe-drawn
+pipe dream
+pipe dreamer
+pipe dreaming
+pipe-drilling
+pipe fitter
+pipe founder
+pipe isinglass
+pipe-joint cement
+pipe maker
+pipe metal
+pip emma
+pipe-necked
+pipe organ
+pipe-playing
+pipe-puffed
+pipe roll
+piperonyl alcohol
+pipe-shaped
+pipe-tapping
+pipe-thawing
+pipe thimble
+pipe thread
+pipe threader
+pipe-threading
+pipe tongs
+pipe tool
+pipe welder
+pipe wrench
+piping cord
+pippin-faced
+pippin file
+pippin-hearted
+pip-pip
+pip-squeak
+piptostegia root
+pirate bird
+pirate perch
+pisang wax
+pish-pash
+pismo clam
+pistachio green
+pistachio nut
+pistacia gall
+pistol carbine
+pistol grip
+pistol plant
+pistol-shaped
+piston displacement
+piston drill
+piston pin
+piston pump
+piston ring
+piston rod
+piston spring
+piston valve
+pita fiber
+pita flax
+pita floja
+pit bank
+pit-black
+pit-blackness
+pit boss
+pit brink
+pitch accent
+pitch apple
+pitch black
+pitch-blackened
+pitch-blackness
+pitch box
+pitch-brown
+pitch circle
+pitch coal
+pitch-colored
+pitch cone
+pitch cylinder
+pitch-dark
+pitch-darkness
+pitch-diameter
+pitch discharger
+pitcher house
+pitcher mold
+pitcher molding
+pitcher plant
+pitcher-shaped
+pitch-faced
+pitch factor
+pitchfork grass
+pitching tool
+pitch kettle
+pitch line
+pitch-lined
+pitch-marked
+pitch opal
+pitch pine
+pitch pipe
+pitch point
+pitch pot
+pitch shot
+pitch-stained
+pit coal
+pit craneman
+pit dwelling
+pit-eyed
+pit hand
+pith ball
+pit head
+pit-headed
+pit-head frame
+pith helmet
+pith knot
+pit house
+pit-marked
+pit-patter
+pit prop
+pit-rotted
+pit saw
+pit sawyer
+pit-specked
+pitter-patter
+pit tomb
+pit viper
+pit-working
+pity-bound
+pity-moved
+pity-worthy
+pivot bearing
+pivot blow
+pivot bridge
+pivot joint
+pivot man
+pivot pier
+pivot span
+pivot stand
+pivot tooth
+pix-jury
+pixy-led
+pixy ring
+pixy stool
+place-begging
+place bill
+place brick
+place card
+place-grabbing
+place holder
+place-holding
+place hunter
+place-hunting
+place isomerism
+place kick
+place kicker
+place-loving
+placement examination
+placement kick
+placement test
+place-money
+place name
+place-proud
+placer claim
+placer miner
+place seeker
+place-seeking
+placid-featured
+placid-mannered
+placing-out
+placita coronae
+placket hole
+plagioclase-basalt
+plagioclase-granite
+plagioclase-porphyrite
+plagioclase-porphyry
+plagioclase-rhyolite
+plague-beleagured
+plague-free
+plague grasshopper
+plague-haunted
+plague-infected
+plague-infested
+plague mark
+plague-ridden
+plague-smitten
+plague spot
+plague-spotted
+plague-stricken
+plain aerial
+plain-bodied
+plain-bred
+plain-clothed
+plain clothes
+plain-clothes man
+plain-darn
+plain dealer
+plain-dressing
+plain-edged
+plain-faced
+plain-featured
+plain-garbed
+plain-headed
+plain-hearted
+plain-laid
+plain-looking
+plain-mannered
+plain-pranked
+Plains cree
+plain sewing
+plain-soled
+plain song
+plain speaking
+plain-spoken
+plain-spokenly
+plain-spokenness
+plain wanderer
+planching nail
+plane angle
+plane chart
+plane curve
+plane-faced
+plane figure
+plane geometry
+plane-parallel
+plane polarization
+planer center
+planer head
+planer knife
+planer tree
+plane-shear
+plane-table
+plane-tabler
+planet differential
+planet gear
+plane trigonometry
+planet-stricken
+planet-struck
+planet wheel
+P-language
+planing mill
+plank buttress
+plank scraper
+plank-sheer
+plankton net
+planning board
+plano-concave
+plano-convex
+planomilling machine
+plantain-leaved
+plantain lily
+plantain squirrel
+plantain tree
+plant anatomy
+plant-animal
+plantar ligament
+plantar nerves
+plantar reflex
+plantar veins
+plantation acre
+plantation rubber
+p.\"	@(#)u3	6.1 (Berkeley) 5/22/86
+.\"
+.sp
+.SH
+III. DOCUMENT PREPARATION
+.PP
+.UC UNIX
+systems are used extensively for document preparation.
+There are two major 
+formatting
+programs,
+that is,
+programs that produce a text with
+justified right margins, automatic page numbering and titling,
+automatic hyphenation,
+and the like.
+.UL nroff
+is designed to produce output on terminals and
+line-printers.
+.UL troff
+(pronounced ``tee-roff'')
+instead drives a phototypesetter,
+which produces very high quality output
+on photographic paper.
+This paper was formatted with
+.UL troff .
+.SH
+Formatting Packages
+.PP
+The basic idea of
+.UL nroff 
+and 
+.UL troff
+is that the text to be formatted contains within it
+``formatting commands'' that indicate in detail
+how the formatted text is to look.
+For example, there might be commands that specify how long
+lines are, whether to use single or double spacing,
+and what running titles to use on each page.
+.PP
+Because
+.UL nroff
+and
+.UL troff
+are relatively hard to learn to use effectively,
+several
+``packages'' of canned formatting requests are available
+to let you specify
+paragraphs, running titles, footnotes, multi-column output,
+and so on, with little effort
+and without having to learn
+.UL nroff
+and
+.UL troff .
+These packages take a modest effort to learn,
+but the rewards for using them are so great
+that it is time well spent.
+.PP
+In this section,
+we will provide a hasty look at the ``manuscript'' 
+package known as
+.UL \-ms .
+Formatting requests typically consist of a period and two upper-case letters,
+such as
+.UL .TL ,
+which is used to introduce a title,
+or
+.UL .PP
+to begin a new paragraph.
+.PP
+A document is typed so it looks something like this:
+.P1
+\&.TL
+title of document
+\&.AU
+author name
+\&.SH
+section heading
+\&.PP
+paragraph ...
+\&.PP
+another paragraph ...
+\&.SH
+another section heading
+\&.PP
+etc.
+.P2
+The lines that begin with a period are the formatting requests.
+For example,
+.UL .PP
+calls for starting a new paragraph.
+The precise meaning of
+.UL .PP
+depends on what output device is being used
+(typesetter or terminal, for instance),
+and on what publication the document will appear in.
+For example,
+.UL \-ms
+normally assumes that a paragraph is preceded by a space
+(one line in
+.UL nroff ,
+\(12 line in
+.UL troff ),
+and the first word is indented.
+These rules can be changed if you like,
+but they are changed by changing the interpretation
+of
+.UL .PP ,
+not by re-typing the document.
+.PP
+To actually produce a document in standard format
+using
+.UL \-ms ,
+use the command
+.P1
+troff -ms files ...
+.P2
+for the typesetter, and
+.P1
+nroff -ms files ...
+.P2
+for a terminal.
+The
+.UL \-ms
+argument tells
+.UL troff
+and
+.UL nroff
+to use the manuscript package of formatting requests.
+.PP
+There are several similar packages;
+check with a local expert to determine which ones
+are in common use on your machine.
+.SH
+Supporting Tools
+.PP
+In addition to the basic formatters,
+there is
+a host of supporting programs
+that help with document preparation.
+The list in the next few paragraphs
+is far from complete,
+so browse through the manual
+and check with people around you for other possibilities.
+.PP
+.UL eqn
+and
+.UL neqn
+let you integrate mathematics
+into the text of a document,
+in an easy-to-learn language that closely resembles the way
+you would speak it aloud.
+For example, the
+.UL eqn
+input
+.P1
+sum from i=0 to n x sub i ~=~ pi over 2
+.P2
+produces the output
+.EQ
+sum from i=0 to n x sub i ~=~ pi over 2
+.EN
+.PP
+The program
+.UL tbl
+provides an analogous service for preparing tabular material;
+it does all the computations necessary to align complicated columns
+with elements of varying widths.
+.PP
+.UL refer
+prepares bibliographic citations from a data base,
+in whatever style is defined by the formatting package.
+It looks after all the details of numbering references in sequence,
+filling in page and volume numbers,
+getting the author's initials and the journal name right,
+and so on.
+.PP
+.UL spell
+and
+.UL typo
+detect possible spelling mistakes in a document.\(dg
+.FS
+\(dg "typo" is not provided with Berkeley Unix.
+.FE
+.UL spell
+works by comparing the words in your document
+to a dictionary,
+printing those that are not in the dictionary.
+It knows enough about English spelling to detect plurals and the like,
+so it does a very good job.
+.UL typo
+looks for words which are ``unusual'',
+and prints those.
+Spelling mistakes tend to be more unusual,
+and thus show up early when the most unusual words
+are printed first.
+.PP
+.UL grep
+looks through a set of files for lines
+that contain a particular text pattern 
+(rather like the editor's context search does,
+but on a bunch of files).
+For example,
+.P1
+grep \(fming$\(fm chap*
+.P2
+will find all lines that end with
+the letters
+.UL ing
+in the files
+.UL chap* .
+(It is almost always a good practice to put single quotes around
+the pattern you're searching for,
+in case it contains characters like
+.UL *
+or
+.UL $
+that have a special meaning to the shell.)
+.UL grep
+is often useful for finding out in which of a set of files
+the misspelled words detected by
+.UL spell
+are actually located.
+.PP
+.UL diff
+prints a list of the differences between
+two files,
+so you can compare
+two versions of something automatically
+(which certainly beats proofreading by hand).
+.PP
+.UL wc
+counts the words, lines and characters in a set of files.
+.UL tr
+translates characters into other characters;
+for example it will convert upper to lower case and vice versa.
+This translates upper into lower:
+.P1
+tr A-Z a-z <input >output
+.P2
+.PP
+.UL sort
+sorts files in a variety of ways;
+.UL cref
+makes cross-references;
+.UL ptx
+makes a permuted index
+(keyword-in-context listing).
+.UL sed
+provides many of the editing facilities
+of
+.UL ed ,
+but can apply them to arbitrarily long inputs.
+.UL awk
+provides the ability to do both pattern matching and numeric computations,
+and to conveniently process fields within lines.
+These programs are for more advanced users,
+and they are not limited to document preparation.
+Put them on your list of things to learn about.
+.PP
+Most of these programs are either independently documented
+(like
+.UL eqn
+and
+.UL tbl ),
+or are sufficiently simple that the description in
+the
+.ul 2
+.UC UNIX
+Programmer's Manual
+is adequate explanation.
+.SH
+Hints for Preparing Documents
+.PP
+Most documents go through several versions (always more than you expected) before they
+are finally finished.
+Accordingly, you should do whatever possible to make
+the job of changing them easy.
+.PP
+First, when you do the purely mechanical operations of typing,
+type so that subsequent editing will be easy.
+Start each sentence on a new line.
+Make lines short,
+and break lines at natural places,
+such as after commas and semicolons,
+rather than randomly.
+Since most people change documents by rewriting phrases
+and adding, deleting and rearranging sentences,
+these precautions simplify any editing
+you have to do later.
+.PP
+Keep the individual files of a document down
+to modest size,
+perhaps ten to fifteen thousand characters.
+Larger files edit more slowly,
+and of course if you make a dumb mistake
+it's better to have clobbered a small file than a big one.
+Split into files at natural boundaries in the document,
+for the same reasons that you start each sentence
+on a new line.
+.PP
+The second aspect of making change easy
+is to not commit yourself to formatting details too early.
+One of the advantages of formatting packages like
+.UL \-ms
+is that they permit you to delay decisions
+to the last possible moment.
+Indeed,
+until a document is printed,
+it is not even decided whether it will be typeset
+or put on a line printer.
+.PP
+As a rule of thumb, for all but the most trivial jobs,
+you should type a document in terms of a set of requests
+like
+.UL .PP ,
+and then define them appropriately,
+either by using one of the canned packages
+(the better way)
+or by defining your own
+.UL nroff
+and
+.UL troff
+commands.
+As long as you have entered the text in some systematic way,
+it can always be cleaned up and re-formatted
+by a judicious combination of
+editing commands and request definitions.
+                                                                                                                                lant breeder
+plant cane
+plant cutter
+Plante battery
+plant factor
+plant feeder
+plant fibrin
+plant food
+plant formation
+plant geographer
+plant geography
+plant hair
+plant hemp
+plant house
+planting stick
+plant insulin
+plant life
+plant louse
+plant pathology
+plant physiology
+plant thermal efficiency
+plant worship
+plant worshiper
+plash wheel
+plasma body
+plasma cell
+plasma membrane
+plaster baker
+plaster bond
+plaster burner
+plaster cast
+plaster chopper
+plaster jacket
+plaster spreader
+plastic art
+plastic flow
+plate armor
+plate battery
+plate beam
+plate bender
+plate-bending
+plate bone
+plate calender
+plate-carrier
+plate circuit
+plate clutch
+plate-collecting
+plate column
+plate coupling
+plate culture
+plate current
+plate cutter
+plate-cutting
+plate cylinder
+plate driller
+plate-drilling
+plate gear
+plate girder
+plate glass
+plate-glazed
+plate glazing
+plate heater
+plate-incased
+plate jig
+plate keel
+plate machine
+plate modulation
+plate money
+plate-mounting
+platen press
+plate oven
+plate paper
+plate press
+plate printer
+plate proof
+plate-punching
+plate rail
+plate-roll
+plate-rolling
+plate-scarfing
+plate-shaped
+plate-shearing
+plate-tossing
+plate tower
+plat-eye
+plat-footed
+platform balance
+platform car
+platform elevator
+platform harvester
+platform scale
+platform spring
+platform wagon
+platina yellow
+platinum ammine
+platinum black
+platinum lamp
+platinum paper
+platinum process
+platinum sponge
+platinum thermometer
+platoon school
+platoon system
+Plato-wise
+platter-faced
+play-act
+play acting
+play actor
+play actorism
+play actress
+playback machine
+play debt
+play doctor
+player piano
+playground ball
+playing card
+playing field
+playing suit
+play-judging
+play-loving
+play-off
+play pipe
+play-producing
+play-reading
+play right
+pleasant-eyed
+pleasant-faced
+pleasant-featured
+pleasant-looking
+pleasant-mannered
+pleasant-minded
+pleasant-natured
+pleasant-sounding
+pleasant-spirited
+pleasant-spoken
+pleasant-tasted
+pleasant-tasting
+pleasant-tongued
+pleasant-voiced
+pleasant-witted
+pleasure-bent
+pleasure-bound
+pleasure giver
+pleasure-greedy
+pleasure ground
+pleasure lover
+pleasure-pain
+pleasure principle
+pleasure seeker
+pleasure-shunning
+pleasure taker
+pleasure-tempted
+pleasure-tired
+pleasure-wasted
+pleasure-weary
+pledge-bound
+pledge-free
+pledge keeper
+pledge taker
+plein-air
+plein-airist
+plein-air school
+plenary inspiration
+pleroma violet
+pleurisy root
+pliant-bodied
+pliant-necked
+plinth course
+plisse crepe
+plot survey
+plottage increment
+plottage value
+plotting board
+plotting paper
+plover-billed
+plover egg
+plover page
+plover quail
+plow alms
+plow-bred
+plow-cloven
+plow drill
+plow hand
+plow horse
+plow iron
+plow paddle
+plow press
+plow-shaped
+plowshare bone
+plow steel
+plow team
+plow-torn
+plow tree
+plow truck
+pluck-buffet
+plug bib
+plug cap
+plug casing
+plug cock
+plug drill
+plug frame
+plug hat
+plug-hatted
+plug rod
+plug switch
+plug tobacco
+plug-ugly
+plumbago blue
+plumbago gray
+plumbago slate
+plumb bob
+plumb bond
+plumber block
+plumb joint
+plum bladder
+plumb level
+plumb line
+plum blotch
+plum-blue
+plum broth
+plum-brown
+plumb rule
+plum-colored
+plum curculio
+plum duff
+plume-crowned
+plume-decked
+plume-dressed
+plumed tussock grass
+plume-embroidered
+plume-fronted
+plume-gay
+plume grass
+plume moss
+plume moth
+plume nutmeg
+plume-plucked
+plume-plucking
+plume polypody
+plume poppy
+plume-soft
+plume stick
+plume-stripped
+plum fir
+plum gouger
+plum granite
+plum grape
+plum-green
+plummer block
+plummet line
+plum pocket
+plum pudding
+plum purple
+plum scab
+plum-shaped
+plum-sized
+plum thrips
+plum-tinted
+plum tree
+plum violet
+plum weevil
+plum yew
+plunge bath
+plunge battery
+plunger bucket
+plunger elevator
+plunger magnet
+plunge rod
+plunger piston
+plunger pump
+plus-foured
+plus fours
+plush copper
+plus head
+plush stitch
+plus lens
+plus sign
+plus thread
+Plymouth colony
+ply yarn
+pneumatico-hydraulic
+pneumatic-tired
+pneumato-hydato-genetic
+poacher tub
+Poale zion
+Poale zionist
+poalike fescue grass
+pock-arred
+pocket battleship
+pocket billiards
+pocket bird
+pocket bladder
+pocket boom
+pocket burner
+pocket chisel
+pocket chronometer
+pocket-eyed
+pocket flask
+pocket lighter
+pocket money
+pocket piece
+pocket plum
+pocket print
+pocket rat
+pocket sheriff
+pocket-size
+pocket-sized
+pocket veto
+pock-frecken
+pock-fretten
+pock lymph
+pock-marked
+pock nook
+pock-pit
+pock scab
+pod auger
+pod borer
+pod corn
+pod fern
+pod gimlet
+pod rot
+pod-shaped
+pod shrimp
+poet-artist
+poet-dramatist
+poet-farmer
+poet-historian
+poet-humorist
+poetico-antiquarian
+poetico-architectural
+poetico-grotesque
+poetico-mystical
+poetico-mythological
+poetico-philosophic
+poet-king
+poet laureate
+poet-laureateship
+poet-musician
+poet-novelist
+poet-painter
+poet-patriot
+poet-pilgrim
+poet-playwright
+poet-plowman
+poet-preacher
+poet-priest
+poet-princess
+poetry-proof
+poet-saint
+poet-satirist
+poet-seer
+poet-thinker
+poet-warrior
+point alphabet
+point bar
+point-blank
+point chisel
+point co-ordinate
+point draftsman
+point duchesse
+point duty
+point-event
+point fuse
+point handle
+point hole
+pointing bone
+pointing chisel
+pointing doors
+pointing mark
+pointing tool
+point lace
+point-laced
+point-on
+point paper
+point-particle
+point rail
+point-ring sight
+point salient
+point set
+point source
+point space
+point switch
+point system
+point tense
+point transformation
+poison gas
+poison hemlock
+poison ivy
+poison-laden
+poison mask
+poison oak
+poison rye grass
+poison-sprinkled
+poison sumac
+poison-tainted
+poison-tipped
+poison-toothed
+poke bonnet
+poke-bonneted
+poke brim
+poke-brimmed
+poke check
+poke-cheeked
+poke-easy
+poker dice
+poker face
+poker work
+poky bonnet
+Poland china
+polar bear
+polar body
+polar circle
+polarity cap
+polarized-relay armature
+pole-armed
+pole bean
+pole chain
+pole changer
+pole compass
+pole-dried
+pole effect
+pole flounder
+pole horse
+pole jumper
+pole lathe
+pole mast
+pole-masted
+pole piece
+pole pitch
+pole screen
+pole-shaped
+pole-stack
+pole strap
+pole-trap
+pole trawl
+pole vault
+pole vaulter
+polewood stage
+police alarm
+police badge
+police baton
+police boat
+police chief
+police club
+police commissioner
+police court
+police detective
+police dog
+police inspector
+police jury
+police matron
+police officer
+police state
+police station
+police wagon
+police whistle
+policy loan
+policy racket
+policy shop
+policy year
+Polish-american
+Polish-jew
+Polish-made
+Polish-speaking
+polissoir wheel
+political-minded
+politician-proof
+politico-arithmetical
+politico-commercial
+politico-ecclesiastical
+politico-economical
+politico-ethical
+politico-geographical
+politico-judicial
+politico-military
+politico-moral
+politico-orthodox
+politico-peripatetic
+politico-religious
+politico-sacerdotal
+politico-scientific
+politico-social
+politico-theological
+polka dot
+polka-dotted
+polka mazurka
+poll booth
+poll degree
+pollen basket
+pollen brush
+pollen catarrh
+pollen chamber
+pollen-covered
+pollen-dusted
+pollen mass
+pollen plate
+pollen sac
+pollen-sprinkled
+pollen tube
+poll evil
+poll parrot
+poll-parroty
+poll pick
+poll tax
+polly-fox
+polly mountain
+polo cart
+polo coat
+polo pony
+polo shirt
+polychrest salt
+polyhedron formula
+polymorphous-perverse
+poly-mountain
+polyneuritic psychosis
+polypod brake
+polypody family
+pomace fly
+pomegranate purple
+pommel bag
+pompano shell
+Pompeian blue
+Pompeian red
+Pompeian yellow
+pom-pom
+pom-pom-pullaway
+ponceau red
+pond apple
+pond crow
+pond cypress
+pond duck
+pond lily
+pondosa pine
+pond pine
+pond scum
+pond-scum parasite
+pond smelt
+pons asinorum
+pontiff purple
+pontoon bridge
+pontoon dock
+pony engine
+pony express
+pony grass
+pony truck
+pony truss
+poodle dog
+pooh-pooh
+pooh-pooher
+pool bottle
+pool hole
+pool seller
+pool table
+poop cabin
+poop deck
+poop royal
+poor-blooded
+poor box
+poor-charactered
+poor-clad
+poor debtor
+poor-debtor law
+poor-do
+poor farm
+poor-feeding
+poor-folksy
+poor gas
+poor law
+poor-minded
+poor oat
+poor relief
+poor-sighted
+poor-spirited
+poor-spiritedly
+poor-spiritedness
+pop ash
+popcorn flower
+pop fly
+popinjay green
+poplar birch
+poplar borer
+poplar box
+poplar-covered
+poplar-crowned
+poplar-flanked
+poplar hawk
+poplar-leaved
+poplar-lined
+poplar-planted
+poplar worm
+popper cake
+poppet leg
+poppet valve
+poppy anemone
+poppy ash
+poppy bee
+poppy-bordered
+poppy-colored
+poppy-crimson
+poppy-crowned
+poppy-flowered
+poppy-haunted
+poppy mallow
+poppy oil
+poppy-pink
+poppy-red
+poppy seed
+poppy-sprinkled
+pop safety valve
+popular-priced
+pop-up
+pop valve
+porcelain cla.\"	@(#)u4	6.1 (Berkeley) 6/2/86
+.\"
+.SH
+IV.  PROGRAMMING
+.PP
+There will be no attempt made to teach any of
+the programming languages available
+but a few words of advice are in order.
+One of the reasons why the
+.UC UNIX
+system is a productive programming environment
+is that there is already a rich set of tools available,
+and facilities like pipes, I/O redirection,
+and the capabilities of the shell
+often make it possible to do a job
+by pasting together programs that already exist
+instead of writing from scratch.
+.SH
+The Shell
+.PP
+The pipe mechanism lets you fabricate quite complicated operations
+out of spare parts that already exist.
+For example,
+the first draft of the
+.UL  spell 
+program was (roughly)
+.P1
+.ta .6i 1.2i
+cat ...	\f2collect the files\f3
+| tr ...	\f2put each word on a new line\f3
+| tr ...	\f2delete punctuation, etc.\f3
+| sort	\f2into dictionary order\f3
+| uniq	\f2discard duplicates\f3
+| comm	\f2print words in text\f3
+	\f2  but not in dictionary\f3
+.P2
+More pieces have been added subsequently,
+but this goes a long way
+for such a small effort.
+.PP
+The editor can be made to do things that would normally
+require special programs on other systems.
+For example, to list the first and last lines of each of a
+set of files, such as a book,
+you could laboriously type
+.P1
+ed
+e chap1.1
+1p
+$p
+e chap1.2
+1p
+$p
+.ft R
+etc.
+.P2
+But you can do the job much more easily.
+One way is to type
+.P1
+ls chap* >temp
+.P2
+to get the list of filenames into a file.
+Then edit this file to make the necessary
+series of editing commands
+(using the global commands of
+.UL ed ),
+and write it into
+.UL script .
+Now the command
+.P1
+ed <script
+.P2
+will produce
+the same output as the laborious hand typing.
+Alternately
+(and more easily),
+you can use the fact that the shell will perform loops,
+repeating a set of commands over and over again
+for a set of arguments:
+.P1
+for i in chap*
+do
+	ed $i <script
+done
+.P2
+This sets the shell variable
+.UL i
+to each file name in turn,
+then does the command.
+You can type this command at the terminal,
+or put it in a file for later execution.
+.SH
+Programming the Shell
+.PP
+An option often overlooked by newcomers
+is that the shell is itself a programming language,
+with variables,
+control flow
+.UL if-else , (
+.UL while ,
+.UL for ,
+.UL case ),
+subroutines,
+and interrupt handling.
+Since
+there are
+many building-block programs,
+you can sometimes avoid writing a new program
+merely by piecing together some of the building blocks
+with shell command files.
+.PP
+We will not go into any details here;
+examples and rules can be found in
+.ul
+An Introduction to the
+.ul
+.UC UNIX
+.IT Shell ,
+by S. R. Bourne.
+.SH
+Programming in C
+.PP
+If you are undertaking anything substantial,
+C is the only reasonable choice of programming language:
+everything in
+the
+.UC UNIX
+system
+is tuned to it.
+The
+system
+itself
+is written in C,
+as are most of the programs that run on it.
+It is also a easy language to use
+once you get started.
+C is introduced and fully described in
+.ul
+The C Programming Language
+by
+B. W. Kernighan and D. M. Ritchie
+(Prentice-Hall, 1978).
+Several sections of the manual
+describe the system interfaces, that is,
+how you do I/O
+and similar functions.
+Read
+.ul
+UNIX Programming
+for more complicated things.
+.PP
+Most input and output in C is best handled with the 
+standard I/O library,
+which provides a set of I/O functions
+that exist in compatible form on most machines
+that have C compilers.
+In general, it's wisest to confine the system interactions
+in a program to the facilities provided by this library.
+.PP
+C programs that don't depend too much on special features of 
+.UC UNIX
+(such as pipes)
+can be moved to other computers that have C compilers.
+The list of such machines grows daily;
+in addition to the original
+.UC PDP -11,
+it currently includes
+at least
+Honeywell 6000,
+IBM 370 and PC families,
+Interdata 8/32,
+Data General Nova and Eclipse,
+HP 2100,
+Harris /7,
+Motorola 68000 family (including machines like Sun Microsystems and
+Apple Macintosh),
+VAX 11 family,
+SEL 86,
+and
+Zilog Z80.
+Calls to the standard I/O library will work on all of these machines.
+.PP
+There are a number of supporting programs that go with C.
+.UL lint
+checks C programs for potential portability problems,
+and detects errors such as mismatched argument types
+and uninitialized variables.
+.PP
+For larger programs
+(anything whose source is on more than one file)
+.UL make
+allows you to specify the dependencies among the source files
+and the processing steps needed to make a new version;
+it then checks the times that the pieces were last changed
+and does the minimal amount of recompiling
+to create a consistent updated version.
+.PP
+The debugger
+.UL adb
+is useful for digging through the dead bodies
+of C programs,
+but is rather hard to learn to use effectively.
+The most effective debugging tool is still
+careful thought, coupled with judiciously placed
+print statements.\(dg
+.FS
+\(dg The "dbx" debugger, supplied starting with 4.2BSD, has extensive facilities
+for high-level debugging of C programs and is much easier to use than "adb".
+.FE
+.PP
+The C compiler provides a limited instrumentation service,
+so you can find out
+where programs spend their time and what parts are worth optimizing.
+Compile the routines with the
+.UL \-p
+option;
+after the test run, use
+.UL prof
+to print an execution profile.
+The command
+.UL time
+will give you the gross run-time statistics
+of a program, but they are not super accurate or reproducible.
+.SH
+Other Languages
+.PP
+If you 
+.ul
+have
+to use Fortran,
+there are two possibilities.
+You might consider
+Ratfor,
+which gives you the decent control structures
+and free-form input that characterize C,
+yet lets you write code that
+is still portable to other environments.
+Bear in mind that
+.UC UNIX
+Fortran
+tends to produce large and relatively slow-running
+programs.
+Furthermore, supporting software like
+.UL adb ,
+.UL prof ,
+etc., are all virtually useless with Fortran programs.
+There may also be a Fortran 77 compiler on your system.
+If so,
+this is a viable alternative to 
+Ratfor,
+and has the non-trivial advantage that it is compatible with C
+and related programs.
+(The Ratfor processor
+and C tools
+can be used with Fortran 77 too.)
+.PP
+If your application requires you to translate
+a language into a set of actions or another language,
+you are in effect building a compiler,
+though probably a small one.
+In that case,
+you should be using
+the
+.UL yacc
+compiler-compiler, 
+which helps you develop a compiler quickly.
+The
+.UL lex
+lexical analyzer generator does the same job
+for the simpler languages that can be expressed as regular expressions.
+It can be used by itself,
+or as a front end to recognize inputs for a
+.UL yacc -based
+program.
+Both
+.UL yacc
+and
+.UL lex
+require some sophistication to use,
+but the initial effort of learning them
+can be repaid many times over in programs
+that are easy to change later on.
+.PP
+Most
+.UC UNIX
+systems also make available other languages,
+such as
+Algol 68, APL, Basic, Lisp, Pascal, and Snobol.
+Whether these are useful depends largely on the local environment:
+if someone cares about the language and has worked on it,
+it may be in good shape.
+If not, the odds are strong that it
+will be more trouble than it's worth.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             y
+porcelain glass
+porcelain green
+porcelain maker
+porcelain making
+porcelain shell
+porcelain tower
+porch chair
+porch climber
+porch hammock
+porch lamp
+porch railing
+porch rocker
+porch screen
+porch seat
+porch settee
+porch swing
+porcupine beater
+porcupine boiler
+porcupine crab
+porcupine disease
+porcupine fish
+porcupine grass
+porcupine man
+porcupine rat
+pore fungus
+pork barrel
+pork butcher
+pork chop
+pork eater
+pork packer
+pork pie
+pork tapeworm
+porphyry chamber
+porphyry copper
+porphyry shell
+porpoise oil
+porpoise whale
+port bar
+port captain
+port-caustic
+port charge
+portcullis money
+port differential
+port duty
+porte-cochere
+porteous roll
+porterhouse steak
+portia tree
+portland cement
+portmanteau word
+port-mouthed
+Porto rican
+Porto rico
+portrait bust
+portrait lens
+port risk insurance
+Port royal
+Port-royalist
+port tack
+Portugal crakeberry
+port-vent
+port-wine
+port-winy
+position artillery
+position buoy
+position co-ordinate
+position finder
+position isomerism
+position target
+posset pot
+poss stick
+poss tub
+possum haw
+possum oak
+Post-adamic
+Post-advent
+postage currency
+postage-due stamp
+postage envelope
+postage label
+postage stamp
+Post-alexandrine
+Post-apostolic
+Post-apostolical
+Post-aristotelian
+Post-armistice
+post auger
+Post-augustan
+Post-augustinian
+Post-azilian
+Post-aztec
+Post-babylonian
+Post-basket-maker
+Post-biblical
+post bill
+post binder
+post boat
+post brake
+Post-cambrian
+post captain
+post car
+Post-carboniferous
+post card
+postcard bander
+Post-carolingian
+Post-cartesian
+post cedar
+post chaise
+post chariot
+Post-chaucerian
+Post-christian
+Post-christmas
+post coach
+Post-columbian
+Post-confucian
+Post-conquest
+Post-constantinian
+Post-copernican
+Post-cretacean
+Post-cretaceous
+post croaker
+Post-crusade
+Post-darwinian
+Post-davidic
+post day
+Post-devonian
+Post-diocletian
+Post-disruption
+Post-easter
+Post-elizabethan
+Post-eocene
+posterio-occlusion
+post-factum
+post-fine
+post-free
+Post-galilean
+Post-gothic
+Post-hittite
+Post-homeric
+post horn
+post horse
+post hospital
+Post-huronian
+Post-ibsen
+Post-incarnation
+posting house
+post insulator
+Post-johnsonian
+Post-jurassic
+Post-justinian
+Post-jutland
+Post-kansan
+Post-kantian
+Post-lafayette
+Post-leibnitzian
+Post-lent
+post locust
+Post-marxian
+postmaster general
+postmaster-generalship
+Post-medieval
+Post-mendelian
+post meridiem
+Post-mesozoic
+Post-miocene
+Post-mishnaic
+Post-mishnic
+postmistress-ship
+post mortem
+post-mortem clot
+post-mortem examination
+Post-mosaic
+Post-mycenean
+Post-napoleonic
+Post-newtonian
+Post-nicene
+post note
+post oak
+post-oak grape
+post-obit
+post-obit bond
+post octavo
+post office
+post-office address
+post-officer
+Post-oligocene
+post-ordinar
+Post-ordovician
+Post-paleolithic
+Post-paleozoic
+Post-pauline
+Post-pentecostal
+Post-permian
+Post-petrine
+Post-phidian
+Post-platonic
+Post-pleistocene
+Post-pliocene
+Post-prophetic
+Post-pythagorean
+post race
+Post-raphaelite
+Post-reformation
+Post-renaissance
+Post-restoration
+Post-revolutionary
+post road
+Post-roman
+Post-romantic
+Post-scholastic
+post school
+Post-shakespearean
+post-signer
+Post-silurian
+Post-socratic
+Post-solomonic
+Post-syrian
+Post-talmudical
+post term
+Post-tertiary
+Post-theodosian
+post town
+post trader
+Post-transcendental
+Post-triassic
+Post-tridentine
+posture maker
+posture making
+Post-vedic
+Post-victorian
+Post-volstead
+pot ale
+pot arch
+potash alum
+potash feldspar
+potash granite
+potash hunger
+potash niter
+potash soap
+potassium acid oxalate
+potassium acid sulphate
+potassium acid tartrate
+potassium alum
+potassium amide
+potassium bicarbonate
+potassium bichromate
+potassium binoxalate
+potassium bisulphate
+potassium bitartrate
+potassium bromide
+potassium carbonate
+potassium chlorate
+potassium chloride
+potassium chromate
+potassium cobaltinitrite
+potassium cyanide
+potassium dichromate
+potassium ferricyanide
+potassium ferrocyanide
+potassium hydrate
+potassium hydroxide
+potassium hypoantimonate
+potassium hypochlorite
+potassium iodide
+potassium manganate
+potassium nitrate
+potassium oxalate
+potassium permanganate
+potassium persulphate
+potassium sulphate
+potassium tetroxalate
+potato aphid
+potato ball
+potato bean
+potato beetle
+potato blight
+potato cake
+potato canker
+potato chips
+potato fern
+potato flour
+potato fork
+potato fungus
+potato hook
+potato masher
+potato mosaic
+potato mottle
+potato murrain
+potato onion
+potato peeler
+potato race
+potato scab
+potato set
+potato-sick
+potato tree
+potato vine
+potato wart
+potato weevil
+potato whisky
+potato worm
+pot barley
+pot bottom
+pot-bound
+pot cheese
+potcher engine
+potcher man
+pot-clay
+pot-color
+pot companion
+pot culture
+pot derby
+pot earth
+potent-counterpotent
+pot fisher
+pot fisherman
+pot furnace
+pot garden
+pot kiln
+pot lace
+pot layering
+pot lead
+pot liquor
+pot metal
+pot plant
+pot roast
+pot-rustler
+pot-shaped
+pot shot
+pot-sick
+pot still
+potter bee
+potter wasp
+pottery tissue
+pottery tree
+pottle-bellied
+pottle-bodied
+pottle-crowned
+pottle-deep
+pottle pot
+pot-valiancy
+pot-valiant
+pot-valiantly
+pot-valiantry
+pot-valliance
+pot-valor
+pot-valorous
+pot valve
+pot-wabbler
+pot-walloper
+pot-walloping
+pot wheel
+pot-wobbler
+pouch bone
+pouch-shaped
+poulard wheat
+poulette sauce
+poultry breeder
+poultry breeding
+poultry buyer
+poultry car
+poultry culture
+poultry dealer
+poultry dresser
+poultry dressing
+poultry fancier
+poultry fancying
+poultry farm
+poultry farmer
+poultry farming
+poultry feed
+poultry grower
+poultry house
+poultry husbandry
+poultry judging
+poultry keeper
+poultry keeping
+poultry raiser
+poultry raising
+poultry rearing
+poultry shop
+poultry show
+poultry stall
+poultry tick
+poultry wire
+poultry yard
+pounce box
+pounce paper
+pouncet box
+pounce tree
+pouncing paper
+pound boat
+pound brush
+pound degree
+pound-folly
+pound-foolish
+pound-foolishness
+pound-foot
+pound lock
+pound net
+pound sovereign
+pound sterling
+pound-trap
+pourer-off
+pourer-out
+pour plate
+pour point
+pour test
+pousse-cafe
+poverty birch
+poverty grass
+poverty plant
+poverty-proof
+poverty-stricken
+powder barrel
+powder beef
+powder-black
+powder blue
+powder box
+powder boy
+powder charge
+powder-charged
+powder chest
+powder down
+powder flag
+powder flask
+powder-gray
+powder horn
+powder house
+powder keg
+powder-laden
+powder magazine
+powder maker
+powder-marked
+powder metallurgy
+powder mill
+powder monkey
+powder pimperlimpimp
+powder post
+powder-post beetle
+powder-posted
+powder puff
+powder room
+powder-scorched
+powder ship
+powder-tinged
+power amplifier
+power cable
+power-directional relay
+power dive
+power drill
+power-driven
+power duster
+power-elated
+power engineer
+power engineering
+power factor
+power gas
+power jack
+power line
+power load
+power loading
+power loom
+power meter
+power-operate
+power-operated
+power pack
+power plant
+power-plant engineer
+power-plant engineering
+power-political
+power politics
+power press
+power pump
+power punch
+power rail
+power relay
+power-riveting
+power sawyer
+power-seeking
+power shaft
+power shears
+power shovel
+power sprayer
+power station
+power stroke
+power supply
+power transformer
+power tube
+power vessel
+power weaver
+pox-marked
+practical joke
+practical joker
+practice curve
+practice-teach
+practice teacher
+praedium dominans
+praedium serviens
+praemunientes clause
+praemunientes writ
+prairie acacia
+prairie artichoke
+prairie aster
+prairie chicken
+prairie clover
+prairie dog
+prairie falcon
+prairie fire
+prairie goose
+prairie hen
+prairie itch
+prairie june grass
+prairie larkspur
+prairie owl
+prairie poppy
+prairie rocket
+prairie sage
+prairie schooner
+prairie violet
+praise-begging
+praise-deserving
+praise-fed
+praise-giving
+praise meeting
+praise-spoiled
+praise-winning
+prayer-answering
+prayer bead
+prayer book
+prayer carpet
+prayer-clenched
+prayer flag
+prayer-granting
+prayer-hearing
+prayer-lisping
+prayer-loving
+prayer meeting
+prayer mill
+prayer paper
+prayer-repeating
+prayer scarf
+prayer tower
+prayer wheel
+praying cylinder
+Pre-achaean
+preacher bird
+Pre-alfredian
+Pre-american
+Pre-ammonite
+Pre-ammonitish
+Pre-armistice
+Pre-arthurian
+Pre-aryan
+Pre-assyrian
+Pre-augustan
+Pre-augustine
+Pre-babylonian
+Pre-baconian
+Pre-british
+Pre-buddhist
+Pre-byzantine
+Pre-cambrian
+Pre-cambridge
+Pre-canaanitic
+Pre-carboniferous
+Pre-carolingian
+Pre-catholic
+precedent condition
+Pre-celtic
+Pre-centennial
+Pre-chaucerian
+Pre-chellean
+Pre-chinese
+Pre-christian
+Pre-christianic
+Pre-christmas
+precision balance
+precision barometer
+precision bloc.\"	@(#)u5	6.1 (Berkeley) 5/22/86
+.\"
+.SH
+V.  UNIX READING LIST
+.SH
+General:
+.LP
+K. L. Thompson and D. M. Ritchie,
+.IT The
+.ul
+.UC UNIX
+.ul
+Programmer's Manual,
+Bell Laboratories, 1978 (PS2:3)\(dd
+Lists commands,
+system routines and interfaces, file formats,
+and some of the maintenance procedures.
+You can't live without this,
+although you will probably only need to read section 1.
+.LP
+D. M. Ritchie and K. L. Thompson,
+``The
+.UC UNIX
+Time-sharing System,''
+CACM, July 1974. (PS2:1)\(dd
+.FS
+\(dg These documents (previously in Volume 2 of the Bell Labs
+Unix distribution) are provided among the "User Supplementary"
+Documents for 4.3BSD, available from the Usenix Association.
+.FE
+.FS
+\(dd These are among the "Programmer Supplementary" Documents for 4.3BSD.
+PS1 is Volume 1, PS2 is Volume 2.
+.FE
+An overview of the system,
+for people interested in operating systems.
+Worth reading by anyone who programs.
+Contains a remarkable number of one-sentence observations
+on how to do things right.
+.LP
+The Bell System Technical Journal
+(BSTJ)
+Special Issue on 
+.UC UNIX ,
+July/August, 1978,
+contains many papers describing recent developments,
+and some retrospective material.
+.LP
+The 2nd International Conference on Software Engineering
+(October, 1976)
+contains several 
+papers describing the use of the
+Programmer's Workbench
+.UC PWB ) (
+version of
+.UC UNIX .
+.SH
+Document Preparation:
+.LP
+B. W. Kernighan,
+``A Tutorial Introduction to the
+.UC UNIX
+Text Editor'' (USD:12)
+and
+``Advanced Editing on
+.UC UNIX ,''
+(USD:13) Bell Laboratories, 1978.\(dg
+Beginners need the introduction;
+the advanced material will help you get the most
+out of the editor.
+.LP
+M. E. Lesk,
+``Typing Documents on
+.UC UNIX ,''
+Bell Laboratories, 1978. (USD:20)\(dg
+Describes the
+.UL \-ms
+macro package, which isolates the novice
+from the vagaries of
+.UL nroff
+and
+.UL troff ,
+and takes care of most formatting situations.
+If this specific package isn't available on your system,
+something similar probably is.
+The most likely alternative is the
+.UC PWB/UNIX
+macro package
+.UL \-mm ;
+see your local guru if you use
+.UC PWB/UNIX .*
+.FS
+*The macro package -me is additionally available on Berkeley Unix Systems.
+-mm is typically not available.
+.FE
+.LP
+B. W. Kernighan and L. L. Cherry,
+``A System for Typesetting Mathematics,''
+Bell Laboratories Computing Science Tech. Rep. 17. (USD:26)\(dg
+.LP
+M. E. Lesk,
+``Tbl \(em A Program to Format Tables,''
+Bell Laboratories CSTR 49, 1976. (USD:28)\(dg
+.LP
+J. F. Ossanna, Jr.,
+``NROFF/TROFF User's Manual,''
+Bell Laboratories CSTR 54, 1976. (USD:24)\(dg
+.UL troff
+is the basic formatter used by
+.UL \-ms ,
+.UL eqn
+and
+.UL tbl .
+The reference manual is indispensable
+if you are going to write or maintain these
+or similar programs.
+But start with:
+.LP
+B. W. Kernighan,
+``A TROFF Tutorial,''
+Bell Laboratories, 1976. (USD:25)\(dg
+An attempt to unravel the intricacies of
+.UL troff .
+.SH
+Programming:
+.LP
+B. W. Kernighan and D. M. Ritchie,
+.ul
+The C Programming Language,
+Prentice-Hall, 1978.
+Contains a tutorial introduction,
+complete discussions of all language features,
+and the reference manual.
+.LP
+B. W. Kernighan and R. Pike,
+.ul
+The Unix Programming Environment,
+Prentice-Hall, 1984.
+Contains many examples of C programs which use the system
+interfaces, and explanations of ``why''.
+.LP
+B. W. Kernighan and D. M. Ritchie,
+.UC UNIX \& ``
+Programming,''
+Bell Laboratories, 1978. (PS2:3)\(dd
+Describes how to interface with the system from C programs:
+I/O calls, signals, processes.
+.LP
+S. R. Bourne,
+``An Introduction to the
+.UC UNIX
+Shell,''
+Bell Laboratories, 1978. (USD:3)\(dg
+An introduction and reference manual for the Version 7 shell.
+Mandatory reading if you intend to make effective use
+of the programming power
+of this shell.
+.LP
+S. C. Johnson,
+``Yacc \(em Yet Another Compiler-Compiler,''
+Bell Laboratories CSTR 32, 1978. (PS1:15)\(dd
+.LP
+M. E. Lesk,
+``Lex \(em A Lexical Analyzer Generator,''
+Bell Laboratories CSTR 39, 1975. (PS1:16)\(dd
+.LP
+S. C. Johnson,
+``Lint, a C Program Checker,''
+Bell Laboratories CSTR 65, 1977. (PS1:9)\(dd
+.LP
+S. I. Feldman,
+``MAKE \(em A Program for Maintaining Computer Programs,''
+Bell Laboratories CSTR 57, 1977. (PS1:12)\(dd
+.LP
+J. F. Maranzano and S. R. Bourne,
+``A Tutorial Introduction to ADB,''
+Bell Laboratories CSTR 62, 1977. (PS1:10)\(dd
+An introduction to a powerful but complex debugging tool.
+.LP
+S. I. Feldman and P. J. Weinberger,
+``A Portable Fortran 77 Compiler,''
+Bell Laboratories, 1978. (PS1:2)\(dd
+A full Fortran 77 for
+.UC UNIX
+systems.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              .\" Copyright (c) 1983,1986 Regents of the University of California.
+.\" All rights reserved.  The Berkeley software License Agreement
+.\" specifies the terms and conditions for redistribution.
+.\"
+.\"	@(#)1.t	6.3 (Berkeley) 6/5/86
+.\"
+.\".ds RH Introduction
+.br
+.ne 2i
+.NH
+\s+2Introduction\s0
+.PP
+This report describes the internal structure of
+facilities added to the
+4.2BSD version of the UNIX operating system for
+the VAX,
+as modified in the 4.3BSD release.
+The system facilities provide
+a uniform user interface to networking
+within UNIX.  In addition, the implementation 
+introduces a structure for network communications which may be
+used by system implementors in adding new networking
+facilities.  The internal structure is not visible
+to the user, rather it is intended to aid implementors
+of communication protocols and network services by
+providing a framework which
+promotes code sharing and minimizes implementation effort.
+.PP
+The reader is expected to be familiar with the C programming
+language and system interface, as described in the
+\fIBerkeley Software Architecture Manual, 4.3BSD Edition\fP [Joy86].
+Basic understanding of network
+communication concepts is assumed; where required
+any additional ideas are introduced.
+.PP
+The remainder of this document
+provides a description of the system internals,
+avoiding, when possible, those portions which are utilized only
+by the interprocess communication facilities.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      next section).
+.PP
+Several routing policy processes have already been implemented.  The
+system standard
+``routing daemon'' uses a variant of the Xerox NS Routing Information
+Protocol [Xerox82] to maintain up-to-date routing tables in our local
+environment.  Interaction with other existing routing protocols,
+such as the Internet EGP (Exterior Gateway Protocol), has been
+accomplished using a similar process.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      k
+precision caliper
+precision clock
+precision gauge
+precision gauge block
+precision grinding
+precision instrument
+precision lathe
+precision lens
+precision meter
+precision punch
+precision scale
+precision screw
+precision tool
+precision weight
+Pre-columbian
+precombustion engine
+Pre-congregationalist
+Pre-congress
+Pre-conquest
+Pre-copernican
+Pre-copernicanism
+precordial anxiety
+precordial pain
+precordial region
+Pre-crusade
+Precursor society
+Pre-dantean
+Pre-darwinian
+Pre-darwinianism
+predation pressure
+Pre-dickensian
+Pre-dorian
+Pre-doric
+Pre-dravidian
+Pre-dravidic
+Pre-dutch
+pre-earthly
+pre-earthquake
+Pre-easter
+pre-eclampsia
+pre-eclamptic
+pre-economic
+pre-economical
+pre-edit
+pre-edition
+pre-editor
+pre-editorial
+pre-editorially
+pre-educate
+pre-education
+pre-educational
+pre-educationally
+pre-effect
+pre-effective
+pre-effectively
+pre-effectual
+pre-efficiency
+pre-efficient
+pre-efficiently
+pre-effort
+pre-elect
+pre-election
+pre-elective
+pre-electric
+pre-electrical
+pre-electrically
+pre-elemental
+pre-elementary
+pre-eligibility
+pre-eligible
+pre-eliminate
+pre-elimination
+pre-eliminator
+Pre-elizabethan
+pre-emancipation
+pre-embarrass
+pre-embarrassment
+pre-embodiment
+pre-embody
+pre-emergency
+pre-eminence
+pre-eminency
+pre-eminent
+pre-eminently
+pre-eminentness
+pre-emotion
+pre-emotional
+pre-emperor
+Pre-empire
+pre-employ
+pre-employee
+pre-employer
+pre-employment
+pre-empt
+pre-emptible
+pre-emption
+pre-emptioner
+pre-emption right
+pre-emptive
+pre-emptively
+pre-emptor
+pre-emptory
+pre-enable
+pre-enact
+pre-enaction
+pre-enclose
+pre-enclosure
+pre-encounter
+pre-encourage
+pre-encouragement
+pre-endeavor
+pre-endorse
+pre-endorsement
+pre-endorser
+pre-energetic
+pre-energy
+pre-enforce
+pre-enforcement
+pre-engage
+pre-engagement
+pre-engineering
+preen gland
+Pre-english
+pre-enjoy
+pre-enjoyable
+pre-enjoyment
+pre-enlarge
+pre-enlargement
+pre-enlighten
+pre-enlightener
+pre-enlightening
+pre-enlightenment
+pre-enlist
+pre-enlistment
+pre-enroll
+pre-enrollment
+pre-entail
+pre-entailment
+pre-enter
+pre-entertain
+pre-entertainer
+pre-entertainment
+pre-enthusiasm
+pre-enthusiastic
+pre-entitle
+pre-entrance
+pre-entry
+pre-enumerate
+pre-enumeration
+pre-envelop
+pre-envelopment
+pre-environmental
+pre-epic
+pre-epidemic
+pre-epochal
+pre-equip
+pre-equipment
+pre-equity
+pre-erect
+pre-erection
+pre-erupt
+pre-eruption
+pre-eruptive
+pre-escape
+pre-escort
+pre-esophageal
+pre-essay
+pre-essential
+pre-establish
+pre-established
+pre-establisher
+pre-establishment
+pre-esteem
+pre-estimate
+pre-estimation
+pre-estival
+pre-eter
+pre-eternal
+pre-evade
+pre-evaporate
+pre-evaporation
+pre-evaporator
+pre-evasion
+pre-evidence
+pre-evident
+pre-evidently
+pre-evite
+pre-evolutional
+pre-evolutionary
+pre-evolutionist
+pre-exact
+pre-exaction
+pre-examination
+pre-examine
+pre-examiner
+pre-excel
+pre-excellence
+pre-excellency
+pre-excellent
+pre-except
+pre-exception
+pre-exceptional
+pre-exceptionally
+pre-exchange
+pre-excitation
+pre-excite
+pre-excitement
+pre-exclude
+pre-exclusion
+pre-exclusive
+pre-exclusively
+pre-excursion
+pre-excuse
+pre-execute
+pre-execution
+pre-executor
+pre-exempt
+pre-exemption
+pre-exhaust
+pre-exhaustion
+pre-exhibit
+pre-exhibition
+pre-exhibitor
+pre-exile
+pre-exilian
+pre-exilic
+pre-exist
+pre-existence
+pre-existent
+pre-existentiary
+pre-existentism
+pre-expand
+pre-expansion
+pre-expect
+pre-expectant
+pre-expectation
+pre-expedition
+pre-expeditionary
+pre-expend
+pre-expenditure
+pre-expense
+pre-experience
+pre-experiment
+pre-experimental
+pre-expiration
+pre-explain
+pre-explanation
+pre-explanatory
+pre-explode
+pre-explosion
+pre-expose
+pre-exposition
+pre-exposure
+pre-expound
+pre-expounder
+pre-express
+pre-expression
+pre-expressive
+pre-extend
+pre-extensive
+pre-extensively
+pre-extent
+pre-extinction
+pre-extinguish
+pre-extinguishment
+pre-extract
+pre-extraction
+pre-fabulous
+prefect apostolic
+prefecture apostolic
+preference share
+prefernce bond
+prefernce freight
+pre-free-trade
+Pre-french
+Pre-georgian
+Pre-german
+Pre-germanic
+Pre-gothic
+Pre-greek
+Pre-han
+Pre-hebrew
+Pre-hellenic
+Pre-hieronymian
+Pre-hinduized
+Pre-hispanic
+Pre-homeric
+Pre-inca
+Pre-incan
+Pre-incarial
+Pre-indian
+Pre irish
+Pre-islam
+Pre-islamic
+Pre-islamite
+Pre-islamitic
+Pre-israelite
+Pre-israelitish
+Pre-jewish
+Pre-johannine
+Pre-johnsonian
+prejudice-proof
+pre-judicial
+pre-judiciary
+Pre-justinian
+Pre-koranic
+Pre-latin
+Pre-laurentian
+Pre-linnaean
+Pre-luciferian
+Pre-lutheran
+Pre-malay
+Pre-malayan
+Pre-malaysian
+pre-man
+Pre-marxian
+Pre-messianic
+Pre-methodist
+premium note
+premium system
+Pre-mohammedian
+Pre-mosaic
+Pre-moslem
+Pre-mycenaean
+Pre-napoleonic
+Pre-newtonian
+Pre-noachian
+Pre-norman
+Pre-norse
+Pre-osmanli
+Pre-paleozoic
+preparatory school
+Pre-patrician
+Pre-pauline
+prepay station
+Pre-permian
+Pre-persian
+Pre-petrine
+Pre-pharaonic
+Pre-phidian
+Pre-polish
+Pre-pueblo
+Pre-puebloan
+Pre-raphael
+Pre-raphaelism
+Pre-raphaelite
+Pre-raphaelitic
+Pre-raphaelitish
+Pre-raphaelitism
+Pre-reconstruction
+Pre-reformation
+Pre-renaissance
+Pre-restoration
+Pre-revolution
+prerogative court
+prerogative instance
+prerogative office
+prerogative writ
+Pre-roman
+Pre-sargonic
+Pre-saxon
+Presbyterian alliance
+Pre-semitic
+presence chamber
+presentation copy
+presentation time
+present-day
+present-minded
+Pre-shakespeare
+Pre-shakespearean
+president-elect
+president general
+president pro tempore
+Pre-silurian
+Pre-socratic
+Pre-solomonic
+Pre-solonian
+Pre-spanish
+press-agent
+press-agentry
+press bed
+press box
+press boy
+press bundler
+press bureau
+press cake
+press clipper
+press clipping
+press cloth
+press copy
+press corrector
+press correspondent
+press drill
+pressed beef
+presser bar
+presser foot
+presser shoe
+presser wheel
+press feeder
+press fit
+press fitter
+press-forge
+press gallery
+press gang
+pressing boards
+pressing iron
+press iron
+press-made
+press-noticed
+press operator
+press release
+press-ridden
+press roll
+press tender
+pressure atrophy
+pressure blower
+pressure boiler
+pressure bottle
+pressure box
+pressure coil
+pressure cooker
+pressure element
+pressure evaporator
+pressure fan
+pressure filter
+pressure-fixing
+pressure gauge
+pressure governor
+pressure gradient
+pressure group
+pressure hull
+pressure ice
+pressure indicator
+pressure nozzle
+pressure producer
+pressure pump
+pressure-reciprocating
+pressure recorder
+pressure-reducing
+pressure register
+pressure-regulating
+pressure regulator
+pressure-relief ring
+pressure-relieving
+pressure ridge
+pressure saucepan
+pressure sense
+pressure siphon
+pressure spot
+pressure spring
+pressure stage
+pressure syllable
+pressure tank
+pressure-testing
+pressure tube
+pressure valve
+pressure warrant
+pressure wire
+prestation money
+presto change
+presto chango
+Pre-sumerian
+Pre-syrian
+preterite-present
+preterito-presential
+preterit-present
+Pre-tertiary
+Pre-thanksgiving
+pretium puellae
+Pre-tridentine
+pretty-behaved
+pretty-by-night
+pretty-faced
+pretty-footed
+pretty-humored
+pretty-looking
+pretty-mannered
+pretty-pretty
+pretty-spoken
+pretty-toned
+pretty-witted
+Pre-tudor
+preventer plate
+prevention-proof
+Pre-victorian
+Pre-virgilian
+Pre-volstead
+pribble-prabble
+price current
+price-cutting
+price-deciding
+price-enhancing
+price-fixing
+price index
+price level
+price list
+price-lowering
+price-raising
+price-reducing
+price-ruling
+price-stabilizing
+prick ear
+prick-eared
+pricking-up
+pricking wheel
+prickle cell
+prickle-cone pine
+prickle grass
+prickly-fin

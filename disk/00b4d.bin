@@ -1,0 +1,1880 @@
+
+.dc "kill-to-end-of-line" "C-K"
+This kills from point to the end of the current line.  When point is
+at the end of the line the line separator is deleted and the next line
+is joined with current one.  If a numeric argument is supplied that
+many lines are killed; if the argument is negative that many lines
+.IQ before
+point are killed; if the argument is zero the text from point
+to the beginning of the line is killed.
+.dc "kill-to-end-of-sentence" "ESC K"
+This kills from point to the end of the current or next sentence.  If a
+negative numeric argument is supplied it kills from point to the
+beginning of the current or previous sentence.
+.dc "left-margin" "(variable)"
+This is how far lines should be indented when auto-indent mode is on,
+or when the
+.IQ newline-and-indent
+command is run (usually by typing
+LineFeed).  It is also used by fill-paragraph and auto-fill mode.
+If the value is zero (the default) then the left margin is determined
+from the surrounding lines.
+.dc "left-margin-here" "Not Bound"
+This sets th.\" Copyright (c) 1980 Regents of the University of California.
+.\" All rights reserved.  The Berkeley software License Agreement
+.\" specifies the terms and conditions for redistribution.
+.\"
+.\"	@(#)trek	6.1 (Berkeley) 4/24/86
+.\"
+.if n .na
+.de pp
+.	sp 2
+.	ti +5
+..
+.ie t .ds f \fB
+.el .ds f \fI
+.de he
+'	sp
+'	tl 'Star Trek''USD:34-%'
+'sp 3
+..
+.oh 'Star Trek''USD:34-%'
+.eh 'USD:34-%''Star Trek'
+
+\" .wh 0 he
+.de fo
+'	bp
+..
+.wh -3 fo
+.sp 16
+.ce 1000
+.ie n \{\
+.	tr | 
+|****||||*****||||||*||||||****|
+*||||||||||*|||||||*|*|||||*|||*
+|***|||||||*||||||*****||||****|
+||||*||||||*||||||*|||*||||*||*|
+****|||||||*||||||*|||*||||*|||*
+.sp 2
+*****||||****|||||*****||||*|||*
+||*||||||*|||*||||*||||||||*||*|
+||*||||||****|||||***||||||***||
+||*||||||*||*|||||*||||||||*||*|
+||*||||||*|||*||||*****||||*|||*
+.sp 2
+.	tr ||
+by
+.\}
+.el \{\
+.	ps 24
+.	vs 28p
+.	ft B
+STAR
+
+TREK
+
+.	ps
+.	vs
+.	ft
+.	ft I
+by
+.f	ft
+.\}
+
+Eric Allman
+University of California
+Berkeley
+.ce 0
+\".bp
+.ce
+\*fINTRODUCTION\fR
+.pp
+Well, the federation is once again at war with the Klingon empire.
+It is up to you,
+as captain of the U.S.S. Enterprise,
+to wipe out the invasion fleet and save the Federation.
+.pp
+For the purposes of the game
+the galaxy is divided into 64 quadrants
+on an eight by eight grid,
+with quadrant 0,0 in the upper left hand corner.
+Each quadrant is divided into 100 sectors
+on a ten by ten grid.
+Each sector contains one object
+(e.g., the Enterprise, a Klingon, or a star).
+.pp
+Navigation is handled in degrees,
+with zero being straight up
+and ninety being to the right.
+Distances are measured in quadrants.
+One tenth quadrant is one sector.
+.pp
+The galaxy contains starbases,
+at which you can dock to refuel,
+repair damages, etc.
+The galaxy also contains stars.
+Stars usually have a knack for getting in your way,
+but they can be triggered into going nova
+by shooting a photon torpedo at one,
+thereby (hopefully) destroying any adjacent Klingons.
+This is not a good practice however,
+because you are penalized for destroying stars.
+Also, a star will sometimes go supernova,
+which obliterates an entire quadrant.
+You must never stop in a supernova quadrant,
+although you may "jump over" one.
+.pp
+Some starsystems
+have inhabited planets.
+Klingons can attack inhabited planets
+and enslave the populace,
+which they then put to work building more Klingon battle cruisers.
+\".bp
+.ce
+\*fSTARTING UP THE GAME\fR
+.pp
+To request the game, issue the command
+.sp
+.ti +15
+.ft B
+/usr/games/trek
+.ft
+.sp
+from the shell.
+If a filename is supplied,
+a log of the game is written onto that file.
+(Otherwise, no
+file is written.)
+If the
+``\fB\-a\fP'' flag is stated before the filename,
+the log of the game is appended to the file.
+.pp
+The game will ask you what length game
+you would like.
+Valid responses are "short", "medium", and "long".
+You may also type "restart",
+which restarts a previously saved game.
+Ideally,
+the length of the game does not affect the difficulty,
+but currently the shorter games tend to be harder than the longer ones.
+.pp
+You will then be prompted for the skill,
+to which you must respond
+"novice", "fair", "good", "expert",
+"commodore", or "impossible".
+You should start out with a novice
+and work up,
+but if you really want to see
+how fast you can be slaughtered,
+start out with an impossible game.
+.pp
+In general,
+throughout the game,
+if you forget what is appropriate
+the game will tell you what it expects
+if you just type in
+a question mark.
+\".bp
+.ce
+\*fISSUING COMMANDS\fR
+.pp
+If the game expects you to enter a command,
+.hc ^
+it will say ^"Command:\ "
+and wait for your response.
+Most commands can be abbreviated.
+.pp
+At almost any time you can type more than one thing on a line.
+For example,
+to move straight up one quadrant,
+you can type
+.ti +12
+move 0 1
+.br
+or you could just type
+.ti +12
+move
+.br
+and the game would prompt you with
+.ti +12
+Course:
+.br
+to which you could type
+.ti +12
+0 1
+.br
+The "1" is the distance,
+which could be put on still another line.
+Also, the "move" command
+could have been abbreviated
+"mov", "mo", or just "m".
+.pp
+If you are partway through a command
+and you change your mind,
+you can usually type "-1"
+to cancel the command.
+.pp
+Klingons generally cannot hit you
+if you don't consume anything
+(e.g., time or energy),
+so some commands are considered "free".
+As soon as you consume anything though -- POW!
+.bp
+.de **
+.if \\n+l .**
+.as x *
+..
+.de bl
+.sp
+.ie t \fB\\$1\fR
+.el \{\
+.	ne 3
+.	nr l \\w'\\$1' -\\w'*'
+.	ds x ****
+.	**
+\\*x
+.	br
+* \\$1 *
+.	br
+\\*x
+.\}
+.sp
+.in +8
+.nf
+..
+.de FF
+.in -8
+.fi
+..
+.if !\n(.V .ta \w'Full Commands: '+1
+.if \n(.V .ta \w'Full Commands: 'u
+.ce
+\*fTHE COMMANDS\fR
+.bl "Short Range Scan"
+Mnemonic: srscan
+Shortest Abbreviation: s
+Full Commands: srscan
+	srscan yes/no
+Consumes: nothing
+.FF
+.pp
+The short range scan
+gives you a picture
+of the quadrant you are in,
+and (if you say "yes")
+a status report
+which tells you
+a whole bunch
+of interesting stuff.
+You can get a status report alone
+by using the
+.ul
+status
+command.
+An example follows:
+.sp
+.in +4
+Short range sensor scan
+.TS
+le1 ce1 ce1 ce1 ce1 ce1 ce1 ce1 ce1 ce1 ce1 le3 l1 l.
+	0	1	2	3	4	5	6	7	8	9
+0	.	.	.	.	.	.	.	*	.	*	0	stardate	3702.16
+1	.	.	E	.	.	.	.	.	.	.	1	condition	RED
+2	.	.	.	.	.	.	.	.	.	*	2	position	0,3/1,2
+3	*	.	.	.	.	#	.	.	.	.	3	warp\ factor	5.0
+4	.	.	.	.	.	.	.	.	.	.	4	total\ energy	4376
+5	.	.	*	.	*	.	.	.	.	.	5	torpedoes	9
+6	.	.	.	@	.	.	\ 	.	.	.	6	shields	down,\ 78%
+7	.	.	.	.	.	.	.	.	.	.	7	Klingons\ left	3
+8	.	.	.	K	.	.	.	.	.	.	8	time\ left	6.43
+9	.	.	.	.	.	.	*	.	.	.	9	life\ support	damaged,\ reserves\ =\ 2.4
+	0	1	2	3	4	5	6	7	8	9
+.TE
+Distressed Starsystem Marcus XII
+.sp
+.in +8
+.ti -8
+The cast of characters is as follows:
+.nf
+.ta \w'E   'u
+E	the hero
+K	the villain
+#	the starbase
+*	stars
+@	inhabited starsystem
+\&.	empty space
+	a black hole
+.in -12
+.fi
+.ev
+.pp
+The name of the starsystem is listed underneath
+the short range scan.
+The word "distressed", if present,
+means that the starsystem
+is under attack.
+.pp
+Short range scans are absolutely free.
+They use no time, no energy,
+and they don't give the Klingons
+another chance to hit you.
+.bl "Status Report"
+Mnemonic: status
+Shortest Abbreviation: st
+Consumes: nothing
+.FF
+.pp
+This command gives you information
+about the current status
+of the game and your ship, as follows:
+.in +8
+.de qq
+.sp
+.ti -4
+..
+.qq
+Stardate -- The current stardate.
+.qq
+Condition -- as follows:
+.in +4
+.nf
+RED -- in battle
+YELLOW -- low on energy
+GREEN -- normal state
+DOCKED -- docked at starbase
+CLOAKED -- the cloaking device is activated
+.fi
+.in -4
+.qq
+Position -- Your current quadrant and sector.
+.qq
+Warp Factor -- The speed you will move at
+when you move under warp power
+(with the
+.ul
+move
+command).
+.qq
+Total Energy -- Your energy reserves.
+If they drop to zero,
+you die.
+Energy regenerates,
+but the higher the skill of the game,
+the slower it regenerates.
+.qq
+Torpedoes -- How many photon torpedoes you have left.
+.qq
+Shields -- Whether your shields are up or down,
+and how effective they are if up
+(what percentage of a hit they will absorb).
+.qq
+Klingons Left -- Guess.
+.qq
+Time Left -- How long the Federation can hold out
+if you sit on your fat ass and do nothing.
+If you kill Klingons quickly,
+this number goes up,
+otherwise,
+it goes down.
+If it hits zero,
+the Federation is conquered.
+.qq
+Life Support -- If "active", everything is fine.
+If "damaged", your reserves tell you
+how long you have
+to repair your life support
+or get to a starbase
+before you starve, suffocate,
+or something equally unpleasant.
+.qq
+Current Crew -- The number of crew members
+left.
+This figures does not include officers.
+.qq
+Brig Space -- The space left in your brig
+for Klingon captives.
+.qq
+Klingon Power -- The number of units
+needed to kill a Klingon.
+Remember, as Klingons fire at you
+they use up their own energy,
+so you probably need somewhat less
+than this.
+.qq
+Skill, Length -- The skill and length
+of the game you are playing.
+.in -8
+.pp
+Status information is absolutely free.
+.bl "Long Range Scan"
+Mnemonic: lrscan
+Shortest Abbreviation: l
+Consumes: nothing
+.FF
+.pp
+Long range scan gives you information about the
+eight quadrants
+that surround the quadrant
+you're in.
+A sample long range scan follows:
+.sp
+.ev 1
+.in e
+.IQ left-margin
+variable to the current position of
+point.  This is an easy way to say, "Make the left margin begin here,"
+without having to count the number of spaces over it actually is.
+.dc "lisp-mode" "Not Bound"
+This turns on Lisp mode.  Lisp mode is one of four mutually exclusive major
+modes: Fundamental, Text, C, and Lisp.  In Lisp mode, the characters Tab
+and ) are treated specially, similar to the way they are treated in C mode.
+Also, Auto Indent mode is affected, and handled specially.
+.dc "list-buffers" "C-X C-B"
+This types out a list containing various information about each buffer.
+Right now that list looks like this:
+.DS
+.ta \w'NO111'u +\w'Lines1'u +\w'Scratch111'u +\w'*1'u +\w'commands.doc111'u
+\ (* means the buffer needs saving)
+\ NO	Lines	Type		Name	File
+\ --	-----	----		----	----
+\ 1	1	File		Main	[No file]
+\ 2	1	Scratch	*	Minibuf	[No file]
+\ 3	519	File	*	commands.doc	commands.doc
+.DE
+The first column lists the buffer's number.  When \s-2JOVE\s0 prompts for a
+buffer name you can either type in the full name, or you can simply
+type the buffer's number.  The second column is the number of lines in
+the buffer.  The third says what type of buffer.  There are four
+types: "File", "Scratch", "Process", "I-Process".  "File" is simply a
+buffer that holds a file; "Scratch" is for buffers that \s-2JOVE\s0 uses
+internally; "Process" is one that holds the output from a UNIX
+command; "I-Process" is one that has an interactive process attached to
+it.  The next column contains the name of the buffer.  And the last
+column is the name of the file that's attached to the buffer.  In this
+case, both Minibuf and commands.doc have been changed but not yet
+saved.  In fact Minibuf won't be saved since it's an internal \s-2JOVE\s0
+buffer that I don't even care about.
+.dc "list-processes" "Not Bound"
+This makes a list somewhat like "list-buffers" does, except its
+list consists of the current interactive processes.  Right now the list
+looks like this:
+.DS
+.ta \w'shell-111111111111'u +\w'Running1111111111'u
+\ Buffer	Status	Command name
+\ ------	------	------- ----
+\ shell-1	Running	i-shell
+\ fgrep 	Done	fgrep -n Buffer *.c
+.DE
+The first column has the name of the buffer to which the process is
+attached.  The second has the status of the process; if a process has
+exited normally the status is "Done" as in fgrep; if the process
+exited with an error the status is "Exit N" where N is the value of
+the exit code; if the process was killed by some signal the status is
+the name of the signal that was used; otherwise the process is
+running.  The last column is the name of the command that is being run.
+.dc "mailbox" "(variable)"
+Set this to the full pathname of your mailbox.  \s-2JOVE\s0 will look here to
+decide whether or not you have any unread mail.  This defaults to
+/usr/spool/mail/$USER, where $USER is set to your login name.
+.dc "mail-check-frequency" "(variable)"
+This is how often (in seconds) \s-2JOVE\s0 should check your mailbox for
+incoming mail.  See also the
+.IQ mailbox
+and
+.IQ disable-biff
+variables.
+.dc "make-backup-files" "(variable)"
+If this variable is set, then whenever \s-2JOVE\s0 writes out a file, it will
+move the previous version of the file (if there was one) to "#filename".
+This is often convenient if you save a file by accident.  The default
+value of this variable is "off".
+.IQ Note:
+this is an optional part of
+\s-2JOVE\s0, and your guru may not have it enabled, so it may not work.
+.dc "make-buffer-unmodified" "ESC ~"
+This makes \s-2JOVE\s0 think the selected buffer hasn't been changed even if
+it has.  Use this when you accidentally change the buffer but don't
+want it considered changed.  Watch the mode line to see the * disappear
+when you use this command.  
+.dc "make-macro-interactive" "Not Bound"
+This command is meaningful only while you are defining a keyboard macro.
+Ordinarily, when a command in a macro definition requires a trailing
+text argument (file name, search string, etc.), the argument you
+supply becomes part of the macro definition.  If you want to be able
+to supply a different argument each time the macro is used, then while
+you are defining it, you should give the make-macro-interactive
+command just before typing the argument which will be used during the
+definition process.  Note: you must bind this command to a key in
+order to use it; you can't say ESC X make-macro-interactive.
+.dc "mark-threshold" "(variable)"
+This variable contains the number of lines point may move by before
+the mark is set.  If, in a search or something, point moves by more
+than this many lines, the mark is set so that you may return easily.
+The default value of this variable is 22 (one screenful, on most
+terminals).
+.dc "marks-should-float" "(variable)"
+When this variable is "off", the position of a mark is remembered as a line
+number within the buffer and a character number within the line.  If you add
+or delete text before the mark, it will no longer point to the text you
+marked originally because that text is no longer at the same line and
+character number.  When this variable is "on", the position of a mark is
+adjusted to compensate for each insertion and deletion.  This makes marks
+much more sensible to use, at the cost of slowing down insertion and
+deletion somewhat.  The default value is "on".
+.dc "match-regular-expressions" "(variable)"
+When set, \s-2JOVE\s0 will match regular expressions in search patterns.
+This makes special the characters ., *, [, ], ^, and $, and the two-character
+sequences \e<, \e>, \e\|{, \e\|} and \e\||.
+See the
+.IQ ed(1)
+manual page, the tutorial "Advanced Editing in 
+.UX
+", and the section above "Searching with Regular Expressions"
+for more information.
+.dc "meta-key" "(variable)"
+You should set this variable to "on" if your terminal has a real Meta
+key.
+If your terminal has such a key, then a key sequence like ESC Y can
+be entered by holding down Meta and typing Y.
+.dc "mode-line" "(variable)"
+The format of the mode line can be determined by setting this variable.
+The items in the line are specified using a printf(3) format, with the
+special things being marked as "%x".  Digits may be used between the
+'%' and the 'x' to mean repeat that many times.
+\&'x' may be:
+.DS I
+.ta .5i 1i 1.5i
+	C	check for new mail, and displays "[New mail]" if there
+		is any (see also the mail-check-interval and disable-biff
+		variables)
+	F	the current file name, with leading path stripped
+	M	the current list of major and minor modes
+	b	the current buffer name
+	c	the fill character (-)
+	d	the current directory
+	e	end of string--this must be the last item in the string
+	f	the current file name
+	l	the current load average (updated automatically)
+	m	the buffer-modified symbol (*)
+	n	the current buffer number
+	s	space, but only if previous character is not a space
+	t	the current time (updated automatically)
+	[ ]	the square brackets printed when in a recursive edit
+	( )	items enclosed in %( ... %) will only be printed on
+		the bottom mode line, rather than copied when the
+		window is split
+.DE
+In addition, any other character is simply copied into the mode line.
+Characters may be escaped with a backslash.  To get a feel for all
+this, try typing "ESC X print mode-line" and compare the result with
+your current mode line.
+.dc "mode-line-should-standout" "(variable)"
+If set, the mode line will be printed in reverse video, if your
+terminal supports it.  The default for this variable is "off".
+.dc "name-keyboard-macro" "Not Bound"
+This copies the keyboard macro and gives it a name freeing up the
+keyboard macro so you can define some more.  Keyboard macros with
+their own names can be bound to keys just like built in commands
+can.  See the
+.IQ read-macros-file-file
+and
+.IQ write-macros-to-file
+commands.
+.dc "newline" "Return"
+This divides the current line at point moving all the text to the
+right of point down onto the newly created line.  Point moves down to
+the beginning of the new line.
+.dc "newline-and-backup" "C-O"
+This divides the current line at point moving all the text to the
+right of point down onto the newly created line.  The difference
+between this and "newline" is that point does not move down to the
+beginning of the new line.
+.dc +12
+Long range scan for quadrant 0,3
+.sp
+.ie t \{\
+.TS
+l1 c1 ce1 c1 ce1 c1 ce1 c0
+l1 l s s s s s s s0
+l1 c1 ce1 c1 ce1 c1 ce1 c0
+l1 l s s s s s s s0.
+		2		3		4
+	_
+	!	*	!	*	!	*	!
+	_
+.T&
+l1 c1 re1 c1 re1 c1 re1 c0
+l1 l s s s s s s s0
+l1 c1 re1 c1 re1 c1 re1 c0
+l1 l s s s s s s s0.
+0	!	108	!	6	!	19	!
+	_
+1	!	9	!	///	!	8	!
+	_
+.TE
+.\}
+.el \{\
+.nf
+     2     3     4
+  -------------------
+  !  *  !  *  !  *  !
+  -------------------
+0 ! 108 !   6 !  19 !
+  -------------------
+1 !   9 ! /// !   8 !
+  -------------------
+.fi
+.\}
+.ev
+.pp
+The three digit numbers
+tell the number of objects
+in the quadrants.
+The units digit tells the number of stars,
+the tens digit the number of starbases,
+and the hundreds digit is the number of Klingons.
+"*" indicates the negative energy barrier
+at the edge of the galaxy,
+which you cannot enter.
+"///" means that that is a supernova quadrant
+and must not be entered.
+.bl "Damage Report"
+Mnemonic: damages
+Shortest Abbreviation: da
+Consumes: nothing
+.FF
+.pp
+A damage report tells you what devices are damaged
+and how long it will take to repair them.
+Repairs proceed faster
+when you are docked
+at a starbase.
+.bl "Set Warp Factor"
+Mnemonic: warp
+Shortest Abbreviation: w
+Full Command: warp factor
+Consumes: nothing
+.FF
+.pp
+The warp factor tells the speed of your starship
+when you move under warp power
+(with the
+.ul
+move
+command).
+The higher the warp factor,
+the faster you go,
+and the more energy you use.
+.pp
+The minimum warp factor is 1.0
+and the maximum is 10.0.
+At speeds above warp 6
+there is danger of the warp engines
+being damaged.
+The probability of this
+increases at higher warp speeds.
+Above warp 9.0 there is a chance of entering
+a time warp.
+.bl "Move Under Warp Power"
+Mnemonic: move
+Shortest Abbreviation: m
+Full Command: move course distance
+Consumes: time and energy
+.FF
+.pp
+This is the usual way of moving.
+The course is in degrees and the distance is in quadrants.
+To move one sector specify a distance of 0.1.
+.pp
+Time is consumed proportionately to
+the inverse of the warp factor squared,
+and directly to the distance.
+Energy is consumed as the warp factor cubed,
+and directly to the distance.
+If you move with your shields up
+it doubles the amount of energy consumed.
+.pp
+When you move in a quadrant containing Klingons,
+they get a chance to attack you.
+.pp
+The computer detects navigation errors.
+If the computer is out,
+you run the risk of running into things.
+.pp
+The course is determined by the
+Space Inertial Navigation System
+[SINS].
+As described in
+Star Fleet Technical Order TO:02:06:12,
+the SINS is calibrated,
+after which it becomes the base for navigation.
+If damaged,
+navigation becomes inaccurate.
+When it is fixed,
+Spock recalibrates it,
+however,
+it cannot be calibrated extremely accurately
+until you dock at starbase.
+.bl "Move Under Impulse Power"
+Mnemonic: impulse
+Shortest Abbreviation: i
+Full Command: impulse course distance
+Consumes: time and energy
+.FF
+.pp
+The impulse engines give you a chance to maneuver
+when your warp engines are damaged;
+however, they are incredibly slow
+(0.095 quadrants/stardate).
+They require 20 units of energy to engage,
+and ten units per sector to move.
+.pp
+The same comments about the computer and the SINS
+apply as above.
+.pp
+There is no penalty to move under impulse power
+with shields up.
+.bl "Deflector Shields"
+Mnemonic: shields
+Shortest Abbreviation: sh
+Full Command: shields up/down
+Consumes: energy
+.FF
+.pp
+Shields protect you from Klingon attack
+and nearby novas.
+As they protect you,
+they weaken.
+A shield which is 78% effective
+will absorb 78% of a hit
+and let 22% in to hurt you.
+.pp
+The Klingons have a chance to attack you
+every time you raise or lower shields.
+Shields do not rise and lower
+instantaneously,
+so the hit you receive
+will be computed with the shields
+at an intermediate effectiveness.
+.pp
+It takes energy to raise shields,
+but not to drop them.
+.bl "Cloaking Device"
+Mnemonic: cloak
+Shortest Abbreviation: cl
+Full Command: cloak up/down
+Consumes: energy
+.FF
+.pp
+When you are cloaked,
+Klingons cannot see you,
+and hence they do not fire at you.
+They are useful for entering
+a quadrant
+and selecting a good position,
+however,
+weapons cannot be fired through
+the cloak
+due to the huge energy drain
+that it requires.
+.pp
+The cloak up command
+only starts the cloaking process;
+Klingons will continue
+to fire at you
+until you do something
+which consumes time.
+.bl "Fire Phasers"
+Mnemonic: phasers
+Shortest Abbreviation: p
+Full Commands: phasers automatic amount
+	phasers manual amt1 course1 spread1 ...
+Consumes: energy
+.FF
+.pp
+Phasers are energy weapons;
+the energy comes from your ship's reserves
+("total energy" on a srscan).
+It takes about 250 units of hits
+to kill a Klingon.
+Hits are cumulative as long as you stay
+in the quadrant.
+.pp
+Phasers become less effective
+the further from a Klingon you are.
+Adjacent Klingons receive about
+90% of what you fire,
+at five sectors about 60%,
+and at ten sectors about 35%.
+They have no effect outside of the quadrant.
+.pp
+Phasers cannot be fired while shields are up;
+to do so would fry you.
+They have no effect on starbases or stars.
+.pp
+In automatic mode
+the computer decides how to divide up the energy
+among the Klingons present;
+in manual mode you do that yourself.
+.pp
+In manual mode firing
+you specify a direction,
+amount (number of units to fire)
+and spread (0 -> 1.0)
+for each of the six phaser banks.
+A zero amount
+terminates the manual input.
+.bl "Fire Photon Torpedoes"
+Mnemonic: torpedo
+Shortest Abbreviation: t
+Full Command: torpedo course [yes/no] [burst angle]
+Consumes: torpedoes
+.FF
+.pp
+Torpedoes are projectile weapons -- there are no partial hits.
+You either hit your target or you don't.
+A hit on a Klingon destroys him.
+A hit on a starbase destroys that starbase
+(woops!).
+Hitting a star usually causes it to go nova,
+and occasionally supernova.
+.pp
+Photon torpedoes cannot be aimed precisely.
+They can be fired with shields up,
+but they get even more random
+as they pass through the shields.
+.pp
+Torpedoes may be fired in bursts of three.
+If this is desired,
+the burst angle is the angle
+between the three shots,
+which may vary from one to fifteen.
+The word "no"
+says that a burst is not wanted;
+the word "yes"
+(which may be omitted
+if stated on the same line as the course)
+says that a burst is wanted.
+.pp
+Photon torpedoes
+have no effect
+outside the quadrant.
+.bl "Onboard Computer Request"
+Mnemonic: computer
+Shortest Abbreviation: c
+Full Command: computer request; request;...
+Consumes: nothing
+.FF
+.pp
+The computer command gives you access to the facilities
+of the onboard computer,
+which allows you to do all sorts of fascinating stuff.
+Computer requests are:
+.in +8
+.qq
+score -- Shows your current score.
+.qq
+course quad/sect -- Computes the course and distance from wherever
+you are to the given location.
+If you type "course /x,y"
+you will be given the course
+to sector x,y in the current quadrant.
+.qq
+move quad/sect -- Identical to the course
+request,
+except that the move is executed.
+.qq
+chart -- prints a chart of the known galaxy,
+i.e.,
+everything that you have seen with a long range scan.
+The format is the same as on a long range scan,
+except that "..." means
+that you don't yet know what is there,
+and ".1." means that you know that a starbase
+exists, but you don't know anything else.
+"$$$" mans the quadrant
+that you are currently in.
+.qq
+trajectory -- prints the course and distance
+to all the Klingons in the quadrant.
+.qq
+warpcost dist warp_factor -- computes the cost in time and energy
+to move `dist' quadrants at warp `warp_factor'.
+.qq
+impcost dist -- same as warpcost for impulse engines.
+.qq
+pheff range -- tells how effective your phasers are
+at a given range.
+.qq
+distresslist -- gives a list of currently distressed
+starbases
+and starsystems.
+.in -8
+.pp
+More than one request may be stated
+on a line
+by separating them
+with semicolons.
+.bl "Dock at Starbase"
+Mnemonic: dock
+Shortest Abbreviation: do
+Consumes: nothing
+.FF
+.pp
+You may dock at a starbase
+when you are in one of the eight
+adjacent sectors.
+.pp
+When you dock you are resupplied
+with energy, photon torpedoes, and life support reserves.
+Repairs are also done faster at starbase.
+Any prisoners you ha"newline-and-indent" "LineFeed"
+This behaves the same was as Return does when in Auto Indent mode.
+This makes Auto Indent mode obsolete but it remains in the name of
+backward compatibility.
+.dc "next-error" "C-X C-N"
+This moves to the next error in the list of errors that were parsed
+with
+.IQ parse-errors
+or
+.IQ parse-special-errors.
+In one window the list
+of errors is shown with the current one always at the top.  In another
+window is the file that contains the error.  Point is positioned in
+this window on the line where the error occurred.
+.dc "next-line" "C-N"
+This moves down to the next line.
+.dc "next-page" "C-V"
+This displays the next page of the buffer by taking the bottom line of
+the window and redrawing the window with it at the top.  If there isn't
+another page in the buffer \s-2JOVE\s0 rings the bell.  If a numeric argument
+is supplied the screen is scrolled up that many lines; if the argument
+is negative the screen is scrolled down.
+.dc "next-window" "C-X N"
+This moves into the next window.  Windows live in a circular list so
+when you're in the bottom window and you try to move to the next one
+you are moved to the top window.  It is an error to use this command
+with only one window.
+.dc "number-lines-in-window" "Not Bound"
+This displays the line numbers for each line in the buffer being
+displayed.  The number isn't actually part of the text; it's just
+printed before the actual buffer line is.  To turn this off you run
+the command again; it toggles.
+.dc "over-write-mode" "Not Bound"
+This turns Over Write mode on (or off if it's currently on) in the selected
+buffer.  When on, this mode changes the way the self-inserting characters
+work.  Instead of inserting themselves and pushing the rest of the line over
+to the right, they replace or over-write the existing character.  Also,
+Rubout replaces the character before point with a space instead of deleting
+it.  When Over Write mode is on "OvrWt" is displayed on the mode line.
+.dc "page-next-window" "ESC C-V"
+This displays the next page in the next window.  This is exactly the
+same as "C-X N C-V C-X P".
+.dc "paren-flash-delay" "(variable)"
+How long, in tenths of seconds, \s-2JOVE\s0 should pause on a matching
+parenthesis in
+.IQ Show Match
+mode.  The default is 5.
+.dc "parse-errors" "Not Bound"
+This takes the list of C compilation errors (or output from another program
+in the same format) in the current buffer and parses them for use with the
+.IQ next-error
+and
+.IQ previous-error
+and
+.IQ current-error
+commands.
+This is a very useful tool and helps with compiling C programs and when used
+in conjunction with the "grep" UNIX command very helpful in making changes
+to a bunch of files.  This command understands errors produced by cc, cpp,
+and lint; plus any other program with the same format (e.g., "grep -n").
+\s-2JOVE\s0 visits each file that has an error and remembers each line that
+contains an error.  It doesn't matter if later you insert or delete
+some lines in the buffers containing errors; \s-2JOVE\s0 remembers where
+they are regardless.
+.IQ next-error
+is automatically executed after one
+of the parse commands, so you end up at the first error.
+.dc "parse-special-errors" "Not Bound"
+This parses errors in an unknown format.  Error parsing works with
+regular expression search strings with \\('s around the the file name
+and the line number.  So, you can use
+.IQ parse-special-errors
+to parse
+lines that are in a slightly different format by typing in your own
+search string.  If you don't know how to use regular expressions you
+can't use this command.
+.dc "parse-spelling-errors-in-buffer" "Not Bound"
+This parses a list of words in the current buffer and looks them up in
+another buffer that you specify.  This will probably go away soon.
+.dc "pause-jove" "ESC S"
+This stops \s-2JOVE\s0 and returns control to the parent shell.  This
+only works for users using the C-shell, and on systems that have the
+job control facility.  To return to \s-2JOVE\s0 you type "fg" to the C-shell.
+.dc "physical-tabstop" "(variable)"
+How many spaces your terminal prints when it prints a tab character.
+.dc "pop-mark" "Not Bound"
+This gets executed when you run
+.IQ set-mark
+with a numeric argument.
+\s-2JOVE\s0 remembers the last 16 marks and you use
+.IQ pop-mark
+to go
+backward through the ring of marks.  If you execute "
+.IQ pop-mark
+enough
+times you will eventually get back to where you started.
+.dc "popd" "Not Bound"
+This pops one entry off the directory stack.  Entries are pushed with
+the
+.IQ pushd
+command.  The names were stolen from the C-shell and the
+behavior is the same.
+.dc "previous-error" "C-X C-P"
+This is the same as
+.IQ next-error
+except it goes to the previous error.
+See
+.IQ next-error
+for documentation.
+.dc "previous-line" "C-P"
+This moves up to the previous line.
+.dc "previous-page" "ESC V"
+This displays the previous page of the current buffer by taking the top
+line and redrawing the window with it at the bottom.  If a numeric
+argument is supplied the screen is scrolled down that many lines; if
+the argument is negative the screen is scrolled up.
+.dc "previous-window" "C-X P and C-X O"
+This moves into the next window.  Windows live in a circular list so
+when you're in the top window and you try to move to the previous one
+you are moved to the bottom window.  It is an error to use this command
+with only one window.
+.dc "print" "Not Bound"
+This prints the value of a \s-2JOVE\s0 variable.
+.dc "print-message" "Not Bound"
+This command prompts for a message, and then prints it on the bottom
+line where \s-2JOVE\s0 messages are printed.
+.dc "process-bind-to-key" "Not Bound"
+This command is identical to bind-to-key, except that it only affects
+your bindings when you are in a buffer attached to a process.  When
+you enter the process buffer, any keys bound with this command will
+automatically take their new values.  When you switch to a non-process
+buffer, the old bindings for those keys will be restored.  For example,
+you might want to execute
+.DS I
+process-bind-to-key stop-process ^Z
+process-bind-to-key interrupt-process ^C
+.DE
+Then, when you start up an interactive process and switch into that
+buffer, C-Z will execute stop-process and C-C will execute interrupt-
+process.  When you switch back to a non-process buffer, C-Z will go
+back to executing scroll-up (or whatever you have it bound to).
+.dc "process-newline" "Return"
+This this only gets executed when in a buffer that is attached to an
+interactive-process.  \s-2JOVE\s0 does two different things depending on where
+you are when you hit Return.  When you're at the end of the I-Process
+buffer this does what Return normally does, except it also makes the
+line available to the process.  When point is positioned at some other
+position that line is copied to the end of the buffer (with the prompt
+stripped) and point is moved there with it, so you can then edit that
+line before sending it to the process.  This command
+.IQ must
+be bound
+to the key you usually use to enter shell commands (Return), or else
+you won't be able to enter any.
+.dc "process-prompt" (variable)
+What a prompt looks like from the i-shell and i-shell-command
+processes.  The default is "% ", the default C-shell prompt.  This is
+actually a regular expression search string.  So you can set it to be
+more than one thing at once using the \\| operator.  For instance, for
+LISP hackers, the prompt can be
+.DS
+"% \\|-> \\|<[0-9]>: ".
+.DE
+.dc "push-shell" "Not Bound"
+This spawns a child shell and relinquishes control to it.  This works
+on any version of UNIX, but this isn't as good as
+.IQ pause-jove
+because
+it takes time to start up the new shell and you get a brand new
+environment every time.  To return to \s-2JOVE\s0 you type "C-D".
+.dc "pushd" "Not Bound"
+This pushes a directory onto the directory stack and cd's into it.  It
+asks for the directory name but if you don't specify one it switches
+the top two entries no the stack.  It purposely behaves the same as
+C-shell's
+.IQ pushd.
+.dc "pwd" "Not Bound"
+This prints the working directory.
+.dc "quadruple-numeric-argument" "C-U"
+This multiplies the numeric argument by 4.  So, "C-U C-F" means
+forward 4 characters and "C-U C-U C-N" means down 16 lines.
+.dc "que.\"	@(#)password	6.1 (Berkeley) 5/14/86
+.\"
+.\" tbl mm ^ eqn ^ troff -ms
+.EH 'SMM:18-%''Password Security: A Case History'
+.OH 'Password Security: A Case History''SMM:18-%'
+.EQ
+delim $$
+.EN
+.\".RP
+....TM 78-1271-5 39199 39199-11
+.ND April 3, 1978
+.TL
+Password Security:
+A Case History
+.OK
+.\"Encryption
+.\"Computing
+.AU "MH 2C-524" 3878
+Robert Morris
+.AU "MH 2C-523" 2394
+Ken Thompson
+.AI
+.MH
+.AB
+This paper describes the history of the design of the
+password security scheme on a remotely accessed time-sharing
+system.
+The present design was the result of countering
+observed attempts to penetrate the system.
+The result is a compromise between extreme security and
+ease of use.
+.AE
+.CS 6 0 6 0 0 4
+.SH
+INTRODUCTION
+.PP
+Password security on the
+.UX
+time-sharing system [1] is provided by a
+collection of programs
+whose elaborate and strange design is the outgrowth of
+many years of experience with earlier versions.
+To help develop a secure system, we have had a continuing
+competition to devise new ways to
+attack the security of the system (the bad guy) and, at the same time, to
+devise new techniques to resist the new attacks (the good guy).
+This competition has been in the same vein as the
+competition of long standing between manufacturers of armor
+plate and those of armor-piercing shells.
+For this reason, the description that follows will
+trace the history of the password system rather than simply
+presenting the program in its current state.
+In this way, the reasons for the design will be made clearer,
+as the design cannot be understood without also
+understanding the potential attacks.
+.PP
+An underlying goal has been to provide password security
+at minimal inconvenience to the users of the system.
+For example, those who want to run a completely open
+system without passwords, or to have passwords only at the
+option of the individual users, are able to do so, while
+those who require all of their users to have passwords
+gain a high degree of security
+against penetration of the system by unauthorized
+users.
+.PP
+The password system must be able not only to prevent
+any access to the system by unauthorized users
+(i.e. prevent them from logging in at all),
+but it must also
+prevent users who are already logged in from doing
+things that they are not authorized to do.
+The so called ``super-user'' password, for example, is especially
+critical because the super-user has all sorts of
+permissions and has essentially unlimited access to
+all system resources.
+.PP
+Password security is of course only one component of
+overall system security, but it is an essential component.
+Experience has shown that attempts to penetrate
+remote-access systems have been astonishingly
+sophisticated.
+.PP
+Remote-access systems are peculiarly vulnerable to
+penetration by outsiders as there are threats at the
+remote terminal, along the communications link, as well
+as at the computer itself.
+Although the security of a password encryption algorithm
+is an interesting intellectual and mathematical problem,
+it is only one tiny facet of a very large problem.
+In practice, physical security of the computer, communications
+security of the communications link, and physical control
+of the computer itself loom as far more important issues.
+Perhaps most important of all is control over the actions
+of ex-employees, since they are not under any direct control
+and they may have intimate
+knowledge about the system, its resources, and
+methods of access.
+Good system security involves realistic
+evaluation of the risks not only of deliberate
+attacks but also of casual unauthorized access
+and accidental disclosure.
+.SH
+PROLOGUE
+.PP
+The UNIX system was first implemented with a password file that contained
+the actual passwords of all the users, and for that reason
+the password file had to
+be heavily protected against being either read or written.
+Although historically, this had been the technique used
+for remote-access systems,
+it was completely unsatisfactory for several reasons.
+.PP
+The technique is excessively vulnerable to lapses in
+security.
+Temporary loss of protection can occur when
+the password file is being edited or otherwise modified.
+There is no way to prevent the making of copies by
+privileged users.
+Experience with several earlier remote-access systems
+showed that such lapses occur with frightening frequency.
+Perhaps the most memorable such occasion occurred
+in the early 60's when
+a system administrator on the CTSS system at MIT
+was editing the
+password file and another system administrator was editing
+the daily message that is printed on everyone's terminal
+on login.
+Due to a software design error, the temporary editor files
+of the two users were interchanged and thus, for a time, the password
+file was printed on every terminal when it was logged in.
+.PP
+Once such a lapse in security has been discovered, everyone's
+password must be changed, usually simultaneously, at a considerable
+administrative cost.
+This is not a great matter, but
+far more serious is the high probability of such lapses
+going unnoticed by the system administrators.
+.PP
+Security against unauthorized disclosure of the passwords was,
+in the last analysis, impossible with this system because,
+for example, if the
+contents of the file system are put on to magnetic tape for
+backup, as they must be, then anyone who has physical
+access to the tape
+can read anything on it with no restriction.
+.PP
+Many programs must get information of various kinds
+about the users of the system, and these programs in general
+should have no special permission to read the password file.
+The information which should have been in the password file actually was
+distributed (or replicated) into a number of files, all of
+which had to be updated whenever a user was added to or
+dropped from the system.
+.SH
+THE FIRST SCHEME
+.PP
+The obvious solution is to arrange that the passwords not
+appear in the system at all, and it is not difficult to decide
+that this can be done by encrypting each user's password,
+putting only the encrypted form in the password file, and
+throwing away his original password (the one that
+he typed in).
+When the user later tries to log in to the system, the password
+that he types is encrypted and compared with the encrypted
+version in the password file.
+If the two match, his login attempt is accepted.
+Such a scheme was first described
+in [3, p.91ff.].
+It also seemed advisable to devise
+a system in which neither the password file nor the
+password program itself needed to be
+protected against being read by anyone.
+.PP
+All that was needed to implement these ideas
+was to find a means of encryption that was very difficult
+to invert, even when the encryption program
+is available.
+Most of the standard encryption methods used (in the past)
+for encryption of messages are rather easy to invert.
+A convenient and rather good encryption program happened
+to exist on the system at the time; it simulated the
+M-209 cipher machine [4]
+used by the U.S. Army during World War II.
+It turned out that the M-209 program was usable, but with
+a given key, the ciphers produced by this program are
+trivial to invert.
+It is a much more difficult matter to find out the key
+given the cleartext input and the enciphered output of the program.
+Therefore,
+the password was used not as the text to be encrypted but as the
+key, and a constant was encrypted using this key.
+The encrypted result was entered into the password file.
+.SH
+ATTACKS ON THE FIRST APPROACH
+.PP
+Suppose that the bad guy has available
+the text of the password encryption program and
+the complete password file.
+Suppose also that he has substantial computing
+capacity at his disposal.
+.PP
+One obvious approach to penetrating the password
+mechanism is to attempt to find a general method of inverting
+the encryption algorithm.
+Very possibly this can be done, but few
+successful results
+have come to light, despite substantial efforts extending
+over a period of more than five years.
+The results have not proved to be very useful
+in penetrating systems.
+.PP
+Another approach to penetration is simply to keep trying
+potential
+passwords until one succeeds; this is a general cryptanalytic
+approach called
+.I
+key search.
+.R
+Human beingsry-replace-string" "ESC Q"
+This replaces the occurrences of a specified string with a specified
+replacement string.  When an occurrence is found point is moved to it
+and then \s-2JOVE\s0 asks what to do.  The options are:
+.DS I
+.ta \w'Rubout111'u
+Space	to replace this occurrence and go on to the next one.
+Period	to replace this occurrence and then stop.
+Rubout	to skip this occurrence and go on to the next one.
+C-R	to enter a recursive edit.  This lets you temporarily
+	suspend the replace, do some editing, and then return
+	to continue where you left off.  To continue with the
+	Query Replace type "C-X C-C" as if you were trying to
+	exit \s-2JOVE\s0.  Normally you would but when you are in a
+	recursive edit all it does is exit that recursive
+	editing level.
+C-W	to delete the matched string and then enter a recursive
+	edit.
+U	to undo the last replacement.
+P or !	to go ahead and replace the remaining occurrences without
+	asking.
+Return	to stop the Query Replace.
+.DE
+The search for occurrences starts at point and goes to the end of the
+buffer, so to replace in the entire buffer you must first go to the
+beginning.
+.dc "quit-process" "Not Bound"
+This is the same as typing "C-\\" (the Quit character) to a normal UNIX
+process, except it sends it to the current process in \s-2JOVE\s0.  This is
+only for versions of \s-2JOVE\s0 that have the interactive processes feature.
+This only works when you are inside a buffer that's attached to a
+process.
+.dc "quoted-insert" "C-Q"
+This lets you insert characters that normally would be executed as
+other \s-2JOVE\s0 commands.  For example, to insert "C-F" you type "C-Q C-F".
+.dc "read-word-abbrev-file" "Not Bound"
+This reads a specified file that contains a bunch of abbreviation
+definitions, and makes those abbreviations available.  If the selected
+buffer is not already in Word Abbrev mode this command puts it in
+that mode.
+.dc "read-macros-from-file" "Not Bound"
+This reads the specified file that contains a bunch of macro
+definitions, and defines all the macros that were currently defined
+when the file was created.  See
+.IQ write-macros-to-file
+to see how to
+save macros.
+.dc "redraw-display" "C-L"
+This centers the line containing point in the window.  If that line is
+already in the middle the window is first cleared and then redrawn.
+If a numeric argument is supplied, the line is positioned at that
+offset from the top of the window.  For example, "ESC 0 C-L" positions
+the line containing point at the top of the window.
+.dc "recursive-edit" "Not Bound"
+This enters a recursive editing level.  This isn't really very
+useful.  I don't know why it's available for public use.  I think I'll
+delete it some day.
+.dc "rename-buffer" "Not Bound"
+This lets you rename the current buffer.
+.dc "replace-in-region" "Not Bound"
+This is the same as
+.IQ replace-string
+except that it is restricted
+to occurrences between Point and Mark.
+.dc "replace-string" "ESC R"
+This replaces all occurrences of a specified string with a specified
+replacement string.  This is just like
+.IQ query-replace-string
+except
+it replaces without asking.
+.dc "right-margin" "(variable)"
+Where the right margin is for
+.IQ "Auto Fill"
+mode and the
+.IQ justify-paragraph
+and
+.IQ justify-region
+commands.  The default is 78.
+.dc "right-margin-here" "Not Bound"
+This sets the
+.IQ right-margin
+variable to the current position of
+point.  This is an easy way to say, "Make the right margin begin here,"
+without having to count the number of spaces over it actually is.
+.dc "save-file" "C-X C-S"
+This saves the current buffer to the associated file.  This makes your
+changes permanent so you should be sure you really want to.  If the
+buffer has not been modified
+.IQ save-file
+refuses to do the save.  If
+you really do want to write the file you can use "C-X C-W" which
+executes
+.IQ write-file.
+.dc "scroll-down" "ESC Z"
+This scrolls the screen one line down.  If the line containing point
+moves past the bottom of the window point is moved up to the center of
+the window.  If a numeric argument is supplied that many lines are
+scrolled; if the argument is negative the screen is scrolled up
+instead.
+.dc "scroll-step" "(variable)"
+How many lines should be scrolled if the
+.IQ previous-line
+or
+.IQ next-line
+commands move you off the top or bottom of the screen.  You
+may wish to decrease this variable if you are on a slow terminal.
+.dc "scroll-up" "C-Z"
+This scrolls the screen one line up.  If the line containing point
+moves past the top of the window point is moved down to the center of
+the window.  If a numeric argument is supplied that many lines are
+scrolled; if the argument is negative the screen is scrolled down
+instead.
+.dc "search-exit-char" "(variable)"
+Set this to the character you want to use to exit incremental search.
+The default is Newline, which makes i-search compatible with normal
+string search.
+.dc "search-forward" "C-S"
+This searches forward for a specified search string and positions
+point at the end of the string if it's found.  If the string is not
+found point remains unchanged.  This searches from point to the end of
+the buffer, so any matches before point will be missed.
+.dc "search-reverse" "C-R"
+This searches backward for a specified search string and positions
+point at the beginning if the string if it's found.  If the string is
+not found point remains unchanged.  This searches from point to the
+beginning of the buffer, so any matches after point will be missed.
+.dc "select-buffer" "C-X B"
+This selects a new or already existing buffer making it the current
+one.  You can type either the buffer name or number.  If you type in
+the name you need only type the name until it is unambiguous, at which
+point typing Escape or Space will complete it for you.  If you want to
+create a new buffer you can type Return instead of Space, and a new
+empty buffer will be created.
+.dc "self-insert" "Most Printing Characters"
+This inserts the character that invoked it into the buffer at point.
+Initially all but a few of the printing characters are bound to
+.IQ self-insert.
+.dc "send-typeout-to-buffer" "(variable)"
+When this is set \s-2JOVE\s0 will send output that normally overwrites the
+screen (temporarily) to a buffer instead.  This affects commands like
+.IQ list-buffers,
+.IQ list-processes,
+and other commands that use command
+completion.  The default value is "off".
+.dc "set" "Not Bound"
+This gives a specified variable a new value.  Occasionally you'll see
+lines like "set this variable to that value to do this".  Well, you
+use the
+.IQ set
+command to do that.
+.dc "set-mark" "C-@"
+This sets the mark at the current position in the buffer.  It prints
+the message "Point pushed" on the message line.  It says that instead
+of "Mark set" because when you set the mark the previous mark is still
+remembered on a ring of 16 marks.  So "Point pushed" means point is
+pushed onto the ring of marks and becomes the value of "the mark".
+To go through the ring of marks you type "C-U C-@", or execute the
+.IQ pop-mark
+command.  If you type this enough times you will get back
+to where you started.
+.dc "shell" "(variable)"
+The shell to be used with all the shell commands command.  If your SHELL
+environment variable is set, it is used as the value of
+.IQ shell;
+otherwise "/bin/csh" is the default.
+.dc "shell-command" "C-X !"
+This runs a UNIX command and places the output from that command in a
+buffer.  \s-2JOVE\s0 creates a buffer that matches the name of the command
+you specify and then attaches that buffer to a window.  So, when you
+have only one window running this command will cause \s-2JOVE\s0 to split the
+window and attach the new buffer to that window.  Otherwise, \s-2JOVE\s0
+finds the most convenient of the available windows and uses that one
+instead.  If the buffer already exists it is first emptied, except that if
+it's holding a file, not some output from a previous command, \s-2JOVE\s0
+prints an error message and refuses to execute the command.  If you
+really want to execute the command you should delete that buffer
+(saving it first, if you like) or use
+.IQ shell-command-to-buffer,
+and
+try again.
+.dc "shell-command-to-buffer" "Not Bound"
+This is just like
+.IQ shell-command
+except it lets you spe being what they are, there is a strong tendency
+for people to choose relatively short and simple passwords that
+they can remember.
+Given free choice, most people will choose their passwords
+from a restricted character set (e.g. all lower-case letters),
+and will often choose words or names.
+This human habit makes the key search job a great deal easier.
+.PP
+The critical factor involved in key search is the amount of
+time needed to encrypt a potential password and to check the result
+against an entry in the password file.
+The running time to encrypt one trial password and check
+the result turned out to be approximately 1.25 milliseconds on
+a PDP-11/70 when the encryption algorithm was recoded for
+maximum speed.
+It is takes essentially no more time to test the encrypted
+trial password against all the passwords in
+an entire password file, or for that matter, against
+any collection of encrypted passwords, perhaps collected
+from many installations.
+.PP
+If we want to check all passwords of length
+.I
+n
+.R
+that consist entirely of lower-case letters, the number
+of such passwords is $26 sup n$.
+If we suppose that the password consists of
+printable characters only, then the number of possible passwords
+is somewhat less than $95 sup n$.
+(The standard system ``character erase'' and ``line kill''
+characters are, for example, not prime
+candidates.)
+We can immediately estimate the running time of a program that
+will test every password of a given length with all of its
+characters chosen from some set of characters.
+The following table gives estimates of the running time
+required on a PDP-11/70
+to test all possible character strings of length $n$
+chosen from various sets of characters: namely, all lower-case
+letters, all lower-case letters plus digits,
+all alphanumeric characters, all 95 printable
+ASCII characters, and finally all 128 ASCII characters.
+.TS
+cccccc
+cccccc
+nnnnnn.
+	26 lower-case	36 lower-case letters	62 alphanumeric	95 printable	all 128 ASCII
+n	letters	and digits	characters	characters	characters
+.sp .5
+1	30 msec.	40 msec.	80 msec.	120 msec.	160 msec.
+2	800 msec.	2 sec.	5 sec.	11 sec.	20 sec.
+3	22 sec.	58 sec.	5 min.	17 min.	43 min.
+4	10 min.	35 min.	5 hrs.	28 hrs.	93 hrs.
+5	4 hrs.	21 hrs.	318 hrs.
+6	107 hrs.
+.TE
+.LP
+One has to conclude that it is no great matter for someone with
+access to a PDP-11 to test all lower-case alphabetic strings up
+to length five
+and, given access to the machine for, say, several weekends, to test
+all such strings up to six characters in length.
+By using such a program against a collection of actual encrypted
+passwords, a substantial fraction of all the passwords will be
+found.
+.PP
+Another profitable approach for the bad guy is to use the word
+list from a dictionary or to use a list of names.
+For example, a large commercial dictionary contains typicallly about
+250,000 words; these words can be checked in about five minutes.
+Again, a noticeable fraction of any collection of passwords
+will be found.
+Improvements and extensions will be (and have been) found by
+a determined bad guy.
+Some ``good'' things to try are:
+.IP -
+The dictionary with the words spelled backwards.
+.IP -
+A list of first names (best obtained from some mailing list).
+Last names, street names, and city names also work well.
+.IP -
+The above with initial upper-case letters.
+.IP -
+All valid license plate numbers in your state.
+(This takes about five hours in New Jersey.)
+.IP -
+Room numbers, social security numbers, telephone numbers, and
+the like.
+.PP
+The authors have conducted experiments to try to determine
+typical users' habits in the choice of passwords when no
+constraint is put on their choice.
+The results were disappointing, except to the bad guy.
+In a collection of 3,289 passwords
+gathered from many users over a long period of time;
+.IP
+15 were a single ASCII character;
+.IP
+72 were strings of two ASCII characters;
+.IP
+464 were strings of three ASCII characters;
+.IP
+477 were string of four alphamerics;
+.IP
+706 were five letters, all upper-case or all lower-case;
+.IP
+605 were six letters, all lower-case.
+.LP
+An additional 492 passwords appeared in various available
+dictionaries, name lists, and the like.
+A total of 2,831, or 86% of this sample of passwords fell into one of
+these classes.
+.PP
+There was, of course, considerable overlap between the
+dictionary results and the character string searches.
+The dictionary search alone, which required only five
+minutes to run, produced about one third of the passwords.
+.PP
+Users could be urged (or forced) to use either longer passwords
+or passwords chosen from a larger character set, or the system
+could itself choose passwords for the users.
+.SH
+AN ANECDOTE
+.PP
+An entertaining and instructive example is
+the attempt made at one installation to force users to use less predictable
+passwords.
+The users did not choose their own passwords; the system supplied
+them.
+The supplied passwords were eight characters long and 
+were taken from the character set consisting of
+lower-case letters and digits.
+They were generated by a pseudo-random number generator
+with only $2 sup 15$ starting values.
+The time required to search (again on a PDP-11/70) through
+all character strings of length 8 from a 36-character
+alphabet is 112 years.
+.PP
+Unfortunately, only $2 sup 15$ of them need be looked at,
+because that is the number of possible outputs of the random
+number generator.
+The bad guy did, in fact, generate and test each of these strings
+and found every one of the system-generated passwords using
+a total of only about one minute of machine time.
+.SH
+IMPROVEMENTS TO THE FIRST APPROACH
+.NH
+Slower Encryption
+.PP
+Obviously, the first algorithm used was far too fast.
+The announcement of the DES encryption algorithm [2]
+by the National Bureau of Standards
+was timely and fortunate.
+The DES is, by design, hard to invert, but equally valuable
+is the fact that it is extremely slow when implemented in
+software.
+The DES was implemented and used in the following way:
+The first eight characters of the user's password are
+used as a key for the DES; then the algorithm
+is used to encrypt a constant.
+Although this constant is zero at the moment, it is easily
+accessible and can be made installation-dependent.
+Then the DES algorithm is iterated 25 times and the
+resulting 64 bits are repacked to become a string of
+11 printable characters.
+.NH
+Less Predictable Passwords
+.PP
+The password entry program was modified so as to urge
+the user to use more obscure passwords.
+If the user enters an alphabetic password (all upper-case or
+all lower-case) shorter than six characters, or a
+password from a larger character set shorter than five
+characters, then the program asks him to enter a
+longer password.
+This further reduces the efficacy of key search.
+.PP
+These improvements make it exceedingly difficult to find
+any individual password.
+The user is warned of the risks and if he cooperates,
+he is very safe indeed.
+On the other hand, he is not prevented from using
+his spouse's name if he wants to.
+.NH
+Salted Passwords
+.PP
+The key search technique is still
+likely to turn up a few passwords when it is used
+on a large collection of passwords, and it seemed wise to make this
+task as difficult as possible.
+To this end, when a password is first entered, the password program
+obtains a 12-bit random number (by reading the real-time clock)
+and appends this to the password typed in by the user.
+The concatenated string is encrypted and both the
+12-bit random quantity (called the $salt$) and the 64-bit
+result of the encryption are entered into the password
+file.
+.PP
+When the user later logs in to the system, the 12-bit
+quantity is extracted from the password file and appended
+to the typed password.
+The encrypted result is required, as before, to be the same as the
+remaining 64 bits in the password file.
+This modification does not increase the task of finding
+any individual
+password,
+starting from scratch,
+but now the work of testing a given character string
+against a large collection of encrypted passwords has
+been multiplied by 4096 ($2 sup 12$).
+The reason for this is that there are 4096 encrypted
+versions of each password and one of them has been picked more
+or less atcify the
+buffer to use instead of \s-2JOVE\s0.
+.dc "shell-flags" "(variable)"
+This defines the flags that are passed to shell commands.  The default is
+"-c".  See the
+.IQ shell
+variable to change the default shell.
+.dc "show-match-mode" "Not Bound"
+This turns on Show Match mode (or off if it's currently on) in the
+selected buffer.  This changes "}" and ")" so that when they are typed
+the are inserted as usual, and then the cursor flashes back to the
+matching "{" or "(" (depending on what was typed) for about half a
+second, and then goes back to just after the "}" or ")" that invoked
+the command.  This is useful for typing in complicated expressions in
+a program.  You can change how long the cursor sits on the matching
+paren by setting the "paren-flash-delay" variable in tenths of a
+second.  If the matching "{" or "(" isn't visible nothing happens.
+.dc "shrink-window" "Not Bound"
+This makes the current window one line shorter, if possible.  Windows
+must be at least 2 lines high, one for the text and the other for the
+mode line.
+.dc "source" "Not Bound"
+This reads a bunch of \s-2JOVE\s0 commands from a file.  The format of the
+file is the same as that in your initialization file (your ".joverc")
+in your main directory.  There should be one command per line and it
+should be as though you typed "ESC X" while in \s-2JOVE\s0.  For example,
+here's part of my initialization file:
+.DS I
+bind-to-key i-search-reverse ^R
+bind-to-key i-search-forward ^S
+bind-to-key pause-jove ^[S
+.DE
+What they do is make "C-R" call the
+.IQ i-search-reverse
+command and
+"C-S" call
+.IQ i-search-forward
+and "ESC S" call
+.IQ pause-jove.
+.dc "spell-buffer" "Not Bound"
+This runs the current buffer through the UNIX
+.IQ spell
+program and places
+the output in buffer "Spell".  Then \s-2JOVE\s0 lets you edit the list of
+words, expecting you to delete the ones that you don't care about, i.e., the
+ones you know are spelled correctly.  Then the
+.IQ parse-spelling-errors-in-buffer
+command comes along and finds all the
+misspelled words and sets things up so the error commands work.
+.dc "split-current-window" "C-X 2"
+This splits the current window into two equal parts (providing the
+resulting windows would be big enough) and displays the selected
+buffer in both windows.  Use "C-X 1" to go back to 1 window mode.
+.dc "start-remembering" "C-X ("
+This starts remembering your key strokes in the Keyboard macro.  To
+stop remembering you type "C-X )".  Because of a bug in \s-2JOVE\s0 you can't
+stop remembering by typing "ESC X stop-remembering";
+.IQ stop-remembering
+must be bound to "C-X )" in order to make things work correctly.  To
+execute the remembered key strokes you type "C-X E" which runs the
+.IQ execute-keyboard-macro
+command.
+Sometimes you may want a macro to accept different input each time it runs.
+To see how to do this, see the
+.IQ make-macro-interactive
+command.
+.dc "stop-process" "Not Bound"
+This sends a stop signal (C-Z, for most people) to the current process.
+It only works if you have the interactive process feature, and you are
+in a buffer attached to a process.
+.dc "stop-remembering" "C-X )"
+This stop the definition of the keyboard macro.  Because of a bug in
+\s-2JOVE\s0, this must be bound to "C-X )".  Anything else will not work
+properly.
+.dc "string-length" "Not Bound"
+This prints the number of characters in the string that point sits in.
+Strings are surrounded by double quotes.  \s-2JOVE\s0 knows that "\\007" is
+considered a single character, namely "C-G", and also knows about
+other common ones, like "\\r" (Return) and "\\n" (LineFeed).  This is
+mostly useful only for C programmers.
+.dc "suspend-jove" "ESC S"
+This is a synonym for
+.IQ pause-jove.
+.dc "sync-frequency" "(variable)"
+The temporary files used by \s-2JOVE\s0 are forced out to disk every
+.IQ sync-frequency
+modifications.  The default is 50, which really makes
+good sense.  Unless your system is very unstable, you probably
+shouldn't fool with this.
+.dc "tag-file" "(variable)"
+This the name of the file in which \s-2JOVE\s0 should look up tag
+definitions.  The default value is "./tags".
+.dc "text-mode" "Not Bound"
+This sets the major mode to Text.  Currently the other modes are
+Fundamental, C and Lisp mode.
+.dc "transpose-characters" "C-T"
+This switches the character before point with the one after point, and
+then moves forward one.  This doesn't work at the beginning of the
+line, and at the end of the line it switches the two characters before
+point.  Since point is moved forward, so that the character that was
+before point is still before point, you can use "C-T" to drag a
+character down the length of a line.  This command pretty quickly
+becomes very useful.
+.dc "transpose-lines" "C-X C-T"
+This switches the current line with the one above it, and then moves
+down one so that the line that was above point is still above point.
+This, like
+.IQ transpose-characters,
+can be used to drag a line down a page.
+.dc "unbind-key" "Not Bound"
+Use this to unbind
+.IQ any
+key sequence.  You can use this to unbind even a
+prefix command, since this command does not use "key-map completion".  For
+example, "ESC X unbind-key ESC [" unbinds the sequence "ESC [".  This is
+useful for "turning off" something set in the system-wide ".joverc" file.
+.dc "update-time-frequency" "(variable)"
+How often the mode line is updated (and thus the time and load
+average, if you display them).  The default is 30 seconds.
+.dc "use-i/d-char" "(variable)"
+If your terminal has insert/delete character capability you can tell \s-2JOVE\s0
+not to use it by setting this to "off".  In my opinion it is only worth using
+insert/delete character at low baud rates.  WARNING: if you set this to
+"on" when your terminal doesn't have insert/delete character capability,
+you will get weird (perhaps fatal) results.
+.dc "version" "Not Bound"
+Displays the version number of this \s-2JOVE\s0.
+.dc "visible-bell" "(variable)"
+Use the terminal's visible bell instead of beeping.  This is set
+automatically if your terminal has the capability.
+.dc "visible-spaces-in-window" "Not Bound"
+This displays an underscore character instead of each space in the
+window and displays a greater-than followed by spaces for each tab
+in the window.  The actual text in the buffer is not changed; only
+the screen display is affected.  To turn this off you run the command
+again; it toggles.
+.dc "visit-file" "C-X C-V"
+This reads a specified file into the current buffer replacing the old
+text.  If the buffer needs saving \s-2JOVE\s0 will offer to save it for you.
+Sometimes you use this to start over, say if you make lots of changes
+and then change your mind.  If that's the case you don't want \s-2JOVE\s0 to
+save your buffer and you answer "NO" to the question.
+.dc "window-find" "C-X 4"
+This lets you select another buffer in another window three
+different ways.  This waits for another character which can be one of
+the following:
+.DS I
+.ta .5i 1i 1.5i
+T	Finds a tag in the other window.
+F	Finds a file in the other window.
+B	Selects a buffer in the other window.
+.DE
+This is just a convenient short hand for "C-X 2" (or "C-X O" if there are
+already two windows) followed by the appropriate sequence for invok

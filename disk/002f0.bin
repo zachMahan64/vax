@@ -1,0 +1,2055 @@
+atus\ evalhook\ t)\fP must have been done previously.
+A more detailed description of 
+.i evalhook
+and 
+.i funcallhook
+is given in Chapter 14.
+.Lf function "u_func"
+.Re
+the function binding of u_func if it is an symbol with a function binding
+otherwise u_func is returned.
+.Lf getdisc "'y_func"
+.Re
+the discipline of the machine coded function (either lambda, nlambda
+or macro).
+.Lf go "g_labexp"
+.Wh
+g_labexp is either a symbol or an expression.
+.Se
+If g_labexp is an expression, that expression is evaluated and 
+should
+result in a symbol.
+The locus of control moves to just following the symbol g_labexp in the
+current prog or do body.
+.No
+this is only valid in the context of a prog or do body.
+The interpreter and compiler will allow non-local 
+.i go 's 
+although the compiler won't allow a \fIgo\fP to leave a function body.
+The compiler will not allow g_labexp to be an expression.
+.Lf if "'g_a 'g_b"
+.Lx if "'g_a 'g_b 'g_c ..."
+.Lx if "'g_a \fBthen\fP  'g_b [...] [\fBelseif\fP 'g_c \fBthen\fP 'g_d ...] [\fBelse\fP '.\" Copyright (c) 1980 Regents of the University of California.
+.\" All rights reserved.  The Berkeley software License Agreement
+.\" specifies the terms and conditions for redistribution.
+.\"
+.\"	@(#)ch5.n	6.1 (Berkeley) 4/29/86
+.\"
+." $Header: ch5.n,v 1.3 83/07/23 12:40:05 layer Exp $
+.Lc Input/Output 5
+.pp
+The following functions are used to read from and write to external devices
+(e.g. files)
+and programs (through pipes).
+All I/O goes through the lisp data type called the port.
+A port may be open for either reading or writing, but usually not both
+simultaneously (see 
+.i fileopen
+).
+There are only a limited number of ports (20) and they will not be reclaimed
+unless they are 
+.i close d.
+All ports are reclaimed by a 
+.i resetio
+call,
+but this drastic step won't be necessary if the program closes
+what it uses.
+.pp
+If a port argument is not supplied to a function which requires one,
+or if a bad port argument (such as nil) is given,
+then 
+.Fr
+will use the default port according to this scheme:
+If input is being done then the default port is the value
+of the symbol
+.b piport 
+and if output is being done then the default port is the value 
+of the symbol
+.b poport .
+Furthermore,
+if the value of piport or poport is not a valid port,
+then the standard input or standard output will be used, respectively.
+.pp
+The standard input and standard output are usually the keyboard and
+terminal display unless your job is running in the background and its
+input or output is connected to a pipe.
+All output which goes to the standard output will also go to the 
+port
+.b ptport
+if it is a valid port.
+Output destined for the standard output will not reach 
+the standard output if the symbol 
+.b ^w
+is non nil (although it will still go to 
+.b ptport 
+if 
+.b ptport 
+is a valid port).
+.pp
+Some of the functions listed below reference files directly.
+.Fr
+has borrowed a convenient shorthand notation from
+.i /bin/csh ,
+concerning naming files.
+If a file name begins with ~ (tilde),
+and the symbol
+.b tilde-expansion
+
+is bound to something other than nil,
+then
+.Fr
+expands the file name.
+It takes the string of characters between the leading tilde, and
+the first slash as a user-name.
+Then, that initial segment of the filename is replaced by the home
+directory of the user.  The null username is taken to be the current
+user.
+.pp
+.Fr
+keeps a cache of user home directory information, to minimize
+searching the password file.
+Tilde-expansion is performed in the following functions:
+\fIcfasl, chdir, fasl, ffasl, fileopen, infile, load, outfile,
+probef, sys:access, sys:unlink\fP.
+.Lf cfasl "'st_file 'st_entry 'st_funcname ['st_disc ['st_library]]"
+.Re
+t
+.Se
+This is used to load in a foreign function (see \(sc8.4).
+The object file st_file is loaded into the lisp system.
+St_entry should be an entry point in the file just loaded.
+The function binding of the symbol s_funcname will be set to point
+to st_entry, so that when the lisp function s_funcname is called,
+st_entry will be run.
+st_disc is the discipline to be given to s_funcname. 
+st_disc defaults to "subroutine" if it is not given or if it is given as nil.
+If st_library is non-null, then after st_file is loaded, the libraries
+given in st_library will be searched to resolve external references.
+The form of st_library should be something like "-lm".
+The C library  (" -lc " ) is always searched so when loading in a C
+file you probably won't need to specify a library.
+For Fortran files, you should specify "-lF77" and if you are doing 
+any I/O, the library entry should be "-lI77 -lF77".
+For Pascal files "-lpc" is required.
+.No
+This function may be used to load the output of the assembler, C compiler,
+Fortran compiler, and Pascal compiler  but NOT the lisp compiler (use 
+.i fasl 
+for that).
+If a file has more than one entry point, then use 
+.i getaddress 
+to locate and setup other foreign functions.
+.br
+It is an error to load in a file which has a global entry point of the same
+name as a global entry point in the running lisp.
+As soon as you load in a file with 
+.i cfasl , 
+its global entry points become part of the 
+lisp's entry points.
+Thus you cannot 
+.i cfasl
+in the same file twice unless you 
+use 
+.i removeaddress
+to change certain global entry points to local entry points.
+.Lf close "'p_port" 
+.Re 
+t
+.Se
+the specified port is drained and closed, releasing the port.
+.No
+The standard defaults are not used in this case since you probably never
+want to close the standard output or standard input.
+.Lf cprintf "'st_format 'xfst_val ['p_port]"
+.Re
+xfst_val
+.Se
+The UNIX formatted output function printf is called with arguments st_format
+and xfst_val.
+If xfst_val is a symbol then its print name is passed to printf.
+The format string may contain characters which are just printed literally
+and it may contain special formatting commands preceded by a percent
+sign.
+The complete set of formatting characters is described in the UNIX manual.
+Some useful ones are %d for printing a fixnum in decimal, %f or %e for printing
+a flonum, and %s for printing a character string (or print name of a symbol).
+.Ex
+\fI(cprintf "Pi equals %f" 3.14159)\fP prints `Pi equals 3.14159'
+.Lf drain "['p_port]"
+.Re
+nil
+.Se
+If this is an output port then
+the characters in the output buffer are all sent to the device.
+If this is an input port then all pending characters are flushed.
+The default port for this function is the default output port.
+.Lf ex "[s_filename]"
+.Lx vi "[s_filename]"
+.Lx exl "[s_filename]"
+.Lx vil "[s_filename]"
+.Re
+nil
+.Se
+The lisp system starts up an editor on the file named as the argument.
+It will try appending .l to the file if it can't find it.
+The functions \fIexl\fP and \fIvil\fP will load the file after
+you finish editing it.  These functions will also remember the name
+of the file so that on subsequent invocations, you don't need to
+provide the argument.
+.No
+These functions do not evaluate their argument.
+.Lf fasl "'st_name ['st_mapf ['g_warn]]"
+.Wh
+st_mapf and g_warn default to nil.
+.Re
+t if the function succeeded, nil otherwise.
+.Se
+this function is designed to load in an object file generated by
+the lisp compiler Liszt.
+File names for object files usually end in `.o', so 
+.i fasl
+will append `.o' to st_name (if it is not already present).
+If st_mapf is non nil, then it is the name of the map file to 
+create.
+.i Fasl 
+writes in the map file the names and addresses of the functions
+it loads and defines.
+Normally the map file is created (i.e. truncated if it 
+exists), but if \fI(sstatus\ appendmap\ t)\fP is done then the map file
+will be appended.
+If g_warn is non nil and if a function is loaded from  the file which
+is already defined, then a warning message will be printed.
+.No
+.i fasl
+only looks in the current directory for the file to load. 
+The function
+.i load
+looks through a user-supplied search path and will call
+.i fasl
+if it finds a file with the same root name and a `.o' extension.
+In  most cases the user 
+would be better off using the function
+.i load
+rather than calling
+.i fasl
+directly.
+.Lf ffasl "'st_file 'st_entry 'st_funcname ['st_discipline ['st_library]]"
+.Re
+the binary object created.
+.Se
+the Fortran object file st_file is loaded into the lisp system.
+St_entry should be an entry point in the file just loaded. 
+A binary object will be created and its entry field will be set to point 
+to st_entry.
+The discipline field of the binary will be set to st_discipline or
+"subroutine" by default.
+If st_library is present and non-null, then after st_file is loaded, the libraries
+given in st_library will be searched to resolve external references.
+The form of st_library should be something like "-lS -ltermcap".
+In any case, the standard Fortran libraries will be
+searched also to resolve external references.
+.No
+in F77 on Unix, the entry point for the fortran function foo
+is named `_foo_'.
+.Lf filepos "'p_port ['x_pos]"
+.Re
+the current position in the file if x_pos is not 
+given or else x_pos if x_pos is given.
+.Se
+If x_pos is given, the next byte to be read or written to the
+port will be at 
+position x_pos.
+.Lf filestat 'st_filename
+.Re
+a vector containing various numbers which the UNIX operating
+system assigns to files.  if the fileg_e [...]"
+.Lx if "'g_a \fBthen\fP  'g_b [...] [\fBelseif\fP 'g_c \fBthenret\fP] [\fBelse\fP 'g_d [...]"
+.No
+The various forms of \fIif\fP are intended to be a more readable
+conditional statement, to be used in place of \fIcond\fP.  There
+are two varieties of \fIif\fP, with keywords, and without.  The
+keyword-less variety is inherited from common Maclisp usage.
+A keyword-less, two argument \fIif\fP is equivalent to a one-clause
+\fIcond\fP, i.e. (\fIcond\fP (a b)).   Any other keyword-less \fIif\fP
+must have at least three arguments.  The first two arguments are the
+first clause of the equivalent \fIcond\fP, and all remaining arguments
+are shoved into a second clause beginning with \fBt\fP.  Thus, the
+second form of \fIif\fP is equivalent to
+.br
+	(\fIcond\fP (a b) (t c ...)).
+.br
+.sp
+The keyword variety has the following grouping of arguments:
+a predicate, a then-clause, and optional
+else-clause.  The predicate is evaluated, and if the result is
+non-nil, the then-clause will be performed, in the sense
+described below.  Otherwise, (i.e. the result of the predicate
+evaluation was precisely nil), the else-clause will be performed.
+.br
+.sp
+Then-clauses will either consist entirely
+of the single keyword \fBthenret\fP, or will start with the keyword
+\fBthen\fP, and be followed by at least one general expression.
+(These general expressions must not be one of the keywords.)
+To actuate a \fBthenret\fP means to cease further evaluation
+of the \fIif\fP, and to return the value of the predicate just calculated.
+The performance of the longer clause means to evaluate each general expression
+in turn, and then return the last value calculated.
+.br
+.sp
+The else-clause may begin with the keyword \fBelse\fP and be followed
+by at least one general expression.
+The rendition of this clause is just like that of a then-clause.
+An else-clause
+may begin alternatively with the keyword \fBelseif\fP, and be followed
+(recursively) by a predicate, then-clause, and optional else-clause.
+Evaluation of this clause, is just evaluation of an \fIif\fP-form, with
+the same predicate, then- and else-clauses.
+.Lf I-throw-err "'l_token"
+.Wh
+l_token is the \fIcdr\fP of the value returned from a \fI*catch\fP with
+the tag ER%unwind-protect.
+.Re
+nothing (never returns in the current context)
+.Se
+The error or throw denoted by l_token is continued.
+.No
+This function is used to implement \fIunwind-protect\fP which allows the
+processing of a transfer of control though a certain context to be
+interrupted, a user function to be executed and than the transfer of
+control to continue.
+The form of l_token is either
+.br
+\fI(t tag value)\fP for a throw or
+.br
+\fI(nil type message valret contuab uniqueid [arg ...])\fP for an error.
+.br
+This function is not to be used for implementing throws or
+errors and is only documented here for completeness.
+.Lf let "l_args g_exp1 ... g_exprn"
+.Re
+the result of evaluating g_exprn within the bindings given by l_args.
+.No
+l_args is either nil (in which case 
+.i let
+is just like
+.i progn )
+or it is a list of binding objects.
+A binding object is a list \fI(symbol\ expression)\fP.
+When a 
+.i let 
+is entered,
+all of the expressions are evaluated and then simultaneously
+lambda-bound to the corresponding symbols.
+In effect, a 
+.i let
+expression is just like a lambda expression except the symbols and
+their initial values are next to each other, making the expression
+easier to understand.
+There are some added features to the 
+.i let 
+expression:
+A binding object can just be a symbol, in which case the expression
+corresponding to that symbol is `nil'.
+If a binding object is a list and the first element of that list is
+another list, then that list is assumed to be a binding template
+and 
+.i let
+will do a 
+.i desetq
+on it.
+.Lf let* "l_args g_exp1 ... g_expn"
+.Re
+the result of evaluating g_exprn within the bindings given by l_args.
+.No
+This is identical to 
+.i let
+except the expressions in the binding list l_args are evaluated
+and bound sequentially instead of in parallel.
+.Lf lexpr-funcall "'g_function ['g_arg1 ...] 'l_argn"
+.No
+This is a cross between funcall and apply.
+The last argument, must be a list (possibly empty).
+The element of list arg are stack and then the function is
+funcalled.
+.Ex
+(lexpr-funcall 'list 'a '(b c d)) is the same as
+ (funcall 'list 'a 'b 'c 'd)
+.Lf listify "'x_count"
+.Re
+a list of x_count of the arguments to the current function (which
+must be a lexpr).
+.No
+normally arguments 1 through x_count are returned. 
+If x_count is negative then  a list of last abs(x_count) arguments are
+returned.
+.Lf map "'u_func 'l_arg1 ..."
+.Re
+l_arg1
+.No
+The function u_func is applied to successive sublists of the l_arg\fIi\fP.
+All sublists should have the same length.  
+.\".pg
+.Lf mapc "'u_func 'l_arg1 ..."
+.Re
+l_arg1.
+.No
+The function u_func is applied to successive elements of the argument 
+lists.
+All of the lists should have the same length.
+.Lf mapcan "'u_func 'l_arg1 ..."
+.Re
+nconc applied to the results of the functional evaluations.
+.No
+The function u_func is applied to successive elements of the 
+argument lists.
+All sublists should have the same length.
+.Lf mapcar "'u_func 'l_arg1 ..."
+.Re
+a list of the values returned from the functional application.
+.No
+the function u_func is applied to successive elements of the
+argument lists.
+All sublists should have the same length.
+.Lf mapcon "'u_func 'l_arg1 ..."
+.Re
+nconc applied to the results of the functional evaluation.
+.No
+the function u_func is applied to successive sublists of the
+argument lists.
+All sublists should have the same length.
+.Lf maplist "'u_func 'l_arg1 ..."
+.Re
+a list of the results of the functional evaluations.
+.No
+the function u_func is applied to successive sublists of the arguments
+lists.
+All sublists should have the same length.
+.lp
+Readers may find the following summary table useful in remembering
+the differences between the six mapping functions:
+.(b
+.TS
+box;
+c | c s s.
+\	Value returned is
+
+.T&
+c | c c c.
+T{
+.na
+Argument to functional is
+.ad
+T}	l_arg1	list of results	\fInconc\fP of results
+_
+.T&
+c | c c c.
+
+elements of list	mapc	mapcar	mapcan
+
+sublists	map	maplist	mapcon
+.TE
+.)b
+.Lf mfunction "t_entry 's_disc"
+.Re
+a lisp object of type binary composed of t_entry and s_disc.
+.No
+t_entry is a pointer to the machine code for a function, and s_disc is the
+discipline (e.g. lambda).
+.\".pg
+.Lf oblist
+.Re
+a list of all symbols on the oblist.
+.Lf or "[g_arg1 ... ]"
+.Re
+the value of the first non-null argument  or nil if all arguments 
+evaluate to nil.
+.No
+Evaluation proceeds left to right and stops as soon as one of the arguments
+evaluates to a non-null value.
+.Lf prog "l_vrbls g_exp1 ..."
+.Re
+the value explicitly given in a return form
+or else nil if no return is done by the time the last g_exp\fIi\fP is
+evaluated.
+.No
+the local variables are lambda-bound to nil,
+then the g_exp\fIi\fP
+are evaluated from left to right.
+This is a prog body (obviously) and this means than 
+any symbols seen are not evaluated,
+but are treated as labels.
+This also means that return's and go's are allowed.
+.Lf prog1 "'g_exp1 ['g_exp2 ...]"
+.Re
+g_exp1
+.Lf prog2 "'g_exp1 'g_exp2 ['g_exp3 ...]"
+.Re
+g_exp2
+.No
+the forms are evaluated from left to right and the value of g_exp2 is
+returned.
+.Lf progn "'g_exp1 ['g_exp2 ...]"
+.Re
+the last g_exp\fIi\fP.
+.Lf progv "'l_locv 'l_initv g_exp1 ..."
+.Wh
+l_locv is a list of symbols and l_initv is a list of expressions.
+.Re
+the value of the last g_exp\fIi\fP evaluated.
+.No
+The expressions in l_initv are evaluated from left to right
+and then lambda-bound to the symbols in l_locv.
+If there are too few expressions in l_initv then the missing values
+are assumed to be nil.
+If there are too many expressions in l_initv then the extra ones are
+ignored (although they are evaluated).
+Then the g_exp\fIi\fP are evaluated left to right.
+The body of a progv is like the body of a progn, it is 
+.i not
+a prog body.
+(C.f. 
+.i let )
+.Lf purcopy "'g_exp"
+.Re
+a copy of g_exp with new pure cells allocated wherever possible.
+.No
+pure space is never swept up by the garbage collector, so this should
+only be done on expressions which are not likely to become garbage
+in the future.
+In certain cases, data objects doesn't exist, an error is
+invoked.  Use \fIprobef\fP to determine if the file exists.
+.No
+The individual entries can be accesed by mnemonic functions
+of the form filestat:\fIfield\fP, where field may be any of
+atime, ctime, dev, gid, ino, mode,mtime, nlink, rdev, size,
+type, uid.  See the UNIX programmers manual for a more detailed
+description of these quantities.
+.Lf flatc "'g_form ['x_max]"
+.Re
+the number of characters required to print g_form using \fIpatom\fP.
+If x_max is given and if \fIflatc\fP determines that it will return a value
+greater than x_max, then it gives up and returns the current value it
+has computed.
+This is useful if you just want to see if an expression is larger than
+a certain size.
+.Lf flatsize "'g_form ['x_max]"
+.Re
+the number of characters required to print g_form using \fIprint\fP.
+The meaning of x_max is the same as for flatc.
+.No
+Currently this just 
+.i explode 's
+g_form and checks its length.
+.Lf fileopen "'st_filename 'st_mode"
+.Re
+a port for reading or writing (depending on st_mode) the file st_name.
+.Se
+the given file is opened (or created if opened for writing and it 
+doesn't yet exist).
+.No
+this function call provides a direct
+interface to the operating system's fopen function.
+The mode may be more than just "r" for read, "w" for write or "a" for
+append.  The modes "r+", "w+" and "a+" permit both reading and writing
+on a port provided that
+.i fseek
+is done between changes in direction.
+See the UNIX manual description of fopen for more details.
+This routine does not look through a search path for a given file.
+.Lf fseek "'p_port 'x_offset 'x_flag"
+.Re
+the position in the file after the function is performed.
+.Se
+this function positions the read/write pointer before a certain byte
+in the file.
+If x_flag is 0 then the pointer is set to x_offset bytes from the 
+beginning of the file.
+If x_flag is 1 then the pointer is set to x_offset bytes from the
+current location in the file.
+If x_flag is 2 then the pointer is set to x_offset bytes from the 
+end of the file.
+.Lf infile "'s_filename"
+.Re
+a port ready to read s_filename.
+.Se
+this tries to open s_filename and if it cannot or if there are no
+ports available it gives an error message.
+.No
+to allow your program to continue on a file-not-found error,
+you can use something like:
+.br
+\fI(cond ((null (setq myport (car (errset (infile name) nil))))
+.br      
+\ \ \ \ \ \ \ \ \ \ \ \ (patom '"couldn't open the file")))\fP
+.br
+which will set myport to the port to read from if the file exists
+or will print a message if it couldn't open it and also set myport to nil.
+To simply determine if a file exists, use
+.i probef .
+.Lf load "'s_filename ['st_map ['g_warn]]"
+.Re
+t
+.No
+The function of 
+.i load
+has changed since previous releases of 
+.Fr 
+and the following description should be read carefully.
+.Se
+.i load 
+now serves the function of both
+.i fasl
+and the old 
+.i load .
+.i Load
+will search a user defined search path for a lisp source or object file
+with the filename s_filename (with the extension .l or .o added as
+appropriate).
+The search path which
+.i load
+uses is the value of \fI(status\ load-search-path)\fP.
+The default is (|.|\ /usr/lib/lisp) which means look in the current
+directory first and then /usr/lib/lisp.
+The file which 
+.i load
+looks for depends on the last two characters of s_filename.
+If s_filename ends with ".l" then 
+.i load 
+will only look for a file name
+s_filename and will assume that this is a
+.Fr
+source file.
+If s_filename ends with ".o" then 
+.i load
+will only look for a file named s_filename and will assume that this is
+a 
+.Fr 
+object file to be 
+.i fasl ed
+in.
+Otherwise, 
+.i load
+will first look for s_filename.o, then s_filename.l and finally
+s_filename itself.
+If it finds s_filename.o it will assume that this is an object file,
+otherwise it will assume that it is a source file.
+An object file is loaded using
+.i fasl
+and a source file is loaded by reading and evaluating each form in the
+file.
+The optional arguments st_map and g_warn are passed to 
+.i fasl
+should 
+.i fasl
+be called.
+.No
+\fIload\fP requires a port to open the file s_filename.
+It then lambda binds the symbol piport to this port and reads and
+evaluates the forms.
+.Lf makereadtable "['s_flag]"
+.Wh
+if s_flag is not present it is assumed to be nil.
+.Re
+a readtable equal to the original readtable if s_flag is non-null, or else
+equal to the current readtable.
+See chapter 7 for a description of readtables and their uses.
+.Lf msg "[l_option ...] ['g_msg ...]"
+.No
+This function is intended for printing short messages.
+Any of the arguments or options
+presented can be used any number of times, in any
+order.  The messages themselves (g_msg) are evaluated, and then
+they are transmitted to
+.i patom .
+Typically, they are strings, which evaluate to themselves.
+The options are interpreted specially:
+.Eb
+\fImsg Option Summary\fP
+
+\fI(P\ p_portname)\fP 		causes subsequent output to go to the port p_portname
+				(port should be opened previously)
+
+\fIB\fP			print a single blank.
+
+\fI(B\ 'n_b)\fP\ \ 		evaluate n_b and print that many blanks.
+
+\fIN\fP			print a single by calling \fIterpr\fP.
+
+\fI(N\ 'n_n)\fP\ \ 		evaluate n_n and transmit
+				that many newlines to the stream.
+
+\fID\fP			\fIdrain\fP the current port.
+.Ee
+.Lf nwritn "['p_port]"
+.Re
+the number of characters in the buffer
+of the given port but not yet written out to the file or device.
+The buffer is flushed 
+automatically when filled,
+or when 
+.i terpr
+is called.
+.Lf outfile "'s_filename ['st_type]"
+.Re
+a port or nil
+.Se
+this opens a port to write s_filename.
+If st_type is given and if it is  a symbol or string whose name 
+begins with `a', then the file will be opened in append mode, 
+that is the current contents will not be lost and the next data
+will be written at the end of the file.
+Otherwise, 
+the file opened is truncated by \fIoutfile\fP if it existed beforehand.
+If there are no free ports, outfile returns nil.
+If one cannot write on s_filename, an error is signalled.
+.\".pg
+.Lf patom "'g_exp ['p_port]"
+.Re
+g_exp
+.Se
+g_exp is printed to the given port or the default port.
+If g_exp is a symbol or string, the print name is printed without
+any escape characters around special characters in the print name.
+If g_exp is a list then \fIpatom\fP has the same effect as \fIprint\fP.
+.Lf pntlen "'xfs_arg"
+.Re
+the number of characters needed to print xfs_arg.
+.Lf portp "'g_arg"
+.Re
+t iff g_arg is a port.
+.Lf pp "[l_option] s_name1 ..."
+.Re
+t
+.Se
+If s_name\fIi\fP has a function binding, it is pretty-printed,
+otherwise if s_name\fIi\fP has a value then that is pretty-printed.
+Normally the output of the pretty-printer goes to the standard
+output port poport.
+The options allow you to redirect it.
+.Eb
+\fIPP Option Summary\fP
+
+\fI(F\ s_filename)\fP 		direct future printing to s_filename
+
+\fI(P\ p_portname)\fP 		causes output to go to the port p_portname
+				(port should be opened previously)
+
+\fI(E\ g_expression)\fP		evaluate g_expression and don't print
+.Ee
+.Lf princ "'g_arg ['p_port]"
+.Eq
+patom.
+.Lf print "'g_arg ['p_port]"
+.Re
+nil
+.Se
+prints g_arg on the port p_port or the default port.
+.Lf probef "'st_file"
+.Re
+t iff the file st_file exists.
+.No
+Just because it exists doesn't mean you can read it.
+.Lf pp-form "'g_form ['p_port]"
+.Re 
+t
+.Se
+g_form is pretty-printed to the port p_port (or poport if
+p_port is not given).
+This is the  function which \fIpp\fP uses. 
+\fIpp-form\fP does not look for
+function definitions or values of variables, it just prints out the form
+it is given.
+.No
+This is useful as a top-level-printer, c.f. 
+.i top-level
+in Chapter 6.
+.Lf ratom  "['p_port ['g_eof]]"
+.Re
+the next atom read from the given or default port.
+On end of file, g_eof (default nil) is returned.
+.Lf read "['p_port ['g_eof]]"
+.Re
+the next lisp expression read from the given or default port.
+On end of file, g_eof (default nil) is returned.
+.No
+An error will occur if the reader is given an ill formed expression.
+The most common error is too many right parentheses (note that this is
+not considered an error in Maclisp).
+.Lf readc "['p_port ['g_eof]]"
+.Re
+the next character read from the given or default port.
+On end of file, g_eof (default nil) is returned.
+.Lf in pure space become read-only after
+a 
+.i dumplisp
+and then an attempt to modify the object will result in an illegal memory
+reference.
+.Lf purep "'g_exp"
+.Re
+t iff the object g_exp is in pure space.
+.Lf putd "'s_name 'u_func"
+.Re
+u_func
+.Se
+this sets the function binding of symbol s_name to u_func.
+.Lf return "['g_val]"
+.Re
+g_val (or nil if g_val is not present) from the enclosing prog or do body.
+.No
+this form is only valid in the context of a prog or do body.
+.Lf selectq "'g_key-form [l_clause1 ...]"
+.No
+This function is just like \fIcaseq\fP (see above), except that
+the symbol \fBotherwise\fP has the same semantics as the
+symbol \fBt\fP, when used as a comparator.
+.Lf setarg "'x_argnum 'g_val"
+.Wh
+x_argnum is greater than zero and less than or equal to the number of
+arguments to the lexpr.
+.Re
+g_val
+.Se
+the lexpr's x_argnum'th argument is set to g-val.
+.No
+this can only be used within the body of a lexpr.
+.Lf throw "'g_val [s_tag]"
+.Wh
+if s_tag is not given, it is assumed to be nil.
+.Re
+the value of \fI(*throw 's_tag 'g_val)\fP.
+.Lf *throw "'s_tag 'g_val"
+.Re
+g_val from the first enclosing catch with 
+the tag s_tag or with no tag at all.
+.No
+this is used in conjunction with 
+.i *catch
+to cause a clean jump to an enclosing context.
+.Lf unwind-protect "g_protected [g_cleanup1 ...]"
+.Re
+the result of evaluating g_protected.
+.No
+Normally g_protected is evaluated and its value
+remembered, then the g_cleanup\fIi\fP
+are evaluated and finally the saved value of g_protected is returned.
+If something should happen when evaluating g_protected which causes
+control to pass through g_protected  and thus through
+the call to the unwind-protect,
+then the g_cleanup\fIi\fP will still be evaluated.
+This is useful if g_protected does  something sensitive which 
+must be cleaned up whether or not g_protected completes.
+                                                                                                                                                                                                                       readlist "'l_arg"
+.Re
+the lisp expression read from the list of characters in l_arg.
+.Lf removeaddress "'s_name1 ['s_name2 ...]"
+.Re
+nil
+.Se
+the entries for the s_name\fIi\fP in the Lisp symbol table are removed.
+This is useful if you wish to 
+.i cfasl
+or
+.i ffasl
+in a file twice, since it is illegal for a symbol in the file you
+are loading to already exist in the lisp symbol table.
+.Lf resetio
+.Re
+nil
+.Se
+all ports except the standard input, output and error
+are closed.
+.Lf setsyntax "'s_symbol 's_synclass ['ls_func]"
+.Re
+t
+.Se
+this sets the code for s_symbol to sx_code in the current readtable.
+If s_synclass is 
+.i macro
+or 
+.i splicing
+then ls_func is the associated function.
+See Chapter  7 on the reader for more details.
+.Lf sload "'s_file"
+.Se
+the file s_file (in the current directory) is opened for reading and
+each form is read, printed and evaluated.
+If the form is recognizable as a function definition, only its name
+will be printed, otherwise the whole form is printed.
+.No
+This function is useful when a file refuses to load because
+of a syntax error and you would like to narrow down
+where the error is.
+.Lf tab "'x_col ['p_port]"
+.Se
+enough spaces are printed to put the cursor on column x_col.
+If the cursor is beyond x_col to start with, a 
+.i terpr
+is done first.
+.Lf terpr "['p_port]"
+.Re
+nil
+.Se
+a terminate line  character sequence
+is sent to the given port or the default port.
+This will also drain the port.
+.Lf terpri "['p_port]"
+.Eq
+terpr.
+.Lf tilde-expand 'st_filename
+.Re
+a symbol whose pname is the tilde-expansion of the argument,
+(as discussed at the beginning of this chapter).
+If the argument does not begin with a tilde, the argument itself is
+returned.
+.Lf tyi "['p_port]"
+.Re
+the fixnum representation of the next character read.
+On end of file, -1 is returned.
+.Lf tyipeek "['p_port]"
+.Re
+the fixnum representation of the next character to be read.
+.No
+This does not actually read the character, it just peeks at it.
+.Lf tyo "'x_char ['p_port]"
+.Re
+x_char.
+.Se
+the character whose fixnum representation is 
+x_code, is printed as a
+on the given output port or the default output port.
+.Lf untyi "'x_char ['p_port]"
+.Se
+x_char is put back in the input buffer so a subsequent
+.i tyi
+or 
+.i read
+will read it first.
+.No
+a maximum of one character may be put back.
+.Lf username-to-dir 'st_name
+.Re
+the home directory of the given user.
+The result is stored, to avoid unnecessarily searching the 
+password file.
+.Lf zapline 
+.Re
+nil
+.Se
+all characters up to and including the line termination character
+are read and discarded from the last port used
+for input.
+.No
+this is used as the macro function for the semicolon character when
+it acts as a comment character.
+                                                                                                                                                                                                                                                                                                                                                                              starr 1) 5.678)\fP
+5.678
+\->\fB (cfoo 385 testarr (hunk 10 11 13 14) '(15 16 17))\fP
+a: 385, b[0]: 1.234000, b[1]: 5.678000
+ c (first): 10   c (second): 11
+ ( 15 16 ... )
+ 3
+.ft I
+.fi
+Note that cfoo has returned 3 as it should.
+It also had the side effect of changing the second value of the array to
+3.1415926  which check next.
+.br
+.nf
+.ft P
+\->\fB (funcall testarr 1)\fP
+3.1415926
+.sp 2v
+.fi
+.ft I
+In preparation for calling pfoo we create an array.
+.ft P
+.nf
+\->\fB (array test flonum-block 2)\fP
+array[2]
+\->\fB (store (test 0) 1.234)\fP
+1.234
+\->\fB (store (test 1) 5.678)\fP
+5.678
+\->\fB (pfoo 385 (getd 'test) (hunk 10 11 13 14) '(15 16 17))\fP
+ a:       385 b[0]:  1.23400000000000E+00 b[1]:  5.67800000000000E+00
+ c (first):        10 c (second):        11
+ (         15        16 ...) 
+3
+\->\fB (test 1)\fP
+3.1415926
+.sp 1v
+\fI Now to test out the memq's
+\-> \fB(cmemq 'a '(b c a d e f))\fP
+(a d e f)
+\-> \fB(pmemq 'e '(a d f g a x))\fP
+nil
+.hl
+.fi
+.sz +2
+.sp 3v
+.pp
+The Fortran example will be much shorter since in Fortran 
+you can't follow pointers
+as you can in other languages.
+The Fortran function ffoo is given three arguments: a fixnum, a 
+fixnum-block array and a flonum.
+These arguments are printed out to verify that they made it and
+then the first value of the array is modified.
+The function returns a double precision value which is converted to a flonum
+by lisp and printed.
+Note that the entry point corresponding to the Fortran function ffoo is
+_ffoo_ as opposed to the C and Pascal convention of preceding the name with
+an underscore.
+.sp 1v
+.in 0
+.nf
+.sz -2
+.hl
+
+% \fBcat ch8auxf.f\fP
+	double precision function ffoo(a,b,c)
+	integer a,b(10)
+	double precision c
+	print 2,a,b(1),b(2),c
+2	format(' a=',i4,', b(1)=',i5,', b(2)=',i5,' c=',f6.4)
+	b(1) = 22
+	ffoo = 1.23456
+	return
+	end
+% \fBf77 -c ch8auxf.f\fP
+ch8auxf.f:
+   ffoo:
+0.9u 1.8s 0:12 22% 20+22k 54+48io 158pf+0w
+% \fBlisp\fP
+Franz Lisp, Opus 38.60
+\-> \fB(cfasl 'ch8auxf.o '_ffoo_ 'ffoo "real-function" "-lF77 -lI77")\fP
+/usr/lib/lisp/nld -N -A /usr/local/lisp -T 63000 ch8auxf.o -e _ffoo_ 
+-o /tmp/Li11066.0 -lF77 -lI77 -lc
+#6307c-"real-function"
+.sp 1v
+\-> \fB(array test fixnum-block 2)\fP
+array[2]
+\->\fB (store (test 0) 10)\fP
+10
+\-> \fB(store (test 1) 11)\fP
+11
+\-> \fB(ffoo 385 (getd 'test) 5.678)\fP
+ a= 385, b(1)=   10, b(2)=   11 c=5.6780
+1.234559893608093
+\-> \fB(test 0)\fP
+22
+
+.hl
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    .\" Copyright (c) 1980 Regents of the University of California.
+.\" All rights reserved.  The Berkeley software License Agreement
+.\" specifies the terms and conditions for redistribution.
+.\"
+.\"	@(#)ch6.n	6.1 (Berkeley) 4/29/86
+.\"
+." $Header: ch6.n,v 1.4 83/07/21 21:08:16 sklower Exp $
+.Lc System\ Functions 6
+.pp
+This chapter describes the functions used to interact
+with internal components of the Lisp system and operating system.
+.Lf allocate "'s_type 'x_pages"
+.Wh
+s_type is one of the 
+.Fr
+data types described in \(sc1.3.
+.Re
+x_pages.
+.Se
+.Fr
+attempts to allocate x_pages of type s_type.
+If there aren't x_pages of memory left, no space will be 
+allocated and an error will occur.
+The storage that is allocated is not given to the caller, instead it is 
+added to the free storage list of s_type.
+The functions
+.i segment
+and 
+.i small-segment 
+allocate blocks  of storage and return it to the caller.
+.Lf argv "'x_argnumb"
+.Re
+a symbol whose pname is the x_argnumb\fIth\fP argument (starting at 0)
+on the command
+line which invoked the current lisp.
+.No
+if x_argnumb is less than zero, a fixnum whose value is the number of arguments
+on the command line is returned.
+\fI(argv\ 0)\fP returns the name of the lisp you are running.
+.Lf baktrace 
+.Re
+nil
+.Se
+the lisp runtime stack is examined and the name of (most) of the functions
+currently in execution are printed, most active first.
+.No
+this will occasionally miss the names of compiled lisp functions due to
+incomplete information on the stack.
+If you are tracing compiled code, then \fIbaktrace\fP won't be able
+to interpret the stack unless 
+.i (sstatus\ translink\ nil)
+was done.
+See the function 
+.i showstack 
+for another way of printing the lisp runtime
+stack.
+This misspelling is from Maclisp.
+.Lf chdir "'s_path"
+.Re
+t iff the system call succeeds.
+.Se
+the current directory set to s_path. 
+Among other things, this will affect the default location
+where the input/output functions look for and create files.
+.No
+\fIchdir\fP follows the standard UNIX conventions, if s_path does not begin
+with a slash, the default path is changed to the current path with
+s_path appended.
+.i Chdir
+employs tilde-expansion (discussed in Chapter 5).
+.Lf command-line-args
+.Re
+a list of the arguments typed on the command line, either to the
+lisp interpreter, or saved lisp dump, or application compiled
+with the autorun option (liszt -r).
+.Lf deref "'x_addr"
+.Re
+The contents of x_addr, when thought of as a longword memory
+location.
+.No
+This may be useful in constructing arguments to C functions
+out of `dangerous' areas of memory.
+.Lf dumplisp "s_name"
+.Re
+nil
+.Se
+the current lisp is dumped to the named file.
+When s_name is executed, you will be in a lisp in the
+same state as when the dumplisp was done.
+.No
+dumplisp will fail if one tries to 
+write over the current running file. 
+UNIX does not allow you to modify the file you are running.
+.Lf eval-when "l_time g_exp1 ..."
+.Se
+l_time may contain any combination of the symbols
+.i load ,
+.i eval ,
+and
+.i compile .
+The effects of load and compile is discussed in \(sc12.3.2.1
+compiler.
+If eval is present however, this simply means that the expressions g_exp1
+and so on are evaluated from left to right.
+If eval is not present, the forms are not evaluated.
+.Lf exit "['x_code]"
+.Re
+nothing (it never returns).
+.Se
+the lisp system dies with exit code x_code or 0 if x_code is not
+specified.
+.Lf fake "'x_addr"
+.Re
+the lisp object at address x_addr.
+.No
+This is intended to be used by people debugging the lisp system.
+.Lf fork 
+.Re
+nil to the child process and the process number of the child to 
+the parent.
+.Se
+A copy of the current lisp system is made in memory and both
+lisp systems now begin to run.
+This function can be used interactively to temporarily
+save the state of Lisp (as shown below), but you must be careful that only one
+of the lisp's interacts with the terminal after the fork.
+The
+.i wait 
+function is useful for this.
+.Eb
+\-> \fI(setq foo 'bar)\fP		;; set a variable
+bar
+\-> \fI(cond ((fork)(wait)))\fP	;; duplicate the lisp system and
+nil				;; make the parent wait
+\-> \fIfoo\fP				;; check the value of the variable
+bar
+\-> \fI(setq foo 'baz)\fP		;; give it a new value
+baz
+\-> \fIfoo\fP 				;; make sure it worked
+baz
+\-> \fI(exit)\fP			;; exit the child
+(5274 . 0) 			;; the \fIwait\fP function returns this
+\-> \fIfoo\fP 				;; we check to make sure parent was
+bar				;; not modified.
+.Ee
+.Lf gc
+.Re
+nil
+.Se
+this causes a garbage collection.
+.No
+The function
+.i gcafter
+is not called automatically after this function finishes.
+Normally the user doesn't have to call
+.i gc
+since
+garbage collection occurs automatically whenever internal free lists
+are exhausted.
+.Lf gcafter "s_type"
+.Wh
+s_type is one of the 
+.Fr
+data types listed in \(sc1.3.
+.No
+this function is called by the garbage collector
+after a garbage collection which was caused by running out of 
+data type s_type.
+This function should determine if more space need be allocated
+and if so should allocate it.
+There is a default gcafter function but users who want control over
+space allocation can define their own -- but note that it must be
+an nlambda.
+.Lf getenv "'s_name"
+.Re
+a symbol whose pname is the value of s_name in the current 
+UNIX environment.
+If s_name doesn't exist in the current environment, a symbol with a null pname
+is returned.
+.Lf hashtabstat
+.Re
+a list of fixnums representing the number of symbols in each bucket of
+the oblist.
+.No
+the oblist is stored a hash table of buckets.
+Ideally there would be the same number of symbols in each bucket.
+.Lf help "[sx_arg]"
+.Se
+If sx_arg is a symbol then
+the portion of this manual beginning with the description of sx_arg
+is printed on the terminal.
+If sx_arg is  a fixnum or the name of one of the appendicies, that
+chapter or appendix is printed on the terminal.
+If no argument is provided, 
+.i help
+prints the options that it recognizes.
+The program `more' is used to print the manual on the terminal; it will
+stop after each page and will continue after the space key is pressed.
+.Lf include "s_filename"
+.Re
+nil
+.Se
+The given filename is 
+.i load ed
+into the lisp.
+.No
+this is similar to load except the argument is not evaluated.
+Include means something special to the compiler.
+.Lf include-if "'g_predicate s_filename"
+.Re
+nil
+.Se
+This has the same effect as include, but is only actuated
+if the predicate is non-nil.
+.Lf includef "'s_filename"
+.Re
+nil
+.Se
+this is the same as 
+.i include
+except the argument is evaluated.
+.Lf includef-if "'g_predicate s_filename"
+.Re
+nil
+.Se
+This has the same effect as includef, but is only actuated
+if the predicate is non-nil.
+.Lf maknum "'g_arg"
+.Re
+the address of its argument converted into a fixnum.
+.Lf monitor "['xs_maxaddr]"
+.Re
+t
+.Se
+If xs_maxaddr is t then profiling of the entire lisp system is begun.
+If xs_maxaddr is a fixnum then profiling is done only up to address
+xs_maxaddr.
+If xs_maxaddr is not given, then profiling is stopped and the data
+obtained is written to the file 'mon.out' where it can be analyzed
+with the UNIX 'prof' program.
+.No
+this function only works if the lisp system has been compiled
+in a special way, otherwise, an error is invoked.
+.Lf opval "'s_arg ['g_newval]"
+.Re
+the value associated with s_arg before the call.
+.Se
+If g_newval is specified, the value associated with s_arg is changed to
+g_newval.
+.No
+\fIopval\fP keeps track of storage allocation. If s_arg is one of the data types
+then \fIopval\fP will return a list of three fixnums representing the number of
+items of that type in use, the number of pages allocated and the number
+of items of that type per page.  
+You should never try to change the value \fIopval\fP associates
+with a data type using
+\fIopval\fP.
+.br
+If s_arg is 
+.i pagelimit
+then 
+.i opval 
+will return (and set if g_newval is given)
+the maximum amount of lisp data pages
+it will allocate.
+This limit should remain small unless you know your program requires 
+lots of space as this limit will catch programs in infinite loops which
+gobble up memory.
+.Lf *process "'st_command ['g_readp ['g_writep]]"
+.Re
+either a fixnum if one argument is given, or a list of two ports and a
+fixnum if two or three arguments are g.\" Copyright (c) 1980 Regents of the University of California.
+.\" All rights reserved.  The Berkeley software License Agreement
+.\" specifies the terms and conditions for redistribution.
+.\"
+.\"	@(#)ch7.n	6.2 (Berkeley) 5/14/86
+.\"
+." $Header: ch7.n,v 1.3 83/07/01 11:22:58 layer Exp $
+.Lc The\ Lisp\ Reader 7
+.sh 2 Introduction \n(ch 1
+.pp
+The 
+.i read
+function is responsible for converting
+a stream of 
+characters into a Lisp expression.
+.i Read 
+is table driven and the table it uses is called a 
+.i readtable.
+The 
+.i print
+function does the
+inverse of 
+.i read ;
+it converts a Lisp expression into a stream of 
+characters.
+Typically the conversion is done in such
+a way that if that stream of characters were read by 
+.i read ,
+the 
+result would be an expression equal to the one
+.i print
+was given.
+.i Print
+must also refer to the readtable in order to determine
+how to format its output.
+The 
+.i explode
+function, which returns a list of characters rather than
+printing them,  must also refer to the readtable.
+.pp
+A readtable is created
+with the
+.i makereadtable 
+function, modified with the
+.i setsyntax
+function and interrogated with the
+.i getsyntax 
+function.
+The structure of a readtable is hidden from the user  - a
+readtable should
+only be manipulated with the three functions mentioned above.
+.pp
+There is one distinguished readtable called the 
+.i current
+.i readtable 
+whose value determines what
+.i read ,
+.i print 
+and 
+.i explode 
+do.
+The current readtable is the value of the symbol 
+.i readtable .
+Thus it is  possible to rapidly change 
+the current syntax by lambda binding 
+a different readtable to the symbol 
+.i readtable.
+When the binding is undone, the syntax reverts to its old form.
+.sh +0 Syntax\ Classes
+.pp
+The readtable describes how each of the 128 ascii characters should
+be treated by the reader and printer.
+Each character belongs to a 
+.i syntax 
+.i class 
+which has three properties:
+.ip character\ class\ - 
+Tells what the reader should do when it sees this character.
+There are a large number of character classes.  
+They are described below.
+.ip separator\ -
+Most types of tokens the reader constructs are one character
+long.
+Four token types have an arbitrary length: number (1234), 
+symbol print name (franz),
+escaped symbol print name (|franz|), and string ("franz").
+The reader can easily determine when it has
+come to the
+end of one of the last two types: it just looks for the
+matching delimiter (| or ").
+When the reader is reading a number or symbol print name, it 
+stops reading when it comes to a character with the 
+.i separator
+property.
+The separator character is pushed back into the input stream and will
+be the first character read when the reader is called again.
+.ip escape\ -
+Tells the printer when to put escapes in front of, or around, a symbol
+whose print name contains this character.
+There are three possibilities: always escape a symbol with this character
+in it, only escape a symbol if this is the only character in the symbol,
+and only escape a symbol if this is the first character in the symbol.
+[note: The printer will always escape a symbol which, if printed out, would
+look like a valid number.]
+.pp
+When the Lisp system is built, Lisp code is added to a C-coded kernel
+and the result becomes the standard lisp system.
+The readtable present in the C-coded kernel, called the
+.i raw
+.i readtable ,
+contains the bare necessities for reading in Lisp code.
+During the 
+construction of the complete Lisp system,
+a copy is made of the raw readtable and 
+then the copy  is modified by adding macro characters.
+The result is what is called the
+.i standard
+.i readtable .
+When a new readtable is created with 
+.i makereadtable,
+a copy is made of either the
+raw readtable
+or the current readtable (which is likely to be the standard readtable).
+.sh +0 Reader\ Operations
+.pp
+The reader has a very simple algorithm.
+It is either 
+.i scanning 
+for a token, 
+.i collecting 
+a token,
+or 
+.i processing 
+a token.
+Scanning involves reading characters and throwing
+away those which don't start tokens (such as blanks and tabs).
+Collecting means gathering the characters which make up a
+token into a buffer.
+Processing may involve creating symbols, strings, lists, 
+fixnums, bignums or flonums or calling a user written function called 
+a character macro.
+.pp
+The components of the syntax class determine when the reader
+switches between the scanning, collecting and processing states.
+The reader will continue scanning as long as the character class
+of the characters it reads is 
+.i cseparator.
+When it reads a character whose character class is not 
+.i cseparator
+it stores that character in its buffer and begins the collecting phase.
+.pp
+If the character class of that first character is 
+.i ccharacter ,
+.i cnumber ,
+.i cperiod ,
+or 
+.i csign .
+then it will continue collecting until it runs into a character whose
+syntax class has the 
+.i separator
+property.
+(That last character will be pushed back into the input buffer and will
+be the first character read next time.)
+Now the reader goes into the processing phase, checking to see if the
+token it read is a number or symbol.
+It is important to note that  after
+the first character is collected the component of the syntax class which 
+tells the reader to  stop 
+collecting is the 
+.i separator
+property, not the character class.
+.pp
+If the character class of the character which stopped the scanning is not 
+.i ccharacter ,
+.i cnumber ,
+.i cperiod ,
+or
+.i csign .
+then the reader processes that character immediately.
+The character classes
+.i csingle-macro ,
+.i csingle-splicing-macro ,
+and 
+.i csingle-infix-macro
+will act like 
+.i ccharacter
+if the following token is not a 
+.i separator.
+The processing which is done for a given character class 
+is described in detail in the next section.
+.sh +0 Character\ Classes
+.de Cc
+.sp 2v
+.tl '\fI\\$1\fP''raw readtable:\\$2'
+.tl '''standard readtable:\\$3'
+..
+.pc
+.Cc ccharacter A-Z\ a-z\ ^H\ !#$%&*,/:;<=>?@^_`{}~ A-Z\ a-z\ ^H\ !$%&*/:;<=>?@^_{}~
+.pc %
+A normal character.
+.Cc cnumber 0-9 0-9
+This type is a digit.  
+The syntax for an integer (fixnum or bignum) is a string of 
+.i cnumber
+characters optionally followed by a 
+.i cperiod.
+If the digits are not followed by a
+.i cperiod ,
+then they are interpreted in base
+.i ibase
+which must be eight or ten.
+The syntax for a floating point number is
+either zero or more
+.i cnumber 's
+followed by a
+.i cperiod
+and then followed by one or more 
+.i cnumber 's.
+A floating point number
+may also be  an integer or floating point number followed
+by 'e' or 'd', an optional '+' or '\-'
+and then zero or more 
+.i cnumber 's.
+.Cc csign +\- +\-
+A leading sign for a number.  
+No other characters should be given this class.
+.Cc cleft-paren ( (
+A left parenthesis.
+Tells the reader to begin forming a list.
+.Cc cright-paren ) )
+A right parenthesis.
+Tells the reader that it has reached the end of a list.
+.Cc cleft-bracket [ [
+A left bracket.
+Tells the reader that it should begin forming a list.
+See the description of 
+.i cright-bracket
+for the difference between cleft-bracket and cleft-paren.
+.Cc cright-bracket ] ]
+A right bracket.
+A 
+.i cright-bracket 
+finishes the formation of the current
+list and all enclosing lists until it finds one which
+begins with a 
+.i cleft-bracket 
+or until it reaches the 
+top level list.
+.Cc cperiod . .
+The period is used to separate element of a cons cell 
+[e.g. (a\ .\ (b\ .\ nil)) is the same as (a\ b)].
+.i cperiod
+is also used in numbers as described above.
+.Cc cseparator ^I-^M\ esc\ space ^I-^M\ esc\ space
+Separates tokens.  When the reader is scanning, these character
+are passed over.
+Note: there is a difference between the
+.i cseparator 
+character class and the 
+.i separator 
+property of a syntax class.
+.Cc csingle-quote \\' \\'
+This causes 
+.i read
+to be called recursively and the list
+(quote <value read>) to be returned.
+.Cc csymbol-delimiter | |
+This causes the reader to begin collecting characters and to stop only
+when another identical
+.i csymbol-delimiter
+is seen.  
+The only way to escape a 
+.i csymbol-delimiter 
+within a symbol name is with a
+.i  cescape 
+character.
+The collected characters are converted into a string iven.
+.No
+\fI*process\fP starts another process by passing st_command to the shell
+(it first tries /bin/csh, then it tries /bin/sh if /bin/csh doesn't exist).
+If only one argument is given to \fI*process\fP,
+\fI*process\fP waits for the new
+process to die and then returns the exit code of the new process.
+If more two or three arguments are given, \fI*process\fP starts the process
+and then returns a list which, depending on the value of g_readp
+and g_writep, may contain i/o ports for communcating with the new
+process.
+If g_writep is non-null, then a port will be created which the lisp program
+can use to send characters to the new process.
+If g_readp is non-null, then a port will be created which the lisp program
+can use to read characters from the new process.
+The value returned by \fI*process\fP is (readport\ writeport\ pid)
+where readport and writeport are either nil or a port based on the value
+of g_readp and g_writep.  Pid is the process id of the new process.
+Since it is hard to remember the order of g_readp and g_writep, the
+functions \fI*process-send\fP and \fI*process-receive\fP were written to
+perform the common functions.
+.Lf *process-receive "'st_command"
+.Re
+a port which can be read.
+.Se
+The command st_command is given to the shell and it is started running in the
+background.
+The output of that command is available for reading via the port returned.
+The input of the command process is set to /dev/null.
+.Lf *process-send "'st_command"
+.Re
+a port which can be written to.
+.Se
+The command st_command is given to the shell and it is started runing in the
+background.
+The lisp program can provide input for that command
+by sending characters to the port returned by this function.
+The output of the command process is set to /dev/null.
+.Lf process "s_pgrm [s_frompipe s_topipe]"
+.Re
+if the optional arguments are
+not present a fixnum which is the exit code when s_prgm dies.
+If the optional arguments are present, it returns a fixnum which
+is the process id of the child.
+.No
+This command is obsolete.
+New programs should use one of the \fI*process\fP commands
+given above.
+.Se
+If s_frompipe and s_topipe are given, they are bound to 
+ports which are pipes which
+direct characters from 
+.Fr
+to the new process
+and to
+.Fr
+from the new process respectively.
+.i Process
+forks a process named s_prgm and waits for it to die iff there
+are no pipe arguments given.
+.Lf ptime 
+.Re
+a list of two elements.
+The first is the amount of processor time used
+by the lisp system so far, and the 
+second is the amount of time used by the garbage collector so far.
+.No
+the time is measured in those units used by the
+.i times (2)
+system call, usually 60\fIth\fPs of a second.
+The first number includes the second number.
+The amount of time used by garbage collection is not recorded
+until the first call to ptime.
+This is done to prevent overhead when the user is not interested in
+garbage collection times.
+.Lf reset
+.Se
+the lisp runtime stack is cleared and the system restarts at the top level 
+by executing a \fI(funcall\ top-level\ nil)\fP.
+.Lf restorelisp "'s_name"
+.Se
+this reads in file s_name (which was created by 
+.i savelisp )
+and then does a \fI(reset)\fP.
+.No
+This is only used on VMS systems where 
+.i dumplisp
+cannot be used.
+.Lf retbrk "['x_level]
+.Wh
+x_level is a small integer of either sign.
+.Se
+The default error handler keeps a notion of the current level
+of the error caught.  If x_level is negative, control is thrown
+to this default error handler whose level is that many less than
+the present, or to \fItop-level\fP if there aren't enough.
+If x_level is non-negative, control is passed to the handler at
+that level.  If x_level is not present, the value -1 is taken by
+default.
+.Lf *rset "'g_flag"
+.Re
+g_flag
+.Se
+If g_flag is non nil then the lisp system will maintain extra information
+about calls to \fIeval\fP and \fIfuncall\fP.
+This record keeping slows down the evaluation but this is 
+required  for the functions
+\fIevalhook\fP, \fIfuncallhook\fP, and \fIevalframe\fP to work. 
+To debug compiled lisp code the transfer tables should be unlinked:
+\fI(sstatus\ translink\ nil)\fP
+.Lf savelisp "'s_name"
+.Re
+t
+.Se
+the state of the Lisp system is saved in the file s_name.
+It can be read in by 
+.i restorelisp .
+.No
+This is only used on VMS systems where 
+.i dumplisp
+cannot be used.
+.Lf segment "'s_type 'x_size"
+.Wh
+s_type is one of the data types given in \(sc1.3
+.Re
+a segment of contiguous lispvals of type s_type.
+.No
+In reality, 
+.i segment 
+returns a new data cell of type s_type and allocates
+space for x_size \- 1 more s_type's beyond the one returned.
+.i Segment 
+always allocates new space and does so in 512 byte chunks.
+If you ask for 2 fixnums, segment will actually allocate 128 of them
+thus wasting 126 fixnums.
+The function
+.i small-segment
+is a smarter space allocator and should be used whenever possible.
+.Lf shell
+.Re
+the exit code of the shell when it dies.
+.Se
+this forks a new shell and returns when the shell dies.
+.Lf showstack
+.Re
+nil
+.Se
+all forms currently in evaluation are printed, beginning with the most recent.
+For compiled code the most that 
+showstack will show is the function name and it may miss
+some functions.
+.Lf signal "'x_signum 's_name"
+.Re
+nil if no previous call to signal has been made, or the previously
+installed s_name.
+.Se
+this declares that the function named s_name 
+will handle the signal number x_signum.
+If s_name is nil, the signal is ignored.  Presently only
+four UNIX signals are caught.
+They and their numbers are:
+Interrupt(2), Floating exception(8), Alarm(14), and
+Hang-up(1).
+.Lf sizeof "'g_arg"
+.Re
+the number of bytes required to store one object of type g_arg, encoded
+as a fixnum.
+.Lf small-segment "'s_type 'x_cells"
+.Wh
+s_type is one of fixnum, flonum and value.
+.Re
+a segment of x_cells data objects of type s_type.
+.Se
+This may call
+.i segment
+to allocate new space or it may be able to fill the request on a page
+already allocated.
+The value returned by 
+.i small-segment 
+is usually stored in the data subpart
+of an array object.
+.Lf sstatus "g_type g_val"
+.Re
+g_val
+.Se
+If g_type is not one of the special sstatus codes described in the 
+next few pages
+this simply sets g_val as the value of status 
+type g_type in the system status property list.
+.Lf sstatus\ appendmap "g_val"
+.Re
+g_val
+.Se
+If g_val is non-null when 
+.i fasl
+is told to create a load map, it will append to the file name given in
+the 
+.i fasl
+command, rather than creating a new map file.
+The initial value is nil.
+.Lf sstatus\ automatic-reset "g_val"
+.Re
+g_val
+.Se
+If g_val is non-null when an error occurs which no one wants to 
+handle, a 
+.i reset
+will be done instead of entering a primitive internal break loop.
+The initial value is t.
+.Lf sstatus\ chainatom "g_val"
+.Re
+g_val
+.Se
+If g_val is non nil and a 
+.i car
+or 
+.i cdr
+of a symbol is done, then nil will be returned instead of an error
+being signaled.
+This only affects the interpreter, not the compiler.
+The initial value is nil.
+.Lf sstatus\ dumpcore "g_val"
+.Re
+g_val
+.Se
+If g_val is nil, 
+.Fr 
+tells UNIX that a segmentation violation or 
+bus error should cause a core dump.
+If g_val is non nil then 
+.Fr
+will catch those errors and print a message advising the user to reset.
+.No
+The initial value for this flag is nil, and only those knowledgeable of
+the innards of the lisp system should ever set this flag non nil.
+.Lf sstatus\ dumpmode "x_val"
+.Re
+x_val
+.Se
+All subsequent 
+.i dumplisp 's
+will be done in mode x_val.
+x_val may be either 413 or 410 (decimal).
+.No
+the advantage of mode 413 is that the dumped Lisp can be demand paged in when
+first started, which will make it start faster and disrupt other users less.
+The initial value is 413.
+.Lf sstatus\ evalhook "g_val"
+.Re
+g_val
+.Se
+When g_val is non nil, this enables the 
+evalhook and funcallhook traps in the evaluator.
+See \(sc14.4 for more details.
+.Lf sstatus\ feature "g_val"
+.Re
+g_val
+.Se
+g_val is added to the \fI(status\ features)\fP list, 
+.Lf sstatus\ gcstrings "g_val"
+.Re
+g_val
+.Se
+if g_val is non-null, and if string garbage collection was enabled when
+the lisp system was compiled, string space will be garbage collected.
+.No
+the default value for this is nil sincwhich becomes
+the print name of a symbol.
+If a symbol with an identical print name already exists, then the
+allocation is not done, rather the existing symbol is used.
+.Cc cescape \e \e
+This causes the next character to read in to be treated as a 
+.b vcharacter .
+A character whose syntax class is
+.b vcharacter 
+has a character class
+.i ccharacter
+and does not have
+the 
+.i separator
+property so it will not separate symbols.
+.Cc cstring-delimiter """" """"
+This is the same as 
+.i csymbol-delimiter
+except the result is returned as a string instead of a symbol.
+.Cc csingle-character-symbol none none
+This returns a symbol whose print name is the the single character
+which has been collected.
+.Cc cmacro none `,
+The reader calls the macro function associated with this character and 
+the current readtable, passing it no arguments.
+The result of the macro is added to the structure the reader is building,
+just as if that form were directly read by the reader.
+More details on macros are provided below.
+.Cc csplicing-macro none #;
+A 
+.i csplicing-macro 
+differs from a 
+.i cmacro
+in the way the result is incorporated in the structure the reader is 
+building.
+A 
+.i csplicing-macro
+must return a list of forms (possibly empty).
+The reader acts as
+if it read each element of
+the list itself without
+the surrounding parenthesis.
+.Cc csingle-macro none none
+This causes to reader to check the next character.
+If it is a 
+.i cseparator
+then this acts like a 
+.i cmacro.
+Otherwise, it acts like a 
+.i ccharacter.
+.Cc csingle-splicing-macro none none
+This is triggered like a 
+.i csingle-macro
+however the result is spliced in like a
+.i csplicing-macro.
+.Cc cinfix-macro none none
+This is differs from a 
+.i cmacro
+in that the macro function is passed a form representing what the reader
+has read so far. 
+The result of the macro replaces what the reader had read so far.
+.Cc csingle-infix-macro none none
+This differs from the
+.i cinfix-macro
+in that the macro will only be triggered if the character following the
+.i csingle-infix-macro
+character is a 
+.i cseparator .
+.Cc cillegal ^@-^G^N-^Z^\e-^_rubout ^@-^G^N-^Z^\e-^_rubout
+The characters cause the reader to signal an error if read.
+.sh +0 Syntax\ Classes
+.pp
+The readtable maps each character into a syntax class.
+The syntax class contains three pieces of information: 
+the character class, whether this is a separator, and the escape
+properties.
+The first two properties are used by the reader, the last by 
+the printer (and 
+.i explode ).
+The initial lisp system has the following syntax classes defined.
+The user may add syntax classes with
+.i add-syntax-class .
+For each syntax class, we list the properties of the class and 
+which characters have this syntax class by default.
+More information about each syntax class can be found under the
+description of the syntax class's character class.
+.de Sy
+.sp 1v
+.(b
+.tl '\fB\\$1\fP''raw readtable:\\$2'
+.tl '\fI\\$4\fP''standard readtable:\\$3'
+.tl '\fI\\$5\fP'''
+.if \n(.$>5 .tl '\fI\\$6\fP'''
+.)b
+..
+.pc
+.Sy vcharacter A-Z\ a-z\ ^H\ !#$%&*,/:;<=>?@^_`{}~ A-Z\ a-z\ ^H\ !$%&*/:;<=>?@^_{}~  ccharacter
+.pc %
+.Sy vnumber 0-9 0-9 cnumber
+.Sy vsign +- +- csign
+.Sy vleft-paren ( ( cleft-paren escape-always separator
+.Sy vright-paren ) ) cright-paren escape-always separator
+.Sy vleft-bracket [ [ cleft-bracket escape-always separator 
+.Sy vright-bracket ] ] cright-bracket escape-always separator 
+.Sy vperiod . . cperiod escape-when-unique
+.Sy vseparator ^I-^M\ esc\ space ^I-^M\ esc\ space cseparator escape-always separator 
+.Sy vsingle-quote \\' \\' csingle-quote escape-always separator 
+.Sy vsymbol-delimiter | | csingle-delimiter escape-always
+.Sy vescape \e \e cescape escape-always
+.Sy vstring-delimiter """" """" cstring-delimiter escape-always
+.Sy vsingle-character-symbol none none csingle-character-symbol separator
+.Sy vmacro none `, cmacro escape-always separator 
+.Sy vsplicing-macro none #; csplicing-macro escape-always separator 
+.Sy vsingle-macro none none csingle-macro escape-when-unique
+.Sy vsingle-splicing-macro none none csingle-splicing-macro escape-when-unique
+.Sy vinfix-macro none none cinfix-macro escape-always separator 
+.Sy vsingle-infix-macro none none csingle-infix-macro escape-when-unique
+.Sy villegal ^@-^G^N-^Z^\e-^_rubout ^@-^G^N-^Z^\e-^_rubout cillegal escape-always separator 
+.sh +0 Character\ Macros
+.pp
+Character macros are 
+user written functions which are executed during the reading process.
+The value returned by a character macro may or may not be used by 
+the reader, depending on the type of macro and the value returned.
+Character macros are always attached to a single character with
+the 
+.i setsyntax 
+function.
+.sh +1 Types
+There are three types of character macros: normal, splicing and infix.
+These types differ in the arguments they are given or in what is done
+with the result they return.
+.sh +1 Normal
+.pp
+A normal macro
+is passed no arguments.
+The value returned by a normal macro is simply used by
+the reader as if it had read the value itself.
+Here is an example of a macro which returns the abbreviation 
+for a given state.
+.Eb
+\->\fI(de\kAfun stateabbrev nil
+ \h'|\nAu'(cdr (assq (read) '((california . ca) (pennsylvania . pa)))))\fP
+stateabbrev
+\-> \fI(setsyntax '\e! 'vmacro 'stateabbrev)\fP
+t
+\-> \fI'( ! california ! wyoming ! pennsylvania)\fP
+(ca nil pa)
+.Ee
+Notice what happened to 
+\fI ! wyoming\fP.
+Since it wasn't in the table, the associated function
+returned nil.
+The creator of the macro may have wanted to leave the
+list alone, in such a case, but couldn't with this
+type of reader macro.
+The splicing macro, described next, allows a character macro function
+to return a value that is ignored.
+.sh +0 Splicing
+.pp
+The value returned from a splicing macro must be a list or nil.
+If the value is nil, then the value is ignored, otherwise the reader
+acts as if it read each object in the list.
+Usually the list only contains one element. 
+If the reader is reading at the top level (i.e. not collecting elements
+of list),
+then it is illegal for a splicing macro to return more then one
+element in the list.
+The major advantage of a splicing macro over a normal macro is the
+ability of the splicing macro to return nothing. 
+The comment character (usually ;) is a splicing macro bound to a
+function which reads to the end of the line and always returns nil.
+Here is the previous example written as a splicing macro
+.Eb
+\-> \fI(de\kAfun stateabbrev nil
+\h'|\nAu'(\kC(lam\kBbda (value)
+ \h'|\nBu'(cond \kA(value (list value))
+ \h'|\nAu'(t nil)))
+ \h'|\nCu'(cdr (assq (read) '((california . ca) (pennsylvania . pa))))))\fP
+\-> \fI(setsyntax '! 'vsplicing-macro 'stateabbrev)\fP
+\-> \fI'(!pennsylvania ! foo !california)\fP
+(pa ca)
+\-> \fI'!foo !bar !pennsylvania\fP
+pa
+\-> 
+.Ee
+.sh +0 Infix
+.pp
+Infix macros are passed a 
+.i conc
+structure representing what has been read so far.
+Briefly, a 
+tconc
+structure is a single list cell whose car points to 
+a list and whose cdr points to the last list cell in that list.
+The interpretation by the reader of the value 
+returned by  an infix macro depends on
+whether the macro is called while the reader is constructing a 
+list or whether it is calle

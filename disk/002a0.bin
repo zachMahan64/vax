@@ -1,0 +1,3050 @@
+ned
+prickly-fruited
+prickly grass
+prickly heat
+prickly-lobed
+prickly-margined
+prickly-seeded
+prickly-toothed
+prick mark
+prick post
+prick punch
+prick shaft
+prick shooting
+prick song
+prick wheel
+pride-blind
+pride-blinded
+pride-bloated
+pride-fed
+pride-inflamed
+pride-inspiring
+pride-ridden
+pride-sick
+pride-swollen
+priest-astronomer
+priest-baiting
+priest-catching
+priest-doctor
+priest-dynast
+priest-educated
+priest-guarded
+priest-harboring
+priest-hating
+priest-hermit
+priest hole
+priest-king
+priest-knight
+priest-led
+priest-monk
+priest-noble
+priest-philosopher
+priest-poet
+priest-prince
+priest-prompted
+priest-ridden
+priest-riddenness
+priest-ruler
+priest-statesman
+priest-surgeon
+priest vicar
+priest-wrought
+prima donna
+prima facie
+prima materia
+primary scholar
+primary school
+prim-behaving
+prime minister
+prime-ministerial
+prime-ministership
+prime ministry
+prime mover
+prime tone
+priming boiler
+priming charge
+prim-lipped
+prim-looking
+prim-mannered
+prim-mouthed
+prim-notioned
+primo tenore
+primrose-colored
+primrose-decked
+prim.\" Copyright (c) 1983,1986 Regents of the University of California.
+.\" All rights reserved.  The Berkeley software License Agreement
+.\" specifies the terms and conditions for redistribution.
+.\"
+.\"	@(#)7.t	6.3 (Berkeley) 6/5/86
+.\"
+.nr H2 1
+.br
+.ne 30v
+.\".ds RH "Socket/protocol interface
+.NH
+\s+2Socket/protocol interface\s0
+.PP
+The interface between the socket routines and the communication
+protocols is through the \fIpr_usrreq\fP routine defined in the
+protocol switch table.  The following requests to a protocol
+module are possible:
+.DS
+._d
+#define	PRU_ATTACH	0	/* attach protocol */
+#define	PRU_DETACH	1	/* detach protocol */
+#define	PRU_BIND	2	/* bind socket to address */
+#define	PRU_LISTEN	3	/* listen for connection */
+#define	PRU_CONNECT	4	/* establish connection to peer */
+#define	PRU_ACCEPT	5	/* accept connection from peer */
+#define	PRU_DISCONNECT	6	/* disconnect from peer */
+#define	PRU_SHUTDOWN	7	/* won't send any more data */
+#define	PRU_RCVD	8	/* have taken data; more room now */
+#define	PRU_SEND	9	/* send this data */
+#define	PRU_ABORT	10	/* abort (fast DISCONNECT, DETATCH) */
+#define	PRU_CONTROL	11	/* control operations on protocol */
+#define	PRU_SENSE	12	/* return status into m */
+#define	PRU_RCVOOB	13	/* retrieve out of band data */
+#define	PRU_SENDOOB	14	/* send out of band data */
+#define	PRU_SOCKADDR	15	/* fetch socket's address */
+#define	PRU_PEERADDR	16	/* fetch peer's address */
+#define	PRU_CONNECT2	17	/* connect two sockets */
+/* begin for protocols internal use */
+#define	PRU_FASTTIMO	18	/* 200ms timeout */
+#define	PRU_SLOWTIMO	19	/* 500ms timeout */
+#define	PRU_PROTORCV	20	/* receive from below */
+#define	PRU_PROTOSEND	21	/* send to below */
+.DE
+A call on the user request routine is of the form,
+.DS
+._f
+error = (*protosw[].pr_usrreq)(so, req, m, addr, rights);
+int error; struct socket *so; int req; struct mbuf *m, *addr, *rights;
+.DE
+The mbuf data chain \fIm\fP is supplied for output operations
+and for certain other operations where it is to receive a result.
+The address \fIaddr\fP is supplied for address-oriented requests
+such as PRU_BIND and PRU_CONNECT.
+The \fIrights\fP parameter is an optional pointer to an mbuf
+chain containing user-specified capabilities (see the \fIsendmsg\fP
+and \fIrecvmsg\fP system calls).  The protocol is responsible for
+disposal of the data mbuf chains on output operations.
+A non-zero return value gives a
+UNIX error number which should be passed to higher level software.
+The following paragraphs describe each
+of the requests possible.
+.IP PRU_ATTACH
+.br
+When a protocol is bound to a socket (with the \fIsocket\fP
+system call) the protocol module is called with this
+request.  It is the responsibility of the protocol module to
+allocate any resources necessary.
+The ``attach'' request
+will always precede any of the other requests, and should not
+occur more than once.
+.IP PRU_DETACH
+.br
+This is the antithesis of the attach request, and is used
+at the time a socket is deleted.  The protocol module may
+deallocate any resources assigned to the socket.
+.IP PRU_BIND
+.br
+When a socket is initially created it has no address bound
+to it.  This request indicates that an address should be bound to
+an existing socket.  The protocol module must verify that the
+requested address is valid and available for use.
+.IP PRU_LISTEN
+.br
+The ``listen'' request indicates the user wishes to listen
+for incoming connection requests on the associated socket.
+The protocol module should perform any state changes needed
+to carry out this request (if possible).  A ``listen'' request
+always precedes a request to accept a connection.
+.IP PRU_CONNECT
+.br
+The ``connect'' request indicates the user wants to a establish
+an association.  The \fIaddr\fP parameter supplied describes
+the peer to be connected to.  The effect of a connect request
+may vary depending on the protocol.  Virtual circuit protocols,
+such as TCP [Postel81b], use this request to initiate establishment of a
+TCP connection.  Datagram protocols, such as UDP [Postel80], simply
+record the peer's address in a private data structure and use
+it to tag all outgoing packets.  There are no restrictions
+on how many times a connect request may be used after an attach.
+If a protocol supports the notion of \fImulti-casting\fP, it
+is possible to use multiple connects to establish a multi-cast
+group.  Alternatively, an association may be broken by a
+PRU_DISCONNECT request, and a new association created with a
+subsequent connect request; all without destroying and creating
+a new socket.
+.IP PRU_ACCEPT
+.br
+Following a successful PRU_LISTEN request and the arrival
+of one or more connections, this request is made to
+indicate the user
+has accepted the first connection on the queue of
+pending connections.  The protocol module should fill
+in the supplied address buffer with the address of the
+connected party.
+.IP PRU_DISCONNECT
+.br
+Eliminate an association created with a PRU_CONNECT request.
+.IP PRU_SHUTDOWN
+.br
+This call is used to indicate no more data will be sent and/or
+received (the \fIaddr\fP parameter indicates the direction of
+the shutdown, as encoded in the \fIsoshutdown\fP system call).
+The protocol may, at its discretion, deallocate any data
+structures related to the shutdown and/or notify a connected peer
+of the shutdown.
+.IP PRU_RCVD
+.br
+This request is made only if the protocol entry in the protocol
+switch table includes the PR_WANTRCVD flag.
+When a user removes data from the receive queue this request
+will be sent to the protocol module.  It may be used to trigger
+acknowledgements, refresh windowing information, initiate
+data transfer, etc.
+.IP PRU_SEND
+.br
+Each user request to send data is translated into one or more
+PRU_SEND requests (a protocol may indicate that a single user
+send request must be translated into a single PRU_SEND request by
+specifying the PR_ATOMIC flag in its protocol description).
+The data to be sent is presented to the protocol as a list of
+mbufs and an address is, optionally, supplied in the \fIaddr\fP
+parameter.  The protocol is responsible for preserving the data
+in the socket's send queue if it is not able to send it immediately,
+or if it may need it at some later time (e.g. for retransmission).
+.IP PRU_ABORT
+.br
+This request indicates an abnormal termination of service.  The
+protocol should delete any existing association(s).
+.IP PRU_CONTROL
+.br
+The ``control'' request is generated when a user performs a
+UNIX \fIioctl\fP system call on a socket (and the ioctl is not
+intercepted by the socket routines).  It allows protocol-specific
+operations to be provided outside the scope of the common socket
+interface.  The \fIaddr\fP parameter contains a pointer to a static
+kernel data area where relevant information may be obtained or returned.
+The \fIm\fP parameter contains the actual \fIioctl\fP request code
+(note the non-standard calling convention).
+The \fIrights\fP parameter contains a pointer to an \fIifnet\fP structure
+if the \fIioctl\fP operation pertains to a particular network interface.
+.IP PRU_SENSE
+.br
+The ``sense'' request is generated when the user makes an \fIfstat\fP
+system call on a socket; it requests status of the associated socket. 
+This currently returns a standard \fIstat\fP structure.
+It typically contains only the
+optimal transfer size for the connection (based on buffer size,
+windowing information and maximum packet size).
+The \fIm\fP parameter contains a pointer
+to a static kernel data area where the status buffer should be placed.
+.IP PRU_RCVOOB
+.br
+Any ``out-of-band'' data presently available is to be returned.  An
+mbuf is passed to the protocol module, and the protocol
+should either place
+data in the mbuf or attach new mbufs to the one supplied if there is
+insufficient space in the single mbuf.
+An error may be returned if out-of-band data is not (yet) available
+or has already been consumed.
+The \fIaddr\fP parameter contains any options such as MSG_PEEK
+to examine data without consuming it.
+.IP PRU_SENDOOB
+.br
+Like PRU_SEND, but for out-of-band data.
+.IP PRU_SOCKADDR
+.br
+The local address of the socket is returned, if any is currently
+bound to it.  The address (with protocol specific format) is returned
+in the \fIaddr\frose-dotted
+primrose green
+primrose-haunted
+primrose-leaved
+primrose-scented
+primrose-spangled
+primrose-starred
+primrose-sweet
+primrose-tinted
+primrose tree
+primrose willow
+primrose yellow
+prim-seeming
+primuline color
+primuline yellow
+Primulinus hybrid
+primus stove
+prince-abbot
+prince-angel
+prince-bishop
+prince consort
+prince-duke
+prince elector
+prince-general
+prince-killing
+prince-poet
+prince-president
+prince-priest
+prince-primate
+prince-protected
+prince-proud
+prince regent
+prince-ridden
+prince royal
+princess pine
+princess regent
+princess-ship
+princess tree
+prince-teacher
+prince-trodden
+print cloth
+print cutter
+printing frame
+printing-in
+printing ink
+printing machine
+printing office
+printing-out
+printing press
+print-out
+print shop
+print trimmer
+prism binocular
+prism diopter
+prism glass
+prism level
+prism spectroscope
+prism telescope
+prison bird
+prison-bound
+prison breach
+prison-bred
+prison-bursting
+prison-caused
+prison-escaping
+prison-free
+prison house
+prison-made
+prison-making
+prison psychosis
+prison-taught
+prisse papyrus
+prittle-prattle
+private checker
+private school
+privation-proof
+privet adelia
+privet andromeda
+privet honeysuckle
+privy council
+privy councilor
+privy-councilship
+prize court
+prize crew
+prize fight
+prize fighter
+prize fighting
+prize-giving
+prize money
+prize-playing
+prize ring
+prize-taking
+prize winner
+prize-winning
+Pro-abyssinian
+Pro-african
+Pro-alabaman
+Pro-alaskan
+Pro-albanian
+Pro-albertan
+Pro-algerian
+Pro-allied
+Pro-ally
+Pro-alpine
+Pro-alsatian
+Pro-american
+Pro-americanism
+Pro-anatolian
+Pro-anglican
+Pro-annamese
+Pro-arab
+Pro-arabian
+Pro-arabic
+Pro-argentina
+Pro-argentinian
+Pro-arian
+Pro-aristotelian
+Pro-armenian
+Pro-arminian
+pro-art
+Pro-asian
+Pro-asiatic
+Pro-athanasian
+Pro-athenian
+Pro-atlantic
+Pro-australian
+Pro-austrian
+Pro-azorian
+probability curve
+Pro-baconian
+Pro-bahamian
+Pro-balkan
+Pro-baptist
+probate bond
+probate court
+probate duty
+probation officer
+Pro-bavarian
+Probe-bibel
+Pro-belgian
+probe-pointed
+Pro-berlin
+Pro-berlinian
+Pro-bermudian
+probe scissors
+Pro-bessarabian
+Pro-biblic
+Pro-biblical
+probirth-control
+Pro-boer
+Pro-boerism
+Pro-bohemian
+Pro-bolivian
+Pro-bolshevik
+Pro-bolshevism
+Pro-bolshevist
+Pro-bonapartean
+Pro-bonapartist
+proboscis monkey
+Pro-bosnian
+Pro-bostonian
+Pro-brahman
+Pro-brazilian
+Pro-british
+Pro-britisher
+Pro-britishism
+Pro-briton
+Pro-bryan
+Pro-buddhist
+Pro-buddhistic
+Pro-bulgarian
+Pro-burman
+pro-bus
+Pro-byronic
+Pro-byzantine
+Pro-caesar
+Pro-caesarian
+Pro-caledonian
+Pro-californian
+Pro-calvinism
+Pro-calvinist
+Pro-calvinistic
+Pro-calvinistically
+Pro-canadian
+Pro-cantabrigian
+Pro-cantonese
+Pro-caribbean
+Pro-carlylean
+Pro-carolinian
+Pro-castilian
+Pro-catalonian
+Pro-cathedralist
+Pro-catholic
+Pro-catholicism
+Pro-caucasian
+Pro-celtic
+process butter
+processionary moth
+procession flower
+process milling
+process plate
+process printer
+process printing
+process server
+process shot
+proces-verbal
+proces-verbaux
+Pro-chicagoan
+Pro-chilean
+Pro-chinese
+pro-city
+Pro-colombian
+Pro-colonial
+Pro-confederate
+Pro-confucian
+Pro-congressional
+Pro-continental
+pro-co-operation
+Pro-corsican
+Pro-costa rican
+Pro-cretan
+Pro-croatian
+Pro-cuban
+procuration fee
+procurator fiscal
+procurator-general
+Pro-cymric
+Pro-cyprian
+Pro-czech
+Pro-czechoslovakian
+Pro-dalmation
+Pro-danish
+Pro-darwinian
+Pro-darwinism
+Pro-dominican
+Pro-dominion
+Pro-dreyfusard
+produce race
+producer gas
+product engineer
+production curve
+production goods
+production manager
+Pro-dutch
+Pro-ecuadorean
+Pro-egyptian
+Pro-elizabethan
+Pro-emersonian
+Pro-emersonianism
+Pro-english
+Pro-entente
+Pro-episcopal
+Pro-eskimo
+Pro-esperantist
+Pro-esperanto
+Pro-estonian
+Pro-ethiopian
+Pro-euclidean
+Pro-eurasian
+Pro-european
+Pro-evangelical
+profanity-proof
+Pro-fascism
+Pro-fascist
+Pro-fascisti
+professor ordinarius
+proficiency badge
+profile board
+profile cutter
+profile drag
+profile line
+profile machine
+profile map
+profile paper
+profiling machine
+Pro-finnish
+profit-building
+profit-making
+profit-producing
+profit-seeking
+profit sharing
+profit-taking
+profit-yielding
+Pro-flemish
+Pro-florentine
+Pro-floridian
+pro forma balance sheet
+Pro-france
+Pro-french
+Pro-freudian
+Pro-friesian
+Pro-friesic
+Pro-gaelic
+Pro-genoan
+Pro-gentile
+Pro-german
+Pro-germanism
+Pro-gothic
+program clock
+program music
+Pro-grecian
+Pro-greek
+progress chart
+progress clerk
+Pro-guatemalan
+Pro-guianan
+Pro-guianese
+Pro-guinean
+Pro-haitian
+Pro-hanoverian
+Pro-hapsburg
+Pro-hawaiian
+Pro-hellenic
+Prohibition party
+prohibition-proof
+Pro-hindu
+Pro-hitler
+Pro-hitlerism
+Pro-hitlerite
+Pro-hohenstaufen
+Pro-hohenzollern
+Pro-honduran
+Pro-hungarian
+Pro-icelandic
+pro-immigrationist
+Pro-indian
+pro-infinitive
+Pro-iranian
+Pro-irish
+Pro-irishism
+Pro-italian
+Pro-jacobean
+Pro-japanese
+Pro-japanism
+Pro-javan
+Pro-javanese
+projectile anchor
+projectile lathe
+projecting microscope
+projection booth
+projection fiber
+projection machine
+projection print
+projection room
+Pro-jeffersonian
+Pro-jewish
+Pro-judaic
+Pro-judaism
+Pro-kansan
+Pro-korean
+Pro-lamarckian
+Pro-latin
+Pro-latinism
+Pro-latvian
+Pro-league
+Pro-leaguer
+Pro-lettish
+Pro-liberian
+Pro-lithuanian
+Pro-lutheran
+Pro-macedonian
+Pro-magyar
+Pro-maltese
+Pro-malthusian
+pro-man
+Pro-manchukuoan
+Pro-manchurian
+Pro-masonic
+Pro-mediterranean
+promenade concert
+promenade deck
+Pro-methodist
+Pro-mexican
+promise-bound
+promise-breach
+promise-breaking
+promise-crammed
+promise-fed
+promise-fulfilling
+promise-keeping
+promise-led
+promise-making
+promise-performing
+pro-modern
+Pro-mohammedan
+Pro-mongolian
+Pro-mormon
+Pro-moroccan
+Pro-moslem
+prompt dower
+prompt note
+Pro-neapolitan
+prone pressure method
+Pro-netherlandian
+prong box
+prong budding
+prong chuck
+prong die
+prong hoe
+prong-horned
+prong key
+Pro-nicaraguan
+Pro-nordic
+Pro-norman
+Pro-norwegian
+pro-observance
+pro-oceanic
+pro-ode
+pro-oestrous
+pro-oestrum
+pro-oestrys
+proof armor
+proof charge
+proof coin
+proof-correct
+proof correction
+proof leaf
+proof paper
+proof plane
+proof planer
+proof press
+proof-proof
+proof sheet
+proof spirit
+pro-opera
+pro-operation
+pro-opic
+pro-opium
+Pro-oriental
+pro-orthodox
+pro-orthodoxical
+pro-ostracal
+pro-ostracum
+pro-otic
+propaganda-proof
+Pro-panamanian
+Pro-paraguayan
+propeller race
+propeller shaft
+Pro-persian
+property-increment tax
+property insurance
+property man
+property master
+property owner
+Pro-peruvian
+prophet-bard
+prophet flower
+prophetico-historical
+Prophetico-messianic
+prophet-king
+prophet-painter
+prophet-poet
+prophet-preacher
+prophet-statesman
+Pro-philippine
+prop joint
+Pro-polish
+Pro-polynesian
+Pro-portuguese
+proposal bond
+pro-pre-existentiary
+Pro-presbyterian
+prop root
+Pro-protestant
+Pro-prussian
+prop word
+propyl alcohol
+Pro-quaker
+pro rata
+Pro-renaissance
+Pro-roman
+Pro-rumanian
+Pro-russian
+Pro-salvadoran
+Pro-samoan
+Pro-sardinian
+Pro-saxon
+Pro-scandinavian
+proscenium arch
+proscenium box
+Pro-scriptural
+prosecution-proof
+Pro-semite
+Pro-semitism
+prose poem
+prose poet
+Pro-serb
+Pro-serbian
+prose rhythm
+Pro-shakespearian
+Pro-siamese
+Pro-sicilian
+pro-skin
+Pro-slav
+Pro-slavic
+Pro-slavonic
+Pro-southern
+Pro-soviet
+Pro-spanish
+Pro-spartan
+prospect glass
+prospective glass
+prosperity-proof
+pro-state
+Pro-sudanese
+Pro-sumatran
+Pro-swedish
+Pro-swiss
+Pro-syrian
+Pro-tasmanian
+protection forest
+protector paravane
+protein crystal
+protein factor
+protein-free
+protein milk
+protein shock
+protein therapy
+pro tem
+pro tempore
+proteus animalcule
+Pro-teuton
+Pro-teutonic
+Pro-teutonism
+Proto-apostolic
+Proto-arabic
+Proto-armenian
+Proto-aryan
+Proto-attic
+Proto-australian
+Proto-australoid
+Proto-babylonian
+Proto-berber
+Proto-caucasic
+Proto-celtic
+Proto-chaldaic
+Proto-corinthian
+Proto-doric
+Proto-egyptian
+Proto-elamite
+Proto-etruscan
+Proto-european
+Proto-germanic
+Proto-gothonic
+Proto-greek
+Proto-hattic
+Proto-hellenic
+Proto-hittite
+Proto-indic
+Proto-ionic
+Proto-italic
+Proto-khattish
+Proto-malay
+Proto-malayan
+Proto-mark
+Proto-matthew
+Proto-mede
+Proto-mongol
+Proto-mycenean
+Proto-phoenician
+Proto-polynesian
+Proto-renaissance
+Proto-semitic
+Proto-solutrean
+Proto-teutonic
+Pro-tripolitan
+Pro-tunisian
+Pro-turk
+Pro-turkish
+Pro-tyrolese
+proud-blind
+proud-blooded
+proud-crested
+proud-exulting
+proud flesh
+proud-glancing
+proud-looking
+proud-minded
+proud-mindedness
+proud-paced
+proud-pillared
+proud-prancing
+proud-quivered
+proud-spirited
+proud-stomached
+Pro-ukrainian
+Pro-ulsterite
+Pro-unitarian
+Pro-uruguayaP parameter.
+.IP PRU_PEERADDR
+.br
+The address of the peer to which the socket is connected is returned.
+The socket must be in a SS_ISCONNECTED state for this request to
+be made to the protocol.  The address format (protocol specific) is
+returned in the \fIaddr\fP parameter.
+.IP PRU_CONNECT2
+.br
+The protocol module is supplied two sockets and requested to
+establish a connection between the two without binding any
+addresses, if possible.  This call is used in implementing
+the
+.IR socketpair (2)
+system call.
+.PP
+The following requests are used internally by the protocol modules
+and are never generated by the socket routines.  In certain instances,
+they are handed to the \fIpr_usrreq\fP routine solely for convenience
+in tracing a protocol's operation (e.g. PRU_SLOWTIMO).
+.IP PRU_FASTTIMO
+.br
+A ``fast timeout'' has occurred.  This request is made when a timeout
+occurs in the protocol's \fIpr_fastimo\fP routine.  The \fIaddr\fP
+parameter indicates which timer expired.
+.IP PRU_SLOWTIMO
+.br
+A ``slow timeout'' has occurred.  This request is made when a timeout
+occurs in the protocol's \fIpr_slowtimo\fP routine.  The \fIaddr\fP
+parameter indicates which timer expired.
+.IP PRU_PROTORCV
+.br
+This request is used in the protocol-protocol interface, not by the
+routines.  It requests reception of data destined for the protocol and
+not the user.  No protocols currently use this facility.
+.IP PRU_PROTOSEND
+.br
+This request allows a protocol to send data destined for another
+protocol module, not a user.  The details of how data is marked
+``addressed to protocol'' instead of ``addressed to user'' are
+left to the protocol modules.  No protocols currently use this facility.
+                                                                                                                                                                                                                                                                                                                                                                               .\" Copyright (c) 1983,1986 Regents of the University of California.
+.\" All rights reserved.  The Berkeley software License Agreement
+.\" specifies the terms and conditions for redistribution.
+.\"
+.\"	@(#)f.t	6.3 (Berkeley) 6/5/86
+.\"
+.nr H2 1
+.\".ds RH Acknowledgements
+.br
+.ne 2i
+.SH
+\s+2Acknowledgements\s0
+.PP
+The internal structure of the system is patterned
+after the Xerox PUP architecture [Boggs79], while in certain
+places the Internet
+protocol family has had a great deal of influence in the design.
+The use of software interrupts for process invocation
+is based on similar facilities found in
+the VMS operating system.
+Many of the
+ideas related to protocol modularity, memory management, and network
+interfaces are based on Rob Gurwitz's TCP/IP implementation for the 
+4.1BSD version of UNIX on the VAX [Gurwitz81].
+Greg Chesson explained his use of trailer encapsulations in Datakit,
+instigating their use in our system.
+.\".ds RH References
+.nr H2 1
+.sp 2
+.ne 2i
+.SH
+\s+2References\s0
+.LP
+.IP [Boggs79] 20
+Boggs, D. R., J. F. Shoch, E. A. Taft, and R. M. Metcalfe;
+\fIPUP: An Internetwork Architecture\fP.  Report CSL-79-10.
+XEROX Palo Alto Research Center, July 1979.
+.IP [BBN78] 20
+Bolt Beranek and Newman;
+Specification for the Interconnection of Host and IMP.
+BBN Technical Report 1822.  May 1978.
+.IP [Cerf78] 20
+Cerf, V. G.;  The Catenet Model for Internetworking.
+Internet Working Group, IEN 48.  July 1978.
+.IP [Clark82] 20
+Clark, D. D.;  Window and Acknowledgement Strategy in TCP, RFC-813.
+Network Information Center, SRI International.  July 1982.
+.IP [DEC80] 20
+Digital Equipment Corporation;  \fIDECnet DIGITAL Network
+Architecture \- General Description\fP.  Order No.
+AA-K179A-TK.  October 1980.
+.IP [Gurwitz81] 20
+Gurwitz, R. F.;  VAX-UNIX Networking Support Project \- Implementation
+Description.  Internetwork Working Group, IEN 168.
+January 1981.
+.IP [ISO81] 20
+International Organization for Standardization.
+\fIISO Open Systems Interconnection \- Basic Reference Model\fP.
+ISO/TC 97/SC 16 N 719.  August 1981.
+.IP [Joy86] 20
+Joy, W.; Fabry, R.; Leffler, S.; McKusick, M.; and Karels, M.;
+Berkeley Software Architecture Manual, 4.3BSD Edition.
+\fIUNIX Programmer's Supplementary Documents\fP, Vol. 1 (PS1:6).
+Computer Systems Research Group,
+University of California, Berkeley.
+May, 1986.
+.IP [Leffler84] 20
+Leffler, S.J. and Karels, M.J.; Trailer Encapsulations, RFC-893.
+Network Information Center, SRI International.
+April 1984.
+.IP [Postel80] 20
+Postel, J.  User Datagram Protocol, RFC-768.
+Network Information Center, SRI International.  May 1980.
+.IP [Postel81a] 20
+Postel, J., ed.  Internet Protocol, RFC-791.
+Network Information Center, SRI International.  September 1981.
+.IP [Postel81b] 20
+Postel, J., ed.  Transmission Control Protocol, RFC-793.
+Network Information Center, SRI International.  September 1981.
+.IP [Postel81c] 20
+Postel, J.  Internet Control Message Protocol, RFC-792.
+Network Information Center, SRI International.  September 1981.
+.IP [Xerox81] 20
+Xerox Corporation.  \fIInternet Transport Protocols\fP. 
+Xerox System Integration Standard 028112.  December 1981.
+.IP [Zimmermann80] 20
+Zimmermann, H.  OSI Reference Model \- The ISO Model of
+Architecture for Open Systems Interconnection.
+\fIIEEE Transactions on Communications\fP.  Com-28(4); 425-432.
+April 1980.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 .\" Copyright (c) 1983,1986 Regents of the University of California.
+.\" All rights reserved.  The Berkeley software License Agreement
+.\" specifies the terms and conditions for redistribution.
+.\"
+.\"	@(#)d.t	6.3 (Berkeley) 6/5/86
+.\"
+.nr H2 1
+.\".ds RH "Out of band data
+.br
+.ne 2i
+.NH
+\s+2Out of band data\s0
+.PP
+Out of band data is a facility peculiar to the stream socket
+abstraction defined.  Little agreement appears to exist as
+to what its semantics should be.  TCP defines the notion of
+``urgent data'' as in-line, while the NBS protocols [Burruss81]
+and numerous others provide a fully independent logical
+transmission channel along which out of band data is to be
+sent.
+In addition, the amount of the data which may be sent as an out
+of band message varies from protocol to protocol; everything
+from 1 bit to 16 bytes or more.
+.PP
+A stream socket's notion of out of band data has been defined
+as the lowest reasonable common denominator (at least reasonable
+in our minds);
+clearly this is subject to debate.  Out of band data is expected
+to be transmitted out of the normal sequencing and flow control
+constraints of the data stream.  A minimum of 1 byte of out of
+band data and one outstanding out of band message are expected to
+be supported by the protocol supporting a stream socket.
+It is a protocol's prerogative to support larger-sized messages, or
+more than one outstanding out of band message at a time.
+.PP
+Out of band data is maintained by the protocol and is usually not
+stored in the socket's receive queue.
+A socket-level option, SO_OOBINLINE,
+is provided to force out-of-band data to be placed in the normal
+receive queue when urgent data is received;
+this sometimes amelioriates problems due to loss of data
+when multiple out-of-band
+segments are received before the first has been passed to the user.
+The PRU_SENDOOB and PRU_RCVOOB
+requests to the \fIpr_usrreq\fP routine are used in sending and
+receiving data.
+                                                                                                            n
+Pro-venetian
+Pro-venezuelan
+pro-vice-chancellor
+proving ground
+Pro-virginian
+provision account
+provision tree
+provost court
+provost guard
+provost marshal
+Pro-welsh
+Pro-western
+Pro-whig
+prowl car
+Proxima centauri
+proximity fuze
+Pro-yankee
+Pro-yugoslavian
+Pro-zionism
+Pro-zionist
+prune purple
+prune tree
+pruning hook
+pruning shears
+pry pole
+psalm book
+psalm singer
+psalm tone
+psalm tune
+pseudo abolitionist
+pseudo abstainer
+pseudo academy
+pseudo acceptance
+pseudo accident
+pseudo acid
+pseudo acquaintance
+pseudo actor
+pseudo actress
+pseudo aesthete
+pseudo aestheticism
+pseudo affection
+Pseudo-african
+pseudo agent
+pseudo alliance
+pseudo ally
+pseudo alumna
+pseudo alumnus
+pseudo amateur
+Pseudo american
+pseudo analogy
+pseudo ancestor
+pseudo angel
+Pseudo-angle
+pseudo animal
+pseudo animalism
+pseudo announcement
+pseudo apology
+pseudo applicant
+pseudo application
+pseudo appointment
+pseudo appreciation
+Pseudo-areopagite
+Pseudo-argentinian
+pseudo aristocrat
+Pseudo-aristotelian
+pseudo arrest
+pseudo art
+pseudo artist
+Pseudo-aryan
+pseudo asceticism
+pseudo assertion
+pseudo association
+Pseudo-assyrian
+pseudo astonishment
+pseudo aunt
+Pseudo-australian
+Pseudo-austrian
+pseudo author
+pseudo authoress
+pseudo authorization
+Pseudo-babylonian
+pseudo bacillus
+pseudo banker
+pseudo bankruptcy
+pseudo baptism
+Pseudo-baptist
+pseudo bard
+pseudo base
+Pseudo-belgian
+pseudo benefactor
+pseudo benefactress
+pseudo benevolence
+pseudo bible
+pseudo biographer
+pseudo biography
+pseudo biology
+pseudo bird
+pseudo bishop
+pseudo boa
+Pseudo-bohemian
+Pseudo-bolivian
+pseudo bookcase
+pseudo boy
+Pseudo-brahman
+Pseudo-brazilian
+pseudo bride
+pseudo broker
+pseudo brokerage
+pseudo brother
+Pseudo buddhism
+Pseudo-buddhist
+Pseudo-bulgarian
+Pseudo-callisthenes
+Pseudo-canadian
+pseudo cancellation
+pseudo candidacy
+pseudo candidate
+pseudo candor
+pseudo captive
+pseudo capture
+Pseudo-carthaginian
+pseudo catholic
+pseudo catholicism
+pseudo census
+pseudo champion
+pseudo championship
+pseudo charity
+pseudo chemist
+pseudo chemistry
+Pseudo-chilean
+Pseudo-chinese
+Pseudo christ
+Pseudo christian
+Pseudo christianity
+Pseudo christology
+Pseudo-ciceronian
+pseudo citizen
+pseudo citizenship
+Pseudo-clementine
+pseudo clergy
+pseudo clergyman
+pseudo clerk
+pseudo client
+pseudo club
+pseudo college
+pseudo competitor
+pseudo conclusion
+pseudo cone
+pseudo confession
+pseudo confessional
+pseudo confirmation
+pseudo conflict
+pseudo connection
+pseudo consent
+pseudo conservator
+pseudo conversion
+pseudo cook
+pseudo cordiality
+pseudo corporation
+pseudo count
+pseudo courtesy
+pseudo courtier
+pseudo cousin
+pseudo creditor
+pseudo crisis
+pseudo critic
+pseudo criticism
+pseudo crystal
+pseudo cult
+pseudo cultivation
+pseudo culture
+Pseudo-dantesque
+pseudo date
+pseudo death
+pseudo declaration
+pseudo deficit
+pseudo delegate
+pseudo delegation
+pseudo democracy
+pseudo deputation
+pseudo deputy
+pseudo devotee
+pseudo devotion
+pseudo dike
+Pseudo-dionysius
+pseudo diplomacy
+pseudo diplomat
+pseudo distance
+pseudo distribution
+pseudo distributor
+pseudo divination
+pseudo divine
+pseudo divinity
+pseudo doctor
+pseudo donation
+pseudo donor
+pseudo drama
+pseudo dramatist
+pseudo duke
+Pseudo-dutch
+pseudo earl
+Pseudo-east indian
+pseudo economics
+pseudo economy
+pseudo editor
+pseudo editorial
+pseudo education
+pseudo educator
+Pseudo-egyptian
+pseudo election
+pseudo electorate
+Pseudo-elizabethan
+pseudo emotion
+pseudo endeavor
+Pseudo-english
+pseudo enthusiasm
+pseudo enthusiast
+pseudo episcopacy
+Pseudo-episcopalian
+pseudo equality
+pseudo ethics
+pseudo etymologist
+pseudo etymology
+Pseudo-european
+pseudo evangelist
+pseudo example
+pseudo exemplar
+pseudo experiment
+pseudo expert
+pseudo exposure
+pseudo fabric
+pseudo failure
+pseudo faith
+pseudo fame
+pseudo farmer
+pseudo farming
+pseudo father
+pseudo femininity
+pseudo feminism
+pseudo feminist
+pseudo fertilization
+pseudo finality
+pseudo flatterer
+pseudo flattery
+pseudo form
+Pseudo-french
+pseudo fruit
+pseudo generosity
+pseudo geniality
+pseudo genius
+pseudo gentility
+pseudo gentleman
+Pseudo-georgian
+Pseudo-german
+pseudo geyser
+pseudo ghost
+Pseudo-gothic
+Pseudo-grecian
+Pseudo-greek
+pseudo healer
+pseudo heart
+pseudo heathen
+pseudo hero
+Pseudo-hindu
+Pseudo-hittite
+Pseudo-homeric
+pseudo humanism
+pseudo humanist
+pseudo humanitarian
+Pseudo-hungarian
+pseudo husband
+pseudo identity
+pseudo impartiality
+Pseudo-incan
+pseudo independence
+Pseudo-indian
+pseudo information
+pseudo insanity
+pseudo inspiration
+pseudo internationalism
+pseudo internationalist
+pseudo invalid
+pseudo invalidism
+pseudo-ionone
+Pseudo-iranian
+Pseudo-irish
+Pseudo-isidore
+Pseudo-isidorian
+pseudo island
+pseudo isle
+pseudo-isometric
+Pseudo-italian
+Pseudo-japanese
+pseudo jaundice
+pseudo judge
+pseudo judgment
+Pseudo-junker
+pseudo justice
+pseudo knight
+pseudo label
+pseudo learning
+pseudo legality
+pseudo legend
+pseudo legislation
+pseudo legislator
+pseudo liberalism
+pseudo liberality
+pseudo liquidation
+pseudo literature
+pseudo loan
+pseudologia phantastica
+pseudo lord
+pseudo mahogany
+pseudo marble
+pseudo marquis
+pseudo marriage
+pseudo martyr
+pseudo martyrdom
+pseudo masculinism
+pseudo masculinity
+pseudo masterpiece
+Pseudo-mayan
+pseudo medievalism
+pseudo meditation
+pseudo member
+pseudo membership
+pseudo memory
+pseudo messenger
+Pseudo-messiah
+Pseudo-messianic
+Pseudo-methodist
+Pseudo-mexican
+pseudo militarism
+Pseudo-miltonic
+pseudo minister
+pseudo ministry
+pseudo miracle
+pseudo modesty
+Pseudo-mohammedan
+Pseudo-mohammedanism
+pseudo monastery
+Pseudo-mongolian
+pseudo monk
+pseudo moralist
+pseudo morality
+Pseudo-moslem
+pseudo myth
+pseudo narcotism
+pseudo nationalism
+pseudo nobility
+pseudo noble
+Pseudo-norwegian
+pseudo nymph
+pseudo-occidental
+pseudo occidentalism
+pseudo occupation
+pseudo official
+pseudo officialism
+Pseudo-oriental
+pseudo orientalism
+pseudo-orthorhombic
+pseudo-osteomalacia
+pseudo owner
+pseudo pagan
+Pseudo-panamanian
+pseudo-papal
+pseudo parallel
+pseudo parasite
+pseudo parent
+pseudo parson
+pseudo participation
+pseudo partner
+pseudo partnership
+pseudo pastor
+pseudo pastorate
+pseudo patriot
+pseudo patriotism
+pseudo patron
+pseudo patronage
+pseudo payment
+pseudo peasant
+pseudo peasantry
+Pseudo-persian
+pseudo philanthropist
+pseudo philanthropy
+pseudo philologist
+pseudo philology
+pseudo philosopher
+pseudo philosophy
+pseudo physician
+pseudo piety
+pseudo pigmentation
+Pseudo-pindaric
+pseudo poet
+pseudo poetess
+pseudo poetry
+Pseudo-polish
+pseudo politician
+pseudo politics
+pseudo popularity
+pseudo possession
+pseudo possessor
+pseudo poverty
+pseudo precedent
+Pseudo-presbyterian
+pseudo prescription
+pseudo presentiment
+pseudo priest
+pseudo priesthood
+pseudo prince
+pseudo principality
+pseudo profession
+pseudo professor
+pseudo prohibition
+pseudo prohibitionist
+pseudo prophecy
+pseudo prophet
+pseudo prophetess
+pseudo prosperity
+pseudo psychologist
+pseudo psychology
+pseudo purity
+pseudo ray
+pseudo realism
+pseudo recognition
+pseudo recollection
+pseudo reconciliation
+pseudo reform
+pseudo reformation
+pseudo reformatory
+pseudo reformer
+pseudo registration
+pseudo relation
+pseudo relationship
+pseudo relative
+pseudo religion
+pseudo republic
+Pseudo-republican
+pseudo residence
+pseudo resident
+pseudo resignation
+pseudo reversal
+pseudo rheumatism
+Pseudo-roman
+pseudo romanticism
+pseudo royal
+pseudo royalty
+Pseudo-russian
+pseudo sacrilege
+pseudo saint
+pseudo saintliness
+pseudo sanctity
+pseudo sanctuary
+pseudo satire
+pseudo satirist
+pseudo scholar
+pseudo scholarship
+pseudo science
+pseudo scientist
+Pseudo-semitic
+pseudo sensation
+pseudo sense
+pseudo sensibility
+Pseudo-serbian
+pseudo servility
+pseudo servitor
+pseudo servitude
+Pseudo-shakespearean
+pseudo signature
+pseudo siphon
+pseudo slavery
+pseudo socialism
+pseudo socialist
+Pseudo-socratic
+Pseudo-south african
+Pseudo-spanish
+pseudo specialist
+pseudo specialty
+pseudo specter
+pseudo spirit
+pseudo spirituality
+pseudo statement
+pseudo stem
+pseudo student
+pseudo subtlety
+pseudo suicide
+Pseudo-swedish
+pseudo symptom
+pseudo temperance
+pseudo theft
+pseudo tribe
+pseudo tribulation
+pseudo tribute
+Pseudo-turk
+Pseudo-turkish
+pseudo-uniseptate
+pseudo university
+pseudo-urate
+pseudo-urea
+pseudo-uric
+Pseudo-vergilian
+Pseudo-victorian
+pseudo virgin
+pseudo witness
+pseudo worship
+pseudo zeal
+P-shaped
+P station
+psycho-asthenics
+psychopathia sexualis
+ptomaine poisoning
+P-tongue
+P trap
+puber.\" Copyright (c) 1983,1986 Regents of the University of California.
+.\" All rights reserved.  The Berkeley software License Agreement
+.\" specifies the terms and conditions for redistribution.
+.\"
+.\"	@(#)e.t	6.3 (Berkeley) 6/5/86
+.\"
+.nr H2 1
+.\".ds RH "Trailer protocols
+.br
+.ne 2i
+.NH
+\s+2Trailer protocols\s0
+.PP
+Core to core copies can be expensive.
+Consequently, a great deal of effort was spent
+in minimizing such operations.  The VAX architecture
+provides virtual memory hardware organized in
+page units.  To cut down on copy operations, data
+is kept in page-sized units on page-aligned
+boundaries whenever possible.  This allows data
+to be moved in memory simply by remapping the page
+instead of copying.  The mbuf and network
+interface routines perform page table manipulations
+where needed, hiding the complexities of the VAX
+virtual memory hardware from higher level code. 
+.PP
+Data enters the system in two ways: from the user,
+or from the network (hardware interface).  When data
+is copied from the user's address space
+into the system it is deposited in pages (if sufficient
+data is present).
+This encourages the user to transmit information in
+messages which are a multiple of the system page size.
+.PP
+Unfortunately, performing a similar operation when taking
+data from the network is very difficult.
+Consider the format of an incoming packet.  A packet
+usually contains a local network header followed by
+one or more headers used by the high level protocols. 
+Finally, the data, if any, follows these headers.  Since
+the header information may be variable length, DMA'ing the eventual
+data for the user into a page aligned area of
+memory is impossible without
+\fIa priori\fP knowledge of the format (e.g., by supporting
+only a single protocol header format).
+.PP
+To allow variable length header information to
+be present and still ensure page alignment of data,
+a special local network encapsulation may be used.
+This encapsulation, termed a \fItrailer protocol\fP [Leffler84],
+places the variable length header information after
+the data.  A fixed size local network
+header is then prepended to the resultant packet. 
+The local network header contains the size of the
+data portion (in units of 512 bytes), and a new \fItrailer protocol
+header\fP, inserted before the variable length
+information, contains the size of the variable length
+header information.  The following trailer
+protocol header is used to store information
+regarding the variable length protocol header:
+.DS
+._f
+struct {
+	short	protocol;	/* original protocol no. */
+	short	length;	/* length of trailer */
+};
+.DE
+.PP
+The processing of the trailer protocol is very
+simple.  On output, the local network header indicates that
+a trailer encapsulation is being used.
+The header also includes an indication
+of the number of data pages present before the trailer
+protocol header.  The trailer protocol header is
+initialized to contain the actual protocol identifier and the
+variable length header size, and is appended to the data
+along with the variable length header information.
+.PP
+On input, the interface routines identify the
+trailer encapsulation
+by the protocol type stored in the local network header,
+then calculate the number of
+pages of data to find the beginning of the trailer. 
+The trailing information is copied into a separate
+mbuf and linked to the front of the resultant packet.
+.PP
+Clearly, trailer protocols require cooperation between
+source and destination.  In addition, they are normally
+cost effective only when sizable packets are used.  The
+current scheme works because the local network encapsulation
+header is a fixed size, allowing DMA operations
+to be performed at a known offset from the first data page
+being received.  Should the local network header be
+variable length this scheme fails. 
+.PP
+Statistics collected indicate that as much as 200Kb/s
+can be gained by using a trailer protocol with
+1Kbyte packets.  The average size of the variable
+length header was 40 bytes (the size of a
+minimal TCP/IP packet header).  If hardware
+supports larger sized packets, even greater gains
+may be realized.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              .\" Copyright (c) 1983,1986 Regents of the University of California.
+.\" All rights reserved.  The Berkeley software License Agreement
+.\" specifies the terms and conditions for redistribution.
+.\"
+.\"	@(#)0.t	6.3 (Berkeley) 6/5/86
+.\"
+.if n .ND
+.TL
+Networking Implementation Notes
+.br
+4.3BSD Edition
+.AU
+Samuel J. Leffler, William N. Joy, Robert S. Fabry, and Michael J. Karels
+.AI
+Computer Systems Research Group
+Computer Science Division
+Department of Electrical Engineering and Computer Science
+University of California, Berkeley
+Berkeley, CA  94720
+.AB
+.FS
+* UNIX is a trademark of Bell Laboratories.
+.FE
+This report describes the internal structure of the
+networking facilities developed for the 4.3BSD version
+of the UNIX* operating system
+for the VAX\(dg.  These facilities
+.FS
+\(dg DEC, VAX, DECnet, and UNIBUS are trademarks of
+Digital Equipment Corporation.
+.FE
+are based on several central abstractions which
+structure the external (user) view of network communication
+as well as the internal (system) implementation.
+.PP
+The report documents the internal structure of the networking system.
+The ``Berkeley Software Architecture Manual, 4.3BSD Edition'' (PS1:6)
+provides a description of the user interface to the networking facilities.
+.sp
+.LP
+Revised June 5, 1986
+.AE
+.LP
+.\".de PT
+.\".lt \\n(LLu
+.\".pc %
+.\".nr PN \\n%
+.\".tl '\\*(LH'\\*(CH'\\*(RH'
+.\".lt \\n(.lu
+.\"..
+.\".ds RH Contents
+.OH 'Networking Implementation Notes''SMM:15-%'
+.EH 'SMM:15-%''Networking Implementation Notes'
+.bp
+.ce
+.B "TABLE OF CONTENTS"
+.LP
+.sp 1
+.nf
+.B "1.  Introduction"
+.LP
+.sp .5v
+.nf
+.B "2.  Overview"
+.LP
+.sp .5v
+.nf
+.B "3.  Goals
+.LP
+.sp .5v
+.nf
+.B "4.  Internal address representation"
+.LP
+.sp .5v
+.nf
+.B "5.  Memory management"
+.LP
+.sp .5v
+.nf
+.B "6.  Internal layering
+6.1.    Socket layer
+6.1.1.    Socket state
+6.1.2.    Socket data queues
+6.1.3.    Socket connection queuing
+6.2.    Protocol layer(s)
+6.3.    Network-interface layer
+6.3.1.    UNIBUS interfaces
+.LP
+.sp .5v
+.nf
+.B "7.  Socket/protocol interface"
+.LP
+.sp .5v
+.nf
+.B "8.  Protocol/protocol interface"
+8.1.     pr_output
+8.2.     pr_input
+8.3.     pr_ctlinput
+8.4.     pr_ctloutput
+.LP
+.sp .5v
+.nf
+.B "9.  Protocol/network-interface interface"
+9.1.     Packet transmission
+9.2.     Packet reception
+.LP
+.sp .5v
+.nf
+.B "10. Gateways and routing issues
+10.1.     Routing tables
+10.2.     Routing table interface
+10.3.     User level routing policies
+.LP
+.sp .5v
+.nf
+.B "11. Raw sockets"
+11.1.     Control blocks
+11.2.     Input processing
+11.3.     Output processing
+.LP
+.sp .5v
+.nf
+.B "12. Buffering and congestion control"
+12.1.     Memory management
+12.2.     Protocol buffering policies
+12.3.     Queue limiting
+12.4.     Packet forwarding
+.LP
+.sp .5v
+.nf
+.B "13. Out of band data"
+.LP
+.sp .5v
+.nf
+.B "14. Trailer protocols"
+.LP
+.sp .5v
+.nf
+.B Acknowledgements
+.LP
+.sp .5v
+.nf
+.B References
+.bp
+.de _d
+.if t .ta .6i 2.1i 2.6i
+.\" 2.94 went to 2.6, 3.64 to 3.30
+.if n .ta .84i 2.6i 3.30i
+..
+.de _f
+.if t .ta .5i 1.25i 2.5i
+.\" 3.5i went to 3.8i
+.if n .ta .7i 1.75i 3.8i
+..
+                           tal gland
+puberty gland
+public enemy
+public health
+public house
+publicity law
+publicity manager
+publicity-proof
+public law
+public librarian
+public library
+public-minded
+public-mindedness
+public nuisance
+public-official bond
+public-opinion poll
+public orator
+public school
+public servant
+public service
+public speaker
+public speaking
+public-spirited
+public-spiritedly
+public-spiritedness
+public-voiced
+public works
+puce oxide
+pudding bag
+pudding face
+pudding-faced
+pudding grass
+pudding-shaped
+pudding sleeve
+pudding stone
+pudding time
+puddle ball
+puddle bar
+puddle duck
+puddle rolls
+puddle wall
+puddling furnace
+Pueblo indian
+puerperal fever
+Puerto rican
+Puerto rico
+puff adder
+puff box
+puffer pipe
+puff-fish
+puff-leg
+puff paste
+puff-puff
+puff shark
+puff sleeve
+pug dog
+pug-faced
+pug head
+pug knife
+pug moth
+pug nose
+pug-nosed
+pug-pile
+pug piling
+puke-stocking
+pullboat logging
+pull box
+pull broach
+pull-drive
+puller-in
+puller-out
+pullet disease
+pulley block
+pulley chain
+pulley frame
+pulley lathe
+pulley oiler
+pulley-shaped
+pulley stile
+pulley tap
+pulling-out
+pull-in torque
+pull lamp holder
+pull-off
+pull-on
+pull-out
+pull-out torque
+pull-over
+pull pin
+pull station
+pull strap
+pull switch
+pull-through
+pull-through torque
+pull-up
+pully-haul
+pully-hauly
+pulp canal
+pulp cavity
+pulp chamber
+pulp engine
+pulpit cloth
+pulpit cross
+pulpit rock
+pulp lead
+pulp machine
+pulp nodule
+pulsation pump
+pulsation theory
+pulse deficit
+pulse family
+pulse glass
+pulse-jet engine
+pulse rate
+pulse-time modulation
+pulse wave
+pulsion diverticulum
+pulvering day
+pulverizer harrow
+pumice soap
+pumice stone
+pump-back method
+pump bob
+pump brake
+pump cylinder
+pump doctor
+pump drill
+pump gun
+pump handle
+pump-handler
+pump house
+pumping-back method
+pumping engine
+pumpkin ash
+pumpkin head
+pumpkin-headed
+pumpkin pine
+pumpkin seed
+pumpkin-seed oil
+pumpkin tree
+pump rod
+pump room
+pump sole
+pump spear
+pump staff
+pump well
+puna grass
+punch barrel
+punch bowl
+punch cutter
+punch-drunk
+punch holder
+punch house
+punching machine
+punching press
+punch ladle
+punch line
+punch mark
+punch-marked
+punch pliers
+punch press
+puncture vine
+puncture voltage
+pungent meadow grass
+punishment-proof
+punitive sanction
+punkah wallah
+punk oak
+punk tree
+punner bar
+punt formation
+punt gun
+punto reverso
+punt shooter
+punt shooting
+pupa-shaped
+pupa shell
+pupil hour
+pupil teacher
+pupil-teacherdom
+pupil-teachership
+pupil teachery
+puppet play
+puppet player
+puppet show
+puppet valve
+puppy drum
+puppy love
+pup tent
+purchase book
+purchase journal
+purchase ledger
+purchase money
+purchase record
+purchase shears
+purchasing agent
+purchasing power
+pure-blooded
+pure-bosomed
+pure-dye
+pure-eyed
+pure-food law
+pure line
+pure-minded
+purgatory hammer
+purification flower
+purine base
+purity rubric
+purl stitch
+purple-awned
+purple-awned oat grass
+purple-backed
+purple-beaming
+purple beard grass
+purple bent
+purple-berried
+purple-black
+purple-blue
+purple-brown
+purple-clad
+purple-coated
+purple-colored
+purple-crimson
+purple-dawning
+purple-dyeing
+purple-eyed
+purple-faced
+purple fish
+purple fishery
+purple-flowered
+purple-fringed
+purple-glowing
+purple-green
+purple-headed
+purple-hued
+purple-leaved
+purple melick grass
+purple-nosed
+purple oat
+purple-red
+purple-robed
+purple-rose
+purple-skirted
+purple-spiked
+purple-spotted
+purple-staining
+purple-stemmed
+purple-streaked
+purple-streaming
+purple-tailed
+purple-tipped
+purple-top
+purple-topped
+purple-veined
+purple-vested
+purple wood grass
+purple-yellow
+purpose clause
+purre maw
+purse bearer
+purse crab
+purse cutter
+purse cutting
+purse-eyed
+purse isinglass
+purse line
+purse-lined
+purse-lipped
+purse-mad
+purse maker
+purse net
+purse-pinched
+purse pride
+purse-proud
+purse race
+purse ring
+purse rope
+purse seine
+purse-shaped
+purse silk
+purse-snatching
+purse spider
+purse string
+purse-string suture
+purse-swollen
+purse weight
+purslane speedwell
+purslane tree
+pursuit airplane
+pursuit pendulum
+pursuit plane
+pursuit squadron
+pus cell
+push bicycle
+push bolt
+push broach
+push button
+push car
+pusher airplane
+pusher grade
+push fit
+push hoe
+push moraine
+push-off
+push-out chuck
+push-pull
+pus pan
+puss clover
+puss moth
+pussy clover
+pussy willow
+pustula maligna
+put-off
+put-on
+put-out
+put-put
+put-putter
+putter-forth
+putter-in
+putter-off
+putter-on
+putter-out
+putter-through
+putter-up
+putting cleek
+putting green
+putting stone
+putty coat
+putty-colored
+putty eye
+putty-faced
+putty gloss
+putty-jointed
+putty knife
+putty-looking
+putty powder
+putty-powdered
+putty-stopped
+put-up
+put-upon
+puzzle box
+puzzle-brain
+puzzle canon
+puzzle-cap
+puzzle lock
+puzzle-monkey
+puzzle-wit
+pygmy-minded
+pyramid flower
+pyramid plant
+pyramid-shaped
+pyramid shell
+pyrethrum yellow
+pyrite type
+pyrite yellow
+pyritohedral group
+pyrogallol monoacetate
+pyrometer cone
+pyroxene group
+pyroxylin plastic
+pyrrole red
+pyx cloth
+pyx-jury
+Q-celt
+Q-celtic
+Q-group
+Q-language
+Q-shaped
+Q-ship
+quack grass
+quad crown
+quad demy
+quad large
+quad line
+quadrant compass
+quadrant electrometer
+quadrant plate
+quadrature component
+quadri-invariant
+quadrille ruling
+quadrimum merum
+quad royal
+quad small
+quail brush
+quail call
+quail dove
+quail hawk
+quail pipe
+quail snipe
+quaint-costumed
+quaint-eyed
+quaint-felt
+quaint-looking
+quaint-notioned
+quaint-shaped
+quaint-spoken
+quaint-stomached
+quaint-witty
+quaint-worded
+quake grass
+quake ooze
+quaker-colored
+quaker moth
+quaking grass
+quality binding
+quality curve
+quality factor
+qualm-sick
+quandong nut
+quantity mark
+quantity production
+quantity surveying
+quantity surveyor
+quantity theorist
+quantity theory
+quantum liquid
+quantum-mechanical
+quantum mechanics
+quantum number
+quantum theory
+quarantine flag
+quarantine period
+quarry bed
+quarry face
+quarry-faced
+quarry light
+quarry miner
+quarry-rid
+quarrystone bond
+quarter ail
+quarter belt
+quarter bend
+quarter bill
+quarter binding
+quarter blanket
+quarter block
+quarter boot
+quarter-bound
+quarter box
+quarter-breed
+quarter butt
+quarter cask
+quarter-cast
+quarter-cleft
+quarter-cut
+quarter-day
+quarter-deck
+quarter-decker
+quarter-dollar
+quarter evil
+quarter face
+quarter-faced
+quarter fast
+quarter-final
+quarter-finalist
+quarter-foot
+quarter galley
+quarter grain
+quarter-hollow
+quarter horse
+quarter-hour
+quarter ill
+quarter-inch
+quarter iron
+quarter-left
+quarter lift
+quarter light
+quarter line
+quartermaster sergeant
+quarter-mile
+quarter miler
+quarter-minute
+quarter-month
+quarter-moon
+quarter nelson
+quarter note
+quarter-phase
+quarter pillar
+quarter-pint
+quarter pitch
+quarter plate
+quarter point
+quarter-pound
+quarter rail
+quarter rest
+quarter-right
+quarter round
+quarter-run
+quarter screw
+quarter-second
+quarter section
+quarter sessions
+quarter-sheet
+quarter-size
+quarter step
+quarter tie
+quarter tone
+quarter-vine
+quarter watch
+quarter-wave
+quarter-yard
+quarter-year
+quarter-yearly
+quartet table
+quarto-centenary
+quart pot
+quartz-basalt
+quartz battery
+quartz-diorite
+quartz flint
+quartz-free
+quartz glass
+quartz lamp
+quartz-light therapy
+quartz mill
+quartz mining
+quartz-monzonite
+quartz plate
+quartz porphyry
+quartz rock
+quartz sand
+quartz schist
+quartz-syenite
+quartz vein
+quartz wedge
+quasi-absolute
+quasi-absolutely
+quasi-academic
+quasi-acceptance
+quasi accident
+quasi-accidental
+quasi acquaintance
+quasi-active
+quasi actor
+quasi-adequate
+quasi adjective
+quasi adjustment
+quasi admiration
+quasi adoption
+quasi-adult
+quasi advantage
+quasi adverb
+quasi advice
+quasi advocate
+quasi affection
+quasi-affirmative
+quasi agreement
+quasi alarm
+quasi alliance
+quasi-alternative
+quasi alumnus
+quasi amateur
+quasi amendment
+Quasi american
+quasi-amiable
+quasi amusement
+quasi-ancient
+quasi angel
+quasi animal
+quasi answer
+quasi-antique
+quasi-anxious
+quasi apology
+quasi appeal
+quasi application
+quasi appointment
+quasi appreciation
+quasi-appropriate
+quasi approval
+quasi architect
+quasi argument
+quasi aristocracy
+quasi aristocrat
+quasi army
+quasi arrangement
+quasi art
+quasi artist
+quasi-aside
+quasi-asleep
+quasi aspiration
+quasi asset
+quasi assignment
+quasi assistance
+quasi assurance
+quasi asylum
+quasi athlete
+quasi attachment
+quasi attack
+quasi attainment
+quasi attempt
+quasi attendant
+quasi attention
+quasi attorney
+quasi auditor
+quasi-authentic
+quasi author
+quasi authority
+quasi-authorized
+quasi-automatic
+quasi-awful
+quasi baby
+quasi-bad
+quasi ballot
+quasi bank
+quasi banker
+qua.\" Copyright (c) 1983,1986 Regents of the University of California.
+.\" All rights reserved.  The Berkeley software License Agreement
+.\" specifies the terms and conditions for redistribution.
+.\"
+.\"	@(#)2.t	6.3 (Berkeley) 6/5/86
+.\"
+.nr H2 1
+.\".ds RH Overview
+.br
+.ne 2i
+.NH
+\s+2Overview\s0
+.PP
+If we consider
+the International Standards Organization's (ISO)
+Open System Interconnection (OSI) model of
+network communication [ISO81] [Zimmermann80],
+the networking facilities
+described here correspond to a portion of the
+session layer (layer 3) and all of the transport and
+network layers (layers 2 and 1, respectively).
+.PP
+The network layer provides possibly imperfect
+data transport services with minimal addressing
+structure.
+Addressing at this level is normally host to host,
+with implicit or explicit routing optionally supported
+by the communicating agents. 
+.PP
+At the transport
+layer the notions of reliable transfer, data sequencing,
+flow control, and service addressing are normally
+included.  Reliability is usually managed by 
+explicit acknowledgement of data delivered.  Failure
+to acknowledge a transfer results in retransmission of
+the data.  Sequencing may be handled by tagging
+each message handed to the network layer by a
+\fIsequence number\fP and maintaining
+state at the endpoints of communication to utilize
+received sequence numbers in reordering data which
+arrives out of order.
+.PP
+The session layer facilities may provide forms of
+addressing which are mapped into formats required
+by the transport layer, service authentication
+and client authentication, etc.  Various systems
+also provide services such as data encryption and
+address and protocol translation.
+.PP
+The following sections begin by describing some of the common
+data structures and utility routines, then examine
+the internal layering.  The contents of each layer
+and its interface are considered.  Certain of the
+interfaces are protocol implementation specific.  For
+these cases examples have been drawn from the Internet [Cerf78]
+protocol family.  Later sections cover routing issues,
+the design of the raw socket interface and other
+miscellaneous topics.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       .\" Copyright (c) 1983,1986 Regents of the University of California.
+.\" All rights reserved.  The Berkeley software License Agreement
+.\" specifies the terms and conditions for redistribution.
+.\"
+.\"	@(#)b.t	6.3 (Berkeley) 6/5/86
+.\"
+.nr H2 1
+.\".ds RH "Raw sockets
+.br
+.ne 2i
+.NH
+\s+2Raw sockets\s0
+.PP
+A raw socket is an object which allows users direct access
+to a lower-level protocol.  Raw sockets are intended for knowledgeable
+processes which wish to take advantage of some protocol
+feature not directly accessible through the normal interface, or 
+for the development of new protocols built atop existing lower level
+protocols.  For example, a new version of TCP might be developed at the
+user level by utilizing a raw IP socket for delivery of packets.
+The raw IP socket interface attempts to provide an identical interface
+to the one a protocol would have if it were resident in the kernel.
+.PP
+The raw socket support is built around a generic raw socket interface,
+(possibly) augmented by protocol-specific processing routines.
+This section will describe the core of the raw socket interface.
+.NH 2
+Control blocks
+.PP
+Every raw socket has a protocol control block of the following form:
+.DS
+.ta \w'struct  'u +\w'caddr_t  'u +\w'sockproto rcb_proto;    'u 
+struct rawcb {
+	struct	rawcb *rcb_next;	/* doubly linked list */
+	struct	rawcb *rcb_prev;
+	struct	socket *rcb_socket;	/* back pointer to socket */
+	struct	sockaddr rcb_faddr;	/* destination address */
+	struct	sockaddr rcb_laddr;	/* socket's address */
+	struct	sockproto rcb_proto;	/* protocol family, protocol */
+	caddr_t	rcb_pcb;		/* protocol specific stuff */
+	struct	mbuf *rcb_options;	/* protocol specific options */
+	struct	route rcb_route;	/* routing information */
+	short	rcb_flags;
+};
+.DE
+All the control blocks are kept on a doubly linked list for
+performing lookups during packet dispatch.  Associations may
+be recorded in the control block and used by the output routine
+in preparing packets for transmission.
+The \fIrcb_proto\fP structure contains the protocol family and protocol
+number with which the raw socket is associated.
+The protocol, family and addresses are
+used to filter packets on input; this will be described in more
+detail shortly.  If any protocol-specific information is required,
+it may be attached to the control block using the \fIrcb_pcb\fP
+field.
+Protocol-specific options for transmission in outgoing packets
+may be stored in \fIrcb_options\fP.
+.PP
+A raw socket interface is datagram oriented.  That is, each send
+or receive on the socket requires a destination address.  This
+address may be supplied by the user or stored in the control block
+and automatically installed in the outgoing packet by the output
+routine.  Since it is not possible to determine whether an address
+is present or not in the control block, two flags, RAW_LADDR and
+RAW_FADDR, indicate if a local and foreign address are present.
+Routing is expected to be performed by the underlying protocol
+if necessary.
+.NH 2
+Input processing
+.PP
+Input packets are ``assigned'' to raw sockets based on a simple
+pattern matching scheme.  Each network interface or protocol
+gives unassigned packets
+to the raw input routine with the call:
+.DS
+raw_input(m, proto, src, dst)
+struct mbuf *m; struct sockproto *proto, struct sockaddr *src, *dst;
+.DE
+The data packet then has a generic header prepended to it of the
+form
+.DS
+._f
+struct raw_header {
+	struct	sockproto raw_proto;
+	struct	sockaddr raw_dst;
+	struct	sockaddr raw_src;
+};
+.DE
+and it is placed in a packet queue for the ``raw input protocol'' module.
+Packets taken from this queue are copied into any raw sockets that
+match the header according to the following rules,
+.IP 1)
+The protocol family of the socket and header agree.
+.IP 2)
+If the protocol number in the socket is non-zero, then it agrees
+with that found in the packet header.
+.IP 3)
+If a local address is defined for the socket, the address format
+of the local address is the same as the destination address's and
+the two addresses agree bit for bit.
+.IP 4)
+The rules of 3) are applied to the socket's foreign address and the packet's
+source address.
+.LP
+A basic assumption is that addresses present in the
+control block and packet header (as constructed by the network
+interface and any raw input protocol module) are in a canonical
+form which may be ``block compared''.
+.NH 2
+Output processing
+.PP
+On output the raw \fIpr_usrreq\fP routine 
+passes the packet and a pointer to the raw control block to the
+raw protocol output routine for any processing required before
+it is delivered to the appropriate network interface.  The
+output routine is normally the only code required to implement
+a raw socket interface.
+                                                                                                                                                                                                                                                                                                                                                                                                                                     si-bankrupt
+quasi bankruptcy
+quasi banquet
+quasi baptism
+quasi bargain
+quasi basis
+quasi battle
+quasi beginner
+quasi belief
+quasi-beneficial
+quasi beneficiary
+quasi benevolence
+quasi-benevolent
+quasi biography
+quasi bird
+quasi blessing
+quasi-blind
+quasi blockade
+quasi blunder
+quasi body
+quasi-brave
+quasi-brilliant
+quasi broker
+quasi-bronze
+quasi brother
+quasi calamity
+quasi caller
+quasi-calm
+quasi cancellation
+quasi-candid
+quasi candidate
+quasi candor
+quasi-capable
+quasi captain
+quasi-careful
+quasi cause
+quasi celebration
+quasi certificate
+quasi champion
+quasi-characteristic
+quasi charity
+quasi cheer
+quasi chemistry
+quasi circulation
+quasi citizen
+quasi civilization
+quasi clairvoyance
+quasi-classic
+quasi client
+quasi climax
+quasi club
+quasi collapse
+quasi collateral
+quasi collection
+quasi collector
+quasi college
+quasi-collegiate
+quasi colloquial
+quasi combat
+quasi comedy
+quasi comfort
+quasi-comic
+quasi command
+quasi-commercial
+quasi-common
+quasi compact
+quasi competition
+quasi competitor
+quasi-complete
+quasi-complex
+quasi compliance
+quasi compliment
+quasi-compound
+quasi comprehension
+quasi compromise
+quasi-compulsory
+quasi concern
+quasi concession
+quasi conclusion
+quasi conference
+quasi confession
+quasi-confident
+quasi-confidential
+quasi confinement
+quasi confirmation
+quasi conflict
+quasi conformance
+quasi-congenial
+quasi congratulation
+quasi congress
+quasi conjunction
+quasi connection
+quasi conquest
+quasi conscience
+quasi-conscientious
+quasi-conscious
+quasi consent
+quasi consequence
+quasi-conservative
+quasi consideration
+quasi consignment
+quasi-consistent
+quasi consolation
+quasi consolidation
+quasi-constant
+quasi constitution
+quasi-constitutional
+quasi construction
+quasi-constructive
+quasi consulatation
+quasi consumption
+quasi contempt
+quasi contest
+quasi continent
+quasi-continual
+quasi continuation
+quasi-continuous
+quasi contract
+quasi-contrary
+quasi contrast
+quasi contribution
+quasi control
+quasi convenience
+quasi-convenient
+quasi convention
+quasi conversation
+quasi-converted
+quasi conveyance
+quasi conviction
+quasi-convinced
+quasi cook
+quasi co-operation
+quasi copula
+quasi-cordial
+quasi corporateness
+quasi corporation
+quasi-correct
+quasi correction
+quasi council
+quasi coupon
+quasi court
+quasi-courteous
+quasi courtesy
+quasi cousin
+quasi craft
+quasi creation
+quasi credit
+quasi creditor
+quasi crime
+quasi-criminal
+quasi crisis
+quasi-critical
+quasi criticism
+quasi cultivation
+quasi culture
+quasi-cunning
+quasi currency
+quasi customer
+quasi-cynical
+quasi damage
+quasi-dangerous
+quasi-daring
+quasi-deaf
+quasi debt
+quasi decision
+quasi declaration
+quasi decoration
+quasi dedication
+quasi default
+quasi defeat
+quasi defiance
+quasi deficit
+quasi-definite
+quasi definition
+quasi-deify
+quasi dejection
+quasi delegate
+quasi-deliberate
+quasi-delicate
+quasi delict
+quasi-delighted
+quasi demand
+quasi democrat
+quasi-democratic
+quasi-dependence
+quasi deposit
+quasi depreciation
+quasi depression
+quasi deputy
+quasi-desolate
+quasi despair
+quasi-desperate
+quasi-despondent
+quasi destination
+quasi destruction
+quasi detention
+quasi-determine
+quasi development
+quasi devil
+quasi-devoted
+quasi devotion
+quasi diamond
+quasi difference
+quasi-difficult
+quasi-dignified
+quasi dinner
+quasi diplomacy
+quasi-diplomatic
+quasi disadvantage
+quasi disappeance
+quasi disaster
+quasi discipline
+quasi discovery
+quasi-discreet
+quasi discrimination
+quasi disgrace
+quasi disgust
+quasi dismissal
+quasi-distant
+quasi distress
+quasi distribution
+quasi diversion
+quasi division
+quasi dominion
+quasi donation
+quasi-double
+quasi doubt
+quasi drama
+quasi-dramatic
+quasi-dreadful
+quasi-dumb
+quasi-duplicate
+quasi-dutiful
+quasi-dying
+quasi-eager
+quasi earnings
+quasi easement
+quasi-economic
+quasi economy
+quasi education
+quasi-educational
+quasi-effective
+quasi-efficient
+quasi-elaborate
+quasi election
+quasi-elementary
+quasi-eligible
+quasi-eloquent
+quasi-eminent
+quasi emperor
+quasi emphasis
+quasi employment
+quasi-empty
+quasi-endless
+quasi endorsement
+quasi enemy
+quasi-energetic
+quasi enforcement
+quasi engagement
+Quasi english
+Quasi englishman
+quasi enrollment
+quasi entertainment
+quasi enthusiasm
+quasi-enthusiastic
+quasi envy
+quasi-episcopal
+quasi-equal
+quasi-equitable
+quasi-equivalent
+quasi error
+quasi escape
+quasi-essential
+quasi-established
+quasi estimation
+quasi-eternal
+quasi-ethical
+quasi-everlasting
+quasi evidence
+quasi-evil
+quasi-exact
+quasi-exceptional
+quasi-excessive
+quasi exchange
+quasi exclusion
+quasi excuse
+quasi executive
+quasi-exempt
+quasi exertion
+quasi exile
+quasi-existent
+quasi expectation
+quasi-expedient
+quasi expenditure
+quasi expense
+quasi experience
+quasi expert
+quasi explanation
+quasi-explicit
+quasi export
+quasi exposure
+quasi expression
+quasi-external
+quasi-exterritorial
+quasi-extraterritorial
+quasi-extreme
+quasi fact
+quasi factor
+quasi factory
+quasi faculty
+quasi failure
+quasi-fair
+quasi faith
+quasi-faithful
+quasi-false
+quasi-familiar
+quasi-famous
+quasi farewell
+quasi farmer
+quasi fascination
+quasi-fashionable
+quasi-fatal
+quasi favor
+quasi-favorable
+quasi-federal
+quasi fee
+quasi-feudal
+quasi fiction
+quasi-final
+quasi-financial
+quasi-fireproof
+quasi-fiscal
+quasi-fit
+quasi flight
+quasi-foolish
+quasi force
+quasi-foreign
+quasi-forgetful
+quasi-forgotten
+quasi-formal
+quasi-formidable
+quasi-fortunate
+quasi-frank
+quasi-fraternal
+quasi-free
+Quasi french
+quasi friend
+quasi fulfillment
+quasi-full
+quasi-gallant
+quasi-gaseous
+quasi-gay
+quasi gem
+quasi-generous
+quasi genius
+quasi-genteel
+quasi gentleman
+quasi-genuine
+Quasi german
+quasi gift
+quasi-glad
+quasi-glorious
+quasi glory
+quasi-good
+quasi-gracious
+quasi graduate
+quasi-grateful
+quasi-grave
+quasi-great
+Quasi greek
+quasi grief
+quasi growth
+quasi guarantee
+quasi guest
+quasi guilt
+quasi-habitual
+quasi handicap
+quasi-happy
+quasi hardship
+quasi harm
+quasi health
+quasi-hearty
+quasi heir
+quasi help
+quasi-hereditary
+quasi hero
+quasi-heroic
+quasi hesitation
+quasi historian
+quasi-historic
+quasi-historical
+quasi history
+quasi holiday
+quasi-honest
+quasi honor
+quasi horror
+quasi-human
+quasi-humble
+quasi-humorous
+quasi-ideal
+quasi-identical
+quasi identification
+quasi ignorance
+quasi illness
+quasi-immediate
+quasi-immortal
+quasi-impartial
+quasi import
+quasi-important
+quasi improvement
+quasi incentive
+quasi inclination
+quasi-inclusive
+quasi increase
+quasi-independent
+Quasi indian
+quasi indifference
+quasi-indifferent
+quasi inducement
+quasi indulgence
+quasi-industrial
+quasi-inevitable
+quasi inference
+quasi-inferior
+quasi-infinite
+quasi-influential
+quasi-informal
+quasi information
+quasi inheritance
+quasi initiation
+quasi injury
+quasi injustice
+quasi innocence
+quasi-innocent
+quasi-innumerable
+quasi inquiry
+quasi insight
+quasi-insistent
+quasi inspection
+quasi inspiration
+quasi installation
+quasi institution
+quasi instruction
+quasi insult
+quasi integrity
+quasi-intellectual
+quasi-intelligent
+quasi intention
+quasi interest
+quasi interference
+quasi-internal
+quasi-international
+quasi interview
+quasi-intimate
+quasi-intolerable
+quasi introduction
+quasi-intuitive
+quasi invasion
+quasi investigation
+quasi-invisible
+quasi invitation
+quasi invoice
+quasi-irregular
+Quasi-jacobean
+Quasi japanese
+Quasi jew
+Quasi-jewish
+quasi-jocose
+quasi-jointly
+quasi judge
+quasi judgment
+quasi-jud

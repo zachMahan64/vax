@@ -1,0 +1,1918 @@
+tionals and output them
+		     (do ((prev (car loop-conditionals) (car l))
+			  (l (cdr loop-conditionals) (cdr l)))
+			 ((null l))
+		       (rplacd (last (car (last prev))) (ncons (car l))))
+		     (prog1 (car loop-conditionals)
+			    (setq loop-conditionals ())))))
+	('t form)))
+
+(defun loop-pseudo-body (form &aux (z (loop-make-conditionalization form)))
+   (cond ((not (null z))
+	    (cond (loop-emitted-body? (push z loop-body))
+		  ('t (push z loop-before-loop) (push z loop-after-body))))))
+
+(defun loop-emit-body (form)
+  (setq loop-emitted-body? 't)
+  (loop-pseudo-body form))
+
+
+#+Named-PROGs
+(defun loop-do-named ()
+    (let ((name (loop-pop-source)))
+       (or (and name (symbolp name))
+	   (loop-simple-error "Bad name for your loop construct" name))
+       (and (cdr (setq loop-prog-names (cons name loop-prog-names)))
+	    (loop-simple-error "Too many names for your loop construct"
+			       loop-prog-names))))
+
+(defun loop-do-initially ()
+  (push (loop-get-form) loop-prologue))
+
+(defun loop-nodeclare (&(setq rcs-trace-
+   "$Header: /usr/lib/lisp/RCS/trace.l,v 1.2 83/08/15 22:30:36 jkf Exp $")
+
+;---- The Joseph Lister Trace Package, v1
+;         John Foderaro, Sept 1979
+;------------------------------------------------------------------;
+; Copyright (c) 1979 The Regents of the University of California   ;
+;	All rights reserved.					   ;
+;------------------------------------------------------------------;
+(eval-when (eval)
+  (setq old-read-table-trace readtable)
+  (setq readtable (makereadtable t))
+  (setq old-uctolc-value (status uctolc))
+  (sstatus uctolc nil)		; turn off case conversion
+  (load 'charmac)
+  (setsyntax '\; 'macro 'zapline)
+  )
+
+
+
+;----
+; trace uses these properties on the property list:
+;    trace-orig-fcn: original occupant of the function cell
+;    trace-trace-fcn: the value trace puts in the  function cell
+;	(used to check if the trace function has be overwritten).
+;    trace-trace-args: the arguments when function was traced.
+;    trace-printargs: function to print argument to function
+;    trace-printres: function to print result of function
+
+(declare (nlambda T-status T-sstatus)
+  (special piport
+	   if ifnot evalin evalout 
+	   printargs printres evfcn
+	   traceenter traceexit
+	   prinlevel prinlength
+	   $$traced-functions$$		; all functions being traced
+	   $$functions-in-trace$$	; active functions 
+	   $$funcargs-in-trace$$	; arguments to active functions.
+	   $tracemute			; if t, then enters and exits
+					; are quiet, but info is still
+					; kept so (tracedump) will work
+	   trace-prinlevel		; default values
+	   trace-prinlength
+	   trace-printer		; function trace uses to print
+	   ))
+
+
+
+(cond ((null (boundp '$$traced-functions$$)) (setq $$traced-functions$$ nil)))
+(cond ((null (boundp '$$functions-in-trace$$)) (setq $$functions-in-trace$$ nil)))
+(cond ((null (boundp '$$funcargs-in-trace$$)) (setq $$funcargs-in-trace$$ nil)))
+(cond ((null (boundp '$tracemute)) (setq $tracemute nil)))
+(cond ((null (boundp 'trace-prinlevel)) (setq trace-prinlevel 4)))
+(cond ((null (boundp 'trace-prinlength)) (setq trace-prinlength 5)))
+(cond ((null (boundp 'trace-printer)) (setq trace-printer 'Trace-print)))
+
+;----> It is important that the trace package not use traced functions
+;	thus we give the functions the trace package uses different
+;	names and make them equivalent at this time to their 
+;	traceable counterparts.  
+(defun trace-startup-func nil
+  (do ((i '( (add1 T-add1)(append T-append)
+	     (and T-and)  (apply T-apply)
+	     (cond T-cond) (cons T-cons) (delq T-delq)
+	     (def T-def) (do T-do) (drain T-drain)
+	     (dtpr T-dtpr)  (eval T-eval)(funcall T-funcall)
+	     (get T-get) (getd T-getd)(getdisc T-getdisc)
+	     (greaterp T-greaterp)(lessp T-lessp)
+	     (mapc T-mapc) (not T-not)(nreverse T-nreverse)
+	     (patom T-patom) (print T-print) (prog T-prog)
+	     (patom T-patom)(putd T-putd) 
+	     (putprop T-putprop)
+	     (read T-read)(remprop T-remprop) (reverse T-reverse)
+	     (return T-return)
+	     (set T-set) (setq T-setq)
+	     (status T-status) (sstatus T-sstatus)
+	     (sub1 T-sub1) (terpr T-terpr) 
+	     (zerop T-zerop))
+	  (cdr i)))
+      ((null i))
+      (putd (cadar i) (getd (caar i)))
+      (putprop (cadar i) t 'Untraceable)))
+
+(trace-startup-func)
+
+
+(putprop 'quote t 'Untraceable)		; this prevents the common error
+					; of (trace 'foo) from causing big
+					; problems.
+
+;--- trace - arg1,arg2, ... names of functions to trace
+;	This is the main user callable trace routine. 
+; work in progress, documentation incomplete since im not sure exactly
+; where this is going.	
+;
+(def trace
+  (nlambda (argl)
+   (prog (if ifnot evalin evalout funnm  typ
+	  funcd did break printargs printres evfcn traceenter traceexit
+	  traceargs)
+
+    ; turn off transfer table linkages if they are on
+    (cond ((T-status translink) (T-sstatus translink nil)))
+
+    ; process each argument	 
+
+    (do ((ll argl (cdr ll))
+	 (funnm) 
+	 (funcd))
+	((null ll))
+      (setq funnm (car ll)
+		if t
+		break nil
+		ifnot nil
+		evalin nil
+		evalout nil
+		printargs nil
+		printres nil
+		evfcn nil
+		traceenter 'T-traceenter
+		traceexit  'T-traceexit
+		traceargs  nil)
+
+	; a list as an argument means that the user is specifying
+	; conditions on the trace
+      (cond ((not (atom funnm))
+	     (cond ((not (atom (setq funnm (car funnm))))
+		    (T-print (car funnm))
+		    (T-patom '" is non an function name")
+		    (go botloop)))
+	     ; remember the arguments in case a retrace is requested
+	     (setq traceargs (cdar ll))
+	     ; scan the arguments
+	     (do ((rr (cdar ll) (cdr rr)))
+		 ((null rr))
+		 (cond ((memq (car rr) '(if ifnot evalin evalout
+					    printargs printres evfcn
+					    traceenter traceexit))
+			(T-set (car rr) (cadr rr))
+			(setq rr    (cdr rr)))
+		       ((eq (car rr) 'evalinout)
+			(setq evalin (setq evalout (cadr rr))
+			      rr (cdr rr)))
+		       ((eq (car rr) 'break)
+			(setq break t))
+		       ((eq (car rr) 'lprint)
+			(setq printargs 'T-levprint
+			      printres  'T-levprint))
+		       (t (T-patom '"bad request: ")
+			  (T-print (car rr))
+			  (T-terpr)))))
+	    (t (setq traceargs nil)  ;no args given
+	       ))
+
+	    ; if function is untraceable, print error message and skip
+       (cond ((get funnm 'Untraceable)
+	      (setq did (cons `(,funnm untraceable) did))
+	      (go botloop)))
+
+
+       ; Untrace before tracing
+       (let ((res (funcall 'untrace (list funnm))))
+	  (cond (res (setq did (cons `(,funnm untraced) did)))))
+
+       ; store the names of the arg printing routines if they are
+       ; different than print
+
+       (cond (printargs (T-putprop funnm printargs 'trace-printargs)))
+       (cond (printres  (T-putprop funnm printres 'trace-printres)))
+       (T-putprop funnm traceargs 'trace-trace-args)
+
+       ; we must determine the type of function being traced
+       ; in order to create the correct replacement function
+
+       (cond ((setq funcd (T-getd funnm))
+	      (cond ((bcdp funcd)		; machine code
+		     (cond ((or (eq 'lambda (T-getdisc funcd))
+				(eq 'nlambda (T-getdisc funcd))
+				(eq 'macro (T-getdisc funcd)))
+			    (setq typ (T-getdisc funcd)))
+			   ((stringp (T-getdisc funcd))	; foreign func
+			    (setq typ 'lambda))		; close enough
+			   (t (T-patom '"Unknown type of compiled function")
+			      (T-print funnm)
+			      (setq typ nil))))
+
+		    ((dtpr funcd)		; lisp coded
+		     (cond ((or (eq 'lambda (car funcd))
+				(eq 'lexpr (car funcd)))
+			    (setq typ 'lambda))
+			   ((or (eq 'nlambda (car funcd))
+				(eq 'macro (car funcd)))
+			    (setq typ (car funcd)))
+			   (t (T-patom '"Bad function definition: ")
+			      (T-print funnm)
+			      (setq typ nil))))
+		    ((arrayp funcd)		; array
+		     (setq typ 'lambda))
+		    (t (T-patom '"Bad function defintion: ")
+		       (T-print funnm)))
+
+	      ; now that the arguments have been examined for this
+	      ; function, do the tracing stuff.
+	      ; First save the old function on the property list
+
+	      (T-putprop funnm funcd 'trace-orig-fcn)
+
+	      ; now build a replacement
+
+	      (cond
+		 ((eq typ 'lambda)
+		  (T-eval
+		     `(T-def
+			 ,funnm
+			 (lexpr (T-nargs)
+				((lambda (T-arglst T-res T-rslt
+						   $$functions-in-trace$$
+						   $$funcargs-in-trace$$)
+				    (T-do ((i T-nargs (T-sub1 i)))
+					  ((T-zerop i))
+					  (T-setq T-arglst
+						  (T-cons (arg i) T-arglst)))
+				    (T-setq $$funcargs-in-trace$$
+					    (T-cons T-arglst
+						    $$funcargs-in-trace$$))
+				    (T-cond ((T-setq T-res
+						     (T-and ,if
+							     (T-not ,ifnot)))
+					     (,traceenter ',funnm T-arglst)
+					     ,@(cond (evalin
+							`((T-patom ,'":in: ")
+							  ,evalin
+							  (T-terpr))))
+					     (T-cond (,break
+						       (trace-break)))))
+				    (T-setq T-rslt
+					    ,(cond
+						(evfcn)
+						(t `(T-apply
+						       ',funcd
+						       T-arglst))))
+				    (T-cond (T-res
+					       ,@(cond (evalout
+							  `((T-patom ,'":out: ")
+							    ,evalout
+							    (T-terpr))))
+					       (,traceexit ',funnm T-rslt)))
+				    T-rslt)
+				 nil nil nil
+				 (T-cons ',funnm $$functions-in-trace$$)
+				 $$funcargs-in-trace$$))))
+		  (T-putprop funnm (T-getd funnm) 'trace-trace-fcn)
+		  (setq did (cons funnm did)
+			$$traced-aux (varlist (loop-pop-source)))
+    (or (and varlist (eq (typep varlist) 'list))
+	(loop-simple-error "Bad varlist to nodeclare loop clause" varlist))
+    (setq loop-nodeclare (append varlist loop-nodeclare)))
+
+(defun loop-do-finally ()
+  (push (loop-get-form) loop-epilogue))
+
+(defun loop-do-do ()
+  (loop-emit-body (loop-get-form)))
+
+(defun loop-do-return ()
+   (loop-pseudo-body `(return ,(loop-get-form))))
+
+
+;;;; List Collection
+
+; The way we collect (list-collect) things is to bind two variables.
+; One is the final result, and is accessible for value during the
+; loop compuation.  The second is the "tail".  In implementations where
+; we can do so, the tail var is initialized to a locative of the first,
+; such that it can be updated with RPLACD.  In other implementations,
+; the update must be conditionalized (on whether or not the tail is NIL).
+
+; For PDP10 Maclisp:
+; The "value cell" of a special variable is a (pseudo) list cell, the CDR
+; of which is the value.  Hence the abovementioned tail variable gets
+; initialized to this.  (It happens to be the CDAR of the symbol.)
+; For local variables in compiled code, the Maclisp compiler implements
+; a (undocumented private) form of the
+; "(setq tail (variable-location var))" construct;  specifically, it
+; is of the form  (#.gofoo var tail).  This construct must appear in
+; the binding environment those variables are bound in, currently.
+; Note that this hack only currently works for local variables, so loop
+; has to check to see if the variable is special.  It is anticipated,
+; however, that the compiler will be able to do this all by itself
+; at some point.
+
+#+For-PDP10
+  (progn 'compile
+     (cond ((status feature complr)
+	      (setq loop-specvar-hack ((lambda (obarray)
+					   (implode '(s p e c v a r s)))
+				       sobarray))
+	      (defun loop-collect-init-compiler (form)
+		(cond ((memq compiler-state '(toplevel maklap))
+		         ; We are being "toplevel" macro expanded.
+			 ; We MUST expand into something which can be
+			 ; evaluated without loop, in the interpreter.
+			 `(setq ,(caddr form) (munkam (value-cell-location
+						         ',(cadr form)))))
+		      ((or specials
+			   (get (cadr form) 'special)
+			   (assq (cadr form) (symeval loop-specvar-hack)))
+		         `(setq ,(caddr form) (cdar ',(cadr form))))
+		      (t (cons gofoo (cdr form)))))
+	      (push '(loop-collect-init . loop-collect-init-compiler)
+		    macrolist)))
+     (defun loop-collect-init fexpr (x)
+	(set (cadr x) (cdar (car x)))))
+
+#+(and Hairy-Collection (not For-PDP10))
+(defmacro loop-collect-init (var1 var2)
+   #+Lispm ;*****  Remove kludgey fboundp when everyone up-to-date *****
+	   `(setq ,var2 ,(if (fboundp 'variable-location)
+			     `(variable-location ,var1)
+			     `(value-cell-location ',var1)))
+   #-Lispm `(setq ,var2 (munkam (value-cell-location ',var1))))
+
+
+(defun loop-do-collect (type)
+  (let ((var) (form) (tem) (tail) (dtype) (cruft) (rvar)
+	(ctype (cond ((memq type '(max min)) 'maxmin)
+		     ((memq type '(nconc list append)) 'list)
+		     ((memq type '(count sum)) 'sum)
+		     ('t (loop-simple-error
+			    "unrecognized LOOP collecting keyword" type)))))
+    (setq form (loop-get-form) dtype (loop-optional-type))
+    (cond ((si:loop-tequal (car loop-source-code) 'into)
+	     (loop-pop-source)
+	     (setq rvar (setq var (loop-pop-source)))))
+    ; CRUFT will be (varname ctype dtype var tail (optional tem))
+    (cond ((setq cruft (assq var loop-collect-cruft))
+	     (cond ((not (eq ctype (car (setq cruft (cdr cruft)))))
+		      (loop-simple-error
+		         "incompatible LOOP collection types"
+			 (list ctype (car cruft))))
+		   ((and dtype (not (eq dtype (cadr cruft))))
+		      ;Conditional should be on data-type reality
+		      #+Run-in-Maclisp
+		        (loop-simple-error
+			   "Unequal data types in multiple collections"
+			   (list dtype (cadr cruft) (car cruft)))
+		      #-Run-in-Maclisp
+		        (ferror () "~A and ~A Unequal data types into ~A"
+				dtype (cadr cruft) (car cruft))))
+	     (setq dtype (car (setq cruft (cdr cruft)))
+		   var (car (setq cruft (cdr cruft)))
+		   tail (car (setq cruft (cdr cruft)))
+		   tem (cadr cruft))
+	     (and (eq ctype 'maxmin)
+		  (not (atom form)) (null tem)
+		  (rplaca (cdr cruft) (setq tem (loop-make-variable
+						   (gensym) () dtype)))))
+	  ('t (and (null dtype)
+		   (setq dtype (cond ((eq type 'count) 'fixnum)
+				     ((memq type '(min max sum)) 'number))))
+	     (or var (push `(return ,(setq var (gensym)))
+			   loop-after-epilogue))
+	     (or (eq ctype 'list) (loop-make-iteration-variable var () dtype))
+	     (setq tail 
+		   (cond ((eq ctype 'list)
+			    #-Hairy-Collection
+			      (setq tem (loop-make-variable (gensym) () ()))
+			    (car (setq loop-collection-crocks
+				       (list* (gensym) var
+					      loop-collection-crocks))))
+			 ((eq ctype 'maxmin)
+			    (or (atom form)
+				(setq tem (loop-make-variable
+					     (gensym) () dtype)))
+			    (loop-make-variable (gensym) ''t ()))))
+	     (push (list rvar ctype dtype var tail tem)
+		   loop-collect-cruft)))
+    (loop-emit-body
+	(caseq type
+	  (count (setq tem `(setq ,var (,(loop-typed-arith 'add1 dtype)
+					,var)))
+		 (if (member form '(t 't)) tem `(and ,form ,tem)))
+	  (sum `(setq ,var (,(loop-typed-arith 'plus dtype) ,form ,var)))
+	  ((max min)
+	     (let ((forms ()) (arglist ()))
+		; TEM is temporary, properly typed.
+		(and tem (setq forms `((setq ,tem ,form)) form tem))
+		(setq arglist (list var form))
+		(push (if (si:loop-tmember dtype '(fixnum flonum
+						   #+Loop-Small-Floatp
+						     small-flonum))
+			  ; no contagious arithmetic
+			  `(and (or ,tail
+				    (,(loop-typed-arith
+				         (if (eq type 'max) 'lessp 'greaterp)
+					 dtype)
+				     . ,arglist))
+				(setq ,tail () . ,arglist))
+			  ; potentially contagious arithmetic -- must use
+			  ; MAX or MIN so that var will be contaminated
+			  `(setq ,var (cond (,tail (setq ,tail ()) ,form)
+					    ((,type . ,arglist)))))
+		      forms)
+		(if (cdr forms) (cons 'progn (nreverse forms)) (car forms))))
+	  (t (caseq type
+		(list (setq form (list 'list form)))
+		(append (or (and (not (atom form)) (eq (car form) 'list))
+			    (setq form #+Lispm `(copylist* ,form)
+				       #-Lispm `(append ,form ())))))
+	   #+Hairy-Collection
+	     (let ((q `(rplacd ,tail ,form)))
+		(cond ((and (not (atom form)) (eq (car form) 'list)
+			    (not (null (cdr form))))
+		         ; RPLACD of cdr-coded list:
+			 #+Lispm
+			   (rplaca (cddr q)
+				   (if (cddr form) `(list* ,@(cdr form) ())
+				       `(ncons ,(cadr form))))
+			 `(setq ,tail ,(loop-cdrify (cdr form) q)))
+		      ('t `(and (cdr ,q)
+				(setq ,tail (last (cdr ,tail)))))))
+	   #-Hairy-Collection
+	     (let ((q `(cond (,tail (cdr (rplacd ,tail ,tem)))
+			     ((setq ,var ,tem)))))
+		(if (and (not (atom form)) (eq (car form) 'list) (cdr form))
+		    `(setq ,tem ,form ,tail ,(loop-cdrify (cddr form) q))
+		    `(and (setq ,tem ,form) (setq ,tail (last ,q))))))))))
+
+
+(defun loop-cdrify (arglist form)
+    (do ((size (length arglist) (- size 4)))
+	((< size 4)
+	 (if (zerop size) form
+	     (list (cond ((= size 1) 'cdr) ((= size 2) 'cddr) ('t 'cdddr))
+		   form)))
+      #+Meaningful-Type-Declarations (declare (fixnum size))
+      (setq form (list 'cddddr form))))
+
+
+(defun loop-do-while (cond kwd &aux (form (loop-get-form)))
+    (and loop-conditionals (loop-simple-error
+			      "not allowed inside LOOP conditional"
+			      (list kwd form)))
+    (loop-pseudo-body `(,cond ,form (go end-loop))))
+
+
+(defun loop-do-when (negate?)
+  (let ((form (loop-get-form)) (cond))
+    (cond ((si:loop-tequal (cadr loop-source-code) 'it)
+	     ;WHEN foo RETURN IT and the like
+	     (setq cond `(setq ,(loop-when-it-variable) ,form))
+	     (setq loop-source-code		;Plug in variable for IT
+		   (list* (car loop-source-code)
+			  loop-when-it-variable
+			  (cddr loop-source-code))))
+	  ('t (setq cond form)))
+    (and negate? (setq cond `(not ,cond)))
+    (setq loop-conditionals (nconc loop-conditionals `((cond (,cond)))))))
+
+(defun loop-do-with ()
+  (do ((var) (equals) (val) (dtype)) (())
+    (setq var (loop-pop-source) equals (car loop-source-code))
+    (cond ((si:loop-tequal equals '=)
+	     (loop-pop-functions$$ (cons funnm
+						   $$traced-functions$$)))
+
+		 ((or (eq typ 'nlambda)
+		      (eq typ 'macro))
+		  (T-eval
+		     `(T-def ,funnm
+			      (,typ (T-arglst)
+				((lambda (T-res T-rslt
+						$$functions-in-trace$$
+						$$funcargs-in-trace$$)
+				    (T-setq $$funcargs-in-trace$$
+					    (T-cons
+					       T-arglst
+					       $$funcargs-in-trace$$))
+				    (T-cond ((T-setq
+						T-res
+						(T-and ,if
+							(not ,ifnot)))
+					     (,traceenter
+					       ',funnm
+					       T-arglst)
+					     ,evalin
+					     (T-cond (,break
+						       (trace-break)))))
+				    (T-setq T-rslt
+					    ,(cond
+						(evfcn `(,evfcn
+							  ',funcd
+							  T-arglst))
+						(t `(T-apply ',funcd
+							     T-arglst))))
+				    (T-cond (T-res
+					       ,evalout
+					       (,traceexit ',funnm T-rslt)))
+				    T-rslt)
+				 nil nil
+				 (cons ',funnm $$functions-in-trace$$)
+				 $$funcargs-in-trace$$))))
+		  (T-putprop funnm (T-getd funnm) 'trace-trace-fcn)
+		  (setq did (cons funnm did)
+			$$traced-functions$$ (cons funnm
+						   $$traced-functions$$)))
+
+		 (t (T-patom '"No such function as: ")
+		    (T-print funnm)
+		    (T-terpr)))))
+	    botloop )
+	 ; if given no args, just return the function currently being traced
+	 (return (cond ((null argl) $$traced-functions$$)
+		       (t (T-nreverse did)))))))
+
+;--- untrace
+; (untrace foo bar baz)
+;    untraces foo, bar and baz.
+; (untrace)
+;    untraces all functions being traced.
+;
+
+(def untrace
+  (nlambda (argl)
+	   (cond ((null argl) (setq argl $$traced-functions$$)))
+
+	   (do ((i argl (cdr i))
+		(tmp)
+		(curf)
+		(res))
+	       ((null i)  
+		(cond ((null $$traced-functions$$)
+		       (setq $$functions-in-trace$$ nil)
+		       (setq $$funcargs-in-trace$$ nil)))
+		res)
+	       (cond ((and (T-getd (setq curf (car i)))
+			   (eq (T-getd (car i))
+			       (get (car i) 'trace-trace-fcn)))
+		      ; we only want to restore the original definition
+		      ; if this function has not been redefined!
+		      ; we test this by checking to be sure that the
+		      ; trace-trace-property is the same as the function
+		      ; definition.
+		      (T-putd curf (get curf 'trace-orig-fcn))
+		      (T-remprop curf 'trace-orig-fcn)
+		      (T-remprop curf 'trace-trace-fcn)
+		      (T-remprop curf 'trace-trace-args)
+		      (T-remprop curf 'entercount)
+		      (setq $$traced-functions$$ 
+			      (T-delq curf $$traced-functions$$))
+		      (setq res (cons curf res)))))))
+
+
+;--- retrace :: trace again all function thought to be traced.
+;
+(def retrace
+   (nlambda (args)
+	(cond ((null args) (setq args $$traced-functions$$)))
+	(mapcan '(lambda (fcn)
+		    (cond ((and (symbolp fcn)
+				(not (eq (T-getd fcn)
+					 (get fcn 'trace-trace-fcn))))
+			   
+			   (funcall 'trace
+				    `((,fcn ,@(get fcn 'trace-trace-args)))))))
+		args)))
+
+;--- tracedump :: dump the currently active trace frames
+;
+(def tracedump
+  (lambda nil
+	  (let (($tracemute nil))
+	       (T-tracedump-recursive $$functions-in-trace$$ 
+				      $$funcargs-in-trace$$))))
+
+
+;--- traceargs :: return list of args to currently entered traced functions
+;  call is:
+;	(traceargs foo)  returns first call to foo starting at most current
+;       (traceargs foo 3) returns args to third call to foo, starting at
+;			  most current
+;
+(def traceargs
+  (nlambda (args)
+	   (cond ((and args $$functions-in-trace$$)
+		  (let ((name (car args))
+			(amt (cond ((numberp (cadr args)) (cadr args))
+				   (t 1))))
+		       (do ((fit $$functions-in-trace$$ (cdr fit))
+			    (fat $$funcargs-in-trace$$ (cdr fat)))
+			   ((null fit))
+			   (cond ((eq name (car fit))
+				  (cond ((zerop (setq amt (1- amt)))
+					 (return (car fat))))))))))))
+
+;--- T-tracedump-recursive
+; since the lists of functions being traced and arguments are in the reverse
+; of the order we want to print them, we recurse down the lists and on the
+; way back we print the information.
+;
+(def T-tracedump-recursive
+  (lambda ($$functions-in-trace$$ $$funcargs-in-trace$$)
+	  (cond ((null $$functions-in-trace$$))
+		(t (T-tracedump-recursive (cdr $$functions-in-trace$$)
+					  (cdr $$funcargs-in-trace$$))
+		   (T-traceenter (car $$functions-in-trace$$)
+				 (car $$funcargs-in-trace$$))))))
+
+
+
+;--- T-traceenter - funnm : name of function just entered
+;		  - count : count to print out
+;	This routine is called to print the entry banner for a
+;	traced function.
+;
+(def T-traceenter
+  (lambda (name args)
+	  (prog (count indent)
+		(cond ((not $tracemute)
+		       (setq count 0 indent 0)
+		       (do ((ll $$functions-in-trace$$ (cdr ll)))
+			   ((null ll))
+			   (cond ((eq (car ll) name) (setq count (1+ count))))
+			   (setq indent (1+ indent)))
+		       
+		       (T-traceindent indent)
+		       (T-print count)
+		       (T-patom '" <Enter> ")
+		       (T-print name)
+		       (T-patom '" ")
+		       (cond ((setq count (T-get name 'trace-printargs))
+			      (funcall count args))
+			     (t (funcall trace-printer args)))
+		       (T-terpr))))))
+
+(def T-traceexit
+  (lambda (name res)
+	  (prog (count indent)
+		(cond ((not $tracemute)
+		       (setq count 0 indent 0)
+		       (do ((ll $$functions-in-trace$$ (cdr ll)))
+			   ((null ll))
+			   (cond ((eq (car ll) name) (setq count (1+ count))))
+			   (setq indent (1+ indent)))
+		       
+		       
+		       (T-traceindent indent)
+		       (T-print count)
+		       (T-patom " <EXIT>  ")
+		       (T-print name)
+		       (T-patom "  ")
+		       
+		       (cond ((setq count (T-get name 'trace-printres))
+			      (funcall count res))
+			     (t (funcall trace-printer res)))
+		       
+		       (T-terpr))))))
+
+
+;--- Trace-printer
+;  this is the default value of trace-printer.  It prints a form after
+; binding prinlevel and prinlength.
+;
+(def Trace-print
+   (lambda (form)
+      (let ((prinlevel trace-prinlevel)
+	    (prinlength trace-prinlength))
+	 (T-print form))))
+
+; T-traceindent
+; - n   :  indent to column n
+
+(def T-traceindent
+  (lambda (col)
+	  (do ((i col (1- i))
+	       (char '| |))
+	      ((< i 2))
+	      (T-patom (cond ((eq char '| |) (setq char '\|))
+			     (t (setq char '| |)))))))
+; from toplevel.l:
+;
+;--- read and print functions are user-selectable by just
+; assigning another value to top-level-print and top-level-read
+;
+(declare (special top-level-read top-level-print))
+
+(defmacro top-print (&rest args)
+   `(cond (top-level-print (funcall top-level-print ,@args))
+	  (t (T-print ,@args))))
+
+(defmacro top-read (&rest args)
+   `(cond ((and top-level-read
+		(T-getd top-level-read))
+	   (funcall top-level-read ,@args))
+	  (t (T-read ,@args))))
+
+
+; trace-break  - this is the trace break loop
+(def trace-break
+  (lambda nil
+	 (prog (tracevalread piport)
+	       (T-terpr) (T-patom '"[tracebreak]")
+	loop   (T-terpr)
+	       (T-patom '"T>")
+	       (T-drain)
+	       (cond ((or (eq nil (setq tracevalread
+					 (car
+					  (errset (top-read nil nil)))))
+			  (and (dtpr tracevalread)
+			       (eq 'tracereturn (car tracevalread))))
+			(T-terpr)
+		        (return nil)))
+	       (top-print (car (errset (T-eval tracevalread))))
+	       (go loop))))
+
+
+(def T-levprint
+  (lambda (x)
+	  ((lambda (prinlevel prinlength)
+		  (T-print x))
+	   3 10)))
+
+		       
+(eval-when (eval)
+  (apply 'sstatus `(uctolc ,old-uctolc-value))
+  (setq readtable old-read-table-trace)
+  )
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                source)
+	     (setq val (loop-get-form) dtype ()))
+	  ((or (si:loop-tequal equals 'and)
+	       (si:loop-tassoc equals loop-keyword-alist)
+	       (si:loop-tassoc equals loop-iteration-keyword-alist))
+	     (setq val () dtype ()))
+	  ('t (setq dtype (loop-pop-source) equals (car loop-source-code))
+	      (cond ((si:loop-tequal equals '=)
+		       (loop-pop-source)
+		       (setq val (loop-get-form)))
+		    ((and (not (null loop-source-code))
+			  (not (si:loop-tassoc equals loop-keyword-alist))
+			  (not (si:loop-tassoc
+				  equals loop-iteration-keyword-alist))
+			  (not (si:loop-tequal equals 'and)))
+		       (loop-simple-error "Garbage where = expected" equals))
+		    ('t (setq val ())))))
+    (loop-make-variable var val dtype)
+    (if (not (si:loop-tequal (car loop-source-code) 'and)) (return ())
+	(loop-pop-source)))
+  (loop-bind-block))
+
+(defun loop-do-always (pred)
+  (let ((form (loop-get-form)))
+    (loop-emit-body `(,pred ,form (return ())))
+    (push '(return 't) loop-after-epilogue)))
+
+;THEREIS expression
+;If expression evaluates non-nil, return that value.
+(defun loop-do-thereis ()
+   (loop-emit-body `(and (setq ,(loop-when-it-variable) ,(loop-get-form))
+			 (return ,loop-when-it-variable))))
+
+
+;;;; Hacks
+
+#+Meaningful-Type-Declarations
+  (declare (fixnum (loop-simplep-1 notype)))
+
+(defun si:loop-simplep (expr)
+    (if (null expr) 0
+	(*catch 'si:loop-simplep
+	    (let ((ans (si:loop-simplep-1 expr)))
+	       #+Meaningful-Type-Declarations (declare (fixnum ans))
+	       (and (< ans 20.) ans)))))
+
+(defvar si:loop-simplep
+  (append '(> < greaterp lessp plusp minusp typep zerop
+	    plus difference + - add1 sub1 1+ 1-
+	    +$ -$ 1+$ 1-$ boole rot ash ldb equal atom
+	    setq prog1 prog2 and or =)
+	  #+(or Lispm NIL) '(aref ar-1 ar-2 ar-3)
+	  #+Lispm '#.(and (loop-featurep Lispm)
+			  (mapcar 'ascii '(#/ #/ #/)))
+	  #+For-NIL '(vref vector-length 1+& 1-& +& -& +p -p 0p *& //& \&
+                      si:xref char string-length)
+	  ))
+
+(defun si:loop-simplep-1 (x)
+  (let ((z 0))
+    #+Meaningful-Type-Declarations (declare (fixnum z))
+    (cond ((loop-constantp x) 0)
+	  ((atom x) 1)
+	  ((eq (car x) 'cond)
+	     (do ((cl (cdr x) (cdr cl))) ((null cl))
+	       (do ((f (car cl) (cdr f))) ((null f))
+		 (setq z (+ (si:loop-simplep-1 (car f)) z 1))))
+	     z)
+	  ((symbolp (car x))
+	     (let ((fn (car x)) (tem ()))
+	       (cond ((setq tem (get fn 'si:loop-simplep))
+		        (if (fixp tem) (setq z tem)
+			    (setq z (funcall tem x) x ())))
+		     ((memq fn '(null not eq go return progn)))
+		     (#+Run-on-PDP10
+		        (or (not (minusp (+internal-carcdrp fn)))
+				      (eq fn 'cxr))
+		      #-Run-on-PDP10 (memq fn '(car cdr))
+		        (setq z 1))
+		   #-Run-on-PDP10
+		     ((memq fn '(caar cadr cdar cddr)) (setq z 2))
+		   #-Run-on-PDP10
+		     ((memq fn '(caaar caadr cadar caddr
+				 cdaar cdadr cddar cdddr))
+		        (setq z 3))
+		   #-Run-on-PDP10
+		     ((memq fn '(caaaar caaadr caadar caaddr
+				 cadaar cadadr caddar cadddr
+				 cdaaar cdaadr cdadar cdaddr
+				 cddaar cddadr cdddar cddddr))
+		        (setq z 4))
+		     ((memq fn si:loop-simplep)
+		        (setq z 2))
+		     (#+(or Lispm For-PDP10 For-NIL)
+		        (not (eq (setq tem (macroexpand-1 x)) x))
+		      #+Franz (not (eq (setq tem (macroexpand x)) x))
+		      #+Multics
+		        (setq tem (get (car x) 'macro))
+		      #+Multics (setq tem (funcall tem x))
+		      (setq z (si:loop-simplep-1 tem) x ()))
+		     ('t (*throw 'si:loop-simplep ())))
+	       (do ((l (cdr x) (cdr l))) ((null l))
+		 (setq z (+ (si:loop-simplep-1 (car l)) 1 z)))
+	       z))
+	  ('t (*throw 'si:loop-simplep ())))))
+
+
+;;;; The iteration driver
+(defun loop-hack-iteration (entry)
+  (do ((last-entry entry)
+       (source loop-source-code loop-source-code)
+       (pre-step-tests ())
+       (steps ())
+       (post-step-tests ())
+       (pseudo-steps ())
+       (pre-loop-pre-step-tests ())
+       (pre-loop-steps ())
+       (pre-loop-post-step-tests ())
+       (pre-loop-pseudo-steps ())
+       (tem) (data) (foo) (bar))
+      (())
+    ; Note we collect endtests in reverse order, but steps in correct
+    ; order.  LOOP-END-TESTIFY does the nreverse for us.
+    (setq tem (setq data (apply (cadr entry) (cddr entry))))
+    (and (car tem) (push (car tem) pre-step-tests))
+    (setq steps (nconc steps (loop-copylist* (car (setq tem (cdr tem))))))
+    (and (car (setq tem (cdr tem))) (push (car tem) post-step-tests))
+    (setq pseudo-steps
+	  (nconc pseudo-steps (loop-copylist* (car (setq tem (cdr tem))))))
+    (setq tem (cdr tem))
+    (and (or loop-conditionals loop-emitted-body?)
+	 (or tem pre-step-tests post-step-tests pseudo-steps)
+	 (let ((cruft (list (car entry) (car source)
+			    (cadr source) (caddr source))))
+	    (if loop-emitted-body?
+		(loop-simple-error
+		   "Iteration is not allowed to follow body code" cruft)
+		(loop-simple-error
+		   "Iteration starting inside of conditional in LOOP"
+		   cruft))))
+    (or tem (setq tem data))
+    (and (car tem) (push (car tem) pre-loop-pre-step-tests))
+    (setq pre-loop-steps
+	  (nconc pre-loop-steps (loop-copylist* (car (setq tem (cdr tem))))))
+    (and (car (setq tem (cdr tem))) (push (car tem) pre-loop-post-step-tests))
+    (setq pre-loop-pseudo-steps
+	  (nconc pre-loop-pseudo-steps (loop-copylist* (cadr tem))))
+    (cond ((or (not (si:loop-tequal (car loop-source-code) 'and))
+	       (and loop-conditionals
+		    (not (si:loop-tassoc (cadr loop-source-code)
+					 loop-iteration-keyword-alist))))
+	     (setq foo (list (loop-end-testify pre-loop-pre-step-tests)
+			     (loop-make-psetq pre-loop-steps)
+			     (loop-end-testify pre-loop-post-step-tests)
+			     (loop-make-setq pre-loop-pseudo-steps))
+		   bar (list (loop-end-testify pre-step-tests)
+			     (loop-make-psetq steps)
+			     (loop-end-testify post-step-tests)
+			     (loop-make-setq pseudo-steps)))
+	     (cond ((not loop-conditionals)
+		      (setq loop-before-loop (nreconc foo loop-before-loop)
+			    loop-after-body (nreconc bar loop-after-body)))
+		   ('t ((lambda (loop-conditionals)
+			   (push (loop-make-conditionalization
+				    (cons 'progn (delq () foo)))
+				 loop-before-loop))
+			(mapcar '(lambda (x)	;Copy parts that will get rplacd'ed
+				   (cons (car x)
+					 (mapcar '(lambda (x) (loop-copylist* x)) (cdr x))))
+				loop-conditionals))
+		       (push (loop-make-conditionalization
+			        (cons 'progn (delq () bar)))
+			     loop-after-body)))
+	     (loop-bind-block)
+	     (return ())))
+    (loop-pop-source) ; flush the "AND"
+    (setq entry (cond ((setq tem (si:loop-tassoc
+				    (car loop-source-code)
+				    loop-iteration-keyword-alist))
+		         (loop-pop-source)
+			 (setq last-entry tem))
+		      ('t last-entry)))))
+
+
+;FOR variable keyword ..args..
+(defun loop-do-for ()
+  (let ((var (loop-pop-source))
+	(data-type? (loop-optional-type))
+	(keyword (loop-pop-source))
+	(first-arg (loop-get-form))
+	(tem ()))
+    (or (setq tem (si:loop-tassoc keyword loop-for-keyword-alist))
+	(loop-simple-error
+	   "Unknown keyword in FOR or AS clause in LOOP"
+	   (list 'for var keyword)))
+    (lexpr-funcall (cadr tem) var first-arg data-type? (cddr tem))))
+
+
+(defun loop-do-repeat ()
+    (let ((var (loop-make-variable (gensym) (loop-get-form) 'fixnum)))
+       `((not (,(loop-typed-arith 'plusp 'fixnum) ,var))
+         () ()
+         (,var (,(loop-typed-arith 'sub1 'fixnum) ,var)))))
+
+
+; Kludge the First
+(defun loop-when-it-variable ()
+    (or loop-when-it-variable
+	(setq loop-when-it-variable
+	      (loop-make-variable (gensym) () ()))))
+
+
+
+(defun loop-for-equals (var val data-type?)
+  (cond ((si:loop-tequal (car loop-source-code) 'then)
+	   ;FOR var = first THEN next
+	   (loop-pop-source)
+	   (loop-make-iteration-variable var val data-type?)
+	   `(() (,var ,(loop-get-form)) () ()
+	     () () () ()))
+	('t (loop-make-iteration-variable var () data-type?)
+	    (let ((varval (list var val)))
+	      (cond (loop-emitted-body?
+		     (loop-emit-body (loop-make-setq varval))
+		     '(() () () ()))
+		    (`(() ,varval () ())))))))
+
+(defun loop-for-first (var val data-type?)
+    (or (si:loop-tequal (car loop-source-code) 'then)
+	(loop-simple-error "found where THEN expected in FOR ... FIRST"
+			   (ca(setq rcs-common0-
+   "$Header: record.l,v 1.3 84/02/29 19:33:50 jkf Exp $")
+
+;;					-[Mon Feb 20 15:00:52 1984 by jkf]-
+;; simple record package
+;;
+
+(eval-when (compile)
+   (or (get 'record 'version) (load 'record)))
+
+(defvar record-pkg-indicator 'record-package-dr-record)
+
+(declare (macros nil))
+
+;; internal macro
+(defmacro dr-error (message &rest args)
+   ;; print an error preceeded by 'defrecord'
+   ;; internal use only
+   `(error ',(concat "defrecord: " message) ,@args))
+
+
+;(defrecord dr-record
+;   	name	; name of record
+;	storage ; 'list' or 'vector'
+;	options	; subset of 'named', 'access-check'
+;   	fields  ; list of dr-field records
+;)
+
+(eval-when (compile eval)
+   (putprop 'dr-record
+	    '(dr-record list nil ((fields 3 nil)
+				  (options 2 nil)
+				  (storage 1 nil)
+				  (name 0 nil)))
+	    record-pkg-indicator))
+(defmacro make-dr-record (&rest args) (record-pkg-construct 'dr-record args))
+(defmacro dr-record-storage (arg) `(nth 1 ,arg))
+(defmacro dr-record-options (arg) `(nth 2 ,arg))
+(defmacro dr-record-fields (arg) `(nth 3 ,arg))
+
+;(defrecord dr-field
+;   ;; internal structure used to store info on fields
+;   name
+;   offset
+;   defaultvalue)
+
+(eval-when (compile eval)
+   (putprop 'dr-field
+	    '(dr-field list nil ((defaultvalue 2 nil)
+				 (offset 1 nil)
+				 (name 0 nil)))
+	    record-pkg-indicator))
+(defmacro make-dr-field (&rest args) (record-pkg-construct 'dr-field args))
+
+(defmacro dr-field-name (arg) `(nth 0 ,arg))
+(defmacro dr-field-offset (arg) `(nth 1 ,arg))
+(defmacro dr-field-defaultvalue (arg) `(nth 2 ,arg))
+
+;; internal functions (called by macros)
+
+(defun record-pkg-construct (recname args)
+   ;; called to expand a make- form.
+   ;; recname is the name of a record
+
+   ; convert to an assq list, verifing field names
+   (let* ((dr-record (get recname record-pkg-indicator))
+	  (fields (dr-record-fields dr-record))
+	  (given))
+      (do ((xx args (cddr xx)))
+	  ((null xx))
+	  (if (assq (car xx) fields)
+	     then (push (cons (car xx) (cadr xx)) given)
+	     else (dr-error " for record " recname
+			   ", this field doesn't exist " (car xx))))
+      ;; now build a list of values.
+      ;; use the fact that the fields list is in the reverse order
+      (do ((xx fields (cdr xx))
+	   (got)
+	   (res))
+	  ((null xx)
+	   ;; now we have a list of values to compute to build this
+	   ;; form.  
+	   (caseq (dr-record-storage dr-record)
+	      (list `(list ,@res))
+	      (vector `(vector ,@res))
+	      (t (error "record package is confused about storage type "))))
+	  (if (setq got (assq (dr-field-name (car xx)) given))
+	     then (push (cdr got) res)	; given value
+	     else (push (dr-field-defaultvalue (car xx))
+			res)))))
+
+
+
+(defun record-pkg-access (recname fieldname arg)
+   ;; return code access the given field in the given record
+   (let ((dr-record (get recname record-pkg-indicator))
+	 (recnamefield)
+	 (fieldinfo)
+	 (options)
+	 (storage))
+      (setq fieldinfo (assq fieldname (dr-record-fields dr-record)))
+      (setq options (dr-record-options dr-record))
+      (setq storage (dr-record-storage dr-record))
+      (if (null fieldinfo)
+	 then (dr-error "internal error: can't find field " fieldname
+			" in record " recname))
+      (if (memq 'access-check options)
+	 then (setq recnamefield (assq '-record-field-name-
+				       (dr-record-fields dr-record)))
+	      `((lambda (defrecord-acma)
+		   (cond ((not (eq ',recname
+				   ,(dr-accessor storage
+						 (dr-field-offset
+						    recnamefield)
+						 'defrecord-acma)))
+			  (record-pkg-illegal-access ',recname ',fieldname
+						     defrecord-acma))
+			 (t ,(dr-accessor storage
+					  (dr-field-offset fieldinfo)
+					  'defrecord-acma))))
+		,arg)
+	 else (dr-accessor storage (dr-field-offset fieldinfo) arg))))
+
+
+(defun dr-accessor (class index obj)
+   ;; determine the correct field accessor to get the index'th element
+   ;; from obj, give the storage type class (either list or vector).
+   ;;
+   (caseq class
+      (list `(nth ,index ,obj))
+      (vector `(vref ,obj ,index))
+      (t (error "record package: illegal storage class " class))))
+
+(defun record-pkg-illegal-access (recname fieldname value)
+   (error "Unable to access field " fieldname " of record " recname
+	  " because this is not an instance of that record: "
+	  value))
+		    
+      
+	  
+	  
+(defun defrecord-name (form)
+   ;; user callable function to return the record name of
+   ;; a record
+   (if (defrecord-namedp form)
+      then (if (dtpr form) then (cadr form)
+	    elseif (vectorp form)
+	      then (vref form 1))
+      else (error "record-name: this record doesn't have a name " form)))
+
+(defun defrecord-namedp (form)
+   ;; return t iff form is a named record
+   (let (name)
+      (and (or (and (dtpr form)
+		    (cdr form)
+		    (progn (setq name (cadr form)) t)
+		    (symbolp name))
+	       (and (vectorp form)
+		    (>& (vsize form) 1)
+		    (progn (setq name (vref form 1)) t)
+		    (symbolp name)))
+	   (get name record-pkg-indicator)
+	   t)))
+
+;; external functions
+;; The following functions are user callable
+
+
+(declare (macros t))
+
+(defvar defrecord-default-flags nil)  ; what is assumed in the flag field
+
+(defmacro defrecord (&rest form)
+   ;; user callable function
+   (if (null form)
+      then (error "defrecord: missing record name in " form))
+
+   (let ((name (car form))
+	 (args (cdr form))
+	 (fields)
+	 (nameargs)
+	 (givenoptions defrecord-default-flags)
+	 (savedoptions)
+	 ;;options
+	 (namedp)(access-checkp) (vectorp))
+      (if (dtpr name)
+	 then (setq givenoptions (append givenoptions (cdr name))
+		    name (car name)))
+
+      (if (not (symbolp name))
+	 then (dr-error "non symbol record name " name))
+
+      ;; process given options
+      (do ((xx  givenoptions (cdr xx)))
+	  ((null xx))
+	  (caseq (car xx)
+	     (named (setq namedp t))
+	     (access-check (setq access-checkp t))
+	     (vector (setq vectorp t))
+	     (t ; ignore
+	     )))
+      ;; look for conflicting options
+      (if (and access-checkp (not namedp))
+	 then (error "defrecord: Can't specify access-check without also specifying named " form))
+
+      (if namedp then (push 'named savedoptions))
+      (if access-checkp then (push 'access-check savedoptions))
+
+      (if namedp
+	 then (let ((namefield `(-record-field-name- ',name)))
+		 (if args
+		    then (setq args (cons (car args)
+					  (cons namefield
+						(cdr args))))
+			 else (setq args (list namefield)))))
+
+      (do ((xx args (cdr xx))
+	   (off 0 (1+ off)))
+	  ((null xx))
+	  (if (dtpr (car xx))
+	     then (push (make-dr-field
+			   name (caar xx)
+			   offset off
+			   defaultvalue (cadar xx))
+			fields)
+	     else (push (make-dr-field
+			   name (car xx)
+			   offset off)
+			fields)))
+
+      
+      ; return a progn compile of an accessor and a collection
+      ; of accessors
+      `(progn 'compile
+	      (eval-when (compile load eval)
+			 (putprop ',name ',(make-dr-record
+					    name name
+					    storage (if vectorp
+							then 'vector
+							else 'list)
+					    options savedoptions
+					    fields fields)
+				  ',record-pkg-indicator))
+	      (defmacro ,(concat 'make- name) (&rest args)
+			 (record-pkg-construct ',name args))
+	      ,@(mapcar '(lambda (dr-field)
+			    `(defmacro ,(concat name
+						'-
+						(dr-field-name dr-field))
+					(arg)
+					(record-pkg-access
+					   ',name
+					   ',(dr-field-name dr-field)
+					   arg)))
+			fields))))
+
+
+(putprop 'record t 'version)
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 r loop-source-code)))
+    (loop-pop-source)
+    (loop-make-iteration-variable var () data-type?)
+    `(() (,var ,(loop-get-form)) () () () (,var ,val) () ()))
+
+
+(defun loop-list-stepper (var val data-type? fn)
+    (let ((stepper (cond ((si:loop-tequal (car loop-source-code) 'by)
+			    (loop-pop-source) (loop-get-form))
+			 ('t '(function cdr))))
+	  (var1 ()) (stepvar ()) (step ()) (et ()) (pseudo ()))
+       (setq step (if (or (atom stepper)
+			  (not (memq (car stepper) '(quote function))))
+		      `(funcall ,(setq stepvar (gensym)))
+		      (list (cadr stepper))))
+       (cond ((and (atom var)
+		   ;; (eq (car step) 'cdr)
+		   (not fn))
+	        (setq var1 (loop-make-iteration-variable var val data-type?)))
+	     ('t (loop-make-iteration-variable var () data-type?)
+		 (setq var1 (loop-make-variable (gensym) val ()))
+		 (setq pseudo (list var (if fn (list fn var1) var1)))))
+       (rplacd (last step) (list var1))
+       (and stepvar (loop-make-variable stepvar stepper ()))
+       (setq stepper (list var1 step) et `(null ,var1))
+       (if (not pseudo) `(() ,stepper ,et () () () ,et ())
+	   (if (eq (car step) 'cdr) `(,et ,pseudo () ,stepper)
+	       `((null (setq . ,stepper)) () () ,pseudo ,et () () ,pseudo)))))
+
+
+(defun loop-for-arithmetic (var val data-type? kwd)
+  ; Args to loop-sequencer:
+  ; indexv indexv-type variable? vtype? sequencev? sequence-type
+  ; stephack? default-top? crap prep-phrases
+  (si:loop-sequencer
+     var (or data-type? 'fixnum) () () () () () () `(for ,var ,kwd ,val)
+     (cons (list kwd val)
+	   (loop-gather-preps
+	      '(from upfrom downfrom to upto downto above below by)
+	      ()))))
+
+
+(defun si:loop-named-variable (name)
+    (let ((tem (si:loop-tassoc name loop-named-variables)))
+       (cond ((null tem) (gensym))
+	     ('t (setq loop-named-variables (delq tem loop-named-variables))
+		 (cdr tem)))))
+
+#+Run-in-Maclisp ;Gross me out
+(and (status feature #+Multics Compiler #-Multics complr)
+     (*expr si:loop-named-variable))
+
+
+; Note:  path functions are allowed to use loop-make-variable, hack
+; the prologue, etc.
+(defun loop-for-being (var val data-type?)
+   ; FOR var BEING something ... - var = VAR, something = VAL.
+   ; If what passes syntactically for a pathname isn't, then
+   ; we trap to the DEFAULT-LOOP-PATH path;  the expression which looked like
+   ; a path is given as an argument to the IN preposition.  Thus,
+   ; by default, FOR var BEING EACH expr OF expr-2
+   ; ==> FOR var BEING DEFAULT-LOOP-PATH IN expr OF expr-2.
+   (let ((tem) (inclusive?) (ipps) (each?) (attachment))
+     (if (or (si:loop-tequal val 'each) (si:loop-tequal val 'the))
+	 (setq each? 't val (car loop-source-code))
+	 (push val loop-source-code))
+     (cond ((and (setq tem (si:loop-tassoc val loop-path-keyword-alist))
+		 (or each? (not (si:loop-tequal (cadr loop-source-code)
+						'and))))
+	      ;; FOR var BEING {each} path {prep expr}..., but NOT
+	      ;; FOR var BEING var-which-looks-like-path AND {ITS} ...
+	      (loop-pop-source))
+	   ('t (setq val (loop-get-form))
+	       (cond ((si:loop-tequal (car loop-source-code) 'and)
+			;; FOR var BEING value AND ITS path-or-ar
+			(or (null each?)
+			    (loop-simple-error
+			       "Malformed BEING EACH clause in LOOP" var))
+			(setq ipps `((of ,val)) inclusive? 't)
+			(loop-pop-source)
+			(or (si:loop-tmember (setq tem (loop-pop-source))
+					     '(its his her their each))
+			    (loop-simple-error
+			       "found where ITS or EACH expected in LOOP path"
+			       tem))
+			(if (setq tem (si:loop-tassoc
+					 (car loop-source-code)
+					 loop-path-keyword-alist))
+			    (loop-pop-source)
+			    (push (setq attachment `(in ,(loop-get-form)))
+				  ipps)))
+		     ((not (setq tem (si:loop-tassoc
+					(car loop-source-code)
+					loop-path-keyword-alist)))
+			; FOR var BEING {each} a-r ...
+			(setq ipps (list (setq attachment (list 'in val)))))
+		     ('t ; FOR var BEING {each} pathname ...
+			 ; Here, VAL should be just PATHNAME.
+			 (loop-pop-source)))))
+     (cond ((not (null tem)))
+	   ((not (setq tem (si:loop-tassoc 'default-loop-path
+					   loop-path-keyword-alist)))
+	      (loop-simple-error "Undefined LOOP iteration path"
+				 (cadr attachment))))
+     (setq tem (funcall (cadr tem) (car tem) var data-type?
+			(nreconc ipps (loop-gather-preps (caddr tem) 't))
+			inclusive? (caddr tem) (cdddr tem)))
+     (and loop-named-variables
+	  (loop-simple-error "unused USING variables" loop-named-variables))
+     ; For error continuability (if there is any):
+     (setq loop-named-variables ())
+     ;; TEM is now (bindings prologue-forms . stuff-to-pass-back)
+     (do ((l (car tem) (cdr l)) (x)) ((null l))
+       (if (atom (setq x (car l)))
+	   (loop-make-iteration-variable x () ())
+	   (loop-make-iteration-variable (car x) (cadr x) (caddr x))))
+     (setq loop-prologue (nconc (reverse (cadr tem)) loop-prologue))
+     (cddr tem)))
+
+
+(defun loop-gather-preps (preps-allowed crockp)
+   (do ((token (car loop-source-code) (car loop-source-code)) (preps ()))
+       (())
+     (cond ((si:loop-tmember token preps-allowed)
+	      (push (list (loop-pop-source) (loop-get-form)) preps))
+	   ((si:loop-tequal token 'using)
+	      (loop-pop-source)
+	      (or crockp (loop-simple-error
+			    "USING used in illegal context"
+			    (list 'using (car loop-source-code))))
+	      (do ((z (car loop-source-code) (car loop-source-code)) (tem))
+		  ((atom z))
+		(and (or (atom (cdr z))
+			 (not (null (cddr z)))
+			 (not (symbolp (car z)))
+			 (and (cadr z) (not (symbolp (cadr z)))))
+		     (loop-simple-error
+		        "bad variable pair in path USING phrase" z))
+		(cond ((not (null (cadr z)))
+		         (and (setq tem (si:loop-tassoc
+					   (car z) loop-named-variables))
+			      (loop-simple-error
+			         "Duplicated var substitition in USING phrase"
+				 (list tem z)))
+			 (push (cons (car z) (cadr z)) loop-named-variables)))
+		(loop-pop-source)))
+	   ('t (return (nreverse preps))))))
+
+(defun loop-add-path (name data)
+    (setq loop-path-keyword-alist
+	  (cons (cons name data)
+		; Don't change this to use DELASSQ in PDP10, the lsubr
+		; calling sequence makes that lose.
+		(delq (si:loop-tassoc name loop-path-keyword-alist)
+		      loop-path-keyword-alist)))
+    ())
+
+#+Run-on-PDP10
+(declare ; Suck my obarray...
+	 (own-symbol define-loop-path define-loop-sequence-path))
+
+(defmacro define-loop-path (names &rest cruft)
+  (setq names (if (atom names) (list names) names))
+  #-For-Maclisp
+    (let ((forms (mapcar #'(lambda (name) `(loop-add-path ',name ',cruft))
+			 names)))
+       `(eval-when (eval load compile)
+	    #+For-NIL (flush-macromemos 'loop ())
+	    ,@forms))
+  #+For-Maclisp
+    (subst (do ((l)) ((null names) l)
+	     (setq l (cons `(setq loop-path-keyword-alist
+				  (cons '(,(car names) . ,cruft)
+					(delq (assq ',(car names)
+						    loop-path-keyword-alist)
+					      loop-path-keyword-alist)))
+			   l)
+		   names (cdr names)))
+	   'progn
+	   '(eval-when (eval load compile)
+	     #-For-PDP10 (or (boundp 'loop-path-keyword-alist)
+			      (setq loop-path-keyword-alist ()))
+	     #+For-PDP10 (and (or (boundp 'loop-path-keyword-alist)
+				   (setq loop-path-keyword-alist ()))
+			       (flush-macromemos 'loop ()))
+	       . progn)))
+
+
+(defun si:loop-sequencer (indexv indexv-type
+			  variable? vtype?
+			  sequencev? sequence-type?
+			  stephack? default-top?
+			  crap prep-phrases)
+   (let ((endform) (sequencep) (test)
+	 (step ; Gross me out!
+	       (add1 (or (loop-typed-init indexv-type) 0)))
+	 (dir) (inclusive-iteration?) (start-given?) (limit-given?))
+     (and variable? (loop-make-iteration-variable variable? () vtype?))
+     (do ((l prep-phrases (cdr l)) (prep) (form) (odir)) ((null l))
+       (setq prep (caar l) form (cadar l))
+       (cond ((si:loop-tmember prep '(of in))
+		(and sequencep (loop-simple-error
+				  "Sequence duplicated in LOOP path"
+				  (list variable? (car l))))
+		(setq sequencep 't)
+		(loop-make-variable sequencev? form sequence-type?))
+	     ((si:loop-tmember prep '(from downfrom upfrom))
+	        (and start-given?
+		     (loop-simple-error
+		        "Iteration start redundantly specified in LOOP sequencing"
+			(append crap l)))
+		(setq start-given? 't)
+		(cond ((si:l;; file of common cmu functions which should be macros 
+;; I hope that by just loading in the file an environment will be
+;; created which will permit the cmu files to be compiled.
+
+(setq rcs-cmumacs-
+   "$Header: /usr/lib/lisp/cmumacs.l,v 1.1 83/01/29 18:34:31 jkf Exp $")
+
+(declare (macros t))
+
+(eval-when (compile eval load)
+   (or (boundp 'CMU-fcn-def) (setq CMU-fcn-def (getd 'def))))
+
+;-- contents
+;	dv	mark!changed 	***	list* [construct-list* lambda]
+;	neq	push	pop	mukname (equivlance)
+;	prin1 (equiv to print)	selectq	lineread
+;
+
+;--- dv :: set variable to value and remember it was changed
+; (dv name value)   name is setq'ed to value (no evaluation) and
+;		 the fact that it was done is remembered
+;
+(defmacro dv (name value)
+  `(progn 'compile
+	  (setq ,name ',value)
+	  (mark!changed ',name)))
+
+(defmacro mark!changed (name)
+  `(let ((atomname ,name))
+        (and (boundp '%changes) (setq %changes (cons atomname %changes)))
+	atomname))
+
+;--- *** :: comment macro
+;
+(defmacro *** (&rest x) nil)
+
+;; this must be rewritten as a macro		****
+;(def quote! (nlambda (a) (quote!-expr a)))
+
+; this will be thrown away if the code below it works
+(def quote!-expr
+     (lambda 
+      (x)
+      (cond ((atom x) x)
+            ((eq (car x) '!)
+             (cons (eval (cadr x)) (quote!-expr (cddr x))))
+            ((eq (car x) '!!)
+             (cond ((cddr x)
+                    (append (eval (cadr x)) (quote!-expr (cddr x))))
+                   (t (eval (cadr x)))))
+            (t
+             (prog (u v)
+                   (setq u (quote!-expr (car x)))
+                   (setq v (quote!-expr (cdr x)))
+                   (cond ((and (eq u (car x)) (eq v (cdr x))) (return x)))
+                   (return (cons u v)))))))
+;; this is probably what the above forms do. (jkf)
+(defmacro quote! (&rest a) (quote!-expr-mac a))
+(eval-when (compile eval load)
+   
+(defun quote!-expr-mac (form)
+   (cond ((null form) nil)
+	 ((atom form) `',form)
+	 ((eq (car form) '!)
+	  `(cons ,(cadr form) ,(quote!-expr-mac (cddr form))))
+	 ((eq (car form) '!!)
+	  (cond ((cddr form) `(append ,(cadr form)
+				       ,(quote!-expr-mac (cddr form))))
+		(t (cadr form))))
+	 (t `(cons ,(quote!-expr-mac (car form))
+		    ,(quote!-expr-mac (cdr form))))))
+
+); end eval-when
+		 
+	 
+;--- the following are macroizations from cmu3.l
+
+;(jkf)- ucb list* macro.
+;
+(defmacro list* (&rest forms)
+	  (cond ((null forms) nil)
+		((null (cdr forms)) (car forms))
+		(t (construct-list* forms))))
+
+(defun construct-list* (forms)
+       (setq forms (reverse forms))
+       (do ((forms (cddr forms) (cdr forms))
+	    (return-form `(cons ,(cadr forms) ,(car forms))
+			 `(cons ,(car forms) ,return-form)))
+	   ((null forms) return-form))) 
+
+(defmacro neq (a b) `(not (eq ,a ,b)))
+
+
+(defmacro push (value stack) `(setq ,stack (cons ,value ,stack)))
+
+
+
+
+
+;(jkf) this is actually maknum is the maclisp terminology
+(putd 'munknam (getd 'maknum))
+
+; added for CMULisp compatibilty (used by editor etc)
+(putd 'prin1 (getd 'print))
+
+;--- selectq :: case statement type construct
+;
+;   (selectq <form>
+;	     (<tag1> <expr1> ...)
+;	     (<tag2> <expr2> ...)
+;		 ...
+;	     (<tagn> <exprn> ...)
+;	      (<exprfinal> ...))
+; <form> is evaluated and then compared with the tagi, if it matches
+; the expri are evaluated.  If it doesn't match, then <exprfinal> are
+; evaluated.
+;
+(def selectq
+   (macro (form)
+	  ((lambda (x)
+		   `((lambda (,x)
+			     (cond
+				  ,@(maplist
+					 '(lambda (ff)
+						  (cond ((null (cdr ff))
+							 `(t  ,(car ff)))
+							((atom (caar ff))
+							 `((eq ,x ',(caar ff))
+							   . ,(cdar ff)))
+							(t
+							     `((memq ,x ',(caar ff))
+							       . ,(cdar ff)))))
+					  (cddr form))))
+		     ,(cadr form)))
+	  (gensym 'Z))))
+
+(defmacro lineread (&optional (x nil)) 
+  `(%lineread ,x))
+
+
+
+(defmacro de (name &rest body)
+   (cond ((status feature complr) `(def ,name (lambda ,@body)))
+	 (t `(progn (putd ,name '(lambda ,@body))
+		    (mark!changed ',name)))))
+(defmacro dn (name &rest body)
+   (cond ((status feature complr) `(def ,name (nlambda ,@body)))
+	 (t `(progn (putd ,name '(nlambda ,@body))
+		    (mark!changed ',name)))))
+(defmacro dm (name &rest body)
+   (cond ((status feature complr) `(def ,name (macro ,@body)))
+	 (t `(progn (putd ,name '(macro ,@body))
+		    (mark!changed ',name)))))
+
+(eval-when (compile eval load)
+   (or (boundp 'OLD-fcn-def) (setq OLD-fcn-def (getd 'def))))
+
+(defmacro def (&rest form)
+    (cond ((status feature complr)
+	   `(progn 'compile
+		    (eval-when (compile) (putd 'def OLD-fcn-def))
+		    (def ,@form)
+		    (eval-when (compile) (putd 'def CMU-fcn-def))))
+	  (t `(progn (putd ',(car form) ',(cadr form))
+		    (mark!changed ',(car form))))))
+
+(eval-when (compile eval load)
+   (or (boundp 'CMU-fcn-def) (setq CMU-fcn-def (getd 'def))))
+
+;--iteration macros
+
+(def Cdo (macro (l) (expand-do l)))
+
+(def exists (macro (l) (expand-ex 'some l)))
+
+(declare (special var))
+
+(eval-when (compile eval load)
+   
+(def expand-ex
+     (lambda 
+      (fn form)
+      (quote! !
+              fn
+              !
+              (caddr form)
+              (function
+               (lambda 
+                !
+                (cond ((atom (cadr form)) (ncons (cadr form)))
+                      (t (cadr form)))
+                !
+                (car (setq form (cdddr form)))))
+              !
+              (cond ((cdr form) (list 'function (cadr form)))))))
+) ; end eval-when
+
+(def expand-do
+     (lambda 
+      (l)
+      (prog (label var init incr limit part)
+            (cond
+             ((setq part (memq 'for l))
+              (setq var (cadr part))
+              (setq l (append (ldiff l part) (cddr part)))))
+            (cond
+             ((setq part (exists w l (memq w '(gets = _ :=))))
+              (setq init (cadr part))
+              (setq l (append (ldiff l part) (cddr part)))))
+            (cond
+             ((setq part (exists w l (memq w '(step by))))
+              (setq incr (cadr part))
+              (setq l (append (ldiff l part) (cddr part)))))
+            (cond
+             ((setq part (memq 'to l))
+              (setq limit (cadr part))
+              (setq l (append (ldiff l part) (cddr part)))))
+            (return
+             (quote! prog
+                     !
+                     (cond (var (ncons var)))
+                     !!
+                     (cond
+                      (var
+                       (ncons
+                        (list 'setq var (cond (init) (t 1))))))
+                     !
+                     (setq label (gensym))
+                     !!
+                     (mapcan (function
+                              (lambda 
+                               (exp)
+                               (cond ((eq part 'while)
+                                      (setq part nil)
+                                      (quote!
+                                       (cond
+                                        ((not ! exp) (return nil)))))
+                                     ((eq part 'until)
+                                      (setq part nil)
+                                      (quote!
+                                       (cond (! exp (return nil)))))
+                                     ((memq (setq part exp)
+                                            '(while until do Cdo))
+                                      nil)
+                                     (t (ncons exp)))))
+                             l)
+                     !!
+                     (cond
+                      (var
+                       (quote!
+                        (setq ! var (+ ! var ! (cond (incr) (t 1)))))))
+                     !!
+                     (cond
+                      ((and var limit)
+                       (quote! (cond ((> ! var ! limit) (return nil))))))
+                     (go ! label))))))
+
+
+(def expand-fe
+     (lambda 
+      (form)
+      (prog (vars body)
+            (return
+             (cons (cond ((memq (cadr form)
+                                (quote
+                                 (map mapc
+                                      mapcan
+                                      mapcar
+                                      mapcon
+                                      mapconc
+           oop-tequal prep 'downfrom) (setq dir 'down))
+		      ((si:loop-tequal prep 'upfrom) (setq dir 'up)))
+		(loop-make-iteration-variable indexv form indexv-type))
+	     ((cond ((si:loop-tequal prep 'upto)
+		       (setq inclusive-iteration? (setq dir 'up)))
+		    ((si:loop-tequal prep 'to)
+		       (setq inclusive-iteration? 't))
+		    ((si:loop-tequal prep 'downto)
+		       (setq inclusive-iteration? (setq dir 'down)))
+		    ((si:loop-tequal prep 'above) (setq dir 'down))
+		    ((si:loop-tequal prep 'below) (setq dir 'up)))
+		(and limit-given?
+		     (loop-simple-error
+		       "Endtest redundantly specified in LOOP sequencing path"
+		       (append crap l)))
+		(setq limit-given? 't)
+		(setq endform (loop-maybe-bind-form form indexv-type)))
+	     ((si:loop-tequal prep 'by)
+		(setq step (if (loop-constantp form) form
+			       (loop-make-variable (gensym) form 'fixnum))))
+	     ('t ; This is a fatal internal error...
+		 (loop-simple-error "Illegal prep in sequence path"
+				    (append crap l))))
+       (and odir dir (not (eq dir odir))
+	    (loop-simple-error
+	       "Conflicting stepping directions in LOOP sequencing path"
+	       (append crap l)))
+       (setq odir dir))
+     (and sequencev? (not sequencep)
+	  (loop-simple-error "Missing OF phrase in sequence path" crap))
+     ; Now fill in the defaults.
+     (setq step (list indexv step))
+     (cond ((memq dir '(() up))
+	      (or start-given?
+		  (loop-make-iteration-variable indexv 0 indexv-type))
+	      (and (or limit-given?
+		       (cond (default-top?
+			        (loop-make-variable
+				   (setq endform (gensym)) () indexv-type)
+				(push `(setq ,endform ,default-top?)
+				      loop-prologue))))
+		   (setq test (if inclusive-iteration? '(greaterp . args)
+				  '(not (lessp . args)))))
+	      (push 'plus step))
+	   ('t (cond ((not start-given?)
+		        (or default-top?
+			    (loop-simple-error
+			       "Don't know where to start stepping"
+			       (append crap prep-phrases)))
+			(loop-make-iteration-variable indexv 0 indexv-type)
+			(push `(setq ,indexv
+				     (,(loop-typed-arith 'sub1 indexv-type)
+				      ,default-top?))
+			      loop-prologue)))
+	       (cond ((and default-top? (not endform))
+		        (setq endform (loop-typed-init indexv-type)
+			      inclusive-iteration? 't)))
+	       (and (not (null endform))
+		    (setq test (if inclusive-iteration? '(lessp . args)
+				   '(not (greaterp . args)))))
+	       (push 'difference step)))
+     (and (member (caddr step)
+		  #+Loop-Small-Floatp
+		    '(1 1.0 #.(and (loop-featurep Loop-Small-Floatp)
+				   (small-float 1)))
+		  #-Loop-Small-Floatp '(1 1.0))
+	  (rplacd (cdr (rplaca step (if (eq (car step) 'plus) 'add1 'sub1)))
+		  ()))
+     (rplaca step (loop-typed-arith (car step) indexv-type))
+     (setq step (list indexv step))
+     (setq test (loop-typed-arith test indexv-type))
+     (setq test (subst (list indexv endform) 'args test))
+     (and stephack? (setq stephack? `(,variable? ,stephack?)))
+     `(() ,step ,test ,stephack?
+       () () ,test ,stephack?)))
+
+
+; Although this function is no longer documented, the "SI:" is needed
+; because compiled files may reference it that way (via
+; DEFINE-LOOP-SEQUENCE-PATH).
+(defun si:loop-sequence-elements-path (path variable data-type
+				       prep-phrases inclusive?
+				       allowed-preps data)
+    allowed-preps ; unused
+    (let ((indexv (si:loop-named-variable 'index))
+	  (sequencev (si:loop-named-variable 'sequence))
+	  (fetchfun ()) (sizefun ()) (type ()) (default-var-type ())
+	  (crap `(for ,variable being the ,path)))
+       (cond ((not (null inclusive?))
+	        (rplacd (cddr crap) `(,(cadar prep-phrases) and its ,path))
+		(loop-simple-error "Can't step sequence inclusively" crap)))
+       (setq fetchfun (car data)
+	     sizefun (car (setq data (cdr data)))
+	     type (car (setq data (cdr data)))
+	     default-var-type (cadr data))
+       (list* () () ; dummy bindings and prologue
+	      (si:loop-sequencer
+	         indexv 'fixnum
+		 variable (or data-type default-var-type)
+		 sequencev type
+		 `(,fetchfun ,sequencev ,indexv) `(,sizefun ,sequencev)
+		 crap prep-phrases))))
+
+
+#+Run-on-PDP10
+(defun (define-loop-sequence-path macro) (x)
+    `(define-loop-path ,(cadr x) si:loop-sequence-elements-path
+	(of in from downfrom to downto below above by)
+	. ,(cddr x)))
+
+#-Run-on-PDP10
+(defmacro define-loop-sequence-path (path-name-or-names fetchfun sizefun
+				     &optional sequence-type element-type)
+    `(define-loop-path ,path-name-or-names
+	si:loop-sequence-elements-path
+	(of in from downfrom to downto below above by)
+	,fetchfun ,sizefun ,sequence-type ,element-type))
+
+
+;;;; NIL interned-symbols path
+
+#+For-NIL
+(progn 'compile
+(defun loop-interned-symbols-path (path variable data-type prep-phrases
+				   inclusive? allowed-preps data
+				   &aux statev1 statev2 statev3
+					(localp (car data)))
+   allowed-preps	; unused
+   (and inclusive? (loop-simple-error
+		      "INTERNED-SYMBOLS path doesn't work inclusively"
+		      variable))
+   (and (not (null prep-phrases))
+	(or (cdr prep-phrases)
+	    (not (si:loop-tmember (caar prep-phrases) '(in of))))
+	(ferror () "Illegal prep phrase(s) in ~A path of ~A - ~A"
+		path variable prep-phrases))
+   (loop-make-variable variable () data-type)
+   (loop-make-variable
+      (setq statev1 (gensym))
+      `(loop-find-package
+	  ,@(and prep-phrases `(,(cadar prep-phrases))))
+      ())
+   (loop-make-variable (setq statev2 (gensym)) () ())
+   (loop-make-variable (setq statev3 (gensym)) () ())
+   (push `(multiple-value (,statev1 ,statev2 ,statev3)
+	       (loop-initialize-mapatoms-state ,statev1 ',localp))
+	 loop-prologue)
+   `(() () (multiple-value (() ,statev1 ,statev2 ,statev3)
+	      (,(if localp 'loop-test-and-step-mapatoms-local
+		    'loop-test-and-step-mapatoms)
+	       ,statev1 ,statev2 ,statev3))
+     (,variable (loop-get-mapatoms-symbol ,statev1 ,statev2 ,statev3)) () ()))
+
+(defun loop-find-package (&optional (pkg () pkgp))
+  #+Run-in-Maclisp
+    (if pkgp pkg obarray)
+  #-Run-in-Maclisp
+    (if pkgp (pkg-find-package pkg) package))
+
+(defun loop-find-package-translate (form)
+  ; Note that we can only be compiling for nil-nil, so we only need
+  ; to consider that.  The run-in-maclisp conditionals in the functions
+  ; are for the benefit of running interpreted code.
+  (values (if (null (cdr form)) 'package `(pkg-find-package ,(cadr form))) 't))
+
+(putprop 'loop-find-package
+	 '(loop-find-package-translate)
+	 'source-trans)
+
+#-Run-in-Maclisp
+(defun loop-initialize-mapatoms-state (pkg localp)
+    (let* ((symtab (si:package-symbol-table pkg))
+	   (len (vector-length symtab)))
+       (values pkg len (if localp symtab (cons (ncons pkg) ())))))
+
+#+Run-in-Maclisp
+(defun loop-initialize-mapatoms-state (ob ())
+    (values ob (ncons nil) 511.))
+
+#-Run-in-Maclisp
+(defun loop-test-and-step-mapatoms (pkg index location &aux val)
+    (prog (symtab)
+	 (setq symtab (si:package-symbol-table pkg))
+      lp (cond ((-p (setq index (1-& index)))
+                  ;(do ((l (si:package-super-packages pkg) (cdr l)))
+		  ;    ((null l) (cdr location))
+		  ;  (or (memq (car l) (car location))
+		  ;      (memq (car l) (cdr location))
+		  ;      (rplacd loca

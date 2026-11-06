@@ -1,0 +1,1438 @@
+table entry ``hidden'', and making
+a new entry, marked ``hiding''.
+.I Lookup
+will skip over hidden entries.
+When a block is left, the symbol table is searched,
+and any entries defined in that block are destroyed; if
+they hid other entries, the old entries are ``unhidden''.
+.PP
+This nice block structure is warped a bit because labels
+do not follow the block structure rules (one can do a
+.B goto
+into
+a block, for example);
+default definitions of functions in inner blocks also persist clear out to the outermost scope.
+This implies that cleaning up the symbol table after block exit is more
+subtle than it might first seem.
+.PP
+For successful new definitions,
+.I defid
+also initializes a ``general purpose'' field,
+.I offset ,
+in the symbol table.
+It contains the stack offset for automatics and parameters, the register number
+for register variables, the bit offset into the structure for
+structure members, and
+the internal label number for static variables and labels.
+The offset field is set by
+.I falloc
+for bit fieldthe tree to be computed.
+These routines may recursively call
+.I order
+or
+.I codgen
+to cause certain subgoals to be achieved;
+if they actually call for some alteration of the tree,
+they return 1, and the
+code generation algorithm recanonicalizes and tries again.
+If these routines choose not to deal with the tree, the
+default rewriting rules are applied.
+.PP
+The assignment operators, when rewritten, call the routine
+.I setasg .
+This is assumed to rewrite the tree at least to the point where there are
+no side effects in the left hand side.
+If there is still no template match,
+a default rewriting is done that causes
+an expression such as
+.DS
+.I "a += b"
+.DE
+to be rewritten as
+.DS
+.I "a = a + b"
+.DE
+This is a useful default for certain mixtures of strange types
+(for example, when
+.I a
+is a bit field and
+.I b
+an character) that
+otherwise might need separate table entries.
+.PP
+Simple assignment, structure assignment, and all forms of calls
+are handled completely by the machine dependent routines.
+For historical reasons, the routines generating the calls return
+1 on failure, 0 on success, unlike the other routines.
+.PP
+The machine dependent routine
+.I setbin
+handles binary operators; it too must do most of the job.
+In particular, when it returns 0, it must do so with
+the left hand side in a temporary register.
+The default rewriting rule in this case is to convert the
+binary operator into the associated assignment operator;
+since the left hand side is assumed to be a temporary register,
+this preserves the semantics and often allows a considerable
+saving in the template table.
+.PP
+The increment and decrement operators may be dealt with with
+the machine dependent routine
+.I setincr .
+If this routine chooses not to deal with the tree, the rewriting rule replaces
+.DS
+.I "x ++"
+.DE
+by
+.DS
+.I "( (x += 1) \- 1)"
+.DE
+which preserves the semantics.
+Once again, this is not too attractive for the most common
+cases, but can generate close to optimal code when the
+type of x is unusual.
+.PP
+Finally, the indirection (UNARY MUL) operator is also handled
+in a special way.
+The machine dependent routine
+.I offstar
+is extremely important for the efficient generation of code.
+.I Offstar
+is called with a tree that is the direct descendant of a UNARY MUL node;
+its job is to transform this tree so that the combination of
+UNARY MUL with the transformed tree becomes addressable.
+On most machines,
+.I offstar
+can simply compute the tree into an A or B register,
+depending on the architecture, and then
+.I canon
+will make the resulting tree into an OREG.
+On many machines,
+.I offstar
+can profitably choose to do less work than computing
+its entire argument into a register.
+For example, if the target machine supports OREG's
+with a constant offset from a register, and
+.I offstar
+is called
+with a tree of the form
+.DS
+.I "expr + const"
+.DE
+where
+.I const
+is a constant, then
+.I offstar
+need only compute
+.I expr
+into the appropriate form of register.
+On machines that support double indexing,
+.I offstar
+may have even more choice as to how to proceed.
+The proper tuning of
+.I offstar ,
+which is not typically too difficult, should be one of the
+first tries at optimization attempted by the
+compiler writer.
+.SH
+The Sethi-Ullman Computation
+.PP
+The heart of the heuristics is the computation of the Sethi-Ullman numbers.
+This computation is closely linked with the rewriting rules and the
+templates.
+As mentioned before, the Sethi-Ullman numbers are expected to
+estimate the number of scratch registers needed to compute
+the subtrees without using any stores.
+However, the original theory does not apply to real machines.
+For one thing, the theory assumes that all registers
+are interchangeable.
+Real machines have general purpose, floating point, and index registers,
+register pairs, etc.
+The theory also does not account for side effects;
+this rules out various forms of pathology that arise
+from assignment and assignment operators.
+Condition codes are also undreamed of.
+Finally, the influence of types, conversions, and the
+various addressability restrictions and extensions of real
+machines are also ignored.
+.PP
+Nevertheless, for a ``useless'' theory,
+the basic insight of Sethi and Ullman is amazingly
+useful in a real compiler.
+The notion that one should attempt to estimate the
+resource needs of trees before starting the
+code generation provides a natural means of splitting the
+code generation problem, and provides a bit of redundancy
+and self checking in the compiler.
+Moreover, if writing the
+Sethi-Ullman routines is hard, describing, writing, and debugging the
+alternative (routines that attempt to free up registers by stores into
+temporaries ``on the fly'') is even worse.
+Nevertheless, it should be clearly understood that these routines exist in a realm
+where there is no ``right'' way to write them;
+it is an art, the realm of heuristics, and, consequently, a major
+source of bugs in the compiler.
+Often, the early, crude versions of these routines give little trouble;
+only after
+the compiler is actually working
+and the
+code quality is being improved do serious problem have to be faced.
+Having a simple, regular machine architecture is worth quite
+a lot at this time.
+.PP
+The major problems arise from asymmetries in the registers: register pairs,
+having different kinds of registers, and the related problem of
+needing more than one register (frequently a pair) to store certain
+data
+types (such as longs or doubles).
+There appears to be no general way of treating this problem;
+solutions have to be fudged for each machine where the problem arises.
+On the Honeywell 66, for example, there are only two general purpose registers,
+so a need for a pair is the same as the need for two registers.
+On the IBM 370, the register pair (0,1) is used to do multiplications and divisions;
+registers 0 and 1 are not generally considered part of the scratch registers, and so
+do not require allocation explicitly.
+On the Interdata 8/32, after much consideration, the
+decision was made not to try to deal with the register pair issue;
+operations such as multiplication and division that required pairs
+were simply assumed to take all of the scratch registers.
+Several weeks of effort had failed to produce
+an algorithm that seemed to have much chance of running successfully
+without inordinate debugging effort.
+The difficulty of this issue should not be minimized; it represents one of the
+main intellectual efforts in porting the compiler.
+Nevertheless, this problem has been fudged with a degree of
+success on nearly a dozen machines, so the compiler writer should
+not abandon hope.
+.PP
+The Sethi-Ullman computations interact with the
+rest of the compiler in a number of rather subtle ways.
+As already discussed, the
+.I store
+routine uses the Sethi-Ullman numbers to decide which subtrees are too difficult
+to compute in registers, and must be stored.
+There are also subtle interactions between the
+rewriting routines and the Sethi-Ullman numbers.
+Suppose we have a tree such as
+.DS
+.I "A \- B"
+.DE
+where
+.I A
+and
+.I B
+are expressions; suppose further that
+.I B
+takes two registers, and
+.I A
+one.
+It is possible to compute the full expression in two registers by
+first computing
+.I B ,
+and then, using the scratch register
+used by
+.I B ,
+but not containing the answer, compute
+.I A .
+The subtraction can then be done, computing the expression.
+(Note that this assumes a number of things, not the least of which
+are register-to-register subtraction operators and symmetric
+registers.)
+If the machine dependent routine
+.I setbin ,
+however, is not prepared to recognize this case
+and compute the more difficult side of the expression
+first, the
+Sethi-Ullman number must be set to three.
+Thus, the
+Sethi-Ullman number for a tree should represent the code that
+the machine dependent routines are actually willing to generate.
+.PP
+The interaction can go the other way.
+If we take an expression such as
+.DS
+* ( \fIp\fP + \fIi\fP )
+.DE
+where
+.I p
+is a pointer and
+.I i
+an integer,
+this can probably be done in one register on most machines.
+Thus, its Sethi-Ullman number would probably be set to one.
+If double indexing is possible in the machine, a possible way
+of computing thes, and
+.I dclstruct
+for structures and unions.
+.PP
+The symbol table entry itself thus contains
+the name, type word, size and dimension offsets,
+offset value, and declaration block level.
+It also has a field of flags, describing what symbol table the
+name is in, and whether the entry is hidden, or hides another.
+Finally, a field gives the line number of the last use,
+or of the definition, of the name.
+This is used mainly for diagnostics, but is useful to
+.I lint
+as well.
+.PP
+In some special cases, there is more than the above amount of information kept
+for the use of the compiler.
+This is especially true with structures; for use in initialization,
+structure declarations must have access to a list of the members of the
+structure.
+This list is also kept in
+.I dimtab .
+Because a structure can be mentioned long before the
+members are known, it is necessary to have another
+level of indirection in the table.
+The two words following the
+.I csiz
+entry in
+.I dimtab
+are used to hold the alignment of the structure, and
+the index in dimtab of the list of members.
+This list contains the symbol table indices for the structure members, terminated by a
+\-1.
+.SH
+Tree Building
+.PP
+The portable compiler transforms expressions
+into expression trees.
+As the parser recognizes each rule making up an
+expression,
+it calls
+.I buildtree
+which is given an operator number, and pointers to the
+left and right descendants.
+.I Buildtree
+first examines the left and right descendants,
+and, if they are both constants, and the operator
+is appropriate, simply does the constant
+computation at compile time, and returns
+the result as a constant.
+Otherwise,
+.I buildtree
+allocates a node for the head of the tree,
+attaches the descendants to it, and ensures that
+conversion operators are generated if needed, and that
+the type of the new node is consistent with the types
+of the operands.
+There is also a considerable amount of semantic complexity here;
+many combinations of types are illegal, and the portable
+compiler makes a strong effort to check
+the legality of expression types completely.
+This is done both for
+.I lint
+purposes, and to prevent such semantic errors
+from being passed through to the code generator.
+.PP
+The heart of
+.I buildtree
+is a large table, accessed by the routine
+.I opact .
+This routine maps the types of the left and right
+operands into a rather smaller set of descriptors, and then
+accesses a table (actually encoded in a switch statement) which
+for each operator and pair of types causes
+an action to be returned.
+The actions are logical or's of a number of
+separate actions, which may be
+carried out by
+.I buildtree .
+These component actions may include
+checking the left side to ensure that it
+is an lvalue (can be stored into),
+applying a type conversion to the left or right operand,
+setting the type of the new node to
+the type of the left or right operand, calling various
+routines to balance the types of the left and right operands,
+and suppressing the ordinary conversion
+of arrays and function operands to pointers.
+An important operation is OTHER, which causes
+some special code to be invoked
+in
+.I buildtree ,
+to handle issues which are unique to a particular operator.
+Examples of this are
+structure and union reference
+(actually handled by
+the routine
+.I stref ),
+the building of NAME, ICON, STRING and FCON (floating point constant) nodes,
+unary \fB*\fP and \fB&\fP, structure assignment, and calls.
+In the case of unary \fB*\fP and \fB&\fP,
+.I buildtree
+will cancel a \fB*\fP applied to a tree, the top node of which
+is \fB&\fP, and conversely.
+.PP
+Another special operation is
+PUN; this
+causes the compiler to check for type mismatches,
+such as intermixing pointers and integers.
+.PP
+The treatment of conversion operators is a rather
+strange area of the compiler (and of C!).
+The introduction of type casts only confounded this
+situation.
+Most of the conversion operators are generated by
+calls to
+.I tymatch
+and
+.I ptmatch ,
+both of which are given a tree, and asked to make the
+operands agree in type.
+.I Ptmatch
+treats the case where one of the operands is a pointer;
+.I tymatch
+treats all other cases.
+Where these routines have decided on the
+proper type for an operand, they call
+.I makety ,
+which is handed a tree, and a type word, dimension offset, and size offset.
+If necessary, it inserts a conversion operation to make the
+types correct.
+Conversion operations are never inserted on the left side of
+assignment operators, however.
+There are two conversion operators used;
+PCONV, if the conversion is to a non-basic type (usually a pointer),
+and
+SCONV, if the conversion is to a basic type (scalar).
+.PP
+To allow for maximum flexibility, every node produced by
+.I buildtree
+is given to a machine dependent routine,
+.I clocal ,
+immediately after it is produced.
+This is to allow more or less immediate rewriting of those
+nodes which must be adapted for the local machine.
+The conversion operations are given to
+.I clocal
+as well; on most machines, many of these
+conversions do nothing, and should be thrown away
+(being careful to retain the type).
+If this operation is done too early,
+however,
+later calls to
+.I buildtree
+may get confused about correct type of the
+subtrees;
+thus
+.I clocal
+is given the conversion operations only after the entire tree is built.
+This topic will be dealt with in more detail later.
+.SH
+Initialization
+.PP
+Initialization is one of the messier areas in the portable compiler.
+The only consolation is that most of the mess takes place
+in the machine independent part, where it
+is may be safely ignored by the implementor of the
+compiler for a particular machine.
+.PP
+The basic problem is that the semantics of initialization
+really calls for a co-routine structure; one collection
+of programs reading constants from the input stream, while another,
+independent set of programs places these constants into the
+appropriate spots in memory.
+The dramatic differences in the local assemblers also
+come to the fore here.
+The parsing problems are dealt with by keeping a rather
+extensive stack containing the current
+state of the initialization; the assembler
+problems are dealt with by having a fair number of machine dependent routines.
+.PP
+The stack contains the symbol table number,
+type, dimension index, and size index for the current identifier
+being initialized.
+Another entry has the offset, in bits, of the beginning
+of the current identifier.
+Another entry keeps track of how many elements have been seen,
+if the current identifier is an array.
+Still another entry keeps track of the current
+member of a structure being initialized.
+Finally, there is an entry containing flags
+which keep track of the current state of the initialization process
+(e.g., tell if a `}' has been seen for the current identifier).
+.PP
+When an initialization begins, the routine
+.I beginit
+is called; it handles the alignment restrictions, if
+any, and calls
+.I instk
+to create the stack entry.
+This is done by first making an entry on the top of the stack for the item
+being initialized.
+If the top entry is an array, another entry is made on the stack
+for the first element.
+If the top entry is a structure, another entry is made on the
+stack for the first member of the structure.
+This continues until the top element of the stack is a scalar.
+.I Instk
+then returns, and the parser begins collecting initializers.
+.PP
+When a constant is obtained, the routine
+.I doinit
+is called; it examines the stack, and does whatever
+is necessary to assign the current constant to the
+scalar on the top of the stack.
+.I gotscal
+is then called, which rearranges the stack so that the
+next scalar to be initialized gets placed on top of the stack.
+This process continues until the end of the initializers;
+.I endinit
+cleans up.
+If a `{' or `}' is encountered in the
+string of initializers, it is handled by calling
+.I ilbrace
+or
+.I irbrace ,
+respectively.
+.PP
+A central issue is the treatment of the ``holes'' that
+arise as a result of alignment restrictions or explicit
+requests for holes in bit fields.
+There is a global variable,
+.I inoff ,
+which contains the current offset in the initialization
+(all offsets in the first pass of the compiler are in expression is to load both
+.I p
+and
+.I i
+into registers, and then use double indexing.
+This would use two scratch registers; in such a case,
+it is possible that the scratch registers might be unobtainable,
+or might make some other part of the computation run out of
+registers.
+The usual solution is to cause
+.I offstar
+to ignore opportunities for double indexing that would tie up more scratch
+registers than the Sethi-Ullman number had reserved.
+.PP
+In summary, the Sethi-Ullman computation represents much of the craftsmanship and artistry in any application
+of the portable compiler.
+It is also a frequent source of bugs.
+Algorithms are available that will produce nearly optimal code
+for specialized machines, but unfortunately most existing machines
+are far removed from these ideals.
+The best way of proceeding in practice is to start with a compiler
+for a similar machine to the target, and proceed very
+carefully.
+.SH
+Register Allocation
+.PP
+After the Sethi-Ullman numbers are computed,
+.I order
+calls a routine,
+.I rallo ,
+that does register allocation, if appropriate.
+This routine does relatively little, in general;
+this is especially true if the target machine
+is fairly regular.
+There are a few cases where it is assumed that
+the result of a computation takes place in a particular register;
+switch and function return are the two major places.
+The expression tree has a field,
+.I rall ,
+that may be filled with a register number; this is taken
+to be a preferred register, and the first temporary
+register allocated by a template match will be this preferred one, if
+it is free.
+If not, no particular action is taken; this is just a heuristic.
+If no register preference is present, the field contains NOPREF.
+In some cases, the result must be placed in
+a given register, no matter what.
+The register number is placed in
+.I rall ,
+and the mask MUSTDO is logically or'ed in with it.
+In this case, if the subtree is requested in a register, and comes
+back in a register other than the demanded one, it is moved
+by calling the routine
+.I rmove .
+If the target register for this move is busy, it is a compiler
+error.
+.PP
+Note that this mechanism is the only one that will ever cause a register-to-register
+move between scratch registers (unless such a move is buried in the depths of
+some template).
+This simplifies debugging.
+In some cases, there is a rather strange interaction between
+the register allocation and the Sethi-Ullman number;
+if there is an operator or situation requiring a
+particular register, the allocator and the Sethi-Ullman
+computation must conspire to ensure that the target
+register is not being used by some intermediate result of some far-removed computation.
+This is most easily done by making the special operation take
+all of the free registers, preventing any other partially-computed
+results from cluttering up the works.
+.SH
+Template Shortcuts
+.PP
+Some operations are just too hard or too clumsy
+to be implemented in code templates
+on a particular architecture.
+.PP
+One way to handle such operations is to replace them with function calls.
+The intermediate file reading code in
+.I reader.c
+contains a call to an implementation dependent macro MYREADER;
+this can be defined to call various routines
+which walk the code tree and
+perform transformations.
+On the \*V, for example,
+unsigned division and remainder operations
+are far too complex to encode in a template.
+The routine
+.I hardops
+is called from a tree walk in
+.I myreader
+to detect these operations and
+replace them with calls to the C runtime functions
+.I udiv
+and
+.I urem .
+(There are complementary functions
+.I audiv
+and
+.I aurem
+which are provided as support for unsigned assignment operator expressions;
+they are different from \fIudiv\fP and \fIurem\fP
+because the left hand side of an assignment operator expression
+must be evaluated only once.)
+Note that arithmetic support routines are always expensive;
+the compiler makes an effort to notice common operations
+such as unsigned division by a constant power of two
+and generates optimal code for these inline.
+.PP
+Another escape involves the routine
+.I zzzcode .
+This function is called from
+.I expand
+to process template macros which start with the character
+.B Z .
+On the \*V,
+many complex code generation problems
+are swept under the rug into \fIzzzcode\fP.
+Scalar type conversions are a particularly annoying issue;
+they are primarily handled using the macro \fBZA\fP.
+Rather than creating a template for each possible
+conversion and result,
+which would be tedious and complex given
+C's many scalar types,
+this macro allows the compiler to take shortcuts.
+Tough conversions such as \fBunsigned\fP into \fBdouble\fP
+are easily handled using special code under \fBZA\fP.
+One convention which makes scalar conversions
+somewhat more difficult than they might otherwise be
+is the strict requirement that
+values in registers must have a type
+that is as wide or wider than a single register.
+This convention is used primarily to implement
+the ``usual arithmetic conversions'' of C,
+but it can get in the way when
+converting between (say) a \fBchar\fP value
+and an \fBunsigned short\fP.
+A routine named \fIcollapsible\fP is used
+to determine whether one operation or two
+is needed to produce a register-width result.
+.PP
+Another convenient macro is \fBZP\fP.
+This macro is used to generate an appropriate
+conditional test after a comparison.
+This makes it possible to avoid
+a profusion of template entries
+which essentially duplicate each other,
+one entry for each type of test
+multiplied by the number of different
+comparison conditions.
+A related macro, \fBZN\fP,
+is used to normalize the result
+of a relational test by
+producing an integer 0 or 1.
+.PP
+The macro \fBZS\fP does the unlovely job
+of generating code for structure assignments.
+It tests the size of the structure
+to see what \*V instruction can be used to move it,
+and is capable of emitting a block move
+instruction for large structures.
+On other architectures this macro
+could be used to generate a function call
+to a block copy routine.
+.PP
+The macro \fBZG\fP was recently introduced
+to handle the thorny issue of
+assignment operator expressions which
+have an integral left hand side
+and a floating point right hand side.
+These expressions are passed to the code generator
+without the usual type balancing so that
+good code can be generated for them.
+Older versions of the portable compiler computed
+these expressions with integer arithmetic;
+with the \fBZG\fP operator,
+the current compiler can convert the left hand side
+to the appropriate floating type,
+compute the expression with floating point arithmetic,
+convert the result back to integral type
+and store it in the left hand side.
+These operations are performed by
+recursive calls to \fIzzzcode\fP
+and other routines related to \fIexpand\fP.
+.PP
+An assortment of other macros finish the job
+of interpreting code templates.
+Among the more interesting ones:
+\fBZC\fP produces the number of words
+pushed on the argument stack,
+which is useful for function calls;
+\fBZD\fP and \fBZE\fP produce
+constant increment and decrement operations;
+\fBZL\fR and \fBZR\fP produce
+the assembler letter code (\fBl\fP, \fBw\fP or \fBb\fP)
+corresponding to the size and type
+of the left and right operand respectively.
+.SH
+Shared Code
+.PP
+The
+.I lint
+utility shares sources with the portable compiler.
+\fILint\fP uses all of the machine independent pass 1 sources,
+and adds its own set of ``machine dependent'' routines,
+contained mostly in \fIlint.c\fP.
+\fILint\fP uses a private intermediate file format
+and a private pass 2 whose source is \fIlpass2.c\fP.
+Several modifications were made to the C scanner
+in \fIscan.c\fP, conditionally compiled with
+the symbol LINT,
+in order to support \fIlint\fP's convention
+of passing ``pragma'' information inside special comments.
+A few other minor modifications were also
+made, \fIe.g.\fP to skip over \fIasm\fP statements.
+.PP
+The \*f and \fIpc\fP compilers use a code generator
+which shares sources with pass 2 of the portable compiler.
+This code generator is very similar to pass 2
+but uses a different intermediate file format.
+Three source files are needed in addition to the pass 2 s bits).
+.I Doinit
+figures out from the top entry on the stack the expected
+bit offset of the next identifier; it calls the
+machine dependent
+routine
+.I inforce
+which, in a machine dependent way, forces
+the assembler to
+set aside space if need be so that the
+next scalar seen will go into the appropriate
+bit offset position.
+The scalar itself is passed to one of the machine dependent
+routines
+.I fincode 
+(for floating point initialization),
+.I incode
+(for fields, and other initializations less than an int in
+size),
+and
+.I cinit
+(for all other initializations).
+The size is passed to all these routines, and it is up to
+the machine dependent routines to ensure that the
+initializer occupies exactly the right size.
+.PP
+Character strings represent a bit of an exception.
+If a character string is seen as the initializer for
+a pointer, the characters making up the string must
+be put out under a different location counter.
+When the lexical analyzer sees the quote at the head
+of a character string, it returns the token STRING,
+but does not do anything with the contents.
+The parser calls
+.I getstr ,
+which sets up the appropriate location counters
+and flags, and calls
+.I lxstr
+to read and process the contents of the string.
+.PP
+If the string is being used to initialize a character array,
+.I lxstr
+calls
+.I putbyte ,
+which in effect simulates
+.I doinit
+for each character read.
+If the string is used to initialize a character pointer,
+.I lxstr
+calls a machine dependent routine,
+.I bycode ,
+which stashes away each character.
+The pointer to this string is then returned,
+and processed normally by
+.I doinit .
+.PP
+The null at the end of the string is treated as if it
+were read explicitly by
+.I lxstr .
+.SH
+Statements
+.PP
+The first pass addresses four main areas; declarations, expressions, initialization, and statements.
+The statement processing is relatively simple; most of it is carried out in the
+parser directly.
+Most of the logic is concerned with allocating
+label numbers, defining the labels, and branching appropriately.
+An external symbol,
+.I reached ,
+is 1 if a statement can be reached, 0 otherwise; this is
+used to do a bit of simple flow analysis as the program is being parsed,
+and also to avoid generating the subroutine return sequence if the subroutine
+cannot ``fall through'' the last statement.
+.PP
+Conditional branches are handled by generating an expression
+node, CBRANCH,
+whose left descendant is the conditional expression and the
+right descendant is an ICON node containing the internal label
+number to be branched to.
+For efficiency, the semantics are that
+the label is gone to if the condition is
+.I false .
+.PP
+The switch statement is 
+compiled by collecting the case entries, and an indication as to whether
+there is a default case;
+an internal label number is generated for each of these,
+and remembered in a big array.
+The expression comprising the value to be switched on is
+compiled when the switch keyword is encountered,
+but the expression tree is headed by
+a special node, FORCE, which tells the code generator to
+put the expression value into a special distinguished
+register (this same mechanism is used for processing the
+return statement).
+When the end of the switch block is reached, the array
+containing the case values is sorted, and checked for
+duplicate entries (an error); if all is
+correct, the machine dependent routine
+.I genswitch
+is called, with this array of labels and values in increasing order.
+.I Genswitch
+can assume that the value to be tested is already in the
+register which is the usual integer return value register.
+.SH
+Optimization
+.PP
+There is a machine independent file,
+.I optim.c ,
+which contains a relatively short optimization routine,
+.I optim .
+Actually the word optimization is something of a misnomer;
+the results are not optimum, only improved, and the
+routine is in fact not optional; it must
+be called for proper operation of the compiler.
+.PP
+.I Optim
+is called after an expression tree is built, but
+before the code generator is called.
+The essential part of its job is to call
+.I clocal
+on the conversion operators.
+On most machines, the treatment of
+\fB&\fP is also essential:
+by this time in the processing, the only node which
+is a legal descendant of \fB&\fP is NAME.
+(Possible descendants of \fB*\fP have been eliminated by
+.I buildtree .)
+The address of a static name is, almost by definition, a
+constant, and can be represented by an ICON node on most machines
+(provided that the loader has enough power).
+Unfortunately, this is not universally true; on some machine, such as the IBM 370,
+the issue of addressability rears its ugly head;
+thus, before turning a NAME node into an ICON node,
+the machine dependent function
+.I andable
+is called.
+.PP
+The optimization attempts of
+.I optim
+are quite limited.
+It is primarily concerned with improving the behavior of
+the compiler with operations one of whose arguments is a constant.
+In the simplest case, the constant is placed on the right if the
+operation is commutative.
+The compiler also makes a limited search for expressions
+such as
+.DS
+( \fIx\fP + \fIa\fP ) + \fIb\fP
+.DE
+where
+.I a
+and
+.I b
+are constants, and attempts to combine
+.I a
+and
+.I b
+at compile time.
+A number of special cases are also examined;
+additions of 0 and multiplications by 1 are removed,
+although the correct processing of these cases to get
+the type of the resulting tree correct is
+decidedly nontrivial.
+In some cases, the addition or multiplication must be replaced by
+a conversion operator to keep the types from becoming
+fouled up.
+In cases where a relational operation is being done
+and one operand is a constant, the operands are permuted and the operator altered, if necessary,
+to put the constant on the right.
+Finally, multiplications by a power of 2 are changed to shifts.
+.SH
+Machine Dependent Stuff
+.PP
+A number of the first pass machine dependent routines have been discussed above.
+In general, the routines are short, and easy to adapt from
+machine to machine.
+The two exceptions to this general rule are
+.I clocal
+and
+the function prolog and epilog generation routines,
+.I bfcode
+and
+.I efcode .
+.PP
+.I Clocal
+has the job of rewriting, if appropriate and desirable,
+the nodes constructed by
+.I buildtree .
+There are two major areas where this
+is important:
+NAME nodes and conversion operations.
+In the case of NAME nodes,
+.I clocal
+must rewrite the NAME node to reflect the
+actual physical location of the name in the machine.
+In effect, the NAME node must be examined, the symbol table
+entry found (through the
+.I rval
+field of the node),
+and, based on the storage class of the node,
+the tree must be rewritten.
+Automatic variables and parameters are typically
+rewritten by treating the reference to the variable as
+a structure reference, off the register which
+holds the stack or argument pointer;
+the
+.I stref
+routine is set up to be called in this way, and to
+build the appropriate tree.
+In the most general case, the tree consists
+of a unary \fB*\fP node, whose descendant is
+a \fB+\fP node, with the stack or argument register as left operand,
+and a constant offset as right operand.
+In the case of LABEL and internal static nodes, the
+.I rval
+field is rewritten to be the negative of the internal
+label number; a negative
+.I rval 
+field is taken to be an internal label number.
+Finally, a name of class REGISTER must be converted into a REG node,
+and the
+.I rval
+field replaced by the register number.
+In fact, this part of the
+.I clocal
+routine is nearly machine independent; only for machines
+with addressability problems (IBM 370 again!) does it
+have to be noticeably different.
+.PP
+The conversion operator treatment is rather tricky.
+It is necessary to handle the application of conversion operators
+to constants in
+.I clocal ,
+in order that all constant expressions can have their values known
+at compile time.
+In extreme cases, this may mean that some simulation of the
+arithmetic of the target machine might have to be done in a
+cross-compiler.
+In the most common case,
+conversions from pointer to pointer do nothing.
+For some machines, however, conversion from byte pointer to short or long
+pointer might require a shift or rotate operation, whources.
+.I fort.c
+is a machine independent source file which
+contains a pass 2 main routine that replaces the equivalent routine in
+.I reader.c ,
+together with several routines for reading the binary intermediate file.
+.I fort.c
+includes the machine dependent file
+.I fort.h ,
+which defines two trivial label generation routines.
+A header file
+.I /usr/include/pcc.h
+defines opcode and type symbols which
+are needed to provide a standard intermediate file format;
+this file is also included by the Fortran and Pascal compilers.
+The creation of this header file
+made it necessary to make
+some changes in the way the portable C compiler is built.
+These changes were made with the aim
+of minimizing the number of lines changed
+in the original sources.
+Macro symbols in
+.I pcc.h
+are flagged with a unique prefix to avoid
+symbol name collisions in the Fortran and Pascal compilers,
+which have their own internal opcode and type symbols.
+A
+.I sed (1)
+script is used to strip these prefixes,
+producing an include file named
+.I pcclocal.h
+which is specific to the portable C compiler
+and contains opcode symbols which
+are compatible with the original opcode symbols.
+A similar
+.I sed
+script is used to produce a file of Yacc tokens for the C grammar.
+.PP
+A number of changes to existing source files
+were made to accommodate the Fortran-style pass 2.
+These changes are conditionally compiled
+using the symbol FORT.
+Many changes were needed to implement
+single-precision arithmetic;
+other changes concern such things as
+the avoidance of floating point move instructions,
+which on the \*V can cause floating point faults
+when a datum is not a normalized floating point value.
+In earlier implementations of the Fortran-style pass 2 there were
+a number of stub files which served only
+to define the symbol FORT in a particular
+source file; these files have been removed for 4.3BSD
+in favor of a new compilation strategy which
+yields up to three different objects from
+a single source file, depending on what
+compilation control symbols are defined for that file.
+.PP
+The Fortran-style pass 2 uses a Polish Postfix intermediate file.
+The file is in binary format,
+and is logically divided into a stream of 32-bit records.
+Each record consists of an (\fIopcode, value, type\fP) triple,
+possibly followed inline by more descriptive information.
+The
+.I opcode
+and
+.I type
+are selected from the list in
+.I pcc.h ;
+the type encodes a basic type,
+around which may be wrapped type modifiers
+such as ``pointer to'' or ``array of'' to
+produce more complex types.
+The function of the
+.I value
+parameter depends on the opcode;
+it may be used for a flag,
+a register number
+or the value of a constant,
+or it may be unused.
+The optional inline data is often a null-terminated string,
+but it may also be a binary offset from a register
+or from a symbolic constant;
+sometimes both a string and an offset appear.
+.PP
+Here are a few samples of intermediate file records
+and their interpretation:
+.KS
+.TS
+expand, tab(:);
+c  c  c  c  c
+^  ^  ^  c  ^
+l  lB l  l  l.
+Opcode:Type:Value:Optional:Interpretation
+:::Data:
+.sp 0.5v
+=
+.sp 0.5v
+ICON:int:flag=0:binary=5:T{
+.Bl
+the integer constant 5
+T}
+.Sp
+NAME:char:flag=1:T{
+.nf
+binary=1,
+string="_foo_"
+T}:T{
+.Bl
+a \fBcharacter*1\fP element in
+a Fortran common block \fIfoo\fP
+at offset 1
+T}
+.Sp
+OREG:char:reg=11:T{
+.nf
+offset=1,
+string="v.2-v.1"
+T}:T{
+.Bl
+the second element
+of a Fortran \fBcharacter*1\fP array,
+expressed as an offset from a static base register
+T}
+.Sp
+PLUS:float:::T{
+.Bl
+a single precision add
+T}
+.Sp
+FTEXT::size=2:string=".text 0":T{
+.Bl
+an inline assembler directive
+of length 2 (32-bit records)
+T}
+.TE
+.KE
+.SH
+Compiler Bugs
+.PP
+The portable compiler has an excellent record of generating correct code.
+The requirement for reasonable cooperation between the register allocation,
+Sethi-Ullman computation, rewriting rules, and templates builds quite a bit
+of redundancy into the compiling process.
+The effect of this is that, in a surprisingly short time, the compiler will
+start generating correct code for those
+programs that it can compile.
+The hard part of the job then becomes finding and
+eliminating those situations where the compiler refuses to
+compile a program because it knows it cannot do it right.
+For example, a template may simply be missing; this may either
+give a compiler error of the form ``no match for op ...'' , or cause
+the compiler to go into an infinite loop applying various rewriting rules.
+The compiler has a variable,
+.I nrecur ,
+that is set to 0 at the beginning of an expressions, and
+incremented at key spots in the
+compilation process; if this parameter gets too large, the
+compiler decides that it is in a loop, and aborts.
+Loops are also characteristic of botches in the machine-dependent rewriting rules.
+Bad Sethi-Ullman computations usually cause the scratch registers
+to run out; this often means
+that the Sethi-Ullman number was underestimated, so
+.I store
+did not store something it should have; alternatively,
+it can mean that the rewriting rules were not smart enough to
+find the sequence that
+.I sucomp
+assumed would be used.
+.PP
+The best approach when a compiler error is detected involves several stages.
+First, try to get a small example program that steps on the bug.
+Second, turn on various debugging flags in the code generator, and follow the
+tree through the process of being matched and rewritten.
+Some flags of interest are
+\fB\-e\fP, which prints the expression tree,
+\fB\-r\fP, which gives information about the allocation of registers,
+\fB\-a\fP, which gives information about the performance of
+.I rallo ,
+and \fB\-o\fP, which gives information about the behavior of
+.I order .
+This technique should allow most bugs to be found relatively quickly.
+.PP
+Unfortunately, finding the bug is usually not enough; it must also
+be fixed!
+The difficulty arises because a fix to the particular bug of interest tends
+to break other code that already works.
+Regression tests, tests that compare the performance of
+a new compiler against the performance of an older one, are very
+valuable in preventing major catastrophes.
+.SH
+Compiler Extensions
+.PP
+The portable C compiler makes a few extensions
+to the language described by Ritchie.
+.PP
+.I "Single precision arithmetic."
+``All floating arithmetic in C is carried out in double-precision;
+whenever a
+.B float
+appears in a an expression it is lengthened to
+.B double
+by zero-padding its fraction.''
+\*-Dennis Ritchie.
+.[
+kernighan ritchie prentice 1978
+.]
+Programmers who would like to use C
+to write numerical applications
+often shy away from it because
+C programs cannot perform single precision arithmetic.
+On machines such as the \*V
+which can cleanly support arithmetic on two (or more)
+sizes of floating point values,
+programs which can take advantage of
+single precision arithmetic will run faster.
+A very popular proposal for the ANSI C standard states that
+implementations may perform single precision computations
+with single precision arithmetic;
+some actual C implementations already do this,
+and now the Berkeley compiler joins them.
+.PP
+The changes are implemented in the compiler with a set of
+conditional compilation directives based on the symbol SPRECC;
+thus two compilers are generated,
+one with only double precision arithmetic
+and one with both double and single precision arithmetic.
+The
+.I cc
+program uses a flag
+.B \-f
+to select the single/double version of the compiler (\fI/lib/sccom\fP)
+instead of the default double only version (\fI/lib/ccom\fP).
+It is expected that at some time in the future
+the double only compiler will be retired
+and the single/double compiler will become the default.
+.PP
+There are a few implementation details
+of the single/double compiler which
+will be of interest to users and compiler porters.
+To maintain compatibility with functions compiled by the double only compiler,
+single precision actual arguments are still coerced to double precision,
+and formal arguments which are declared single precision
+are still ``really'' double precision.
+This may change if function prototypes of the sort
+proposed for the ANSI C standard are eventually adopted.
+Floating point constants are now classified into single preich would
+have to be generated here.
+.PP
+The extension of the portable compiler to machines where the size of a pointer
+depends on its type would be straightforward, but has not yet been done.
+.PP
+Another machine dependent issue in the first pass
+is the generation of external ``symbol table'' information.
+This sort of symbol table is used by programs such as symbolic debuggers
+to relate object code back to source code.
+Symbol table routines are provided in
+the file \fIstab.c\fP,
+which is included in the machine dependent sources
+for the first pass.
+The symbol table routines insert assembly code
+containing assembly pseudo-ops directly into
+the instruction stream generated by the compiler.
+.PP
+There are two basic kinds of symbol table operations.
+The simplest operation is the generation of a source line number;
+this serves to map an address in an executable image
+into a line in a source file so that a debugger
+can find the source code
+corresponding to the instructions being executed.
+The routine \fIpsline\fP is called by the scanner
+to emit source line numbers when
+a nonempty source line is seen.
+The other variety of symbol table operation
+is the generation of type and address information
+about C symbols.
+This is done through the \fIoutstab\fP routine,
+which is normally called using the FIXDEF macro
+in the monster \fIdefid\fP routine in \fIpftn.c\fP
+that enters symbols into the compiler's internal symbol table.
+.PP
+Yet another major machine dependent issue involves function prolog and epilog
+generation.
+The hard part here is the design of the stack frame
+and calling sequence; this design issue is discussed elsewhere.
+.[
+Johnson Lesk Ritchie calling sequence
+.]
+The routine
+.I bfcode
+is called with the number of arguments
+the function is defined with, and
+an array containing the symbol table indices of the
+declared parameters.
+.I Bfcode
+must generate the code to establish the new stack frame,
+save the return address and previous stack pointer
+value on the stack, and save whatever
+registers are to be used for register variables.
+The stack size and the number of register variables is not
+known when
+.I bfcode
+is called, so these numbers must be
+referred to by assembler constants, which are
+defined when they are known (usually in the second pass,
+after all register variables, automatics, and temporaries have been seen).
+The final job is to find those parameters which may have been declared
+register, and generate the code to initialize
+the register with the value passed on the stack.
+Once again, for most machines, the general logic of
+.I bfcode
+remains the same, but the contents of the
+.I printf
+calls in it will change from machine to machine.
+.I efcode
+is rather simpler, having just to generate the default
+return at the end of a function.
+This may be nontrivial in the case of a function returning a structure or union, however.
+.PP
+There seems to be no really good place to discuss structures and unions, but
+this is as good a place as any.
+The C language now supports structure assignment,
+and the passing of structures as arguments to functions,
+and the receiving of structures back from functions.
+This was added rather late to C, and thus to the portable compiler.
+Consequently, it fits in less well than the older features.
+Moreover, most of the burden of making these features work is
+placed on the machine dependent code.
+.PP
+There are both conceptual and practical problems.
+Conceptually, the compiler is structured around
+the idea that to compute something, you put it into
+a register and work on it.
+This notion causes a bit of trouble on some machines (e.g., machines with 3-address opcodes), but
+matches many machines quite well.
+Unfortunately, this notion breaks down with structures.
+The closest that one can come is to keep the addresses of the
+structures in registers.
+The actual code sequences used to move structures vary from the
+trivial (a multiple byte move) to the horrible (a
+function call), and are very machine dependent.
+.PP
+The practical problem is more painful.
+When a function returning a structure is called, this function
+has to have some place to put the structure value.
+If it places it on the stack, it has difficulty popping its stack frame.
+If it places the value in a static temporary, the routine fails to be
+reentrant.
+The most logically consistent way of implementing this is for the
+caller to pass in a pointer to a spot where the called function
+should put the value before returning.
+This is relatively straightforward, although a bit tedious, to implement,
+but means that the caller must have properly declared
+the function type, even if the value is never used.
+On some machines, such as the Interdata 8/32, the return value
+simply overlays the argument region (which on the 8/32 is part
+of the caller's stack frame).
+The caller takes care of leaving enough room if the returned value is larger
+than the arguments.
+This also assumes that the caller declares the
+function properly.
+.PP
+The PDP-11 and the \*V have stack hardware which is used in function calls and returns;
+this makes it very inconvenient to
+use either of the above mechanisms.
+In these machines, a static area within the called function
+is allocated, and
+the function return value is copied into it on return; the function
+returns the address of that region.
+This is simple to implement, but is non-reentrant.
+However, the function can now be called as a subroutine
+without being properly declared, without the disaster which would otherwise ensue.
+No matter what choice is taken, the convention is that the function
+actually returns the address of the return structure value.
+.PP
+In building expression trees, the portable compiler takes a bit for granted about
+structures.
+It assumes that functions returning structures
+actually return a pointer to the structure, and it assumes that
+a reference to a structure is actually a reference to its address.
+The structure assignment operator is rebuilt so that the left
+operand is the structure being assigned to, but the
+right operand is the address of the structure being assigned;
+this makes it easier to deal with
+.DS
+.I "a = b = c"
+.DE
+and similar constructions.
+.PP
+There are four special tree nodes associated with these
+operations:
+STASG (structure assignment), STARG (structure argument
+to a function call), and STCALL and UNARY STCALL
+(calls of a function with nonzero and zero arguments, respectively).
+These four nodes are unique in that the size and alignment information, which can be determined by
+the type for all other objects in C, 
+must be known to carry out these operations; special
+fields are set aside in these nodes to contain
+this information, and special
+intermediate code is used to transmit this information.
+.SH
+First Pass Summary
+.PP
+There are may other issues which have been ignored here,
+partly to justify the title ``tour'', and partially
+because they have seemed to cause little trouble.
+There are some debugging flags
+which may be turned on, by giving the compiler's first pass
+the argument
+.DS
+.B \-X [flags]
+.DE
+Some of the more interesting flags are
+\fB\-Xd\fP for the defining and freeing of symbols,
+\fB\-Xi\fP for initialization comments, and
+\fB\-Xb\fP for various comments about the building of trees.
+In many cases, repeating the flag more than once gives more information;
+thus,
+\fB\-Xddd\fP gives more information than \fB\-Xd\fP.
+In the two pass version of the compiler, the
+flags should not be set when the output is sent to the second
+pass, since the debugging output and the intermediate code both go onto the standard
+output.
+.PP
+We turn now to consideration of the second pass.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 3∞    .   SÄ    ..  TÄ    editor lW8    log Y8    C ar[x    files .oUà    macros  Wò   	 morefiles  .¿    vi rfà    eqn h∏    bin 4∞    Linfo  t5∞  X Xinfo  t                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          files
+  editor
+  vi
+  morefiles
+  macros
+  eqn
+  C
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           files     - basic file handling commands
+editor    - text editor; must know about files first
+vi        - screen-oriented text editor; must know files first
+morefiles - more on file manipulations and other useful stuff
+macros    - "-ms" macros for BTL memos & papers;  must know editor
+eqn       - typing mathematics;  must know editor
+C         - writing programs in the C language;  must know editor
+
+This is probably the proper order, but after you have the "files" course
+and know the basics of "editor", try anything you like.  Note that the "vi"
+lessons may have to be installed by your system administrator.
+
+You can always leave learn by typing "bye" (and a RETURN).
+You can stop it from typing by pushing interrupt
+(or break or rubout or delete, depending on your terminal).
+
+If it won't accept your answer, and you _k_n_o_w you're
+right, answer "no" when it asks whether you
+want to try again, and it will go on to the next lesson.
+Please report troubles to John Kunze by sending electronic
+mail to jak@ernie.Berkeley.EDU.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   6∞    .   >®  Ù ..                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          7∞    .   :¿  Ù ..                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          8∞    .   dX    ..  9∞  Ë lock  00                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        Nov  5 15:04:03 myname vmunix: 4.3 BSD UNIX #1: Fri Jun  6 19:55:29 PDT 1986
+Nov  5 15:04:03 myname vmunix:     karels@monet.Berkeley.EDU:/usr/src/sys/GENERIC
+Nov  5 15:04:03 myname vmunix: real mem  = 8388608
+Nov  5 15:04:03 myname vmunix: SYSPTSIZE limits number of buffers to 140
+Nov  5 15:04:03 myname vmunix: avail mem = 7187456
+Nov  5 15:04:03 myname vmunix: using 140 buffers containing 524288 bytes of memory
+Nov  5 15:04:03 myname vmunix: mcr0 at tr1
+Nov  5 15:04:03 myname vmunix: mcr1 at tr2
+Nov  5 15:04:03 myname vmunix: uba0 at tr3
+Nov  5 15:04:03 myname vmunix: hk0 at uba0 csr 177440 vec 210, ipl 15
+Nov  5 15:04:03 myname vmunix: rk0 at hk0 slave 0
+Nov  5 15:04:03 myname vmunix: rk1 at hk0 slave 1
+Nov  5 15:04:03 myname vmunix: rk2 at hk0 slave 2
+Nov  5 15:04:03 myname vmunix: rk3 at hk0 slave 3
+Nov  5 15:04:03 myname vmunix: uda0 at uba0 csr 172150 vec 774, ipl 15
+Nov  5 15:04:03 myname vmunix: ra0 at uda0 slave 0
+Nov  5 15:04:03 myname vmunix: zs0 at uba0 csr 172520 vec 224, ipl 15
+                e–Øconsole                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     myname vmunix: ts0 at zs0 slave 0
+Nov  5 15:04:03 myname vmunix: dz0 at uba0 csr 160100 vec 300, ipl 15
+Nov  5 15:04:03 myname vmunix: dz1 at uba0 csr 160110 vec 310, ipl 15
+Nov  5 15:04:03 myname vmunix: dz2 at uba0 csr 160120 vec 320, ipl 15
+Nov  5 15:04:03 myname vmunix: dz3 at uba0 csr 160130 vec 330, ipl 15
+Nov  5 15:04:03 myname vmunix: Changing root device to ra0a
+Nov  5 15:04:03 myname savecore: /a/crash: No such file or directory
+Nov  5 15:04:03 myname named[53]: /etc/named.boot: No such file or directory
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        ~       reboot                  ]–Øconsole root                    e–Øconsole                         k–Ø~       shutdown                m–Ø                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                89
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             

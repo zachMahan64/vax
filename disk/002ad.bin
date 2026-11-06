@@ -1,0 +1,2805 @@
+oiler
+wood borer
+wood-boring
+wood-born
+wood-bred
+wood broom
+wood brown
+wood buffalo
+wood-built
+wood bundle
+wood calamint
+wood calker
+wood carpet
+wood carver
+wood carving
+wood-cased
+wood cell
+wood cement
+woodchat shrike
+wood checker
+wood chess
+wood chopper
+woodchuck day
+wood cleaner
+wood cleaver
+wood cloth
+wood coal
+woodcock owl
+woodcock pilot
+woodcock shell
+woodcock snipe
+woodcock soil
+wood coker
+wood collier
+wood copper
+wood corn
+Wood cree
+wood-crowned
+wood cudweed
+wood culver
+wood distiller
+wood dove
+wood draftsman
+wood drake
+wood drawing
+wood dresser
+wood-dried
+wood driller
+wood duck
+wood duster
+wood-dwelling
+wood dyer
+wood-eating
+wood-embosomed
+wood-embossing
+wood enameler
+wooden-barred
+wooden-bottom
+wood-encumbered
+wooden-faced
+wooden-featured
+wood engraver
+wood engraving
+wooden-hooped
+wooden-hulled
+wooden-legged
+wooden-lined
+wooden-pinned
+wooden-posted
+wooden-seated
+wooden-shoed
+wooden-sided
+wooden-soled
+wooden spoon
+wooden spoonist
+wooden-tined
+wooden tongue
+wooden-walled
+wooden wedge
+wooden-wheeled
+wo.\" Copyright (c) 1980 Regents of the University of California.
+.\" All rights reserved.  The Berkeley software License Agreement
+.\" specifies the terms and conditions for redistribution.
+.\"
+.\"	@(#)intro.ms	6.3 (Berkeley) 5/14/86
+.\"
+.de IR
+\fI\\$1\^\fR\\$2
+..
+.de RI
+\fR\\$1\fI\\$2\^\fR\\$3
+..
+.TL
+INTRODUCTION TO USER'S REFERENCE MANUAL
+.OH 'Introduction''- % -'
+.EH '- % -''Introduction'
+.af % i
+.pn 6
+.LP
+The documentation has been reorganized for 4.3BSD in a format similar
+to the one used for the Usenix 4.2BSD manuals.
+It is divided into three sets; each set consists of one or more volumes.
+The abbreviations for the volume names are listed in square brackets;
+the abbreviations for the manual sections are listed in parenthesis.
+.DS
+I. User's Documents
+	User's Reference Manual [URM]
+		Commands (1)
+		Games (6)
+		Macro packages and language conventions (7)
+	User's Supplementary Documents [USD]
+		Getting Started
+		Basic Utilities
+		Communicating with the World
+		Text Editing
+		Document Preparation
+		Amusements
+
+II. Programmer's Documents
+	Programmer's Reference Manual [PRM]
+		System calls (2)
+		Subroutines (3)
+		Special files (4)
+		File formats and conventions (5)
+	Programmer's Supplementary Documents, Volume 1 [PS1]
+		Languages in common use
+		General Reference
+		Programming Tools
+		Programming Libraries
+	Programmer's Supplementary Documents, Volume 2 [PS2]
+		Documents of Historic Interest
+		Other Languages
+		Database Management
+
+III. System Manager's Manual [SMM]
+	Maintenance commands (8)
+	System Installation and Administration
+	Supporting Documentation
+.DE
+.LP
+References to individual documents are given as ``volume:document'',
+thus USD:1 refers to the first document in the ``User's Supplementary
+Documents''.
+References to manual pages are given as ``\fIname\fP(section)'' thus
+.IR sh (1)
+refers to the shell manual entry in section 1.
+.LP
+The manual pages give descriptions of the publicly available features of the
+.UX \s-2/32V\s0
+system, as extended to provide a virtual memory environment
+and other enhancements at the University of California.
+They do not attempt to provide perspective or tutorial information about the
+.UX
+operating system, its facilities, or its implementation.
+Various documents on those topics are contained in the
+``UNIX User's Supplementary Documents'' (USD), the
+``UNIX Programmer's Supplementary Documents'' (PS1 and PS2),
+and ``UNIX System Manager's Manual'' (SMM).
+In particular, for an overview see ``The UNIX Time-Sharing System'' (PS2:1)
+by Ritchie and Thompson; for a tutorial see
+``\s8UNIX\s10 for Beginners'' (USD:1) by Kernighan,
+and for an guide to the new features of this virtual version, see
+``Berkeley Software Architecture Manual (4.3 Edition)'' (PS1:6).
+.LP
+Within the area it surveys, this volume attempts to be timely, complete
+and concise.  Where the latter two objectives conflict,
+the obvious is often left unsaid in favor of brevity.
+It is intended that each program be described as it is, not as it should be.
+Inevitably, this means that various sections will soon be out of date.
+.LP
+Commands are programs intended to be invoked directly by
+the user, in contrast to subroutines, that are
+intended to be called by the user's programs.
+User commands are described in URM section 1.
+Commands generally reside in directory
+.I /bin
+(for
+.IR bin \|ary
+programs).
+Some programs also reside in
+.I
+/\|usr/\|bin,
+.R
+.I
+/\|usr/\|ucb,
+.R
+or
+.I
+/\|usr/\|new,
+.R
+to save space in
+.I  /\|bin.
+These directories are searched automatically by the command interpreters.
+.LP
+Games have been relegated to URM section 6 and
+.I
+/\|usr/\|games,
+.R
+to keep them from contaminating
+the more staid information of URM section 1.
+.LP
+Miscellaneous collection of information necessary for
+writing in various specialized languages such as character codes, 
+macro packages for typesetting, etc is contained in URM section 7.
+.LP
+System calls are entries into the
+.UX
+supervisor.  The system call interface is identical to a C language
+procedure call; the equivalent C procedures are described in PRM section 2.
+.LP
+An assortment of subroutines is available;
+they are described in PRM section 3.
+The primary libraries in which they are kept are described in
+.IR intro (3).
+The functions are described in terms of C;
+those that will work with Fortran are described in
+.IR intro (3f).
+.LP
+PRM section 4 discusses the characteristics of
+each system ``file'' that refers to an I/O device.
+The names in this section refer to the DEC device names for the hardware,
+instead of the names of the special files themselves.
+.LP
+The file formats and conventions (PRM section 5)
+documents the structure of particular kinds of files;
+for example, the form of the output of the loader and
+assembler is given.  Excluded are files used by only one command,
+for example the assembler's intermediate files.
+.LP
+Commands and procedures intended for use primarily by the
+system administrator are described in SMM section 8.
+The commands and files described here are almost all kept in the directory
+.I /\|etc.
+.LP
+Each section consists of independent entries of a page or so each.
+The name of the entry is in the upper corners of its pages,
+together with the section number, and sometimes a
+letter characteristic of a subcategory, e.g. graphics is 1G,
+and the math library is 3M.
+Entries within each section are alphabetized.
+except for PRM section 3f which appears after the rest of PRM section 3.
+The page numbers of each entry start at 1;
+it is infeasible to number consecutively the pages of 
+a document like this that is republished in many variant forms.
+.LP
+All entries are based on a common format;
+not all subsections always appear.
+.RS
+.LP
+The
+.I name
+subsection lists the exact names of the commands and subroutines
+covered under the entry and gives a short description of their purpose.
+.LP
+The
+.IR synopsis ""
+summarizes the use of the program being described.
+A few conventions are used, particularly in the Commands subsection:
+.LP
+.RS
+.B Boldface
+words are considered literals, and are typed just as they appear.
+.LP
+Square brackets [ ] around an argument show that the argument is optional.
+When an argument is given as ``name'', it always refers to a file name.
+.LP
+Ellipses ``.\|.\|.'' are used to show that the previous argument-prototype
+may be repeated.
+.LP
+A final convention is used by the commands themselves.
+An argument beginning with a minus sign ``\-'' usually means that it is an
+option-specifying argument, even if it appears in a position where
+a file name could appear.  Therefore, it is unwise to have files whose
+names begin with ``\-''.
+.LP
+.RE
+The
+.IR description ""
+subsection discusses in detail the subject at hand.
+.LP
+The
+.IR files ""
+subsection gives the names of files that are built into the program.
+.LP
+A
+.I
+see also
+.R
+subsection gives pointers to related information.
+.LP
+A
+.I  diagnostics
+subsection discusses the diagnostic indications that may be produced.
+Messages that are intended to be self-explanatory are not listed.
+.LP
+The
+.IR bugs ""
+subsection gives known bugs and sometimes deficiencies.
+Occasionally the suggested fix is also described.
+.LP
+.RE
+At the beginning of URM is a table of contents,
+organized by section and alphabetically within each section.
+There is also a permuted index derived from the table of contents.
+Within each index entry, the title of the writeup to which
+it refers is followed by the appropriate section number in parentheses.
+This fact is important because there is considerable
+name duplication among the sections, arising principally from commands that
+exist only to exercise a particular system call.
+.SH
+HOW TO GET STARTED
+.LP
+This section sketches the basic information you need to get started on UNIX;
+how to log in and log out, how to communicate through your terminal,
+and how to run a program.
+See ``\c
+.UX
+for Beginners'' in (USD:1) for a more complete introduction to the system.
+.LP
+.I
+Logging in.\ \ 
+.R
+Almost any ASCII terminal capable of
+full duplex operation and generating
+the entire character set can be used.
+You must have a valid user name,
+which may be obtained from the system administration.
+If you will be accessing UNIX remotely, you will alsod evil
+wood-faced
+wood facer
+wood fagoter
+wood feller
+wood fern
+wood fiber
+wood-fibered
+wood file
+wood filler
+wood finisher
+wood flour
+wood flower
+wood fretter
+wood fringe
+wood-fringed
+wood frog
+wood gas
+woodgate rust
+wood gatherer
+wood germander
+wood-girt
+wood grass
+wood groundsel
+wood grouse
+wood grower
+wood grubber
+wood gum
+wood hair grass
+wood hen
+wood hewer
+wood-hewing
+wood honey
+wood-hooped
+wood hoopoe
+wood hyacinth
+wood ibis
+wood ipecac
+wood keeper
+wood-keyed
+wood kingfisher
+wood laborer
+woodland brown
+woodland caribou
+woodland goldenrod
+woodland primrose
+woodland star
+woodland sunflower
+wood lark
+wood laurel
+wood leopard
+wood leopard moth
+wood lily
+wood-lined
+wood loader
+wood lock
+wood lot
+wood louse
+wood machine
+wood machinist
+wood-mat
+wood meadow grass
+wood meal
+wood measurer
+wood milling machine
+wood mite
+wood molder
+wood mouse
+wood naphtha
+wood-nep
+wood nettle
+wood nightshade
+wood-note
+wood nut
+wood nymph
+wood offering
+wood oil
+wood oil tree
+wood-oil-tree family
+wood opal
+wood owl
+wood packing
+wood painting
+wood-paneled
+wood paper
+wood parenchyma
+wood partridge
+wood-paved
+wood pavior
+wood pea
+wood peat
+wood pegger
+wood pennyroyal
+wood pewee
+wood pie
+wood pigeon
+wood pimpernel
+wood planer
+wood-planing
+wood plant
+wood polisher
+wood port
+wood pulp
+wood pussy
+wood quail
+wood quartet
+wood-queest
+wood-quest
+wood quintet
+wood rabbit
+wood range
+wood rat
+wood ray
+wood-ray parenchyma
+wood reed
+wood reed grass
+wood render
+wood-rip
+wood robin
+wood-roofed
+wood rose
+wood rosin
+wood rot
+wood rush
+wood sage
+wood sandpiper
+wood saw
+wood sawyer
+wood scale
+woods cranberry
+wood screw
+wood-sheathed
+wood sheldrake
+wood shock
+wood shrike
+wood-skirted
+wood slave
+wood snail
+wood snipe
+wood sorrel
+wood-sorrel family
+wood-sour
+wood spack
+wood spear grass
+woods phlox
+wood spirit
+wood splitter
+wood spurge
+woods run
+wood stain
+wood stainer
+wood stamp
+wood star
+wood-stock
+wood stork
+wood stove
+wood strawberry
+wood sugar
+wood swallow
+wood tapper
+wood tar
+wood-tar pitch
+wood tenoner
+wood terrapin
+wood thrush
+wood tick
+wood tin
+wood titmouse
+wood tortoise
+wood trimmer
+wood turner
+wood turning
+wood-turning lathe
+wood turpentine
+wood vetch
+wood vetchling
+wood vine
+wood vinegar
+wood violet
+wood-walled
+wood warbler
+wood wasp
+wood widgeon
+wood willower
+wood wind
+wood-wind instrument
+wood-wind quartet
+wood-wind quintet
+wood wool
+woodworking chisel
+woodworking lathe
+wood wren
+woody-stemmed
+wooer-bab
+wool-backed
+wool-bearing
+wool breaker
+wool-bundling
+wool burler
+wool-burring
+wool card
+wool carder
+wool carding
+wool classer
+wool classing
+wool-cleaning
+wool clip
+wool comb
+wool comber
+wool combing
+wool-coming
+wool crepe
+wool driver
+wool-drying
+wool-dyed
+wool-eating
+woolen-clad
+woolen draper
+woolen drapery
+woolen-frocked
+woolen mill
+woolen-stockinged
+wool extract
+wool extractor
+wool fat
+wool feeder
+wool fiber
+wool-flock
+wool former
+wool-fringed
+wool grade
+wool grader
+wool grading
+wool grass
+wool grease
+wool green
+wool-growing
+wool hall
+wool hardener
+wool-hetchel
+wool-laden
+wool-lined
+woolly bear
+woolly-butted
+woolly-coated
+woolly foot
+woolly-haired
+woolly-haried
+woolly-headed
+woolly-leaved
+woolly-looking
+woolly-minded
+woolly-mindedness
+woolly-pated
+woolly-podded
+woolly-tailed
+woolly-white
+woolly-witted
+woolly worm
+wool mill
+wool moth
+wool needle
+wool-oerburdened
+wool oil
+wool oiler
+wool packer
+wool-packing
+wool-pated
+wool-picking
+wool powder
+wool-producing
+wool-rearing
+wool sampler
+wool scour
+wool spinner
+wool spinning
+wool sponge
+wool staple
+wool stapler
+wool-stapling
+wool stripper
+wool table
+wool thistle
+wool tree
+wool waste
+wool wax
+wool-white
+wool-witted
+wool-woofed
+wooly-headed
+wootz steel
+word accent
+word-beat
+word-blind
+word blindness
+word-bound
+word-breaking
+word-catcher
+word-catching
+word-charged
+word-clad
+word class
+word-compelling
+word-conjuring
+word contest
+word-deaf
+word deafness
+word-dearthing
+word-driven
+word form
+word-for-word
+word hoard
+word-jobber
+word-juggling
+word-keeping
+word lore
+word method
+word music
+word musician
+word-of-mouth
+word order
+word-paint
+word painter
+word painting
+word-perfect
+word picture
+word-pity
+word salad
+word-seller
+word-selling
+word sign
+word-slinger
+word-slinging
+word-splitting
+word square
+word stress
+word symbol
+word value
+word-wounded
+work-and-turn
+work cure
+work curve
+worker cell
+worker comb
+worker-correspondent
+worker-guard
+worker major
+worker minor
+work function
+work-hardened
+work horse
+work-hour
+workhouse sheeting
+workhouse test
+working card
+working class
+working-day
+working dog
+working drawing
+working face
+working fit
+working fluid
+working gauge
+working hypothesis
+working line
+working load
+working order
+working papers
+working pattern
+working pit
+working plan
+working point
+working rod
+working strength
+working stress
+working substance
+working tube
+work lead
+work-producing
+work roller
+work school
+works council
+work-seeking
+work sheet
+work shoe
+work-shy
+work-shyness
+works manager
+work song
+work spreading
+work-stained
+work stock
+work stone
+work-stopper
+work-study-play plan
+work-study-play school
+work ticket
+work train
+work-up
+work-wan
+work-weary
+work week
+work-worn
+world-abhorring
+world-abiding
+world-abstracted
+world-accepted
+world-acknowledged
+world-adored
+world-adorning
+world-advancing
+world-advertised
+world-affecting
+world-agitating
+world-alarming
+world-altering
+world-amazing
+world-amusing
+world-animating
+world-anticipated
+world-applauded
+world-appreciated
+world-apprehended
+world-approved
+world-argued
+world-arousing
+world-arresting
+world ash
+world-assuring
+world-astonishing
+world-authorized
+world-awed
+world-barred
+world-beater
+world-beating
+world-beheld
+world-beloved
+world belt
+world-beset
+world-borne
+world-bound
+world-braving
+world-broken
+world-bruised
+world-building
+world-burdened
+world-busied
+World calendar
+world-canvassed
+world-captivating
+world-celebrated
+world-censored
+world-censured
+world-challenging
+world-changing
+world-charming
+world-cheering
+world-choking
+world-chosen
+world-circling
+world-circulated
+world-civilizing
+world-classifying
+world-cleansing
+world-comforting
+world-commanding
+world-commended
+world-compassing
+world-compelling
+world concept
+world-condemned
+world-confounding
+world-connecting
+world-conquering
+world-conscious
+world-consciousness
+world-constituted
+world-consuming
+world-contemning
+world-contracting
+world-contrasting
+world-controlling
+world-converting
+world-copied
+world-corrupted
+world-corrupting
+world-covering
+world-creating
+world-credited
+world-crippling
+world-crowding
+world-crushed
+world-deaf
+world-debated
+world-deceiving
+world-deep
+world-defying
+world-delighting
+world-delivering
+world-demanded
+world-denying
+world-depleting
+world-depressing
+world-describing
+world-deserting
+world-desired
+world-desolation
+world-despising
+world-destroying
+world-detached
+world-detesting
+world-devouring
+world-diminishing
+world-directing
+world-disappointing
+world-discovering
+world-discussed
+world-disgracing
+world-dissolving
+world-distributed
+world-disturbing
+world-divided
+world-dividing
+world-dominating
+world-dreaded
+world-dwelling
+world-echoed
+world-educating
+world-embracing
+world-eminent
+world-encircling
+world-ending
+world-enlarging
+world-enlightening
+world-entangled
+world-enveloping
+world-envied
+world-esteemed
+world-excelling
+world-exciting
+world-famed
+world-familiar
+world-famous
+world-favored
+world-fearing
+world-felt
+world-forgetting
+world-forgotten
+world-forming
+world-forsaken
+world-forsaking
+world-fretted
+world-girdling
+world-gladdening
+world-governing
+world-grasping
+world-great
+world-grieving
+world ground
+world-hailed
+world-hardened
+world-hating
+world-heating
+world-helping
+world-honored
+world-horrifying
+world-humiliating
+world-imagining
+world-improving
+world-infected
+world-informing
+world-involving
+world island
+world-jaded
+world-jeweled
+world-joining
+world-kindling
+world-knowing
+world-known
+world-lamented
+world-lasting
+world-leading
+world-leveling
+world-lighting
+world line
+world-linking
+world-long
+world-loving
+worldly-minded
+worldly-mindedly
+worldly-mindedness
+worldly-wise
+world-mad
+world-made
+world-marked
+world-mastering
+world-melting
+world-menacing
+world-missed
+world-mocking
+world-mourned
+world-moving
+world myth
+world-naming
+world-needed
+world-neglected
+world-nigh
+world-noised
+world-noted
+world-obligating
+o
+need to obtain the telephone number for the system that you will be using.
+.LP
+After a data connection is established,
+the login procedure depends on what type of terminal you are using
+and local system conventions.
+If your terminal is directly connected to the computer,
+it generally runs at 9600 or 19200 baud.
+If you are using a modem running over a phone line,
+the terminal must be set at the speed appropriate for the modem you are using,
+typically 300, 1200, or 2400 baud.
+The half/full duplex switch should always be set at full-duplex.
+(This switch will often have to be changed
+since many other systems require half-duplex).
+.LP
+When a connection is established, the system types ``login:'';
+you type your user name, followed by the ``return'' key.
+If you have a password, the system asks for it
+and suppresses echo to the terminal so the password will not appear.
+After you have logged in, the ``return'', ``new line'', or ``linefeed'' keys
+will give exactly the same results.
+A message-of-the-day usually greets you before your first prompt.
+.LP
+If the system types out a few garbage characters
+after you have established a data connection
+(the ``login:'' message at the wrong speed),
+depress the ``break'' (or ``interrupt'') key.
+This is a speed-independent signal to
+.UX
+that a different speed terminal is in use.
+The system then will type ``login:,'' this time at another speed.
+Continue depressing the break key until ``login:'' appears clearly,
+then respond with your user name.
+.LP
+For all these terminals, it is important
+that you type your name in lower-case if possible; if you type
+upper-case letters,
+.UX
+will assume that your terminal cannot generate lower-case
+letters and will translate all subsequent lower-case letters to upper case.
+.LP
+The evidence that you have successfully logged in is that a shell program
+will type a prompt (``$'' or ``%'') to you.
+(The shells are described below under ``How to run a program.'')
+.LP
+For more information, consult
+.IR tset (1),
+and
+.IR stty (1),
+which tell how to adjust terminal behavior;
+.IR getty (8)
+discusses the login sequence in more detail, and
+.IR tty (4)
+discusses terminal I/O.
+.LP
+.I
+Logging out.\ \ 
+.R
+There are three ways to log out:
+.IP
+By typing ``logout'' or an end-of-file
+indication (EOT character, control-D) to the shell.
+The shell will terminate and the ``login:'' message will appear again.
+.IP
+You can log in directly as another user by giving a
+.IR login (1)
+command.
+.IP
+If worse comes to worse,
+you can simply hang up the phone; but beware \- some machines may
+lack the necessary hardware to detect that the phone has been hung up.
+Ask your system administrator if this is a problem on your machine.
+.LP
+.I
+How to communicate through your terminal.\ \ 
+.R
+When you type characters, a gnome deep in the system
+gathers your characters and saves them in a secret place.
+The characters will not be given to a program
+until you type a return (or newline), as described above in
+.I
+Logging in.
+.R
+.LP
+.UX
+terminal I/O is full-duplex.
+It has full read-ahead, which means that you can type at any time,
+even while a program is typing at you.
+Of course, if you type during output, the printed output will
+have the input characters interspersed.
+However, whatever you type will be saved up and interpreted in correct sequence.
+There is a limit to the amount of read-ahead,
+but it is generous and not likely to be exceeded unless
+the system is in trouble.
+When the read-ahead limit is exceeded, the system
+throws away all the saved characters (or beeps, if your prompt was a ``%'').
+.LP
+The delete (DEL) character in typed input kills all the
+preceding characters in the line,
+so typing mistakes can be repaired on a single line.
+Also, the backspace character (control-H) erases the last character typed.
+.IR Tset (1)
+or
+.IR stty (1)
+can be used to change these defaults.
+Successive uses of backspace erases characters back to, but
+not beyond, the beginning of the line.
+DEL and backspace can be transmitted to a program by preceding them with ``\e''.
+(So, to erase ``\e'', you need two backspaces).
+.LP
+An
+.I
+interrupt signal
+.R
+is sent to a program by typing control-C or the ``break'' key
+which is not passed to programs.
+This signal generally causes whatever program you are running to terminate.
+It is typically used to stop a long printout that you do not want.
+However, programs can arrange either to ignore this signal altogether,
+or to be notified when it happens (instead of being terminated).
+The editor, for example, catches interrupts and stops what it is doing,
+instead of terminating, so that an interrupt can
+be used to halt an editor printout without losing the file being edited.
+The interrupt character can also be changed with
+.IR tset (1)
+or
+.IR stty (1).
+.LP
+It is also possible to suspend output temporarily using ^S (control-S)
+and later resume output with ^Q (control-Q).
+Output can be thrown away without interrupting
+the program by typing ^O (control-O); see
+.IR tty (4).
+.LP
+The
+.IR quit ""
+signal is generated by typing the \s8ASCII\s10 FS character.
+(FS appears many places on different terminals, most commonly
+as control-\e or control-\^|\^.)
+It not only causes a running program to terminate
+but also generates a file with the core image of the terminated process.
+Quit is useful for debugging.
+.LP
+Besides adapting to the speed of the terminal,
+.UX
+tries to be intelligent about whether
+you have a terminal with the newline function
+or whether it must be simulated with carriage-return and line-feed.
+In the latter case, all input carriage returns
+are turned to newline characters (the standard line delimiter)
+and both a carriage return and a line feed are echoed to the terminal.
+If you get into the wrong mode, the
+.IR reset (1)
+command will rescue you.
+If the terminal does not appear to be echoing anything that you type,
+it may be stuck in ``no-echo'' or ``raw'' mode.
+Try typing ``(control-J)reset(control-J)'' to recover.
+.LP
+Tab characters are used freely in
+.UX
+source programs.
+If your terminal does not have the tab function,
+you can arrange to have them turned into spaces
+during output, and echoed as spaces during input.
+The system assumes that tabs are set every eight columns.
+Again, the
+.IR tset (1)
+or
+.IR stty (1)
+command can be used to change these defaults.
+.IR Tset (1)
+can be used to set the tab stops automatically when necessary.
+.LP
+.I
+How to run a program; the shells.\ \ 
+.R
+When you have successfully logged in, a program
+called a shell is listening to your terminal.
+The shell reads typed-in lines, splits them up
+into a command name and arguments, and executes the command.
+A command is simply an executable program.
+The shell looks in several system directories to find the command.  You can also
+place commands in your own directory and have the shell find them there.
+There is nothing special about system-provided
+commands except that they are kept in a directory where the shell can find them.
+.LP
+The command name is always the first word on an input line;
+it and its arguments are separated from one another by spaces.
+.LP
+When a program terminates, the shell will ordinarily regain control and type 
+a prompt at you to show that it is ready for another command.
+.LP
+The shells have many other capabilities, that are described in detail in
+sections
+.IR sh (1)
+and
+.IR csh (1).
+If the shell prompts you with ``$'', then it is an instance of
+.IR sh (1)
+the standard shell provided by Bell Labs.
+If it prompts with ``%'' then it is an instance of
+.IR csh (1),
+a shell written at Berkeley.
+The shells are different for all but the most simple terminal usage.
+Most users at Berkeley choose
+.IR csh (1)
+because of the
+.I history
+mechanism and the
+.I alias
+feature, that greatly enhance its power when used interactively.
+.I Csh
+also supports the job-control facilities;
+see
+.IR csh (1)
+or the Csh introduction in USD:4 for details.
+.LP
+You can change from one shell to the other by using the
+.I chsh (1)
+command, which takes effect at your next login.
+.LP
+.I
+The current directory.\ \ 
+.R
+.UX
+has a file system arranged as a hierarchy of directories.
+When the system administrator gave you a user name,
+they also created a directory for yworld-observed
+world-occupying
+world-offending
+world-old
+world-opposing
+world-oppressing
+world-ordering
+world-organizing
+world-outraging
+world-overcoming
+world-overthrowing
+world-owned
+world-paralyzing
+world-pardoned
+world-patriotic
+world-peopling
+world-perfecting
+world-pestering
+world-picked
+world-pitied
+world-plaguing
+world-pleasing
+world point
+world-poisoned
+world politics
+world-pondered
+world-populating
+world-portioning
+world-possessing
+world pound
+world power
+world-practiced
+world premiere
+world-preserving
+world-prevalent
+world-prized
+world-producing
+world-prohibited
+world-protected
+world-raising
+world-rare
+world-read
+world-recognized
+world-redeeming
+world-reflected
+world-regulating
+world-rejected
+world-rejoicing
+world-relieving
+world-remembered
+world-renewing
+world-renowned
+world-resented
+world-respected
+world-restoring
+world-revealing
+world-reviving
+world-revolving
+world-ridden
+world-round
+world-rousing
+world-roving
+world-ruling
+world-sacred
+world-sacrificing
+world-sanctioned
+world-sated
+world-saving
+world-scarce
+world-scattered
+world-schooled
+world-scorning
+world-seasoned
+world-self
+world series
+world-serving
+world-settling
+world-shaking
+world-sharing
+worlds-high
+world-shocking
+world-sick
+world-simplifying
+world-sized
+world-slandered
+world-sobered
+world-soiled
+world soul
+world speech
+world spirit
+world-spoiled
+world-spread
+world-stained
+world-startling
+world state
+world-staying
+world-stirring
+world-strange
+world-studded
+world-subduing
+world-sufficing
+world-supplying
+world-supporting
+world-surrounding
+world-surveying
+world-sustaining
+world-swallowing
+world-taking
+world-taming
+world-taught
+world-tempted
+world-tested
+world-thrilling
+world-tired
+world-tolerated
+world-tossing
+world tree
+world-troubling
+world-turning
+world-uniting
+world-used
+world-valid
+world-valued
+world-venerated
+world view
+world-waited
+world-wandering
+world-wanted
+World war
+world-wasting
+world-watched
+world-wearied
+world-wearily
+world-weariness
+world-weary
+world-welcome
+world-wept
+world-wide
+world-widely
+world-wideness
+world-winning
+world-wise
+world-without-end
+world-witnessed
+world-worn
+world-wrecking
+worm abscess
+worm aneurysm
+worm bark
+worm-breeding
+worm brood
+worm burrow
+worm-cankered
+worm capsule
+worm cast
+worm-consumed
+worm conveyer
+worm-destroying
+worm disease
+worm-driven
+worm-eat
+worm-eaten
+worm-eatenness
+worm-eater
+worm-eating
+worm fence
+worm fever
+worm gear
+worm-geared
+worm-gear elevator
+worm gearing
+worm-gnawed
+worm-gnawn
+worm grass
+worm gut
+worm-killing
+worm moss
+worm-nest
+worm oil
+worm-pierced
+worm powder
+worm punch
+worm-resembling
+worm-reserved
+worm-riddled
+worm-ripe
+wormseed mustard
+wormseed oil
+worm-shaped
+worm shell
+worm snake
+worm-spun
+worm tea
+worm thread
+worm tincture
+worm-tongued
+worm tube
+worm wheel
+worm-wheel hob thread
+worm wire
+wormwood oil
+wormwood sage
+worm-worn
+worm-wrought
+worn-down
+worn-out
+worn-outness
+worry-carl
+worse-affected
+worse-applied
+worse-bodied
+worse-born
+worse-bred
+worse-calculated
+worse-conditioned
+worse-disposed
+worse-dispositioned
+worse-executed
+worse-faring
+worse-governed
+worse-handled
+worse-informed
+worse-lighted
+worse-mannered
+worse-mated
+worse-named
+worse-natured
+worse-opinionated
+worse-ordered
+worse-paid
+worse-performed
+worse-printed
+worse-rated
+worse-ruled
+worse-satisfied
+worse-served
+worse-spent
+worse-succeeding
+worse-taught
+worse-tempered
+worse-thoughted
+worse-timed
+worse-treated
+worse-typed
+worse-utilized
+worse-wanted
+worse-wrought
+worship-paying
+worst-affected
+worst-bred
+worst-cast
+worst-damaged
+worst-deserving
+worst-disposed
+worst-fashioned
+worst-formed
+worst-governed
+worst-informed
+worst-managed
+worst-manned
+worst-paid
+worst-printed
+worst-ruled
+worst-served
+worst-taught
+worst-timed
+worst-treated
+worst-used
+worst-wanted
+worth-while
+worth-whileness
+would-be
+would-have-been
+wound chevron
+wound cork
+wound-dressing
+wound fever
+wound-fevered
+wound-free
+wound fungus
+wound gall
+wound-inflicting
+wound-marked
+wound parasite
+wound-plowed
+wound-producing
+wound rocket
+wound-scarred
+wound-secreted
+wound-worn
+wou-wou
+woven-wire
+wrack grass
+wrap-around
+wrapping-gown
+wrapping paper
+wrap-round
+wrap-up
+wrath-allaying
+wrath-bewildered
+wrath-consumed
+wrath-faced
+wrathful-eyed
+wrath-kindled
+wrath-kindling
+wrath-provoking
+wrath-swollen
+wrath-wreaking
+wreath-crowned
+wreath-drifted
+wreath-festooned
+wreath goldenrod
+wreath shell
+wreath-wrought
+wreck-bestrewn
+wreck buoy
+wreck-causing
+wreck-devoted
+wreck-free
+wreck gun
+wrecking frog
+wrecking pump
+wreck master
+wreck-raising
+wreck-strewn
+wreck-threatening
+wren babbler
+wrench fit
+wrench forger
+wrench hammer
+wrench head
+wren tit
+wren warbler
+wrest block
+wrest pin
+wrest plank
+wretched-fated
+wretched-looking
+wretched-witched
+wringing fit
+wringing machine
+wringing-wet
+wrinkle-coated
+wrinkled-browed
+wrinkled-cheeked
+wrinkled-leaved
+wrinkled-old
+wrinkled-shelled
+wrinkled-visaged
+wrinkle-faced
+wrinkle-fronted
+wrinkle-furrowed
+wrinkle-making
+wrinkle-scaled
+wrist clonus
+wrist drop
+wrist joint
+wrist pin
+wrist plate
+wrist shot
+wrist watch
+write-off
+write-up
+writing board
+writing cabinet
+writing case
+writing desk
+writing exercise
+writing fluid
+writing frame
+writing ink
+writing lesson
+writing machine
+writing master
+writing pad
+writing paper
+writing reed
+writing room
+writing set
+writing table
+writing telegraph
+written hand
+wrong-directed
+wrong-ended
+wrong-endedness
+wrong-feigned
+wrong-gotten
+wrong-grounded
+wrong-jawed
+wrong-minded
+wrong-mindedly
+wrong-mindedness
+wrong-ordered
+wrong-principled
+wrong-screwed
+wrong-thinking
+wrong-timed
+wrong-voting
+wroth money
+wroth penny
+wroth silver
+wrought iron
+wrought-up
+wry-armed
+wry-billed
+wry-blown
+wry-eyed
+wry-faced
+wry-formed
+wry-guided
+wry-legged
+wry-looked
+wry-mouthed
+wry-necked
+wry-neckedness
+wry-nosed
+wry-set
+wry-tailed
+wry-toothed
+W-shaped
+W surface
+wung-out
+wych-elm
+wych-hazel
+X chromosome
+Xipe-totec
+Xiphium iris
+X radiation
+X ray
+X-ray cancer
+X-ray photograph
+X-ray photography
+X-ray-proof
+X-ray spectrograph
+X-ray spectrometer
+X-ray spectrum
+X-ray therapy
+X-ray tube
+X-shaped
+xylem parenchyma
+xylene blue
+xylite oil
+yaba bark
+yacca gum
+yacht berth
+yacht builder
+yacht-built
+yacht club
+yacht decorator
+yacht designer
+yacht engineer
+yacht ensign
+yacht gear
+yacht propeller
+yacht race
+yacht racing
+yacht rigging
+yacht squadron
+Yajur-veda
+yam bean
+yam family
+yam potato
+yam-root
+yam stick
+yam tree
+yang-kin
+Yankee-doodle
+Yankee-doodledom
+Yankee-doodleism
+Yao-min
+Yao yin
+yapp binding
+yard boy
+yard-broad
+yard cleaner
+yard-deep
+yard donkey
+yard engineer
+yard foreman
+yard grass
+yarding engine
+yard inspector
+yard laborer
+yard locomotive
+yard-long
+yard-long bean
+yard lumber
+yard porter
+yard regulator
+yard rope
+yard rush
+yard scavenger
+yard signalman
+yard slings
+yard-square
+yard sweeper
+yard tackle
+yard-thick
+yard trader
+yard-wide
+yarn baller
+yarn bleacher
+yarn boiler
+yarn-boiling
+yarn buncher
+yarn bundler
+yarn carrier
+yarn-cleaning
+yarn conditioner
+yarn croft
+yarn dresser
+yarn dryer
+yarn-dyed
+yarn dyer
+yarn finisher
+yarn inspector
+yarn-measuring
+yarn-mercerizing
+yarn packer
+yarn printer
+yarn reel
+yarn reeler
+yarn remover
+yarn sizer
+yarn sorter
+yarn spinner
+yarn-spinning
+yarn spreader
+yarn stretcher
+yarn stripper
+yarn tester
+yarn-testing
+yarn twister
+yarn warper
+yarn washer
+yarn waste
+yarn weigher
+yarn winder
+yate tree
+yaw-haw
+yawl-rigged
+yaw shrub
+yaw-sighted
+y-bake
+y-blend
+y-blent
+Y box
+Y branch
+Y bridge
+y-cast
+Y chromosome
+y-clept
+Y connection
+Y cross
+Y current
+Y curve
+yea-and-nay
+yea-and-nayish
+yea-nay
+year-born
+year count
+year-counted
+year hour
+year letter
+year-marked
+year-old
+year-round
+yea sayer
+yeast bee
+yeast-bitten
+yeast cake
+yeast cell
+yeast fungus
+yeast plant
+yeast powder
+yeast spot
+Yed posterior
+Yed prior
+yellow-aproned
+yellow-armed
+yellow-backed
+yellow-banded
+yellow-bark
+yellow-barked
+yellow-bark oak
+yellow-barred
+yellow-beaked
+yellow-bearded
+yellow-bellied
+yellow-billed
+yellow-black
+yellow-blossomed
+yellow-blotched
+yellow-bodied
+yellow book
+yellow-breasted
+yellow-browed
+yellow-brown
+yellow-capped
+yellow-centered
+yellow-checked
+yellow-cheeked
+yellow-chinned
+yellow-collared
+yellow-colored
+yellow-covered
+yellow-crested
+yellow-cross
+yellow-cross liquid
+yellow-crowned
+yellow-daisy
+yellow-dog
+yellow-dotted
+yellow-dun
+yellow-dye
+yellow-dyed
+yellow-dye tree
+yellow-earedou (ordinarily
+with the same name as your user name).
+When you log in, any file name you type is by default in this directory.
+Since you are the owner of this directory, you have
+full permission to read, write, alter, or destroy its contents.
+Permissions to have your will with other directories
+and files will have been granted or denied to you by their owners.
+As a matter of observed fact, few
+.UX
+users protect their files from perusal by other users.
+.LP
+To change the current directory (but not the set of permissions you
+were endowed with at login) use
+.IR cd (1).
+.LP
+.I
+Path names.\ \ 
+.R
+To refer to files not in the current directory, you must use a path name.
+Full path names begin with ``/\|'', the name of the root directory of the
+whole file system.
+After the slash comes the name of each directory containing the next
+sub-directory (followed by a ``/\|'') until finally the file name is reached.
+For example,
+.I
+/\^usr/\^tmp/\^filex
+.R
+refers to the file
+.I
+filex
+.R
+in the directory
+.I
+tmp; tmp
+.R
+is itself a subdirectory of
+.I
+usr; usr
+.R
+springs directly from the root directory.
+.LP
+If your current directory has subdirectories,
+the path names of files therein begin with
+the name of the subdirectory with no prefixed ``/\|''.
+.LP
+A path name may be used anywhere a file name is required.
+.LP
+Important commands that modify the contents of files are
+.IR cp (1),
+.IR mv (1),
+and
+.IR rm (1),
+which respectively copy, move (i.e. rename) and remove files.
+To find out the status of files or directories, use 
+.IR ls (1).
+See
+.IR mkdir (1)
+for making directories and
+.IR rmdir (1)
+for destroying them.
+.LP
+For a fuller discussion of the file system, see
+``A Fast File System for UNIX'' (SMM:14)
+by McKusick, Joy, Leffler, and Fabry.
+It may also be useful to glance through PRM section 2,
+that discusses system calls, even if you do not intend
+to deal with the system at that level.
+.LP
+.I
+Writing a program.\ \ 
+.R
+To enter the text of a source program into a
+.UX
+file, use the editor
+.IR ex (1)
+or its display editing alias
+.IR vi (1).
+(The old standard editor
+.IR ed (1)
+is also available.)
+The principal languages in
+.UX
+are provided by the C compiler
+.IR cc (1),
+the Fortran compiler
+.IR f77 (1),
+and its derivatives 
+.IR efl (1)
+and
+.IR ratfor (1),
+the Pascal compiler
+.IR pc (1),
+and interpreter
+.IR pi (1),
+and the Lisp system
+.IR lisp (1).
+User contributed software in the latest
+release of the system supports
+APL, B, the Functional Programming language, and Icon.
+Refer to
+.IR apl (1),
+.IR b (1),
+.IR fp (1),
+and
+.IR icon (1),
+respectively for more information about each.
+After the program text has been entered through the editor
+and written to a file, you can give the file
+to the appropriate language processor as an argument.
+The output of the language processor
+will be left on a file in the current directory named ``a.out''.
+If the output is precious, use
+.IR mv (1)
+to move it to a less exposed name after successful compilation.
+.LP
+When you have finally gone through this entire process
+without provoking any diagnostics, the resulting program
+can be run by giving its name to the shell
+in response to the shell (``$'' or ``%'') prompt.
+.LP
+Your programs can receive arguments from the command line
+just as system programs do,
+see ``UNIX Programming - Second Edition'' (PS2:3),
+or for a more terse description
+.IR execve (2).
+.LP
+.I
+Text processing.\ \ 
+.R
+Almost all text is entered through the editor
+.IR ex (1)
+(often entered via
+.IR vi (1)).
+The commands most often used to write text on a terminal are:
+.IR cat (1),
+.IR more (1),
+and
+.IR nroff (1).
+.LP
+The
+.IR cat (1)
+command simply dumps \s8ASCII\s10 text
+on the terminal, with no processing at all.
+.IR More (1)
+is useful for preventing the output of a command from
+scrolling off the top of your screen.
+It is also well suited to perusing files.
+.IR Nroff (1)
+is an elaborate text formatting program.
+Used naked, it requires careful forethought, but for
+ordinary documents it has been tamed; see
+.IR me (7)
+and
+.IR ms (7).
+.LP
+.IR Troff (1)
+prepares documents for a Graphics Systems phototypesetter
+or a Versatec Plotter;
+it is similar to 
+.IR nroff (1),
+and often works from exactly the same source text.
+It was used to produce this manual.
+.LP
+.IR Script (1)
+lets you keep a record of your session in a file,
+which can then be printed, mailed, etc.
+It provides the advantages of a hard-copy terminal
+even when using a display terminal.
+.LP
+.I
+Status inquiries.\ \ 
+.R
+Various commands exist to provide you with useful information.
+.IR w (1)
+prints a list of users currently logged in, and what they are doing.
+.IR date (1)
+prints the current time and date.
+.IR ls (1)
+will list the files in your directory or give
+summary information about particular files.
+.LP
+.I
+Surprises.\ \ 
+.R
+Certain commands provide inter-user communication.
+Even if you do not plan to use them, it would be
+well to learn something about them, because someone else may aim them at you.
+.LP
+To communicate with another user currently logged in,
+.IR write (1)
+or
+.IR talk (1)
+is used;
+.IR mail (1)
+will leave a message whose presence will be announced
+to another user when they next log in.
+The write-ups in the manual also suggest how to respond to
+the these commands if you are a target.
+.LP
+If you use
+.IR csh (1)
+the key ^Z (control-Z) will cause jobs to ``stop''.
+If this happens before you learn about it,
+you can simply continue by saying ``fg'' (for foreground) to bring
+the job back.
+.SH
+CONVERTING FROM 4.2BSD SYSTEMS
+.LP
+A detailed list of changes from the 4.2BSD to the 4.3BSD distributions
+is contained in ``Bug Fixes and Changes in 4.3BSD'' (SMM:12),
+and ``Changes to the Kernel in 4.3BSD'' (SMM:13).
+Detailed conversion procedures are described in
+``Installing and Operating 4.3BSD on the VAX'' (SMM:1);
+it also discusses changes from pre-4.2BSD systems.
+                                                                                                                                                                                                                                                                                                                #
+# Copyright (c) 1986 Regents of the University of California.
+# All rights reserved.  The Berkeley software License Agreement
+# specifies the terms and conditions for redistribution.
+#
+#	@(#)Makefile	6.2 (Berkeley) 5/15/86
+#
+TOCS=	toc1 toc2 toc3 toc3f toc4 toc5 toc6 toc7 toc8 \
+	tocx1 tocx2 tocx3 tocx3f tocx4 tocx5 tocx6 tocx7 tocx8
+MACROS=	-msU
+PRINTER=Pdp
+TROFF=	ditroff -${PRINTER}
+
+all: title.urm.${PRINTER} preface.${PRINTER} intro.${PRINTER} \
+     toc.${PRINTER} ptx.${PRINTER} title.prm.${PRINTER}
+	lpr -${PRINTER} -n title.urm.${PRINTER}
+	lpr -${PRINTER} -n preface.${PRINTER}
+	lpr -${PRINTER} -n intro.${PRINTER}
+	lpr -${PRINTER} -n toc.${PRINTER}
+	lpr -${PRINTER} -n ptx.${PRINTER}
+	lpr -${PRINTER} -n title.prm.${PRINTER}
+
+title.urm.${PRINTER}: title.urm
+	${TROFF} -t title.urm >title.urm.${PRINTER}
+
+preface.${PRINTER}: preface.ms
+	${TROFF} ${MACROS} -t preface.ms >preface.${PRINTER}
+
+intro.${PRINTER}: intro.ms
+	${TROFF} ${MACROS} -t intro.ms >intro.${PRINTER}
+
+toc.${PRINTER}: toc.in ptxx
+	${TROFF} -t toc.in >toc.${PRINTER}
+
+ptx.${PRINTER}: ptx.in ptxx
+	${TROFF} -t ptx.in >ptx.${PRINTER}
+
+title.prm.${PRINTER}: title.prm ptxx
+	${TROFF} -t title.prm >title.prm.${PRINTER}
+
+ptxx:
+	tocrc all
+	tocrc t
+
+clean:
+	rm -f title.urm.[PT]* preface.[PT]* intro.[PT]* toc.[PT]* ptx.[PT]* \
+	title.prm.[PT]* ${TOCS} ptxx *.spell errs Errs make.out
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    
+yellow-earth
+yellow-eye
+yellow-eyed
+yellow-eyed grass
+yellow-eyed-grass family
+yellow-faced
+yellow-feathered
+yellow-fever
+yellow-fever fly
+yellow-fever mosquito
+yellow-fin
+yellow-fingered
+yellow-finned
+yellow-flagged
+yellow-fleeced
+yellow-fleshed
+yellow-flowered
+yellow-flowering
+yellow-footed
+yellow-fringed
+yellow-fronted
+yellow-fruited
+yellow-funneled
+yellow-girted
+yellow-gloved
+yellow-green
+yellow-haired
+yellow-handed
+yellow-headed
+yellow-hilted
+yellow-horned
+yellow-hosed
+yellowish-amber
+yellowish-brown
+yellowish-colored
+yellowish-gold
+yellowish-gray
+yellowish-green
+yellowish-green-yellow
+yellowish-haired
+yellowish-pink
+yellowish-red
+yellowish-red-yellow
+yellowish-rose
+yellowish-skinned
+yellowish-tan
+yellowish-white
+yellow jack
+yellow jacket
+yellow-jerkined
+yellow journal
+yellow journalism
+yellow journalist
+yellow-labeled
+yellow-leaved
+yellow-legged
+yellow-legger
+yellow-legginged
+yellow-lettered
+yellow-lit
+yellow-locked
+yellow-lustered
+yellow-maned
+yellow-marked
+yellow-necked
+yellow-nosed
+yellow-olive
+yellow-painted
+yellow-papered
+yellow-pinioned
+yellow-pyed
+yellow-rayed
+yellow-red
+yellow-ringed
+yellow-ringleted
+yellow-ripe
+yellow-robed
+yellow-rooted
+yellow-rumped
+yellow-sallow
+yellow-seal
+yellow-sealed
+yellow-shafted
+yellow-shanked
+yellow-shouldered
+yellow-skinned
+yellow-skirted
+yellow-speckled
+yellow-splotched
+yellow-spotted
+yellow-sprinkled
+yellow-stained
+yellow-starched
+yellow-striped
+yellow-tailed
+yellow-throated
+yellow-tinged
+yellow-tinging
+yellow-tinted
+yellow-tipped
+yellow-toed
+yellow-tressed
+yellow-tufted
+yellow-vented
+yellow-washed
+yellow-white
+yellow-winged
+yelly-hoo
+yelly-hooing
+ye-makimono
+y-end
+Yenisei ostyak
+yeoman service
+yerba buena
+Yerba de para
+yerba mansa
+yerba mate
+yerba reuma
+yerba sagrada
+yerba santa
+yeshiva bocher
+yes man
+yes-no
+yes-noer
+yes-noism
+yew berry
+yew-besprinkled
+yew-crested
+yew family
+yew green
+yew-hedged
+yew-leaved
+yew pine
+yew-roofed
+yew-shaded
+yew tree
+yew-treed
+Y-gun
+yield point
+yield value
+yill-caup
+Y joint
+Y level
+Y ligament
+Y moth
+yohimbe bark
+yo-ho
+yoke bone
+yoke devil
+yoke elm
+yoke-footed
+yoke method
+yoke riveter
+yoke-toed
+yo-kyoku
+yolk bag
+yolk boil
+yolk cord
+yolk duct
+yolk gland
+yolk nucleus
+yolk plate
+yolk plug
+yolk sac
+yolk stalk
+yolk yellow
+you-be-damned
+you-be-damnedness
+you-know-what
+young-bladed
+young-chinned
+young-conscienced
+young-counseled
+youngest-born
+young-eyed
+young-headed
+young lady
+young-ladydom
+young-ladyfied
+young-ladyhood
+young-ladyish
+young-ladyism
+young-ladylike
+young-ladyship
+young-looking
+young man
+young-manhood
+young-manlike
+young-manliness
+young-manly
+young-mannish
+young-mannishness
+young-manship
+young-old
+young-winged
+young woman
+young-womanhood
+young-womanish
+young-womanishness
+young-womanlike
+young-womanly
+young-womanship
+young-yeared
+youth-bold
+youth-consuming
+you-uns
+Yo-yo
+y-painted
+Y point
+y-pointing
+Y-potential
+y-rapt
+y-scalded
+Y-shaped
+y-ssed
+Y theodolite
+y tile
+Y track
+ytterbium metal
+yttrium metal
+Y tube
+yuan dollar
+yucca borer
+yucca cactus
+yucca fertilizer
+yucca moth
+yucca palm
+yucca pollenizer
+Yueh-pan
+yule block
+yule log
+yum-yum
+Yung-cheng
+y-warn
+Y winding
+zacate limon
+zanona palm
+zante fustic
+zapota gum
+Z bar
+Z chromosome
+zeal-blind
+zeal-consuming
+zeal-inflamed
+zeal-inspiring
+zeal-pretending
+zeal-quenching
+zeal-scoffing
+zeal-transported
+zeal-worthy
+zebra antelope
+zebra-back
+zebra bird
+zebra caterpillar
+zebra fish
+zebra grass
+zebra opossum
+zebra parakeet
+zebra plant
+zebra poison
+zebra shark
+zebra spider
+zebra swallowtail
+zebra-tailed
+zebra wolf
+zebrawood family
+zebu cattle
+zee bar
+zenaida dove
+Zend-avesta
+Zend-avestaic
+zenith blue
+zenith collimator
+zenith distance
+zenith point
+zenith-pole
+zenith-pole arc
+zenith sector
+zenith star
+zenith-star arc
+zenith telescope
+zenith tube
+zephr worsted
+zephyr cloth
+zephyr-fanned
+zephyr flower
+zephyr-haunted
+zephyr-kissed
+zephyr lily
+zephyr shawl
+zephyr shirting
+zephyr yarn
+zero ablaut grade
+zero algebra
+zero beat
+zero day
+zero-dimensional
+zero element
+zero fleck
+zero grade
+zero group
+zero hour
+zero-lift
+zero-lift angle
+zero magnet
+zero mark
+zero matrix
+zero method
+zero oil
+zero point
+zero post
+zero potential
+zero set
+zero stem
+zero thrust pitch
+zero tone
+zero torque pitch
+zero vector
+Zero-zero
+zeta function
+zigzag-fashion
+zigzag-lined
+zigzag-shaped
+zimocca sponge
+zinc alkyl
+zinc amide
+zinc blende
+zinc bloom
+zinc bromide
+zinc carbonate
+zinc chloride
+zinc chromate
+zinc chrome
+zinc-coated
+zinc crust
+zinc dust
+zinc engraving
+zinc-etched
+zinc etching
+zinc ethide
+zinc ethyl
+zinc fixer
+zinc flowers
+zinc gray
+zinc green
+zinc-lined
+zinc methide
+zinc methyl
+zinc ointment
+zinco-polar
+zinc orange
+zinc oxide
+zinc-roofed
+zinc-sampler
+zinc sender
+zinc spar
+zinc spinel
+zinc standard cell
+zinc sulphate
+zinc sulphide
+zinc vitriol
+zinc white
+zinc yellow
+zirconium oxide
+zircon light
+zircon-syenite
+z iron
+zone axis
+zone catalogue
+zone-confounding
+zone fire
+zone line
+zone-marked
+zone phenomenon
+zone plate
+zone system
+zone-tailed
+zone tariff
+zone time
+zoning act
+zoning commission
+zoning law
+zoning ordinance
+Zonta club
+zoot suit
+zoot-suiter
+Zouave jacket
+Z rail
+Z-shaped
+z term
+Zuben el genubi
+Zulu-kaffir
+Zu-zu
+zwitter ion
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      accept(2) accept: accept a connection on a socket.
+access(2) access: determine accessibility of file.
+acct(2) acct: turn accounting on or off.
+adjtime(2) adjtime: correct the time to allow synchronization of the system clock.
+bind(2) bind: bind a name to a socket.
+brk(2) brk, sbrk: change data segment size.
+chdir(2) chdir: change current working directory.
+chmod(2) chmod: change mode of file.
+chown(2) chown: change owner and group of a file.
+chroot(2) chroot: change root directory.
+close(2) close: delete a descriptor.
+connect(2) connect: initiate a connection on a socket.
+creat(2) creat: create a new file.
+dup(2) dup, dup2: duplicate a descriptor.
+execve(2) execve: execute a file.
+exit(2) _exit: terminate a process.
+fcntl(2) fcntl: file control.
+flock(2) flock: apply or remove an advisory lock on an open file.
+fork(2) fork: create a new process.
+fsync(2) fsync: synchronize a file's in-core state with that on disk.
+getdtablesize(2) getdtablesize: get descriptor table size.
+getgid(2) getgid, getegid: get group identity.
+getgroups(2) getgroups: get group access list.
+gethostid(2) gethostid, sethostid: get/set unique identifier of current host.
+gethostname(2) gethostname, sethostname: get/set name of current host.
+getitimer(2) getitimer, setitimer: get/set value of interval timer.
+getpagesize(2) getpagesize: get system page size.
+getpeername(2) getpeername: get name of connected peer.
+getpgrp(2) getpgrp: get process group.
+getpid(2) getpid, getppid: get process identification.
+getpriority(2) getpriority, setpriority: get/set program scheduling priority.
+getrlimit(2) getrlimit, setrlimit: control maximum system resource consumption.
+getrusage(2) getrusage: get information about resource utilization.
+getsockname(2) getsockname: get socket name.
+getsockopt(2) getsockopt, setsockopt: get and set options on sockets.
+gettimeofday(2) gettimeofday, settimeofday: get/set date and time.
+getuid(2) getuid, geteuid: get user identity.
+intro(2) intro: introduction to system calls and error numbers.
+ioctl(2) ioctl: control device.
+kill(2) kill: send signal to a process.
+killpg(2) killpg: send signal to a process group.
+link(2) link: make a hard link to a file.
+listen(2) listen: listen for connections on a socket.
+lseek(2) lseek: move read/write pointer.
+mkdir(2) mkdir: make a directory file.
+mknod(2) mknod: make a special file.
+mount(2) mount, umount: mount or remove file system.
+open(2) open: open a file for reading or writing, or create a new file.
+pipe(2) pipe: create an interprocess communication channel.
+profil(2) profil: execution time profile.
+ptrace(2) ptrace: process trace.
+quota(2) quota: manipulate disk quotas.
+read(2) read, readv: read input.
+readlink(2) readlink: read value of a symbolic link.
+reboot(2) reboot: reboot system or halt processor.
+recv(2) recv, recvfrom, recvmsg: receive a message from a socket.
+rename(2) rename: change the name of a file.
+rmdir(2) rmdir: remove a directory file.
+select(2) select: synchronous I/O multiplexing.
+send(2) send, sendto, sendmsg: send a message from a socket.
+setgroups(2) setgroups: set group access list.
+setpgrp(2) setpgrp: set process group.
+setquota(2) setquota: enable/disable quotas on a file system.
+setregid(2) setregid: set real and effective group ID.
+setreuid(2) setreuid: set real and effective user ID's.
+shutdown(2) shutdown: shut down part of a full-duplex connection.
+sigblock(2) sigblock: block signals.
+sigpause(2) sigpause: atomically release blocked signals and wait for interrupt.
+sigreturn(2) sigreturn: return from signal.
+sigsetmask(2) sigsetmask: set current signal mask.
+sigstack(2) sigstack: set and/or get signal stack context.
+sigvec(2) sigvec: software signal facilities.
+socket(2) socket: create an endpoint for communication.
+socketpair(2) socketpair: create a pair of connected sockets.
+stat(2) stat, lstat, fstat: get file status.
+swapon(2) swapon: add a swap device for interleaved paging/swapping.
+symlink(2) symlink: make symbolic link to a file.
+sync(2) sync: update super-block.
+syscall(2) syscall: indirect system call.
+truncate(2) truncate: truncate a file to a specified length.
+umask(2) umask: set file creation mode mask.
+unlink(2) unlink: remove directory entry.
+utimes(2) utimes: set file times.
+vfork(2) vfork: spawn new process in a virtual memory efficient way.
+vhangup(2) vhangup: virtually ``hangup'' the current control terminal.
+wait(2) wait, wait3: wait for process to terminate.
+write(2) write, writev: write output.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  .\" Copyright (c) 1980 Regents of the University of California.
+.\" All rights reserved.  The Berkeley software License Agreement
+.\" specifies the terms and conditions for redistribution.
+.\"
+.\"	@(#)title.prm	6.2 (Berkeley) 5/15/86
+.\"
+.ps 18
+.vs 22
+.sp 2.75i
+.ft B
+.ce 2
+UNIX Programmer's Reference Manual
+(PRM)
+.ps 14
+.vs 16
+.sp |4i
+.ce 2
+4.3 Berkeley Software Distribution
+Virtual VAX\-11 Version
+.sp |5.75i
+.ft R
+.pt 12
+.vs 16
+.ce
+April, 1986
+.sp |8.2i
+.ce 5
+Computer Systems Research Group
+Computer Science Division
+Department of Electrical Engineering and Computer Science
+University of California
+Berkeley, California  94720
+.bp
+.ll 5.3i
+.in 1.25i
+.hy 0
+.ps 10
+.vs 12p
+.sp |3.35i
+Copyright 1979, 1980, 1983, 1986 Regents of the University of California.
+Permission to copy these documents or any portion thereof as necessary
+for licensed use of the software is granted to licensees of this
+software, provided this copyright notice and statement of permission
+are included.
+.sp 2
+Copyright 1979, AT&T Bell Laboratories, Incorporated.
+Holders of \x'-1p'UNIX\v'-4p'\s-3TM\s0\v'4p'/32V,
+System III, or System V software licenses are
+permitted to copy these documents, or any portion of them,
+as necessary for licensed use of the software,
+provided this copyright notice and statement of permission
+are included.
+.sp 2
+This manual reflects system enhancements made at Berkeley and sponsored
+in part by the Defense Advanced Research Projects Agency
+(DoD), Arpa Order No. 4871 monitored by the Naval Electronics Systems
+Command under contract No. N00039-84-C-0089.
+The views and conclusions contained in these documents are those of the
+authors and should not be interpreted as representing official policies,
+either expressed or implied, of the Defense Research Projects Agency
+or of the US Government.
+.br
+.ll 6.5i
+.lt 6.5i
+.po .75i
+.in 0i
+.af % i
+.ds ET\"
+.de HD
+.po 0
+.lt 7.4i
+.tl ''''
+.lt
+.po
+'sp 18p
+.if o .tl '\\*(ET''- % -'
+.if e .tl '- % -''\\*(ET'
+'sp 18p
+.ns
+..
+.de FO
+'sp 18p
+.if e .tl '\s9\\*(Dt''\\*(Ed\s0'
+.if o .tl '\s9\\*(Ed''\\*(Dt\s0'
+'bp
+..
+.wh 0 HD
+.wh -60p FO
+.ds ET \s9\f2Table \|of \|Contents\fP\s0
+.ds Ed 4.3BSD
+.ds Dt April \|1986
+.bp 1
+.ce
+\f3TABLE \|OF \|CONTENTS\fP
+.nr x .5i
+.in +\nxu
+.nf
+.ta \n(.lu-\nxuR
+.de xx
+\\$1\f3 \a \fP\\$2
+..
+.de t
+.sp 1v
+.ne .5i
+.cs 3
+.ti -.5i
+.ss 18
+\f3\s9\\$2. \\$3\s0\fP
+.ss 12
+.if t .sp .5v
+.cs 3 36
+.so \\$1
+..
+.t /usr/man/man0/toc2 2 "System Calls"
+.t /usr/man/man0/toc3 3 "C Library Subroutines"
+.t /usr/man/man0/toc3f 3F "Fortran Library"
+.t /usr/man/man0/toc4 4 "Special Files"
+.t /usr/man/man0/toc5 5 "File Formats"
+.in -.5i
+.cs 3
+.if n .ta 8n 16n 24n 32n 40n 48n 56n 64n 72n 80n
+.if t .ta .5i 1i 1.5i 2i 2.5i 3i 3.5i 4i 4.5i 5i 5.5i 6i 6.5i
+                                                                                                                                                                                                                                                                                                                                                                         adb(1) adb: debugger.
+addbib(1) addbib: create or extend bibliographic database.
+apply(1) apply: apply a command to a set of arguments.
+apropos(1) apropos: locate commands by keyword lookup.
+ar(1) ar: archive and library maintainer.
+as(1) as: VAX-11 assembler.
+at(1) at: execute commands at a later time.
+atq(1) atq: print the queue of jobs waiting to be run.
+atrm(1) atrm: remove jobs spooled by at.
+awk(1) awk: pattern scanning and processing language.
+basename(1) basename: strip filename affixes.
+bc(1) bc: arbitrary-precision arithmetic language.
+bib(1) bib, listrefs: bibliographic formatter; list bibliographic reference items.
+biff(1) biff: be notified if mail arrives and who it is from.
+binmail(1) binmail: send or receive mail among users.
+cal(1) cal: print calendar.
+calendar(1) calendar: reminder service.
+cat(1) cat: catenate and print.
+cb(1) cb: C program beautifier.
+cc(1) cc: C compiler.
+cd(1) cd: change working directory.
+checknr(1) checknr: check nroff/troff files.
+chfn(1) chfn, chsh, passwd: change password file information.
+chgrp(1) chgrp: change group.
+chmod(1) chmod: change mode.
+chsh(1) chfn, chsh, passwd: change password file information.
+clear(1) clear: clear terminal screen.
+cmp(1) cmp: compare two files.
+col(1) col: filter reverse line feeds.
+colcrt(1) colcrt: filter nroff output for CRT previewing.
+colrm(1) colrm: remove columns from a file.
+comm(1) comm: select or reject lines common to two sorted files.
+compress(1) compress, uncompress, zcat: compress and expand data.
+cp(1) cp: copy.
+crypt(1) crypt: encode/decode.
+csh(1) csh: a shell (command interpreter) with C-like syntax.
+ctags(1) ctags: create a tags file.
+date(1) date: print and set the date.
+dbx(1) dbx: debugger.
+dc(1) dc: desk calculator.
+dd(1) dd: convert and copy a file.
+deroff(1) deroff: remove nroff, troff, tbl and eqn constructs.
+df(1) df: disk free.
+diction(1) diction, explain: print wordy sentences; thesaurus for diction.
+diff(1) diff: differential file and directory comparator.
+diff3(1) diff3: 3-way differential file comparison.
+du(1) du: summarize disk usage.
+echo(1) echo: echo arguments.
+ed(1) ed: text editor.
+efl(1) efl: Extended Fortran Language.
+eqn(1) eqn, neqn, checkeq: typeset mathematics.
+error(1) error: analyze and disperse compiler error messages.
+ex(1) ex, edit: text editor.
+expand(1) expand, unexpand: expand tabs to spaces, and vice versa.
+expr(1) expr: evaluate arguments as an expression.
+f77(1) f77: Fortran 77 compiler.
+false(1) false, true: provide truth values.
+file(1) file: determine file type.
+find(1) find: find files.
+finger(1) finger: user information lookup program.
+fmt(1) fmt: simple text formatter.
+fold(1) fold: fold long lines for finite width output device.
+fp(1) fp: Functional Programming language compiler/interpreter.
+fpr(1) fpr: print Fortran file.
+from(1) from: who is my mail from?.
+fsplit(1) fsplit: split a multi-routine Fortran file into individual files.
+ftp(1c) ftp: ARPANET file transfer program.
+gcore(1) gcore: get core images of running processes.
+gprof(1) gprof: display call graph profile data.
+graph(1g) graph: draw a graph.
+grep(1) grep, egrep, fgrep: search a file for a pattern.
+groups(1) groups: show group memberships.
+head(1) head: give first few lines.
+hostid(1) hostid: set or print identifier of current host system.
+hostname(1) hostname: set or print name of current host system.
+indent(1) indent: indent and format C program source.
+install(1) install: install binaries.
+intro(1) intro: introduction to commands.
+iostat(1) iostat: report I/O statistics.
+join(1) join: relational database operator.
+jove(1) jove: an interactive display-oriented text editor.
+kill(1) kill: terminate a process with extreme prejudice.
+last(1) last: indicate last logins of users and teletypes.
+lastcomm(1) lastcomm: show last commands executed in reverse order.
+ld(1) ld: link editor.
+learn(1) learn: computer aided instruction about UNIX.
+leave(1) leave: remind you when you have to leave.
+lex(1) lex: generator of lexical analysis programs.
+lint(1) lint: a C program verifier.
+lisp(1) lisp: lisp interpreter.
+liszt(1) liszt: compile a Franz Lisp program.
+ln(1) ln: make links.
+lock(1) lock: reserve a terminal.
+logger(1) logger: make entries in the system log.
+login(1) login: sign on.
+look(1) look: find lines in a sorted list.
+lookbib(1) indxbib, lookbib: build inverted index for a bibliography, find references in a bibliography.
+lorder(1) lorder: find ordering relation for an object library.
+lpq(1) lpq: spool queue examination program.
+lpr(1) lpr: off line print.
+lprm(1) lprm: remove jobs from the line printer spooling queue.
+lptest(1) lptest: generate lineprinter ripple pattern.
+ls(1) ls: list contents of directory.
+lxref(1) lxref: lisp cross reference program.
+m4(1) m4: macro processor.
+mail(1) mail: send and receive mail.
+make(1) make: maintain program groups.
+man(1) man: find manual information by keywords; print out the manual.
+mesg(1) mesg: permit or deny messages.
+mh(1) mh: Message Handler.
+mkdir(1) mkdir: make a directory.
+mkstr(1) mkstr: create an error message file by massaging C source.
+more(1) more, page: file perusal filter for crt viewing.
+mset(1) mset: retrieve ASCII to IBM 3270 keyboard map.
+msgs(1) msgs: system messages and junk mail program.
+mt(1) mt: magnetic tape manipulating program.
+mv(1) mv: move or rename files.
+netstat(1) netstat: show network status.
+newaliases(1) newaliases: rebuild the data base for the mail aliases file.
+nice(1) nice, nohup: run a command at low priority (\fIsh\fR only).
+nm(1) nm: print name list.
+notes(1) notes, autoseq, readnotes: a news system.
+nroff(1) nroff: text formatting.
+od(1) od: octal, decimal, hex, ascii dump.
+pagesize(1) pagesize: print system page size.
+passwd(1) chfn, chsh, passwd: change password file information.
+patch(1) patch: a program for applying a diff file to an original.
+pc(1) pc: Pascal compiler.
+pdx(1) pdx: pascal debugger.
+pi(1) pi: Pascal interpreter code translator.
+pix(1) pix: Pascal interpreter and executor.
+plot(1g) plot: graphics filters.
+pmerge(1) pmerge: pascal file merger.
+pr(1) pr: print file.
+printenv(1) printenv: print out the environment.
+prof(1) prof: display profile data.
+ps(1) ps: process status.
+ptx(1) ptx: permuted index.
+pwd(1) pwd: working directory name.
+px(1) px: Pascal interpreter.
+pxp(1) pxp: Pascal execution profiler.
+pxref(1) pxref: Pascal cross-reference program.
+quota(1) quota: display disc usage and limits.
+ranlib(1) ranlib: convert archives to random libraries.
+ratfor(1) ratfor: rational Fortran dialect.
+rcp(1c) rcp: remote file copy.
+rcsintro(1) rcsintro: introduction to RCS commands.
+rdist(1) rdist: remote file distribution program.
+readnews(1) readnews: read news articles.
+refer(1) refer: find and insert literature references in documents.
+rev(1) rev: reverse lines of a file.
+rlogin(1c) rlogin: remote login.
+rm(1) rm, rmdir: remove (unlink) files or directories.
+rmail(1) rmail: handle remote mail received via uucp.
+rmdir(1) rmdir, rm: remove (unlink) directories or files.
+roffbib(1) roffbib: run off bibliographic database.
+rsh(1c) rsh: remote shell.
+ruptime(1c) ruptime: show host status of local machines.
+rwho(1c) rwho: who's logged in 

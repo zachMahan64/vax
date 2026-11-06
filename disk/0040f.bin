@@ -1,0 +1,2044 @@
+ was given ~@d:"
+		     name min max (length args))))
+		   
+	   (error x args))
+	  (push (arg i) args))))   
+;--- functions to retrieve parts of the vector returned by
+;    filestat
+;
+(eval-when (compile eval)
+   (defmacro filestat-chk (name index)
+	     `(defun ,name (arg)
+		      (cond ((vectorp arg)
+			     (vref arg ,index))
+			    (t (error (concat ',name '|: bad arg |) arg))))))
+(filestat-chk filestat:mode	0)
+(filestat-chk filestat:type	1)
+(filestat-chk filestat:nlink	2)
+(filestat-chk filestat:uid 	3)
+(filestat-chk filestat:gid	4)
+(filestat-chk filestat:size	5)
+(filestat-chk filestat:atime	6)
+(filestat-chk filestat:mtime	7)
+(filestat-chk filestat:ctime	8)
+(filestat-chk filestat:dev	9)
+(filestat-chk filestat:rdev	10)
+(filestat-chk filestat:ino	11)
+
+;; lisp coded showstack and baktrace.
+;;
+
+(declare (special showstack-prinlevel showstack-prinlength
+		  showstack-printer prinlevel prinlength))
+
+(or (boundp 'showstack-prinlevel) (setq showstack-prinlevel 3))
+(or (boundp 'showstack-prinlength) (setq showstacvectorip arg)
+		 (aexplodec (concat "vectori[" (vsize-byte arg) "]")))
+		(t (do ((ll (cdr arg) (cdr ll))
+			(sofar (setq arg (cons '|(| (explodec (car arg)))))
+			(xx))
+		       ((cond ((null ll) (rplacd (last sofar) (ncons '|)| )) 
+			       t)
+			      ((atom ll) (rplacd (last sofar)
+						 `(| | |.| | | ,@(explodec ll) 
+						     ,@(ncons '|)|)))
+			       t))
+			arg)
+		       (setq xx (last sofar)
+			     sofar (cons '| | (explodec (car ll))))
+		       (rplacd xx sofar))))))
+
+;--- exploden - arg : lispval
+;	returns a list just like explodec, except we return fixnums instead
+; of characters.
+;
+(def exploden
+  (lambda (arg)
+	  (cond ((atom arg) (aexploden arg))
+		((vectorp arg)
+		 (aexploden (concat "vector[" (vsize arg) "]")))
+		((vectorip arg)
+		 (aexploden (concat "vectori[" (vsize-byte arg) "]")))
+		(t (do ((ll (cdr arg) (cdr ll))
+			(sofar (setq arg (cons 40. (exploden (car arg)))))
+			(xx))
+		       ((cond ((null ll) (rplacd (last sofar) (ncons 41.)) 
+			       t)
+			      ((atom ll) (rplacd (last sofar)
+						 `(32. 46. 32. ,@(exploden ll) 
+						     ,@(ncons 41.)))
+			       t))
+			arg)
+		       (setq xx (last sofar)
+			     sofar (cons 32. (exploden (car ll))))
+		       (rplacd xx sofar))))))
+
+;-- expt  - x
+;	  - y
+;
+;	   y
+; returns x
+;
+(defun expt (x y)
+  (cond ((equal x 1) x)
+	((zerop x) x)   ; Maclisp does this 
+	((lessp y 0) (quotient 1.0 (expt x (times -1 y))))
+	((floatp y) 
+	 (exp (times y (log x)))) ; bomb out for (-3)^4 or (-3)^4.0 or 0^y.
+	((bigp y)
+	 (error "expt: Can't compute number to a bignum power" y))
+	(t ; y is integer, y>= 0
+	   (prog (res)
+		 (setq res 1)
+		 loop
+		 (cond ((equal y 0) (return res))
+		       ((oddp y)(setq res (times  res x) y (1- y)))
+		       (t (setq x (times x x) y (/ y 2))))
+		 (go loop)))))
+
+
+
+;--- ffasl :: fasl in a fortran file
+;  arg #
+;   1	- fnam : file name
+;   2	- entry : entry point name
+;   3	- fcn  : entry name
+;   4   - disc : optional discipline
+;   5   - lib  ; optional library specifier
+;
+(defun ffasl (fnam entry fcn &optional (disc 'subroutine) (lib " "))
+  (cfasl fnam entry fcn disc (concat lib " -lI77 -lF77 -lm")))
+
+
+;
+; filepos function (maclisp compatibility)
+;
+(defun filepos n
+  (cond ((zerop n) nil)
+	((onep n)
+	 (fseek (arg 1) 0 1))
+	((equal n 2)
+	 (fseek (arg 1) (arg 2) 0))))
+
+;--- fixp - l : lispval
+;	returns t if l is a fixnum or bignum
+;
+(defun fixp (x) (or (equal (type x) 'fixnum)
+		    (equal (type x) 'bignum)))
+
+
+
+;--- flatsize - l : lispval
+;	     the second arg should be:
+;	      - n : limit for what we care about
+;	     but we dont care about this at present, since we have
+;	     to explode the whole thing anyway.
+;	returns the number of characters which print would
+;	use to print l
+;
+(defun flatsize n
+  (length (explode (arg 1))))
+
+
+;--- floatp - l : lispval
+;	returns t if l is a flonum
+;
+(defun floatp (x) (equal 'flonum (type x)))
+
+
+;--- getchar,getcharn   - x : atom
+;	     		- n : fixnum
+; returns the n'th character of x's pname (the first corresponds to n=1)
+; if n is negative then it counts from the end of the pname
+; if n is out of bounds, nil is returned
+
+(def getchar
+  (lambda (x n)
+	  (concat (substring x n 1))))
+
+
+(def getcharn
+  (lambda (x n)
+	  (substringn x n 0)))
+
+
+(def getl 
+  (lambda (atm lis)
+	  (do ((ll (cond ((atom atm) (plist atm))
+			 (t (cdr atm)))
+		   (cddr ll)))
+	      ((null ll) nil)
+	      (cond ((memq (car ll) lis) (return ll))))))
+
+
+;--- help
+; retrive selected portions of the Franz Lisp manual.
+; There are four types of help offered:
+; (help) prints a description of the other three options
+; (help tc) prints a table of contents.
+; (help n) {where n is a number or b or c} prints the whole chapter.
+; (help fcn) prints info on function fcn
+;
+; An index to the functions is kept in the documentation directory.
+; The index has entries like (append ch2.r).  
+; When asked to print info on a function, it locates the chapter
+; using the index then asks more to locate the definition.
+;
+(declare (localf locatefunction))
+
+(defun help fexpr (lis)
+  (cond ((null lis) 
+ (patom "type (help fnc) for info on function fnc")(terpr)
+ (patom "type (help n) to see chapter n")(terpr)
+ (patom "type (help tc) for a table of contents")(terpr))
+	(t (do ((ll lis (cdr ll))
+		(fcn))
+	       ((null ll))
+	       (cond ((not (atom (setq fcn (car ll))))
+		      (patom "Bad option to help ")(print fcn)(terpr))
+		     ((and (stringp fcn) (setq fcn (concat fcn)) nil))
+		     ((eq fcn 'tc)
+		      (patom "Table of contents")(terpr)
+ (patom "1 - intro; 2 - data structure; 3 - arithmetic; 4 - special")(terpr)
+ (patom "5 - i/o; 6 - system; 7 - reader; 8 - functions; 9 - arrays")(terpr)
+ (patom "10 - exceptions; 11 - trace package; 12 - Liszt;")(terpr)
+ (patom "14 - step package; 15 - fixit package") (terpr)
+ (patom "b - special symbols; c - gc & debugging & top level ")(terpr))
+		     ((or (and (numberp fcn) (lessp fcn 16) (greaterp fcn -1))
+			  (memq fcn '(b c)))
+		      (apply 'process 
+			 (ncons (concat "/usr/ucb/ul "
+					lisp-library-directory
+					"/manual/ch"
+				       fcn ".r | /usr/ucb/more -f" ))))
+		     ((locatefunction fcn))
+		     (t (patom "Unknown function: ")(print fcn)(terpr)))))))
+
+(declare (special readtable))
+
+(defun locatefunction (fc)
+  (let (x inf )
+       (cond ((null (get 'append 'helplocation)) 
+	      (patom "[Reading help index]")(drain)
+	      (setq inf (infile (concat lisp-library-directory
+					"/manual/helpindex")))
+	      (do ((readtable (makereadtable t))
+		   (x (read inf) (read inf)))
+		  ((null x) (close inf) (terpr))
+		  (cond ((null (cddr x))
+			 (putprop (car x) (cadr x) 'helplocation))
+			(t (putprop (concat (car x) " " (cadr x))
+				    (caddr x)
+				    'helplocation))))))
+       (cond ((setq x (get fc 'helplocation))
+	      (apply 'process (ncons (concat "/usr/ucb/ul "
+					     lisp-library-directory
+					     "/manual/"
+					     x 
+					     " | /usr/ucb/more -f \"+/(" 
+					     fc 
+					     "\"")))
+	      t))))
+
+;
+; (hunk 'g_arg1 [...'g_argn])
+;
+; This function makes a hunk. The hunk is preinitialized to the
+; arguments present. The size of the hunk is determined by the
+; number of arguments present.
+;
+
+(defun hunk n
+  (prog (size)
+	(setq size -1)
+	(cond ((> n 128) (error "hunk: size is too big" n))
+	      ((eq n 1) (setq size 0))
+	      ((eq n 0) (return nil))	; hunk of zero length
+	      (t (setq size (1- (haulong (1- n))))))
+	(setq size (*makhunk size))
+	(do
+	 ((argnum 0 (1+ argnum)))
+	 ((eq argnum n))
+	 (*rplacx argnum size (arg (1+ argnum))))
+	(return size)))
+
+
+;--- last - l : list
+;	returns the last cons cell of the list, NOT the last element
+;
+(def last 
+  (lambda (a)
+	  (do ((ll a (cdr ll)))
+	      ((null (cdr ll))  ll))))
+
+;---- load 
+; load will either load (read-eval)  or fasl in the file.
+; it is affected by these global flags
+;  tilde-expansion :: expand filenames preceeded by ~ just like
+;	csh does (we do the expansion here so each i/o function we call
+;	doesn't have to do it).
+;  load-most-recent :: if there is a choice between a .o and a .l file,
+;	load the youngest one
+;
+(declare (localf load-a-file))
+(declare (special gcdisable load-most-recent tilde-expansion))
+
+(or (boundp 'load-most-recent) (setq load-most-recent nil))
+(or (boundp 'tilde-expansion) (setq tilde-expansion t))
+
+(defun load (filename &rest fasl-args)
+  (cond ((not (or (symbolp filename) (stringp filename))) 
+	 (error "load: illegal filename " filename)))
+  (let ( load-only fasl-only no-ext len search-path name pred shortname explf
+	 faslfile loadfile)
+
+       
+       (cond (tilde-expansion (setq filename (tilde-expand filename))))
+		
+       ; determine the length of the filename, ignoring the possible
+       ; list of directories.  set explf to the reversed exploded filename
+       (setq len (do ((xx (setq explf (nreverse (exploden filename))) (cdr xx))
+		      (i 0 (1+ i)))
+		     ((null xx) i)
+		     (cond ((eq #// (car xx)) (return i)))))
+
+       (cond ((> len 2)
+	      (cond ((eq (cadr explf) #/.)
+		     (cond ((eq (car explf) #/o)
+			    (setq fasl-only t))
+			   ((eq (car explf) #/l)
+			    (setq load-only t))
+			   (t (setq no-ext t))))
+		    (t (setq no-ext t))))
+	     (t (setq no-ext t)))
+
+       ; a short name is lessk-prinlength 4))
+(or (boundp 'showstack-printer)	(setq showstack-printer 'print))
+(or (getd 'old-showstack) (putd 'old-showstack (getd  'showstack)))
+(or (getd 'old-baktrace) (putd 'old-baktrace (getd  'baktrace)))
+
+;--- showstack :: do a stack backtrace.
+; arguments (unevaluated) are
+;	t  - print trace expressions too (normally they are not printed)
+;	N  - for some fixnum N, only print N levels.
+;	len N - set prinlength to N
+;	lev N - set prinlevel to N
+;
+(defun showstack fexpr (args)
+   (showstack-baktrace args t))
+
+(defun baktrace fexpr (args)
+   (showstack-baktrace args nil))
+
+(defun showstack-baktrace (args showstackp)
+   (let ((print-trace nil)
+	 (levels-to-print -1)
+	 (prinlevel showstack-prinlevel)
+	 (prinlength showstack-prinlength)
+	 (res nil)
+	 (newres nil)
+	 (oldval nil)
+	 (stk nil))
+      ;; scan arguments
+      (do ((xx args (cdr xx)))
+	  ((null xx))
+	  (cond ((eq t (car xx)) (setq print-trace t))
+		((fixp (car xx)) (setq levels-to-print (car xx)))
+		((eq 'lev (car xx))
+		 (setq xx (cdr xx) prinlevel (car xx)))
+		((eq 'len (car xx))
+		 (setq xx (cdr xx) prinlength (car xx)))))
+      ;; print the levels
+      (do ((levs levels-to-print)
+	   (firsttime t nil))
+	  ((or (equal 0 stk)
+	       (zerop levs))
+	   (terpr))
+	  (setq res (int:showstack stk))
+	  (cond ((null res) (terpr) (return nil)))
+	  (setq stk (cdr res)
+		res (car res))
+	  (cond ((or print-trace (not (trace-funp res)))
+		 (cond ((and oldval showstackp)
+			(setq newres (subst-eq '<**> oldval res)))
+		       (t (setq newres res)))
+		 (cond (showstackp (funcall showstack-printer newres) (terpr))
+		       (t (baktraceprint newres firsttime)))
+		 (setq levs (1- levs))
+		 (setq oldval res))))))
+
+(defun baktraceprint (form firsttime)
+   (cond ((not firsttime) (patom " -- ")))
+   (cond ((> (nwritn) 65) (terpr)))
+   (cond ((atom form) (print form))
+	 (t (let ((prinlevel 1)
+		  (prinlength 2))
+	       (cond ((dtpr form) (print (car form)))
+		     (t (print form)))))))
+
+
+;--- trace-funp  :: see if this is a trace function call
+; return t if this call is a result of tracing a function, or of calling
+; showstack
+;
+(defun trace-funp (expr)
+   (or (and (symbolp expr)
+	    (memq expr '(T-eval  T-apply T-setq
+				 eval int:showstack showstack-baktrace)))
+       (and (dtpr expr)
+	    (cond ((symbolp (car expr))
+		   (memq (car expr) '(trace-break T-cond T-eval T-setq
+						  T-apply)))
+		  ((dtpr (car expr))
+		   (and (eq 'lambda (caar expr))
+			(eq 'T-arglst (caadar expr))))))))
+
+;--- subst-eq  :: replace parts eq to new with old
+; make new list structure
+;
+(defun subst-eq (new old list)
+   (cond ((eq old list)
+	  new)
+	 ((and (dtpr list)
+	       (subst-eqp old list))
+	  (cond ((eq old (car list))
+		 (cons new (subst-eq new old (cdr list))))
+		((dtpr (car list))
+		 (cons (subst-eq new old (car list))
+		       (subst-eq new old (cdr list))))
+		(t (cons (car list)
+			 (subst-eq new old (cdr list))))))
+	 (t list)))
+
+(defun subst-eqp (old list)
+   (cond ((eq old list) t)
+	 ((dtpr list)
+	  (or (subst-eqp old (car list))
+	      (subst-eqp old (cdr list))))
+	 (t nil)))
+
+
+
+;;; environment macros
+
+(defmacro environment (&rest args)
+   (do ((xx args (cddr xx))
+	(when)(action)(res))
+       ((null xx)
+	`(progn 'compile
+		,@(nreverse res)))
+       (setq when (car xx)
+	     action (cadr xx))
+       (if (atom when)
+	  then (setq when (ncons when)))
+       (if (and (dtpr action)
+		(symbolp (car action)))
+	  then (setq action (cons (concat "environment-" (car action))
+				  (cdr action))))
+       (push `(eval-when ,when ,action) res)))
+       
+
+(defun environment-files fexpr (names)
+   (mapc '(lambda (filename)
+	     (if (not (get filename 'version)) then (load filename)))
+	 names))
+
+(defun environment-syntax fexpr (names)
+   (mapc '(lambda (class)
+	     (caseq class
+		 (maclisp (cvttomaclisp))
+		 (intlisp (cvttointlisp))
+		 (ucilisp (cvttoucilisp))
+		 ((franz franzlisp) (cvttofranzlisp))
+		 (t (error "unknown syntax conversion type " class))))
+	 names))
+
+;--- standard environments
+(defmacro environment-maclisp (&rest args)
+   `(environment (compile load eval) (files machacks)
+		 (compile eval) (syntax maclisp)
+		 ,@args))
+
+
+(defmacro environment-lmlisp (&rest args)
+   `(environment (compile load eval) (files machacks lmhacks)
+		 (compile eval) (syntax maclisp)
+		 ,@args))
+
+;;;--- i/o functions redefined.
+; The common I/O functions are redefined here to do tilde expansion
+; if the tilde-expansion symbol is non nil
+(declare (special tilde-expansion))
+   
+;First, define the current <name> as int:<name>
+;
+(cond ((null (getd 'int:infile))
+       (putd 'int:infile (getd 'infile))
+       (putd 'int:outfile (getd 'outfile))
+       (putd 'int:fileopen (getd 'fileopen))
+       (putd 'int:cfasl (getd 'cfasl))
+       (putd 'int:fasl (getd 'fasl))))
+
+;Second, define the new functions:
+
+(defun infile (filename)
+   (cond ((not (or (symbolp filename) (stringp filename)))
+	  (error "infile: non symbol or string filename " filename)))
+   (cond (tilde-expansion (setq filename (tilde-expand filename))))
+   (int:infile filename))
+
+(defun outfile (filename &optional args)
+   (cond ((not (or (symbolp filename) (stringp filename)))
+	  (error "outfile: non symbol or string filename " filename)))
+   (cond (tilde-expansion (setq filename (tilde-expand filename))))
+   (int:outfile filename args))
+
+;--- fileopen :: open a file with a non-standard stdio file
+;  [this should probably be flushed because it depends on stdio,
+;   which we may not use in the future]
+(defun fileopen (filename mode)
+   (cond ((not (or (symbolp filename) (stringp filename)))
+	  (error "fileopen: non symbol or string filename " filename)))
+   (cond (tilde-expansion (setq filename (tilde-expand filename))))
+   (int:fileopen filename mode))
+
+(defun fasl (filename &rest args)
+   (cond ((not (or (symbolp filename) (stringp filename)))
+	  (error "fasl: non symbol or string filename " filename)))
+   (cond (tilde-expansion (setq filename (tilde-expand filename))))
+   (lexpr-funcall 'int:fasl filename args))
+
+(defun cfasl (filename &rest args)
+   (cond ((not (or (symbolp filename) (stringp filename)))
+	  (error "cfasl: non symbol or string filename " filename)))
+   (cond (tilde-expansion (setq filename (tilde-expand filename))))
+   (lexpr-funcall 'int:cfasl filename args))
+
+
+;--- probef :: test if a file exists
+;
+(defun probef (filename)
+   (cond ((not (or (symbolp filename) (stringp filename)))
+	  (error "probef: non symbol or string filename " filename)))
+   (sys:access filename 0))
+
+
+
+(declare (special user-name-to-dir-cache))
+(or (boundp 'user-name-to-dir-cache) (setq user-name-to-dir-cache nil))
+
+;--- username-to-dir
+; given a user name, return the home directory name
+;
+(defun username-to-dir (name)
+   (cond ((symbolp name) (setq name (get_pname name)))
+	 ((stringp name))
+	 (t (error "username-to-dir: Illegal name " name)))
+   (let ((val (assoc name user-name-to-dir-cache)))
+      (cond ((null val)
+	     (setq val (sys:getpwnam name))
+	     (cond (val (push (cons name val) user-name-to-dir-cache))))
+	    (t (setq val (cdr val))))
+      (cond (val (sys:getpwnam-dir val)))))
+		    
+;--- username-to-dir-flush-cache :: clear all memory of where users are
+; it is important to call this function upon startup to clear all
+; knowledge of pathnames since this object file could have been copied
+; from another machine
+;
+(defun username-to-dir-flush-cache ()
+   (setq user-name-to-dir-cache nil))
+
+;--- lisp interface to int:franz-call
+;
+(eval-when (compile eval)
+   (setq fc_getpwnam 1   fc_access 2  fc_chdir 3  fc_unlink 4
+	 fc_time   5     fc_chmod  6  fc_getpid 7 fc_stat  8
+	 fc_gethostname 9 fc_link 10  fc_sleep 11 fc_nice 12))
+
+;--- sys:getpwnam
+; (sys:getpwnam 'st_username)
+; rets vector: (t_name x_uid x_gid t_dir)
+;
+(defun sys:getpwnam (name)
+   (cond ((or (symbolp name) (stringp name))
+	  (int:franz-call #.fc_getpwnam name))
+	 (t (error "sys:getpwnam : illegal name " name))))
+
+; return dir portion
+;
+(defun sys:getpwnam-dir (vec) (vref vec 3))
+
+(defun sys:access (name class)
+   (cond ((and (or (symbolp name) (stringp name))
+	       (fixp class))
+	  (cond (tilde-expansion (setq name (tilde-expand name))))
+	  (zerop (int:franz-call #.fc_access name class)))
+	 (t or equal 12 characters.  If a name is not
+       ; short, then load will not try to append .l or .o
+       (cond ((or (< len 13) (status feature long-filenames))
+	      (setq shortname t)))
+
+       (cond ((and (> len 0) (eq (getchar filename 1) '/))
+	      (setq search-path '(||)))
+	     (t (setq search-path (status load-search-path))))
+       (do ((xx search-path (cdr xx)))
+	   ((null xx) (error "load: file not found " filename))
+	   (setq pred (cond ((memq (car xx) '(|| |.|)) '||)
+			    (t (concat (car xx) "/"))))
+	   (cond (no-ext
+		  (cond ((and shortname
+			      load-most-recent
+			      (probef
+				 (setq faslfile (concat pred filename ".o")))
+			      (probef
+				 (setq loadfile (concat pred filename ".l"))))
+			 ; both an object and a source file exist.
+			 ; load the last modified one (fasl wins in ties)
+			 (let ((faslstat (filestat faslfile))
+			       (loadstat (filestat loadfile)))
+			    (cond ((< (filestat:mtime faslstat)
+				      (filestat:mtime loadstat))
+				   (return (load-a-file loadfile)))
+				  (t (return
+					(fasl-a-file faslfile
+						     (car fasl-args)
+						     (cadr fasl-args)))))))
+			((and shortname
+			      (probef (setq name
+					    (concat pred filename ".o"))))
+			 (return (fasl-a-file name (car fasl-args)
+					      (cadr fasl-args))))
+			((and shortname
+			      (probef (setq name
+					    (concat pred filename ".l"))))
+			 (return (load-a-file name)))
+			((probef (setq name (concat pred filename)))
+			 (cond (fasl-args (return
+					     (fasl-a-file name
+							  (car fasl-args)
+							  (cadr fasl-args))))
+			       (t (return (load-a-file name)))))))
+		 (fasl-only
+		  (cond ((probef (setq name (concat  pred  filename)))
+			 (return (fasl-a-file name (car fasl-args)
+					      (cadr fasl-args))))))
+		 (load-only
+		  (cond ((probef (setq name (concat pred filename)))
+			 (return (load-a-file name)))))))))
+
+;--- tilde-expand :: given a ~filename, expand it
+;
+(defun tilde-expand (name)
+   (cond ((or (symbolp name) (stringp name))
+	  (cond ((eq (getcharn name 1) #/~)
+		 (let ((form (exploden name)))
+		    (do ((xx (cdr form) (cdr xx))
+			 (res)
+			 (val))
+			((or (null xx) (eq (car xx) #//))
+			 ;; if this is the current user, just get value
+			 ;; from environment variable HOME
+			 (cond ((or (null res)
+				    (equal (setq res (implode (nreverse res)))
+					   (getenv 'USER)))
+				(setq val (getenv 'HOME)))
+			       (t (setq val (username-to-dir res))))
+			 (cond ((null val)
+				(error "tilde-expand: unknown user " res))
+			       (t (concat val (implode xx)))))
+			(setq res (cons (car xx) res)))))
+		(t name)))
+	 (t (error "tilde-expand: illegal argument " name))))
+
+      
+
+;--- fasl-a-file
+; The arguments are just like those to fasl.  This fasl's a file
+; and if the translink's are set, it does the minimum work necessary to rebind
+; the links (so that the new functions just fasl'ed in will be used).
+; 
+(defun fasl-a-file (name map warnflag)
+   (let ((translinkarg (status translink)))
+      (prog1
+	 (fasl name map warnflag)
+	 (cond ((and translinkarg (setq translinkarg (status translink)))
+		; if translink was set before and is still set
+		(cond ((eq translinkarg t)
+		       (sstatus translink nil)  ; clear all links
+		       (sstatus translink t))	; set to make links
+		      (t ; must be 'on'
+			 (sstatus translink on) ; recompute all links
+			 ))))))) 
+
+(declare (special $ldprint))	; print message before loading
+(declare (special prinlevel prinlength))
+
+(defun load-a-file (fname)
+   (cond ($ldprint (patom "[load ")(patom fname)(patom "]")(terpr)))
+   (let ((translinkarg (status translink)))
+      (prog1
+	 (let ((Piport (infile fname))
+	       ; (gcdisable t)	; too dangerous: removed for now
+	       ; don't gc when loading, it slows things down
+	       (eof (list nil)))
+	    (do ((form (errset (read Piport eof)) (errset (read Piport eof)))
+		 (lastform "<no form read successfully>"))
+		((eq eof (car form)) (close Piport) t)
+		(cond ((null form)
+		       (error "load aborted due to read error after form "
+			      lastform))
+		      (t (setq lastform (car form))
+			 (eval (car form))))))
+	 (cond ((and translinkarg (setq translinkarg (status translink)))
+		; if translink was set before and is still set
+		(cond ((eq translinkarg t)
+		       (sstatus translink nil)  ; clear all links
+		       (sstatus translink t))	; set to make links
+		      (t ; must be 'on'
+			 (sstatus translink on) ; recompute all links
+			 )))))))
+
+(funcall 'sstatus (list 'load-search-path (list '|.| lisp-library-directory)))
+;--- include - read in the file name given, the name not evaluated
+;
+(def include (nlambda (l) (load (car l))))
+
+;--- includef - read in the file name given and eval the first arg
+;
+(def includef (lambda (l) (load l)))
+
+
+;--- list-to-bignum
+;  convert a list of fixnums to a bignum.
+; there is a function bignum-to-list but it is written in C
+;
+;(author: kls)
+;
+(def list-to-bignum
+ (lambda (x) (cond (x (scons (car x) (list-to-bignum (cdr x))))
+		   (t nil))))
+
+
+
+;--- macroexpand - form 
+;	expands out all macros it can
+;
+(def macroexpand
+  (lambda (form)
+    (prog nil
+  top (cond ((atom form) (return form))
+	    ((atom (car form))
+	     (return
+	      (let ((nam (car form)) def disc)
+		   (setq def (getd nam))
+		   (setq disc (cond ((bcdp def) (getdisc def))
+				    ((arrayp def) 'array)
+				    ((dtpr def) (car def))))
+		   (cond ((and (null def)
+			       (get nam 'macro-autoload))
+			  (setq disc 'macro)))
+		   (cond ((memq disc '(array lambda lexpr nil))
+			  (cons nam (mapcar 'macroexpand (cdr form))))
+			 ((eq disc 'macro)
+			  (setq form (apply nam form))
+			  (go top))
+			 ((eq nam 'prog)
+			  (cons nam
+				(cons (cadr form)
+				      (mapcar 'macroexpand (cddr form)))))
+			 (t form)))))
+	    (t (return (cons (macroexpand (car form))
+			     (mapcar 'macroexpand (cdr form)))))))))
+
+
+
+
+;
+; (makhunk 'n)
+;
+; This function is similar to hunk, except that:
+;
+; n can be a fixnum, which specifies the length of the hunk.
+;	The hunk is preinitialized to nil's
+; n can be a list which is used to preinitialize the hunk.
+;
+(defun makhunk (n)
+  (prog (size Hunk)
+	(setq size -1)
+	(cond ((numberp n)
+;
+; If n is a number then build a nil hunk of the right size
+;
+	       (cond ((greaterp n 128) (error "makhunk: size is too big" n))
+		     ((= n 1) (setq size 0))
+		     (t (setq size (1- (haulong (1- n))))))
+	       (cond ((minusp size) (return nil)))
+	       (setq Hunk (*makhunk size))
+	       (do ((i 0 (1+ i)))
+		   ((=& i n))
+		   (*rplacx i Hunk nil))
+	       (return Hunk))
+;
+; If it isn't a number, then try hunk on it
+;
+	      (t (return (apply 'hunk n))))))
+
+;--- member - VAL : lispval
+;	    - LIS : list
+;	returns that portion of LIS beginning with the first occurance
+;	of VAL  if  VAL is found at the top level of list LIS.
+;	uses equal for comparisons.
+;
+(def member 
+  (lambda ($a$ $l$)
+	  (do ((ll $l$ (cdr ll)))
+	      ((null ll) nil)
+	      (cond ((equal $a$ (car ll)) (return ll))))))
+
+;--- memq - arg : (probably a symbol)
+;	  - lis : list
+; returns part of lis beginning with arg if arg is in lis
+;	
+; [ defintion moved to top of file to allow backquote macro to work ]
+
+;--- min - arg1 ... numbers 
+;
+; 	returns minimum of n numbers. 
+;
+
+(def min
+  (lexpr (nargs)
+	 (do ((i nargs (1- i))
+	      (min (arg 1)))
+	     ((lessp i 2) min)
+	     (cond ((lessp (arg i) min) (setq min (arg i)))))))
+
+
+;
+(def oddp
+  (lambda (n)
+	  (cond ((not (zerop (boole 1 1 n))) t))))
+
+;--- plusp : x - number
+; returns t iff x is greater than zero
+
+(def plusp
+  (lambda (x)
+	  (greaterp x 0)))
+
+
+;--- princ : l - any s-expression
+;	    [p] - port to write to
+; prints using patom for atoms (unslashified)
+;
+(def princ
+  (lexpr (n)
+	 (prog (port val)
+	       (cond ((eq n 2) (setq port (arg 2))))
+	       (cond ((dtpr (setq val (arg 1)))
+		      (cond ((and (eq 'quote (car val))
+				  (dtpr (cdr val))
+				  (null (cddr val)))
+			     (patom "'" port)
+			     (princ (cadr val) port))
+			    (t 
+			     (patom "(" port)
+			     (do ((xx val))
+				 ((null xx) (patom ")" port))
+				 (princ (car xx) port)
+				 (cond ((null (setq xx (cdr xx))))
+				       ((not (dtpr xx))
+					(patom " . " port)
+					(princ xx port)
+					(setq xx nil))
+				     (error "sys:access : illegal name or class " name class))))
+
+(defun chdir (dir)
+   (cond ((or (symbolp dir) (stringp dir))
+	  (cond (tilde-expansion (setq dir (tilde-expand dir))))
+	  (cond ((zerop (int:franz-call #.fc_chdir dir)))
+		(t (error "cd: can't chdir to " dir))))
+	 (t (error "chdir: illegal argument " dir))))
+
+;--- sys:unlink :: unlink (remove) a file
+;
+(defun sys:unlink (name)
+   (cond ((or (symbolp name) (stringp name))
+	  (cond (tilde-expansion (setq name (tilde-expand name))))
+	  (cond ((zerop (int:franz-call #.fc_unlink name)))
+		(t (error "sys:unlink : unlink failed of " name))))
+	 (t (error "sys:unlink : illegal argument " name))))
+
+;--- sys:link :: make (hard) link to file
+;
+(defun sys:link (oldname newname)
+   (cond ((or (symbolp oldname) (stringp oldname))
+	  (cond (tilde-expansion (setq oldname (tilde-expand oldname))))
+	  (cond ((or (symbolp newname) (stringp newname))
+		 (cond (tilde-expansion (setq newname 
+						(tilde-expand newname))))
+		 (cond ((zerop (int:franz-call #.fc_link oldname newname)))
+		       (t (error "sys:link : unlink failed of "
+				 oldname newname))))
+		(t (error "sys:unlink : illegal argument " newname))))
+	 (t (error "sys:unlink : illegal argument " oldname))))
+
+;--- sys:time :: return 'absolute' time in seconds
+;
+(defun sys:time ()
+   (int:franz-call #.fc_time))
+
+;--- sys:chmod :: change mode of file
+; return t iff it succeeded.
+;
+(defun sys:chmod (name mode)
+   (cond ((and (or (stringp name) (symbolp name))
+	       (fixp mode))
+	  (cond (tilde-expansion (setq name (tilde-expand name))))
+	  (cond ((zerop (int:franz-call #.fc_chmod name mode)))
+		(t (error "sys:chmod : chmod failed of " name))))
+	 (t (error "sys:chmod : illegal argument(s): " name mode))))
+   
+(defun sys:getpid ()
+   (int:franz-call #.fc_getpid))
+
+(defun filestat (name)
+   (let (ret)
+      (cond ((or (symbolp name) (stringp name))
+	     (cond (tilde-expansion (setq name (tilde-expand name))))
+	     (cond ((null (setq ret (int:franz-call #.fc_stat name)))
+		    (error "filestat : file doesn't exist " name))
+		   (t ret)))
+	    (t (error "filestat : illegal argument " name)))))
+
+;--- sys:gethostname :: retrieve the current host name as a string
+;
+(defun sys:gethostname ()
+   (int:franz-call #.fc_gethostname))
+
+(defun sleep (seconds)
+   ;; (sleep 'x_seconds)
+   ;; pause for the given number of seconds
+   (cond ((fixp seconds) (int:franz-call #.fc_sleep seconds))
+	 (t (error "sleep: non-fixnum argument " seconds))))
+
+(defun sys:nice (delta-priority)
+   ;; modify the priority by the given amount
+   (cond ((fixp delta-priority) (int:franz-call #.fc_nice delta-priority))
+	 (t (error "sys:nice: non-fixnum argument " delta-priority))))
+                                                                                                                                                                                                                                                                                                                                                                                              tpl-throw 'reset))
+
+(defun tpl-yorn (message)
+   (drain piport)
+   (msg message)
+   (let ((ch (tyi)))
+      (drain piport)
+      (eq #/y ch)))
+
+       
+;--- tpl-*break :: handle breaks
+;  when tpl starts, this is put on *break's function cell
+;
+(defun tpl-*break (pred message)
+   (let ((^w nil))
+      (cond (pred (tpl-break-function (list 'break message))))))
+
+
+
+;; stepping code
+(defun tpl-command-step (args)
+   (setq tpl-step-enable t
+	 tpl-step-print nil
+	 tpl-step-triggers nil
+	 tpl-step-countdown 0)
+   (if (memq t args)
+      then (setq tpl-step-print t)
+      else (setq tpl-step-triggers args))
+   (*rset t)
+   (setq evalhook nil funcallhook nil)
+   (sstatus translink nil)
+   (sstatus evalhook t))
+
+
+(defun tpl-command-stepoff (args)
+   ;; we don't turn off status evalhook because then an
+   ;; evalhook would cause an error (this probably should be fixed)
+   (sstatus evalhook nil)
+   (setq tpl-step-enable nil
+	 tpl-step-print nil))
+
+(defun tpl-command-sc (args)
+   ;; continue after step
+   (if (cdr args)
+      then (if (fixp (cadr args))
+	      then (setq tpl-step-countdown (cadr args))
+	      else (setq tpl-step-countdown 100000)))
+   (tpl-throw `(retbreak ,tpl-step-enable)))
+
+(defun tpl-do-evalhook (arg)
+   ;; arg is the form to eval
+   (tpl-funcall-evalhook arg 'eval))
+
+(defun tpl-do-funcallhook (&rest args)
+   ;; this is called with n args.
+   ;; args 0 to n-2 are the actual arguments.
+   ;; arg n-1 is the function to call (notice that it comes at the end)
+   ; the list in 'args' is a fresh list, we can clobber it
+   (let (name)
+      ; strip the last cons cells from the args list
+      ; there will be at least one element in the list,
+      ; namely the function being called
+      (if (cdr args)
+	 then ; case of at least one argument
+	      (do ((xx args (cdr xx)))
+		  ((null (cddr xx))
+		   (setq name (cadr xx))
+		   (setf (cdr xx) nil)))
+	 else ; case of zero arguments
+	      (setq name (car args) args nil))
+      
+      (tpl-funcall-evalhook (cons name args) 'funcall)))
+
+
+(defun tpl-funcall-evalhook (fform type)
+   ;; function called after an evalhook or funclalhook is triggered
+   ;; The form is an s-expression to be evaluated
+   ;; The type is either 'eval' or 'funcall',
+   ;;   eval meaning that the form is something to be eval'ed
+   ;;   funcall meaning that the car of the form is the function to
+   ;;	 be applied to the list which is the cdr [actually the cdr
+   ;;	 is spread out on the stack and a 'funcall' is done, but this
+   ;;	 is what apply does anyway.
+   ;; Upon entry we optionally print, optionally break, optionally continue
+   ;;	  stepping, and then optionally print the value
+   ;; We print if tpl-step-print is t
+   ;; We break if tpl-step-print is t and tpl-step-countdown is <= 0
+   ;; We continue stepping if tpl-step-enable is t
+   ;; We print the result if we continued stepping.
+   ;; 
+   ;; note: if it were possible to call evalhook and funcallhook if
+   ;; (status evalhook) were nil, then we could make ?soff turn off
+   ;; (status evalhook), making things run faster [as it is now, stepping
+   ;; continues until we reach top-level again.  We just don't print
+   ;; things out]
+   ;;
+   (let ((tpl-step-reclevel (1+ tpl-step-reclevel)))
+      (if (and (not tpl-step-print)
+	       (dtpr fform)
+	       (memq (car fform) tpl-step-triggers))
+	 then (setq tpl-step-print t))
+      (if tpl-step-print
+	 then (tpl-step-printform tpl-step-reclevel type fform)
+	      (if (<& tpl-step-countdown 1)
+		 then (setq tpl-step-enable (tpl-break-function '(step)))
+		 else (setq tpl-step-countdown (1- tpl-step-countdown))))
+      (if tpl-step-enable
+	 then (let ((newval))
+		 (setq newval (if (eq type 'eval)
+				 then (tpl-evalhook fform
+						    'tpl-do-evalhook
+						    'tpl-do-funcallhook)
+				 else (tpl-funcallhook fform
+						       'tpl-do-funcallhook
+						       'tpl-do-evalhook)))
+		 (if tpl-step-print
+		    then (tpl-step-printform tpl-step-reclevel 'r newval))
+		 newval)
+	 else (if (eq type 'eval)
+		 then (tpl-evalhook fform nil nil)
+		 else (tpl-funcallhook fform nil nil)))))
+      
+
+(defun tpl-step-printform (indent key form)
+   (printblanks indent nil)
+   (let ((prinlevel 4) (prinlength 4))
+      (msg (if (eq key 'r)
+	      then '"=="
+	    elseif (eq key 'funcall)
+	      then 'f:
+	    elseif (eq key 'eval)
+	      then 'e:
+	      else key)
+	   form N)))
+
+; in order to use this: (setq user-top-level 'tpl)
+
+	   
+(putprop 'tpl t 'version)
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            (t (patom " " port)))))))
+		     (t (patom val port)))
+	       (return t))))
+
+;--- prog1 : return the first value computed in a list of forms
+;
+(def prog1
+  (lexpr (n)
+	 (arg 1)))
+
+;--- reverse : l - list
+;	returns the list reversed using cons to create new list cells.
+;
+(def reverse 
+  (lambda (x)
+	  (cond ((null x) nil)
+		(t (do ((cur (cons (car x) nil) 
+			     (cons (car res) cur))
+			(res (cdr x) (cdr res)))
+		       ((null res) cur))))))
+
+
+;--- shell - invoke a new c shell
+;
+(def shell 
+  (lambda nil 
+	  ((lambda (shellname)
+		   (cond ((lessp (flatc shellname) 1) (setq shellname 'csh)))
+		   (apply 'process (ncons shellname)))
+	   (getenv 'SHELL))))
+
+
+
+; S L O A D  stuff
+;
+(defvar $sldprint t)
+(declare (special sload-print))
+(setq sload-print nil)
+
+(defmacro sl-print (&rest args)
+   `(cond ((and sload-print
+		(getd sload-print))
+	   (funcall sload-print . ,args))
+	  (t (print . ,args))))
+
+;--- sload : fn - file name (must include the .l)
+;	loads in the file printing each result as it is seen
+;
+(defun sload (&rest files)
+   (mapc '(lambda (fn)
+	     (prog (por eof argnum result)
+		(cond ((setq por (infile fn))
+		       (and $sldprint
+			    (progn (princ "[sload ")
+				   (princ fn)
+				   (princ "]")
+				   (terpr))))
+		      (t (patom "bad file name: ")
+			 (patom fn)
+			 (terpr)
+			 (return nil)))
+		(setq eof (gensym))
+		(do ((input (read por eof) (read por eof)))
+		    ((eq eof input) (close por))
+		    (and $sldprint
+			 (cond ((and (dtpr input)
+				     (setq argnum
+					   (get (car input) 'sloadprintarg)))
+				(print (nth argnum input)))
+			       (t (print input))))
+		    (setq result (eval input))
+		    (and (eq 'value $sldprint)
+			 (progn (princ ": ")
+				(sl-print result)))
+		    (and $sldprint
+			 (terpr)))
+		(return t)))
+	 files))
+
+(defprop def 1 sloadprintarg)
+(defprop defun 1 sloadprintarg)
+
+(defprop setq 1 sloadprintarg)
+(defprop declare 1 sloadprintarg)
+
+
+
+
+
+;---- bubble merge sort 
+; it recursively splits the list to sort until the list is small.  At that
+; point it uses a bubble sort.  Finally the sorted lists are merged.
+
+(declare (special sort-function))
+
+;--- sort :: sort a lisp list
+; args: lst - list of items
+;       fcn - function to compare two items.
+; returns: the list with such that for each pair of adjacent elements,
+;	   either the elements are equal, or fcn applied to the two 
+; 	   args returns a non nil value.
+;
+(defun sort (lst fcn)
+  (setq sort-function (cond (fcn)   ; store function name in global cell
+			    (t 'alphalessp)))
+  ; (setq sort-compares 0)		; count number of comparisons
+  (sortmerge lst (length lst)))
+
+
+;--- sortmerge :: utility routine to sort
+; args: lst - list of items to sort
+;	nitems - a rough idea of how many items are in the list
+;
+; result - sorted list (see the result of sort above)
+;
+(defun sortmerge (lst nitems)
+  (prog (tmp tmp2)
+	(cond ((greaterp nitems 7)
+	       ; do a split and merge
+	       (setq tmp (splitlist lst (setq tmp2 (quotient nitems 2))))
+	       (return (mergelists (sortmerge (car tmp) tmp2)
+			      (sortmerge (cdr tmp) tmp2))))
+	      (t ; do a bubble sort
+		 (do ((l lst (cdr l))
+		      (fin))
+		     ((null l))
+		     (do ((ll lst (cdr ll)))
+			 ((eq fin (cdr ll)) (setq fin ll))
+			 ;(setq sort-compares (1+ sort-compares))
+			 (cond ((not (funcall sort-function (car ll) (cadr ll)))
+				(rplaca ll (prog1 (cadr ll)
+						 (rplaca (cdr ll)
+							 (car ll))))))))
+		 (return lst)))))
+
+;--- splitlist :: utility routine to split a list
+; args : lst - list to split
+;        spliton - number of items to put in the first list
+;
+; returns: a cons cell whose car is the first part of the list
+;	   and whose cdr is the second part.
+;
+(defun splitlist (lst spliton)
+  (prog (second)
+	(do ((i spliton (sub1 i))
+	     (l lst))
+	    ((or (null (cdr l)) (zerop i))
+	     (setq second (cdr l))
+	     (rplacd l nil))
+	    (setq l (cdr l)))
+	(return (cons lst second))))
+
+
+;--- mergelists ::utility routine to merge two lists based on predicate function
+; args: ls1 - lisp list
+; 	ls2 - lisp list
+;	sort-function (global) - compares items of the lists
+;
+; returns: a sorted list containing the elements of the two lists.
+; 
+(defun mergelists  (ls1 ls2)
+  (prog (result current)
+	; initialize
+	(setq current (setq result (cons nil nil)))
+loop	(cond ((null ls1)
+	       (rplacd current ls2)
+	       (return (cdr result)))
+	      ((null ls2)
+	       (rplacd current ls1)
+	       (return (cdr result)))
+	      ((funcall sort-function (car ls1) (car ls2))
+	       ;(setq sort-compares (1+ sort-compares))
+	       (rplacd current ls1)
+	       (setq current ls1
+		     ls1 (cdr ls1)))
+	      (t ;(setq sort-compares (1+ sort-compares))
+		 (rplacd current ls2)
+		 (setq current ls2
+		       ls2 (cdr ls2))))
+	(go loop)))
+
+;--- end bubble merge sort
+(declare (localf exchange2))
+
+(defun sortcar (a fun)
+   (prog (n)
+       (if (null fun) then (setq fun 'alphalessp))
+       (cond ((null a) (return nil)) ;no elements
+	     (t (setq n (length a))
+		(do i 1 (1+ i) (greaterp i n) (sortcarhelp a fun))
+		(return a)))))
+
+(defun sortcarhelp (a fun)
+  (cond ((null (cdr a)) a)
+        ((funcall fun (caadr a) (caar a))  
+	 (exchange2 a)
+	 (sortcarhelp (cdr a) fun))
+	(t (sortcarhelp (cdr a) fun))))
+
+
+(defun exchange2 (a)
+  (prog (temp)
+	(setq temp (cadr a))
+	(rplaca (cdr a) (car a))
+	(rplaca a temp)))
+
+;--- sublis: alst - assoc list ((a . val) (b . val2) ...)
+;	     exp  - s-expression
+; for each atom in exp which corresponds to a key in alst, the associated
+; value from alst is substituted.  The substitution is done by adding
+; list cells, no struture mangling is done.  Only the minimum number
+; of list cells will be created.
+;
+(def sublis
+  (lambda (alst exp)
+     (let (tmp)
+	  (cond ((atom exp) 
+		 (cond ((setq tmp (assoc exp alst))
+			(cdr tmp))
+		       (t exp)))
+		((setq tmp (sublishelp alst exp))
+		 (car tmp))
+		(t exp)))))
+
+;--- sublishelp : alst - assoc list
+;		  exp  - s-expression
+; this function helps sublis work.  it is different from sublis in that
+; it return nil if no change need be made to exp, or returns a list of
+; one element which is the changed exp.
+;
+(def sublishelp
+  (lambda (alst exp)
+     (let (carp cdrp)
+	  (cond ((atom exp)
+		 (cond ((setq carp (assoc exp alst))
+			(list (cdr carp)))
+		       (t nil)))
+		(t (setq carp (sublishelp alst (car exp))
+			 cdrp (sublishelp alst (cdr exp)))
+		   (cond ((not (or carp cdrp)) nil)		; no change
+			 ((and carp (not cdrp))			; car change
+			  (list (cons (car carp) (cdr exp))))	
+			 ((and (not carp) cdrp)			; cdr change
+			  (list (cons (car exp) (car cdrp))))	
+			 (t					; both change 
+			  (list (cons (car carp) (car cdrp))))))))))
+
+
+;--- subst : new - sexp
+;	     old - sexp
+;	     pat - sexp
+; substitutes in patrn all occurrences equal to old with new and returns the
+; result
+; MUST be put in the manual
+
+(declare (special new old))
+
+(def subst 
+  (lambda (new old pat)
+	  (cond ((symbolp old) (substeq pat))
+		(t (substequal pat)))))
+
+;use this function for substituting for symbols
+(def substeq
+  (lambda (pat)
+	  (cond ((eq old pat) new)
+		((atom pat) pat)
+		(t (cons (substeq (car pat))(substeq (cdr pat)))))))
+
+(def substequal
+  (lambda (pat)
+	  (cond ((equal old pat) new)
+		((atom pat) pat)
+		(t (cons (substequal (car pat))
+			 ; in interlisp, the next line would be
+			 ;(substeq (cdr pat))
+			 ; for maclisp compatibility, we do this.
+			 (substequal (cdr pat)))))))
+
+(declare (unspecial new old))
+;--- vi: arg is unevaluated name of function to run vi on
+;
+(def vi (nlambda (x) (exvi 'vi x nil)))
+
+;--- vil : arg is unevaluated, edits file and then loads it
+;
+(def vil (nlambda (x) (exvi 'vi x t)))
+
+;--- *quo : returns integer part of x/y
+; x and y must be fixnums.
+;
+(putd '*quo (getd 'quotient))
+
+;--- xcons : a - sexp
+;	     b - sexp
+; returns (b . a)   that is, it is an exchanged cons
+;
+(def xcons  (lambda (a b) (cons b a)))
+
+
+
+
+
+
+;--- mode lines, must be last lines of the file
+; vi: set lisp :
+;
+                                                                                                                                                                                                                                                             (setq rcs-toplevel-
+   "$Header: toplevel.l,v 1.6 83/11/18 08:47:24 jkf Exp $")
+
+;;
+;; toplevel.l				-[Sun Oct 30 08:14:49 1983 by jkf]-
+;;
+;;  toplevel read eval print loop
+;;
+
+
+; special atoms:
+(declare (special debug-level-count break-level-count
+		  errlist tpl-errlist user-top-level
+		  franz-not-virgin piport ER%tpl ER%all
+		  $ldprint evalhook funcallhook
+		  franz-minor-version-number
+		  top-level-init
+		  top-level-prompt top-level-read
+		  top-level-eval top-level-print
+		  top-level-eof * ** *** + ++ +++ ^w)
+         (localf autorunlisp cvtsearchpathtolist)
+	 (macros t))
+
+(setq top-level-eof (gensym 'Q)
+      tpl-errlist nil
+      errlist nil
+      user-top-level nil
+      top-level-init nil
+      top-level-prompt nil
+      top-level-read  nil
+      top-level-eval nil
+      top-level-print nil)
+
+;--- initialization, prompt, read, eval, and print functions are
+; user-selectable by just assigning another value to top-level-init,
+; top-level-prompt, top-level-read, top-level-eval, and top-level-print.
+;
+(defmacro top-init nil
+   '(cond ((and top-level-init
+		(getd top-level-init))
+	   (funcall top-level-init))
+	  (t (cond ((not (autorunlisp))
+		    (patom (status version))
+		    ; franz-minor-version-number defined in version.l
+		    (cond ((boundp 'franz-minor-version-number)
+			   (patom franz-minor-version-number)))
+		    (terpr)
+		    (read-in-lisprc-file))))))
+     
+(defmacro top-prompt nil
+   `(cond ((and top-level-prompt
+		(getd top-level-prompt))
+	   (funcall top-level-prompt))
+	  (t (patom "-> "))))
+
+(defmacro top-read (&rest args)
+   `(cond ((and top-level-read
+		(getd top-level-read))
+	   (funcall top-level-read ,@args))
+	  (t (read ,@args))))
+
+(defmacro top-eval (&rest args)
+   `(cond ((and top-level-eval
+		(getd top-level-eval))
+	   (funcall top-level-eval ,@args))
+	  (t (eval ,@args))))
+
+(defmacro top-print (&rest args)
+   `(cond ((and top-level-print
+		(getd top-level-print))
+	   (funcall top-level-print ,@args))
+	  (t (print ,@args))))
+
+;------------------------------------------------------
+;  Top level function for franz			jkf, march 1980
+;
+; The following function contains the top-level read, eval, print 
+; loop.  With the help of the error handling functions, 
+; break-err-handler and  debug-err-handler,  franz-top-level provides
+; a reasonable enviroment for working with franz lisp.  
+; 
+
+(def franz-top-level
+  (lambda nil
+     (putd 'reset (getd 'franz-reset))
+     (username-to-dir-flush-cache)	 ; clear tilde expansion knowledge
+      (cond ((or (not (boundp 'franz-not-virgin))
+		 (null franz-not-virgin))
+	     (setq franz-not-virgin t
+		   + nil ++ nil +++ nil
+		   * nil ** nil *** nil)
+	     (setq ER%tpl 'break-err-handler)
+	     (top-init)))
+     
+     ; loop forever
+     (do ((+*) (-) (retval))
+	 (nil)
+	 (setq retval
+	  (*catch 
+	  '(top-level-catch break-catch)
+	   ; begin or return to top level
+	   (progn
+             (setq debug-level-count 0   break-level-count 0
+		   evalhook nil	  funcallhook nil)
+             (cond (tpl-errlist (mapc 'eval tpl-errlist)))
+	     (do ((^w nil nil))
+		 (nil)
+		 (cond (user-top-level (funcall user-top-level))
+		       (t (top-prompt)
+			  (cond ((eq top-level-eof
+				     (setq - 
+					   (car (errset (top-read nil 
+							      top-level-eof)))))
+				 (cond ((not (status isatty))
+					(exit)))
+				 (cond ((null (status ignoreeof))
+					(terpr)
+					(print 'Goodbye)
+					(terpr)
+					(exit))
+				       (t (terpr)
+					  (setq - ''EOF)))))
+			  (setq +* (top-eval -))
+			  ; update list of old forms
+			  (let ((val -))
+			       (let ((o+ +) (o++ ++))
+				    (setq +   val
+					  ++  o+
+					  +++ o++)))
+			  ; update list of old values
+			  (let ((val +*))
+			       (let ((o* *) (o** **))
+				    (setq *   val
+					  **  o*
+					  *** o**)))
+			  (top-print +*)
+			  (terpr)))))))
+	 (terpr)
+	 (patom "[Return to top level]")
+	 (terpr)
+	 (cond ((eq 'reset retval) (old-reset-function))))))
+
+
+
+
+
+; debug-err-handler is the clb of ER%all when we are doing debugging
+; and we want to catch all errors.
+; It is just a read eval print loop with errset.
+; the only way to leave is: 
+;   (reset) just back to top level
+;   (return x) return the value to the error checker. 
+;		if nil is returned then we will continue as if the error
+;		didn't occur. Otherwise if the returned value is a list,
+;		then if the error is continuable, the car of that list
+;		will be returned to recontinue computation.
+;   ^D	continue as if this handler wasn't called.
+; the form of errmsgs is:
+;  (error_type unique_id continuable message_string other_args ...)
+;
+(def debug-err-handler
+   (lexpr (n)
+	  ((lambda (message debug-level-count retval ^w piport)
+	      (cond ((greaterp n 0)
+		     (print 'Error:)
+		     (mapc '(lambda (a) (patom " ") (patom a) )
+			   (cdddr (arg 1)))
+		     (terpr)))
+	      (setq ER%all 'debug-err-handler)
+	      (do ((retval)) (nil)
+		  (cond ((dtpr
+			    (setq retval
+				  (errset
+				     (do ((form)) (nil)
+					 (patom "D<")
+					 (patom debug-level-count)
+					 (patom ">: ")
+					 (cond ((eq top-level-eof
+						    (setq form
+							  (top-read nil
+								top-level-eof)))
+						(cond ((null (status isatty))
+						       (exit)))
+						(return nil))
+					       ((and (dtpr form)
+						     (eq 'return
+							 (car form)))
+						(return (eval (cadr form))))
+					       (t (setq form (top-eval form))
+						  (top-print form)
+						  (terpr)))))))
+			 (return (car retval))))))
+	   nil
+	   (add1 debug-level-count)
+	   nil
+	   nil
+	   nil)))
+
+; this is the break handler, it should be tied to 
+; ER%tpl always.
+; it is entered if there is an error which no one wants to handle.
+; We loop forever, printing out our error level until someone
+; types a ^D which goes to the next break level above us (or the 
+; top-level if there are no break levels above us.
+; a (return n) will return that value to the error message
+; which called us, if that is possible (that is if the error is
+; continuable)
+;
+(def break-err-handler
+   (lexpr (n)
+     ((lambda (message break-level-count retval rettype ^w piport)
+	 (cond ((greaterp n 0)
+		(print 'Error:)
+		(mapc '(lambda (a) (patom " ") (patom a) )
+		      (cdddr (arg 1)))
+		(terpr)
+		(cond ((caddr (arg 1)) (setq rettype 'contuab))
+		      (t (setq rettype nil))))
+	       (t (setq rettype 'localcall)))
+
+	 (do nil (nil)
+	     (cond ((dtpr
+		       (setq retval
+			     (*catch 'break-catch
+				 (do ((form)) (nil)
+				     (patom "<")
+				     (patom break-level-count)
+				     (patom ">: ")
+				     (cond ((eq top-level-eof
+						(setq form
+						      (top-read
+							 nil
+							 top-level-eof)))
+					    (cond ((null (status isatty))
+						   (exit)))
+					    (eval 1)	; force interrupt check
+					    (return (sub1 break-level-count)))
+					   ((and (dtpr form)
+						 (eq 'return (car form)))
+					    (cond ((or (eq rettype 'contuab)
+						       (eq rettype 'localcall))
+						   (return (ncons (top-eval (cadr form)))))
+						  (t (patom "Can't continue from this error")
+						     (terpr))))
+					   ((and (dtpr form) (eq 'retbrk (car form)))
+					    (cond ((numberp (setq form (top-eval (cadr form))))
+						   (return form))
+						  (t (return (sub1 break-level-count)))))
+					   (t (setq form (top-eval form))
+					      (top-print form)
+					      (terpr)))))))
+		    (return (cond ((eq rettype 'localcall)
+				   (car retval))
+				  (t retval))))
+		   ((lessp retval break-level-count)
+		    (setq tpl-errlist errlist)
+		    (*throw 'break-catch retval))
+		   (t (terpr)))))
+      nil
+      (add1 break-level-count)
+      nil
+      nil
+      nil
+      nil)))
+
+(defvar debug-error-handler 'debug-err-handler) ; name of function to get
+						; control on ER%all error
+(def debugging 
+  (lambda (val)
+	  (cond (val (setq ER%all debug-error-handler)
+		     (sstatus translink nil)
+		     (*rset t))
+		(t (setq ER%all nil)))))
+
+
+; the problem with this definition for break is that we are
+; forced to put an errset around the break-err-handler. This means
+; that we will never get break errors, since all errors will be
+; caught by our errset (better ours than one higher up though).
+; perhaps the solution is to automatically turn debugmode on.
+;
+(defmacro break (message(setq rcs-syntax-
+   "$Header: /usr/lib/lisp/syntax.l,v 1.1 83/01/29 18:40:24 jkf Exp $")
+
+;;
+;; syntax.l				-[Sat Jan 29 18:28:58 1983 by jkf]-
+;;
+;; contains the user callable setsyntax function
+;;
+
+
+;--- setsyntax :: new version of setsyntax
+;  this version allows symbolic syntax codes.
+;
+(declare
+   (special syntax:symbolic-to-old-fixnum ;; for upward compatibility
+	    				; use this to map from old
+					; fixnums to symbolic names
+	    syntax:symbolic-bits-to-fixnum ;; bit definitions of symbolic
+	    				   ;bits.  see h/chars.h
+	    syntax:code-to-bits  	;; used at runtime to
+	    				; interpret symbolic names
+	    readtable			;; current readtable
+   ))
+
+
+(def setsyntax
+   (lexpr (n)
+	  (cond ((not (or (equal n 2) (equal n 3)))
+		 (error "setsyntax: 2 or 3 args required, not " n)))
+	  ; determine the correct code
+	  (prog (given ch number)
+	     (setq given (arg 2)
+		   ch    (arg 1))
+	     (cond ((and (not (numberp ch))
+			 (not (symbolp ch)))
+		    (error "setsyntax: first arg must be a number or symbol: "
+			   ch)))
+	     (cond ((numberp given)
+		    ; using the old fixnum values (we suppose)
+		    (cond ((setq number
+				 (rassq given syntax:symbolic-to-old-fixnum))
+			   (setq given (car number))) ; use symbolic name
+			  (t (error "setsyntax: fixnum code is not defined: "
+				    given)))))
+	     (cond ((symbolp given)
+		    ; convert from common names to our symbolic names
+		    (cond ((eq 'macro given)
+			   (setq given 'vmacro))
+			  ((eq 'splicing given)
+			   (setq given 'vsplicing-macro)))
+		    ; now see if the symbolic name is defined
+		    (cond ((setq number (assq given syntax:code-to-bits))
+			   (setq number (cdr number)))
+			  (t (error "setsyntax: unknown symbolic code: "
+				    given))))
+		   (t (error "setsyntax: second arg not symbol or fixnum: "
+			     given)))
+	     ; now call the low level code to set the value.
+	     (int:setsyntax (arg 1) number)		;;; change to *
+	     ; the final argument is placed on the property list of the
+	     ; first argument, with the indicator being the current readtable,
+	     ; thus you can have more than one macro function for each
+	     ; character for each readtable.
+	     (cond ((equal n 3)
+		    (cond ((numberp ch) (setq ch (ascii ch))))   ; need symbol
+		    (putprop ch (arg 3) readtable))))
+   t))
+	     
+
+(def getsyntax
+   (lambda (ch)
+      (let ((res (int:getsyntax ch))   ; this will be modified too
+	    (symb))
+	 (cond ((setq symb (rassq res syntax:code-to-bits))
+		(car symb))
+	       (t (error "getsyntax: no symbolic code corresponds to: "
+			 res))))))
+
+
+;--- add-syntax-class : add a new symbolic syntax class
+; name is the name which we will use to refer to it.
+; bits are a list of symbolic bit names for it.
+; modifies global variable: syntax:code-to-bits
+;
+(def add-syntax-class
+   (lambda (name bits)
+      (cond ((not (symbolp name))
+	     (error "add-syntax-class: illegal name: " name)))
+      (cond ((not (dtpr bits))
+	     (error "add-syntax-class: illegal bits: " bits)))
+      (do ((xx bits (cdr xx))
+	   (this 0)
+	   (num 0))
+	  ((null xx)
+	   (cond ((setq this (assq name syntax:code-to-bits))
+		  (rplacd this num))	; replace old value
+		 (t (setq syntax:code-to-bits (cons (cons name num)
+						    syntax:code-to-bits)))))
+	  (cond ((setq this (assq (car xx) syntax:symbolic-bits-to-fixnum))
+		 ;(format t "num:~d, oth:~a, comb:~d~%"
+			; num (cdr this) (apply 'boole `(7 ,num ,(cdr this))))
+		 (setq num (boole 7 num (cdr this)))
+		 ;(format t "res: ~d~%" num)
+		 )   ; logical or
+		(t (error "illegal syntax code " (car xx)))))
+      name))
+
+(setq syntax:symbolic-to-old-fixnum
+       '((vnumber . 0) (vsign . 1) (vcharacter . 2)
+	 (vsingle-character-symbol . 66.)
+	 (vleft-paren . 195.) (vright-paren . 196.)
+	 (vperiod . 133.)
+	 (vleft-bracket . 198.) (vright-bracket . 199.) (veof . 200.)
+	 (vsingle-quote . 201.) (vsymbol-delimiter . 138.)
+	 (vstring-delimiter . 137.)
+	 (villegal . 203.) (vseparator . 204.)
+	 (vsplicing-macro . 205.) (vmacro . 206.)
+	 (vescape . 143.))
+   syntax:symbolic-bits-to-fixnum 
+       '(; character classes
+	   (cnumber . 0) (csign . 1) (ccharacter . 2)
+	   (cleft-paren . 3)
+	   (cright-paren . 4) (cperiod . 5) (cleft-bracket . 6)
+	   (cright-bracket . 7)
+	   (csingle-quote . 9.) (csymbol-delimiter . 10.) (cillegal . 11.)
+	   (cseparator . 12.) (csplicing-macro . 13.)
+	   (cmacro . 14.) (cescape . 15.) (csingle-character-symbol . 16.)
+	   (cstring-delimiter . 17.)
+	   (csingle-macro . 18.) (csingle-splicing-macro . 19.)
+	   (cinfix-macro . 20.)
+	   (csingle-infix-macro . 21.)
+	  ; escape bits
+	   (escape-when-unique . 64.)
+	   (escape-when-first . 128.)
+	   (escape-always . 192.)
+	  ; separator
+	   (separator . 32.))
+   syntax:code-to-bits nil)
+       
+(add-syntax-class 'vnumber  	'(cnumber))
+(add-syntax-class 'vsign 	'(csign))
+(add-syntax-class 'vcharacter 	'(ccharacter))
+(add-syntax-class 'vleft-paren 	'(cleft-paren escape-always separator))
+(add-syntax-class 'vright-paren	'(cright-paren escape-always separator))
+(add-syntax-class 'vperiod 	'(cperiod escape-when-unique))
+(add-syntax-class 'vleft-bracket '(cleft-bracket escape-always separator))
+(add-syntax-class 'vright-bracket '(cright-bracket escape-always separator))
+(add-syntax-class 'vsingle-quote '(csingle-quote escape-always separator))
+(add-syntax-class 'vsymbol-delimiter 	'(csymbol-delimiter escape-always))
+(add-syntax-class 'villegal 	'(cillegal escape-always separator))
+(add-syntax-class 'vseparator 	'(cseparator escape-always separator))
+(add-syntax-class 'vsplicing-macro '(csplicing-macro escape-always separator))
+(add-syntax-class 'vmacro 	'(cmacro escape-always separator))
+(add-syntax-class 'vescape 	'(cescape escape-always))
+(add-syntax-class 'vsingle-character-symbol
+   		  '(csingle-character-symbol separator))
+(add-syntax-class 'vstring-delimiter	'(cstring-delimiter escape-always))
+(add-syntax-class 'vsingle-macro '(csingle-macro escape-when-unique))
+(add-syntax-class 'vsingle-splicing-macro
+     		 '(csingle-splicing-macro escape-when-unique))
+(add-syntax-class 'vinfix-macro '(cinfix-macro escape-always separator))
+(add-syntax-class 'vsingle-infix-macro
+                  '(csingle-infix-macro escape-when-unique))
+
+
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   (setq SCCS-jkfmacs "%Z%%M%	%I%	%G%")
+
+;------ jkfmacs :: common and useful macros
+;
+;; as of Franz opus 38.36 all the macros in this file all available in
+;; the standard lisp system, so there is no reason to load this file.
+;;
+
+(msg "message from jkfmacs: " N
+     "All the macros in this file are now available in the default franz." N
+     "Thus you should not be loading jkfmacs." N
+     "One warning: the order of the arguments is different in the version " N
+     "of the push macro in the default franz.  it is now (push val stack) " N
+     "You should check your code " N
+     "Also, there isn't an 'unpush' macro any more " N)
+                                                                                                                                                                                                                                                                                                                                                                                                     &optional (pred t))
+  `(*break ,pred ',message))
+
+(def *break
+  (lambda (pred message)
+     (let ((^w nil))
+	  (cond ((not (boundp 'break-level-count)) (setq break-level-count 1)))
+	  (cond (pred (terpr)
+		      (patom "Break ")
+		      (patom message)
+		      (terpr)
+		      (do ((form))
+			  (nil)
+			  (cond ((dtpr (setq form (errset (break-err-handler))))
+				 (return (car form))))))))))
+
+
+; this reset function is designed to work with the franz-top-level.
+; When franz-top-level begins, it makes franz-reset be reset. 
+; when a reset occurs now, we set the global variable tpl-errlist to 
+; the current value of errlist and throw to top level.  At top level,
+; then tpl-errlist will be evaluated.
+;
+(def franz-reset
+  (lambda nil
+	  (setq tpl-errlist errlist)
+	  (errset (*throw 'top-level-catch 'reset)
+		  nil)
+	  (old-reset-function)))
+
+
+(declare (special $ldprint))
+
+;--- read-in-lisprc-file
+; search for a lisp init file.  Look first in . then in $HOME
+; look first for .o , then .l and then "",
+; look for file bodies .lisprc and then lisprc
+; 
+(def read-in-lisprc-file
+   (lambda nil
+      (setq break-level-count 0	; do this in case break
+	    debug-level-count 0)   ; occurs during readin
+      (*catch '(break-catch top-level-catch)
+	      (do ((dirs `("." ,(getenv 'HOME)) (cdr dirs))
+		   ($ldprint nil $ldprint))	; prevent messages
+		  ((null dirs))
+		  (cond ((do ((name '(".lisprc" "lisprc") (cdr name)))
+			     ((null name))
+			     (cond ((do ((ext '(".o" ".l" "") (cdr ext))
+					 (file))
+					((null ext))
+					(cond ((probef
+						  (setq file
+							(concat (car dirs)
+								"/"
+								(car name)
+								(car ext))))
+					       (cond ((atom (errset (load file)))
+						      (patom
+							 "Error loading lisp init file ")
+						      (print file)
+						      (terpr)
+						      (return 'error)))
+					       (return t))))
+				    (return t))))
+			 (return t)))))))
+
+(putd 'top-level (getd 'franz-top-level))
+
+; if this is the first time this file has been read in, then 
+; make franz-reset be the reset function, but remember the original
+; reset function as old-reset-function.  We need the old reset function
+; if we are going to allow the user to change top-levels, for in 
+; order to do that we really have to jump all the way up to the top.
+(cond ((null (getd 'old-reset-function))
+       (putd 'old-reset-function (getd 'reset))))
+
+
+;---- autoloader functions
+
+(def undef-func-handler
+  (lambda (args)
+    (prog (funcnam file)
+	  (setq funcnam (caddddr args))
+	  (cond ((symbolp funcnam) 
+		 (cond ((setq file (or (get funcnam 'autoload)
+				       (get funcnam 'macro-autoload)))
+			(cond ($ldprint
+			       (patom "[autoload ") (patom file)
+			       (patom "]")(terpr)))
+			(load file))
+		       (t (return nil)))
+		 (cond ((getd funcnam) (return (ncons funcnam)))
+		       (t (patom "Autoload file " ) (print file)
+			  (patom " does not contain function ")
+			  (print funcnam)
+			  (terpr)
+			  (return nil))))))))
+
+(setq ER%undef 'undef-func-handler)
+
+(declare (special $ldprint))
+;--- autorunlisp :: check if this lisp is supposed to run a program right
+; away.
+;
+(defun autorunlisp nil
+  (cond ((and (> (argv -1) 2) (equal (argv 1) '-f))
+	 (let ((progname (argv 2))
+	       ($ldprint nil)
+	       (searchlist nil))	; don't give fasl messages
+	      (setq searchlist (cvtsearchpathtolist (getenv 'PATH)))
+	      ; give two args to load to insure that a fasl is done.
+	      (cond ((null 
+		      (errset (load-autorunobject progname searchlist)))
+		     (exit 0))
+		    (t t))))))
+
+
+(defun cvtsearchpathtolist (path)
+  (do ((x (explodec path) (cdr x))
+       (names nil)
+       (cur nil))
+      ((null x) 
+       (nreverse names))
+      (cond ((or (eq ': (car x)) 
+		 (and (null (cdr x)) (setq cur (cons (car x) cur))))
+	     (cond (cur (setq names (cons (implode (nreverse cur))
+					  names))
+			(setq cur nil))
+		   (t (setq names (cons '|.| names)))))
+	    (t (setq cur (cons (car x) cur))))))
+
+(defun load-autorunobject (name search)
+  (cond ((memq (getchar name 1) '(/ |.|))
+	 (cond ((probef name) (fasl name))
+	       (t (error "From lisp autorun: can't find file to load"))))
+	(t (do ((xx search (cdr xx))
+		(fullname))
+	       ((null xx) (error "Can't find file to execute "))
+	       (cond ((probef (setq fullname (concat (car xx) "/" name)))
+		      (return (fasl-a-file fullname nil nil))))))))
+
+;--- command-line-args :: return a list of the command line arguments
+; The list does not include the name of the program being executed (argv 0).
+; It also doesn't include the autorun flag and arg.
+;
+(defun command-line-args ()
+   (do ((res nil (cons (argv i) res))
+	(i (1- (argv -1)) (1- i)))
+       ((<& i 1)
+	(if (and (eq '-f (car res))
+		 (cdr res))
+	   then (cddr res)
+	   else res))))
+
+(defun debug fexpr (args)
+  (load 'fix)	; load in fix package
+  (eval (cons 'debug args)))	; enter debug through eval
+
+;-- default autoloader properties
+
+(putprop 'trace (concat lisp-library-directory "/trace") 'autoload)
+(putprop 'untrace (concat lisp-library-directory "/trace") 'autoload)
+
+(putprop 'step (concat lisp-library-directory "/step") 'autoload)
+(putprop 'editf (concat lisp-library-directory "/cmuedit") 'autoload)
+(putprop 'editv (concat lisp-library-directory "/cmuedit") 'autoload)
+(putprop 'editp (concat lisp-library-directory "/cmuedit") 'autoload)
+(putprop 'edite (concat lisp-library-directory "/cmuedit") 'autoload)
+
+(putprop 'defstruct (concat lisp-library-directory "/struct") 'macro-autoload)
+(putprop 'defstruct-expand-ref-macro
+	 (concat lisp-library-directory "/struct") 'autoload)
+(putprop 'defstruct-expand-cons-macro
+	 (concat lisp-library-directory "/struct") 'autoload)
+(putprop 'defstruct-expand-alter-macro
+         (concat lisp-library-directory "/struct") 'autoload)
+
+(putprop 'loop      (concat lisp-library-directory "/loop")   'macro-autoload)
+(putprop 'defflavor
+	 (concat lisp-library-directory "/flavors") 'macro-autoload)
+(putprop 'defflavor1
+	 (concat lisp-library-directory "/flavors") 'autoload)
+
+(putprop 'format (concat lisp-library-directory "/format") 'autoload)
+(putprop 'ferror (concat lisp-library-directory "/format") 'autoload)
+
+(putprop 'make-hash-table
+	 (concat lisp-library-directory "/hash") 'autoload)
+(putprop 'make-equal-hash-table
+	 (concat lisp-library-directory "/hash") 'autoload)
+
+(putprop 'describe (concat lisp-library-directory "/describe") 'autoload)
+
+(putprop 'cgol (concat lisp-library-directory "/cgol/cgoll")   'autoload)
+(putprop 'cgolprint (concat lisp-library-directory "/cgol/cgp")   'autoload)
+
+; probably should be in franz so we don't have to autoload
+(putprop 'displace  (concat lisp-library-directory "/machacks")   'autoload)
+
+(putprop 'defrecord (concat lisp-library-directory "/record") 'macro-autoload)
+(putprop 'record-pkg-construct
+   (concat lisp-library-directory "/record") 'autoload)
+(putprop 'record-pkg-access
+   (concat lisp-library-directory "/record") 'autoload)
+(putprop 'record-pkg-illegal-access
+   (concat lisp-library-directory "/record") 'autoload)
+                                                                                                                                                             

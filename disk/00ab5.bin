@@ -1,0 +1,2031 @@
+tem  if  it  was
+              unable  to  execute  the  command s_fname with
+              arguments l_args and with the environment  set
+              up  as specified in l_envir.  If this function
+              is successful, it will not return, instead the
+              lisp  system  will be overlaid by the new com-
+              mand.
+
+(freturn 'x_pdl-pointer 'g_retval)
+
+     RETURNS: g_retval from  the  context  given  by  x_pdl-
+              pointer.
+
+     NOTE: A  pdl-pointer  denotes  a   certain   expression
+           currently  being evaluated. The pdl-pointer for a
+           given expression can be obtained from _e_v_a_l_f_r_a_m_e.
+
+(frexp 'f_arg)
+
+     RETURNS: a  list  cell  (_e_x_p_o_n_e_n_t  .  _m_a_n_t_i_s_s_a)   which
+              represents the given flonum
+
+     NOTE: The exponent will be a fixnum, the mantissa a  56
+           bit bignum.  If you think of the the binary point
+           occurring right  after  the  high  order  bit  of
+           mantissa, the)
+
+     RETURNS: the value under indicator g_ind  in  ls_name's
+              property list if ls_name is a symbol.
+
+     NOTE: If there is no indicator g_ind in ls_name's  pro-
+           perty list nil is returned.  If ls_name is a list
+           of an odd number of elements then it is a  disem-
+           bodied  property list. _g_e_t searches a disembodied
+           property list by starting at its _c_d_r, and compar-
+           ing every other element with g_ind, using _e_q.
+
+
+
+
+
+
+
+
+9
+
+9                                   Printed: January 31, 1984
+
+
+
+
+
+
+
+Data Structure Access                                   2-31
+
+
+(getl 'ls_name 'l_indicators)
+
+     RETURNS: the property list  ls_name  beginning  at  the
+              first  indicator which is a member of the list
+              l_indicators, or nil if none of the indicators
+              in  l_indicators  are  on  ls_name's  property
+              list.
+
+     NOTE: If ls_name is a list, then it is assumed to be  a
+           disembodied property list.
+
+
+(putprop 'ls_name 'g_val 'g_ind)
+(defprop ls_name g_val g_ind)
+
+     RETURNS: g_val.
+
+     SIDE EFFECT: Adds to the property list of  ls_name  the
+                  value g_val under the indicator g_ind.
+
+     NOTE: _p_u_t_p_r_o_p evaluates it arguments, _d_e_f_p_r_o_p does not.
+           ls_name  may  be a disembodied property list, see
+           _g_e_t.
+
+(remprop 'ls_name 'g_ind)
+
+     RETURNS: the portion of  ls_name's property list begin-
+              ning  with  the  property  under the indicator
+              g_ind.  If there  is  no  g_ind  indicator  in
+              ls_name's plist, nil is returned.
+
+     SIDE EFFECT: the value under indicator g_ind and  g_ind
+                  itself  is  removed from the property list
+                  of ls_name.
+
+     NOTE: ls_name may be a disembodied property  list,  see
+           _g_e_t.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+9
+
+9                                   Printed: January 31, 1984
+
+
+
+
+
+
+
+Data Structure Access                                   2-32
+
+
+
+    ____________________________________________________
+
+    -> (_p_u_t_p_r_o_p '_x_l_a_t_e '_a '_a_l_p_h_a)
+    a
+    -> (_p_u_t_p_r_o_p '_x_l_a_t_e '_b '_b_e_t_a)
+    b
+    -> (_p_l_i_s_t '_x_l_a_t_e)
+    (alpha a beta b)
+    -> (_g_e_t '_x_l_a_t_e '_a_l_p_h_a)
+    a
+    ; use of a disembodied property list:
+    -> (_g_e_t '(_n_i_l _f_a_t_e_m_a_n _r_j_f _s_k_l_o_w_e_r _k_l_s _f_o_d_e_r_a_r_o _j_k_f) '_s_k_l_o_w_e_r)
+    kls
+    ____________________________________________________
+
+
+
+
+
+
+      2.8.3.  tconc structure
+
+              A tconc structure is a special  type  of  list
+         designed to make it easy to add objects to the end.
+         It consists of a list cell whose _c_a_r  points  to  a
+         list  of the elements added with _t_c_o_n_c or _l_c_o_n_c and
+         whose _c_d_r points to the last list cell of the  list
+         pointed to by the _c_a_r.
+
+(tconc 'l_ptr 'g_x)
+
+     WHERE:   l_ptr is a tconc structure.
+
+     RETURNS: l_ptr with g_x added to the end.
+
+(lconc 'l_ptr 'l_x)
+
+     WHERE:   l_ptr is a tconc structure.
+
+     RETURNS: l_ptr with the list l_x spliced in at the end.
+
+
+
+
+
+
+
+
+
+
+
+9
+
+9                                   Printed: January 31, 1984
+
+
+
+
+
+
+
+Data Structure Access                                   2-33
+
+
+
+    ____________________________________________________
+
+    ; A _t_c_o_n_c structure can be initialized in two  ways.
+    ; nil can be given to _t_c_o_n_c in which case _t_c_o_n_c will generate
+    ; a _t_c_o_n_c structure.
+
+    ->(_s_e_t_q _f_o_o (_t_c_o_n_c _n_i_l _1))
+    ((1) 1)
+
+    ; Since _t_c_o_n_c destructively adds to
+    ; the list, you can now add to foo without using _s_e_t_q again.
+
+    ->(_t_c_o_n_c _f_o_o _2)
+    ((1 2) 2)
+    ->_f_o_o
+    ((1 2) 2)
+
+    ; Another way to create a null  _t_c_o_n_c structure
+    ; is to use (_n_c_o_n_s _n_i_l).
+
+    ->(_s_e_t_q _f_o_o (_n_c_o_n_s _n_i_l))
+    (nil)
+    ->(_t_c_o_n_c _f_o_o _1)
+    ((1) 1)
+
+    ; now see what _l_c_o_n_c can do
+    -> (_l_c_o_n_c _f_o_o _n_i_l)
+    ((1) 1)            ; no change
+    -> (_l_c_o_n_c _f_o_o '(_2 _3 _4))
+    ((1 2 3 4) 4)
+    ____________________________________________________
+
+
+
+
+
+
+      2.8.4.  fclosures
+
+              An  fclosure  is  a  functional  object  which
+         admits some data manipulations.  They are discussed
+         in 8.4.  Internally, they are constructed from vec-
+         tors.
+
+
+
+
+
+
+
+
+9
+
+9                                   Printed: January 31, 1984
+
+
+
+
+
+
+
+Data Structure Access                                   2-34
+
+
+(fclosure 'l_vars 'g_funobj)
+
+     WHERE:   l_vars is a list of variables, g_funobj is any
+              object that can be funcalled (including, fclo-
+              sures).
+
+     RETURNS: A vector which is the fclosure.
+
+(fclosure-alist 'v_fclosure)
+
+     RETURNS: An association list representing the variables
+              in  the  fclosure.   This is a snapshot of the
+              current state of the fclosure.  If  the  bind-
+              ings  in  the fclosure are changed, any previ-
+              ously  calculated  results  of  _f_c_l_o_s_u_r_e-_a_l_i_s_t
+              will not change.
+
+(fclosure-function 'v_fclosure)
+
+     RETURNS: the functional object part of the fclosure.
+
+(fclosurep 'v_fclosure)
+
+     RETURNS: t iff the argument is an fclosure.
+
+(symeval-in-fclosure 'v_fclosure 's_symbol)
+
+     RETURNS: the current binding of a particular symbol  in
+              an fclosure.
+
+(set-in-fclosure 'v_fclosure 's_symbol 'g_newvalue)
+
+     RETURNS: g_newvalue.
+
+     SIDE EFFECT: The variable  s_symbol  is  bound  in  the
+                  fclosure to g_newvalue.
+
+
+
+   2.9.  Random functions
+
+           The following functions don't fall  into  any  of
+      the classifications above.
+
+
+
+
+
+
+
+
+
+9
+
+9                                   Printed: January 31, 1984
+
+
+
+
+
+
+
+Data Structure Access                                   2-35
+
+
+(bcdad 's_funcname)
+
+     RETURNS: a fixnum which is the address in memory  where
+              the function s_funcname begins.  If s_funcname
+              is not a machine coded function (binary)  then
+              _b_c_d_a_d returns nil.
+
+(copy 'g_arg)
+
+     RETURNS: A structure _e_q_u_a_l to g_arg but with  new  list
+              cells.
+
+(copyint* 'x_arg)
+
+     RETURNS: a fixnum with the same value as x_arg but in a
+              freshly allocated cell.
+
+(cpy1 'xvt_arg)
+
+     RETURNS: a new cell of the same type  as  xvt_arg  with
+              the same value as xvt_arg.
+
+(getaddress 's_entry1 's_binder1  'st_discipline1  [...  ...
+...])
+
+     RETURNS: the binary object which s_binder1's   function
+              field is set to.
+
+     NOTE: This looks in the running lisp's symbol table for
+           a symbol with the same name as s_entry_i.  It then
+           creates a binary object whose entry field  points
+           to    s_entry_i    and    whose    discipline   is
+           st_discipline_i.  This binary object is stored  in
+           the    function    field    of   s_binder_i.    If
+           st_discipline_i is nil, then "subroutine" is  used
+           by  default.  This is especially useful for _c_f_a_s_l
+           users.
+
+(macroexpand 'g_form)
+
+     RETURNS: g_form after all macros in it are expanded.
+
+     NOTE: This function will only  macroexpand  expressions
+           which  could  be  evaluated  and it does not know
+           about the special nlambdas such as _c_o_n_d  and  _d_o,
+           thus it misses many macro expansions.
+
+
+
+
+
+
+9
+
+9                                   Printed: January 31, 1984
+
+
+
+
+
+
+
+Data Structure Access                                   2-36
+
+
+(ptr 'g_arg)
+
+     RETURNS: a value cell initialized to point to g_arg.
+
+(quote g_arg)
+
+     RETURNS: g_arg.
+
+     NOTE: the reader allows you to abbreviate  (quote  foo)
+           as 'foo.
+
+(kwote 'g_arg)
+
+     RETURNS:  (_l_i_s_t (_n f_arg = 2[exponent] * mantissa.
+
+(funcall 'u_func ['g_arg1 ...])
+
+     RETURNS: the value of applying function u_func  to  the
+              arguments  g_arg_i  and  then  evaluating  that
+              result if u_func is a macro.
+
+     NOTE: If u_func is a macro or nlambda then there should
+           be only one g_arg.  _f_u_n_c_a_l_l is the function which
+           the evaluator uses to evaluate lists.  If _f_o_o  is
+           a    lambda    or    lexpr    or    array,   then
+           (_f_u_n_c_a_l_l '_f_o_o '_a '_b '_c)    is    equivalent    to
+           (_f_o_o '_a '_b '_c).    If   _f_o_o  is  a  nlambda  then
+           (_f_u_n_c_a_l_l '_f_o_o '(_a _b _c)) is equivalent to (_f_o_o _a _b
+           _c).    Finally,   if   _f_o_o   is   a   macro  then
+           (_f_u_n_c_a_l_l '_f_o_o '(_f_o_o _a _b _c))  is   equivalent   to
+           (_f_o_o _a _b _c).
+
+9
+
+9                                   Printed: January 31, 1984
+
+
+
+
+
+
+
+Special Functions                                       4-16
+
+
+(funcallhook 'l_form 'su_funcallfunc ['su_evalfunc])
+
+     RETURNS: the result of _f_u_n_c_a_l_ling the  (_c_a_r _l__f_o_r_m)  on
+              the   already   evaluated   arguments  in  the
+              (_c_d_r _l__f_o_r_m)  after   lambda   binding   `fun-
+              callhook'  to  su_funcallfunc  and,  if  it is
+              given,   lambda    binding    `evalhook'    to
+              su_evalhook.
+
+     NOTE: This function is designed to continue the evalua-
+           tion  process  with  as  little  work as possible
+           after a funcallhook trap has occurred. It is  for
+           this  reason  that the form of l_form is unortho-
+           dox: its _c_a_r is the name of the function to  call
+           and  its  _c_d_r  are  a  list of arguments to stack
+           (without evaluating  again)  before  calling  the
+           given function.  After stacking the arguments but
+           before calling _f_u_n_c_a_l_l an internal switch is  set
+           to  prevent  _f_u_n_c_a_l_l from passing the job of fun-
+           calling to su_funcallfunc.  If _f_u_n_c_a_l_l is  called
+           recursively   in   funcalling   l_form   and   if
+           su_funcallfunc is non-null, then the arguments to
+           _f_u_n_c_a_l_l  will actually be given to su_funcallfunc
+           (a lexpr) to be funcalled.
+           In order for  _e_v_a_l_h_o_o_k  to  work,  (*_r_s_e_t _t)  and
+           (_s_s_t_a_t_u_s _e_v_a_l_h_o_o_k _t)  must  have been done previ-
+           ously.  A more detailed description  of  _e_v_a_l_h_o_o_k
+           and _f_u_n_c_a_l_l_h_o_o_k is given in Chapter 14.
+
+(function u_func)
+
+     RETURNS: the function binding of u_func  if  it  is  an
+              symbol   with  a  function  binding  otherwise
+              u_func is returned.
+
+(getdisc 'y_func)
+
+     RETURNS: the discipline of the machine  coded  function
+              (either lambda, nlambda or macro).
+
+(go g_labexp)
+
+     WHERE:   g_labexp is either a symbol or an expression.
+
+     SIDE EFFECT: If g_labexp is an expression, that expres-
+                  sion  is  evaluated and should result in a
+                  symbol.  The locus  of  control  moves  to
+                  just  following the symbol g_labexp in the
+                  current prog or do body.
+
+     NOTE: this is only valid in the context of a prog or do
+           body.   The  interpreter  and compiler will allow
+           non-local _g_o's although the compiler won't  allow
+
+
+                                   Printed: January 31, 1984
+
+
+
+
+
+
+
+Special Functions                                       4-17
+
+
+           a _g_o to leave a function body.  The compiler will
+           not allow g_labexp to be an expression.
+
+(if 'g_a 'g_b)
+(if 'g_a 'g_b 'g_c ...)
+(if 'g_a then  'g_b [...] [elseif 'g_c then 'g_d ...]  [else
+'g_e [...])
+(if 'g_a then  'g_b [...] [elseif 'g_c thenret]  [else  'g_d
+[...])
+
+     NOTE: The various forms of _i_f are intended to be a more
+           readable  conditional  statement,  to  be used in
+           place of _c_o_n_d.  There are two  varieties  of  _i_f,
+           with  keywords,  and  without.   The keyword-less
+           variety is inherited from common  Maclisp  usage.
+           A  keyword-less, two argument _i_f is equivalent to
+           a one-clause _c_o_n_d, i.e. (_c_o_n_d (a b)).   Any other
+           keyword-less  _i_f  must  have at least three argu-
+           ments.  The first two  arguments  are  the  first
+           clause  of the equivalent _c_o_n_d, and all remaining
+           arguments are shoved into a second clause  begin-
+           ning  with  t.   Thus,  the  second form of _i_f is
+           equivalent to
+                   (_c_o_n_d (a b) (t c ...)).
+
+           The keyword variety has the following grouping of
+           arguments:   a   predicate,  a  then-clause,  and
+           optional   else-clause.    The    predicate    is
+           evaluated,  and  if  the  result  is non-nil, the
+           then-clause  will  be  performed,  in  the  sense
+           described  below.  Otherwise, (i.e. the result of
+           the predicate evaluation was precisely nil),  the
+           else-clause will be performed.
+
+           Then-clauses will either consist entirely of  the
+           single  keyword  thenret,  or will start with the
+           keyword then, and be followed  by  at  least  one
+           general  expression.   (These general expressions
+           must not be one of the keywords.)  To  actuate  a
+           thenret  means to cease further evaluation of the
+           _i_f, and to return the value of the predicate just
+           calculated.  The performance of the longer clause
+           means to  evaluate  each  general  expression  in
+           turn, and then return the last value calculated.
+
+           The else-clause may begin with the  keyword  else
+           and  be  followed by at least one general expres-
+           sion.  The rendition of this clause is just  like
+           that  of a then-clause.  An else-clause may begin
+           alternatively with the  keyword  elseif,  and  be
+           followed  (recursively)  by  a  predicate,  then-
+           clause, and optional else-clause.  Evaluation  of
+           this  clause,  is  just evaluation of an _i_f-form,
+
+
+                                   Printed: January 31, 1984
+
+
+
+
+
+
+
+Special Functions                                       4-18
+
+
+           with the same predicate, then- and else-clauses.
+
+(I-throw-err 'l_token)
+
+     WHERE:   l_token is the _c_d_r of the value returned  from
+              a *_c_a_t_c_h with the tag ER%unwind-protect.
+
+     RETURNS: nothing (never returns in the current context)
+
+     SIDE EFFECT: The error or throw denoted by  l_token  is
+                  continued.
+
+     NOTE: This function is used to implement _u_n_w_i_n_d-_p_r_o_t_e_c_t
+           which allows the processing of a transfer of con-
+           trol though a certain context to be  interrupted,
+           a  user  function  to  be  executed  and than the
+           transfer of control to  continue.   The  form  of
+           l_token is either
+           (_t _t_a_g _v_a_l_u_e) for a throw or
+           (_n_i_l _t_y_p_e _m_e_s_s_a_g_e _v_a_l_r_e_t  _c_o_n_t_u_a_b  _u_n_i_q_u_e_i_d  [_a_r_g
+           ...]) for an error.
+           This function is not to be used for  implementing
+           throws  or errors and is only documented here for
+           completeness.
+
+(let l_args g_exp1 ... g_exprn)
+
+     RETURNS: the result of evaluating  g_exprn  within  the
+              bindings given by l_args.
+
+     NOTE: l_args is either nil (in which case _l_e_t  is  just
+           like  _p_r_o_g_n)  or it is a list of binding objects.
+           A binding object is a  list  (_s_y_m_b_o_l _e_x_p_r_e_s_s_i_o_n).
+           When a _l_e_t is entered, q_u_o_t_e _q_u_o_t_e) _g__a_r_g).
+
+(replace 'g_arg1 'g_arg2)
+
+     WHERE:   g_arg1 and g_arg2 must be  the  same  type  of
+              lispval and not symbols or hunks.
+
+     RETURNS: g_arg2.
+
+     SIDE EFFECT: The effect of _r_e_p_l_a_c_e is dependent on  the
+                  type  of  the  g_arg_i  although  one  will
+                  notice a similarity in  the  effects.   To
+                  understand what _r_e_p_l_a_c_e does to fixnum and
+                  flonum arguments, you  must  first  under-
+                  stand  that  such  numbers  are `boxed' in
+                  FRANZ LISP.  What this means  is  that  if
+                  the  symbol  x  has a value 32412, then in
+                  memory the value  element  of  x's  symbol
+                  structure  contains the address of another
+                  word of memory (called a box)  with  32412
+                  in it.
+
+                  Thus, there are two ways of  changing  the
+                  value  of  x:  the  first is to change the
+                  value element of x's symbol  structure  to
+                  point to a word of memory with a different
+                  value.  The second way is  to  change  the
+                  value  in  the box which x points to.  The
+                  former method is used almost  all  of  the
+                  time,  the  latter is used very rarely and
+                  has the potential to  cause  great  confu-
+                  sion.   The function _r_e_p_l_a_c_e allows you to
+                  do the latter, i.e.,  to  actually  change
+                  the value in the box.
+
+                  You should watch out for these situations.
+                  If  you  do  (_s_e_t_q _y _x), then both x and y
+                  will point to the same box.   If  you  now
+                  (_r_e_p_l_a_c_e _x _1_2_3_4_5),  then  y will also have
+                  the value 12345.  And, in fact, there  may
+
+
+                                   Printed: January 31, 1984
+
+
+
+
+
+
+
+Data Structure Access                                   2-37
+
+
+                  be many other pointers to that box.
+
+                  Another problem with replacing fixnums  is
+                  that  some  boxes are read-only.  The fix-
+                  nums between -1024 and 1023 are stored  in
+                  a  read-only  area and attempts to replace
+                  them will result  in  an  "Illegal  memory
+                  reference"  error  (see the description of
+                  _c_o_p_y_i_n_t* for a way around this problem).
+
+                  For the other valid types, the  effect  of
+                  _r_e_p_l_a_c_e is easy to understand.  The fields
+                  of g_val1's structure are made eq  to  the
+                  corresponding  fields  of  g_val2's struc-
+                  ture.  For example,  if  x   and   y  have
+                  lists   as   values  then  the  effect  of
+                  (_r_e_p_l_a_c_e _x _y)    is    the     same     as
+                  (_r_p_l_a_c_a _x (_c_a_r _y)) and (_r_p_l_a_c_d _x (_c_d_r _y)).
+
+(scons 'x_arg 'bs_rest)
+
+     WHERE:   bs_rest is a bignum or nil.
+
+     RETURNS: a bignum whose first bigit is x_arg and  whose
+              higher order bigits are bs_rest.
+
+(setf g_refexpr 'g_value)
+
+     NOTE: _s_e_t_f is a generalization  of  setq.   Information
+           may  be  stored  by  binding variables, replacing
+           entries of arrays, and vectors, or being  put  on
+           property  lists,  among  others.  Setf will allow
+           the user to store data  into  some  location,  by
+           mentioning  the  operation  used  to refer to the
+           location.  Thus, the first argument may  be  par-
+           tially  evaluated,  but only to the extent needed
+           to calculate a reference.  _s_e_t_f returns  g_value.
+           (Compare to _d_e_s_e_t_q )
+
+
+    ____________________________________________________
+
+      (setf x 3)        =  (setq x 3)
+      (setf (car x) 3)  = (rplaca x 3)
+      (setf (get foo 'bar) 3) = (putprop foo 3 'bar)
+      (setf (vref vector index) value) = (vset vector index value)
+    ____________________________________________________
+
+
+
+
+
+9
+
+9                                   Printed: January 31, 1984
+
+
+
+
+
+
+
+Data Structure Access                                   2-38
+
+
+(sort 'l_data 'u_comparefn)
+
+     RETURNS: a list of the elements of  l_data  ordered  by
+              the comparison function u_comparefn.
+
+     SIDE EFFECT: the list l_data is  modified  rather  than
+                  allocated in new storage.
+
+     NOTE: (_c_o_m_p_a_r_e_f_n '_g__x  '_g__y)  should  return  something
+           non-nil  if  g_x can precede g_y in sorted order;
+           nil if g_y must precede g_x.  If  u_comparefn  is
+           nil, alphabetical order will be used.
+
+(sortcar 'l_list 'u_comparefn)
+
+     RETURNS: a list of the  elements  of  l_list  with  the
+              _c_a_r's    ordered    by   the   sort   function
+              u_comparefn.
+
+     SIDE EFFECT: the list l_list is  modified  rather  than
+                  copied.
+
+     NOTE: Like _s_o_r_t, if u_comparefn  is  nil,  alphabetical
+           order will be used.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+9
+
+9                                   Printed: January 31, 1984
+
+
+
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         .so man3/dbm.3x
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                .so man3/bit.3f
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                all of the expressions are
+           evaluated and then simultaneously lambda-bound to
+           the  corresponding  symbols.   In  effect,  a _l_e_t
+           expression  is  just  like  a  lambda  expression
+           except  the  symbols and their initial values are
+           next to each other, making the expression  easier
+           to  understand.  There are some added features to
+           the _l_e_t expression: A binding object can just  be
+           a   symbol,   in   which   case   the  expression
+           corresponding to that  symbol  is  `nil'.   If  a
+           binding object is a list and the first element of
+           that list is another  list,  then  that  list  is
+           assumed  to be a binding template and _l_e_t will do
+           a _d_e_s_e_t_q on it.
+
+
+
+
+
+9
+
+9                                   Printed: January 31, 1984
+
+
+
+
+
+
+
+Special Functions                                       4-19
+
+
+(let* l_args g_exp1 ... g_expn)
+
+     RETURNS: the result of evaluating  g_exprn  within  the
+              bindings given by l_args.
+
+     NOTE: This is identical to _l_e_t except  the  expressions
+           in  the  binding  list  l_args  are evaluated and
+           bound sequentially instead of in parallel.
+
+(lexpr-funcall 'g_function ['g_arg1 ...] 'l_argn)
+
+     NOTE: This is a cross between funcall and  apply.   The
+           last  argument,  must be a list (possibly empty).
+           The element of list arg are stack  and  then  the
+           function is funcalled.
+
+     EXAMPLE: (lexpr-funcall 'list 'a '(b c d)) is the  same
+              as
+               (funcall 'list 'a 'b 'c 'd)
+
+(listify 'x_count)
+
+     RETURNS: a list of x_count  of  the  arguments  to  the
+              current function (which must be a lexpr).
+
+     NOTE: normally  arguments   1   through   x_count   are
+           returned.  If x_count is negative then  a list of
+           last abs(x_count) arguments are returned.
+
+(map 'u_func 'l_arg1 ...)
+
+     RETURNS: l_arg1
+
+     NOTE: The function u_func is applied to successive sub-
+           lists  of  the  l_arg_i.  All sublists should have
+           the same length.
+
+(mapc 'u_func 'l_arg1 ...)
+
+     RETURNS: l_arg1.
+
+     NOTE: The function u_func is applied to successive ele-
+           ments  of  the  argument lists.  All of the lists
+           should have the same length.
+
+
+
+
+
+
+
+
+9
+
+9                                   Printed: January 31, 1984
+
+
+
+
+
+
+
+Special Functions                                       4-20
+
+
+(mapcan 'u_func 'l_arg1 ...)
+
+     RETURNS: nconc applied to the results of the functional
+              evaluations.
+
+     NOTE: The function u_func is applied to successive ele-
+           ments of the argument lists.  All sublists should
+           have the same length.
+
+(mapcar 'u_func 'l_arg1 ...)
+
+     RETURNS: a list of the values returned from  the  func-
+              tional application.
+
+     NOTE: the function u_func is applied to successive ele-
+           ments of the argument lists.  All sublists should
+           have the same length.
+
+(mapcon 'u_func 'l_arg1 ...)
+
+     RETURNS: nconc applied to the results of the functional
+              evaluation.
+
+     NOTE: the function u_func is applied to successive sub-
+           lists of the argument lists.  All sublists should
+           have the same length.
+
+(maplist 'u_func 'l_arg1 ...)
+
+     RETURNS: a  list  of  the  results  of  the  functional
+              evaluations.
+
+     NOTE: the function u_func is applied to successive sub-
+           lists  of  the  arguments  lists.   All  sublists
+           should have the same length.
+
+     Readers may find the following summary table useful  in
+     remembering  the  differences  between  the six mapping
+     functions:
+
+
+8     ________________________________________________________________
+                                      Value returned is
+
+                         l_arg1   list of results   _n_c_o_n_c of results
+7       Argument to
+       functional is
+8    ________________________________________________________________
+
+     elements of list    mapc        mapcar             mapcan
+
+         sublists        map         maplist            mapcon
+8    ________________________________________________________________
+7   |7|7|7|7|7|7|7|7|
+
+
+
+
+
+
+
+                     |7|7|7|7|7|7|7|7|
+
+
+
+
+
+
+
+                                                                   |7|7|7|7|7|7|7|7|
+
+
+
+
+
+
+
+
+
+
+
+
+9                                   Printed: January 31, 1984
+
+
+
+
+
+
+
+Special Functions                                       4-21
+
+
+(mfunction t_entry 's_disc)
+
+     RETURNS: a lisp  object  of  type  binary  composed  of
+              t_entry and s_disc.
+
+     NOTE: t_entry is a pointer to the machine  code  for  a
+           function,  and  s_disc  is  the  discipline (e.g.
+           lambda).
+
+(oblist)
+
+     RETURNS: a list of all symbols on the oblist.
+
+(or [g_arg1 ... ])
+
+     RETURNS: the value of the first non-null  argument   or
+              nil if all arguments evaluate to nil.
+
+     NOTE: Evaluation proceeds left to right  and  stops  as
+           soon  as one of the arguments evaluates to a non-
+           null value.
+
+(prog l_vrbls g_exp1 ...)
+
+     RETURNS: the value explicitly given in a return form or
+              else  nil if no return is done by the time the
+              last g_exp_i is evaluated.
+
+     NOTE: the local variables are lambda-bound to nil, then
+           the  g_exp_i  are  evaluated  from  left to right.
+           This is a prog body (obviously)  and  this  means
+           than  any symbols seen are not evaluated, but are
+           treated as labels.  This also means that return's
+           and go's are allowed.
+
+(prog1 'g_exp1 ['g_exp2 ...])
+
+     RETURNS: g_exp1
+
+(prog2 'g_exp1 'g_exp2 ['g_exp3 ...])
+
+     RETURNS: g_exp2
+
+     NOTE: the forms are evaluated from left  to  right  and
+           the value of g_exp2 is returned.
+
+
+
+
+
+
+
+9
+
+9                                   Printed: January 31, 1984
+
+
+
+
+
+
+
+Special Functions                                       4-22
+
+
+(progn 'g_exp1 ['g_exp2 ...])
+
+     RETURNS: the last g_exp_i.
+
+(progv 'l_locv 'l_initv g_exp1 ...)
+
+     WHERE:   l_locv is a list of symbols and l_initv  is  a
+              list of expressions.
+
+     RETURNS: the value of the last g_exp_i evaluated.
+
+     NOTE: The expressions in  l_initv  are  evaluated  from
+           left  to  right and then lambda-bound to the sym-
+           bols in l_locv.  If there are too few expressions
+           in l_initv then the missing values are assumed to
+           be nil.  If there are  too  many  expressions  in
+           l_initv then the extra ones are ignored (although
+           they  are  evaluated).   Then  the   g_exp_i   are
+           evaluated  left to right.  The body of a progv is
+           like the body of a progn, it is _n_o_t a prog  body.
+           (C.f. _l_e_t)
+
+(purcopy 'g_exp)
+
+     RETURNS: a copy of g_exp with new pure cells  allocated
+              wherever possible.
+
+     NOTE: pure space is never swept up by the garbage  col-
+           lector,  so  this  should only be done on expres-
+           sions which are not likely to become  garbage  in
+           the  future.   In  certain cases, data objects in
+           pure space become read-only after a _d_u_m_p_l_i_s_p  and
+           then  an attempt to modify the object will result
+           in an illegal memory reference.
+
+(purep 'g_exp)
+
+     RETURNS: t iff the object g_exp is in pure space.
+
+(putd 's_name 'u_func)
+
+     RETURNS: u_func
+
+     SIDE EFFECT: this sets the function binding  of  symbol
+                  s_name to u_func.
+
+
+
+
+
+
+
+9
+
+9                                   Printed: January 31, 1984
+
+
+
+
+
+
+
+Special Functions                                       4-23
+
+
+(return ['g_val])
+
+     RETURNS: g_val (or nil if g_val is  not  present)  from
+              the enclosing prog or do body.
+
+     NOTE: this form is only valid in the context of a  prog
+           or do body.
+
+(selectq 'g_key-form [l_clause1 ...])
+
+     NOTE: This function is
+
+
+
+
+
+
+                         CHAPTER  5
+
+
+                        Input/Output
+
+
+
+
+     The following functions are used to read from and write
+to  external  devices  (e.g.  files)  and  programs (through
+pipes).  All I/O goes through the lisp data type called  the
+port.  A port may be open for either reading or writing, but
+usually not both simultaneously (see _f_i_l_e_o_p_e_n ).  There  are
+only  a  limited  number  of ports (20) and they will not be
+reclaimed unless they are _c_l_o_s_ed.  All ports  are  reclaimed
+by  a _r_e_s_e_t_i_o call, but this drastic step won't be necessary
+if the program closes what it uses.
+
+     If a port argument is not supplied to a function  which
+requires  one,  or  if  a bad port argument (such as nil) is
+given, then FRANZ LISP will use the default  port  according
+to this scheme: If input is being done then the default port
+is the value of the symbol piport and  if  output  is  being
+done  then  the  default  port  is  the  value of the symbol
+poport.  Furthermore, if the value of piport  or  poport  is
+not a valid port, then the standard input or standard output
+will be used, respectively.
+
+     The standard input and standard output are usually  the
+keyboard  and terminal display unless your job is running in
+the background and its input or output  is  connected  to  a
+pipe.   All  output  which  goes to the standard output will
+also go to the port ptport if it is a  valid  port.   Output
+destined for the standard output will not reach the standard
+output if the symbol ^w is non nil (although it  will  still
+go to ptport if ptport is a valid port).
+
+     Some of the  functions  listed  below  reference  files
+directly.   FRANZ  LISP  has borrowed a convenient shorthand
+notation from /_b_i_n/_c_s_h, concerning naming files.  If a  file
+name begins with ~ (tilde), and the symbol tilde-expansion
+
+is bound to  something  other  than  nil,  then  FRANZ  LISP
+expands  the  file  name.  It takes the string of characters
+between the leading tilde, and the first slash  as  a  user-
+name.   Then,  that  initial  segment  of  the  filename  is
+replaced by the home directory of the user.  The null  user-
+name is taken to be the current user.
+
+     FRANZ LISP keeps a cache of user home directory  infor-
+mation,  to  minimize  searching  the password file.  Tilde-
+expansion is performed in the  following  functions:  _c_f_a_s_l,
+_c_h_d_i_r, _f_a_s_l, _f_f_a_s_l, _f_i_l_e_o_p_e_n, _i_n_f_i_l_e, _l_o_a_d, _o_u_t_f_i_l_e, _p_r_o_b_e_f,
+
+
+Input/Output                                             5-1
+
+
+
+
+
+
+
+Input/Output                                             5-2
+
+
+_s_y_s:_a_c_c_e_s_s, _s_y_s:_u_n_l_i_n_k.
+
+(cfasl    'st_file    'st_entry    'st_funcname    ['st_disc
+['st_library]])
+
+     RETURNS: t
+
+     SIDE EFFECT: This is used to load in a foreign function
+                  (see  8.4).   The  object  file st_file is
+                  loaded into  the  lisp  system.   St_entry
+                  should  be an entry point in the file just
+                  loaded.  The function binding of the  sym-
+                  bol  s_funcname  will  be  set to point to
+                  st_entry, so that when the  lisp  function
+                  s_funcname  is  called,  st_entry  will be
+                  run.  st_disc  is  the  discipline  to  be
+                  given  to  s_funcname. st_disc defaults to
+                  "subroutine" if it is not given or  if  it
+                  is  given  as  nil.  If st_library is non-
+                  null, then after st_file  is  loaded,  the
+                  libraries  given  in  st_library  will  be
+                  searched to resolve  external  references.
+                  The form of st_library should be something
+                  like "-lm".  The C library  (" -lc " )  is
+                  always  searched  so  when  loading in a C
+                  file you probably won't need to specify  a
+                  library.   For  Fortran  files, you should
+                  specify "-lF77" and if you are  doing  any
+                  I/O,  the  library  entry should be "-lI77
+                  -lF77".   For  Pascal  files   "-lpc"   is
+                  required.
+
+     NOTE: This function may be used to load the  output  of
+           the  assembler, C compiler, Fortran compiler, and
+           Pascal compiler  but NOT the lisp  compiler  (use
+           _f_a_s_l  for  that).   If  a  file has more than one
+           entry point, then use _g_e_t_a_d_d_r_e_s_s  to  locate  and
+           setup other foreign functions.
+           It is an error to load in a file which has a glo-
+           bal  entry  point  of  the  same name as a global
+           entry point in the running lisp.  As soon as  you
+           load  in  a  file  with  _c_f_a_s_l,  its global entry
+           points become part of the  lisp's  entry  points.
+           Thus  you  cannot  _c_f_a_s_l  in  the same file twice
+           unless you use _r_e_m_o_v_e_a_d_d_r_e_s_s  to  change  certain
+           global entry points to local entry points.
+
+
+
+
+
+
+9
+
+9                                   Printed: January 31, 1984
+
+
+
+
+
+
+
+Input/Output                                             5-3
+
+
+(close 'p_port)
+
+     RETURNS: t
+
+     SIDE EFFECT: the specified port is drained and  closed,
+                  releasing the port.
+
+     NOTE: The standard defaults are not used in  this  case
+           since  you probably never want to close the stan-
+           dard output or standard input.
+
+(cprintf 'st_format 'xfst_val ['p_port])
+
+     RETURNS: xfst_val
+
+     SIDE EFFECT: The UNIX formatted output function  printf
+                  is  called  with  arguments  st_format and
+                  xfst_val.  If xfst_val is  a  symbol  then
+                  its  print  name is passed to printf.  The
+                  format string may contain characters which
+                  are just printed literally and it may con-
+                  tain special formatting commands  preceded
+                  by  a  percent  sign.  The complete set of
+                  formatting characters is described in  the
+                  UNIX  manual.  Some useful ones are %d for
+                  printing a fixnum in decimal, %f or %e for
+                  printing  a  flonum, and %s for printing a
+                  character string (or print name of a  sym-
+                  bol).
+
+     EXAMPLE: (_c_p_r_i_n_t_f "_P_i _e_q_u_a_l_s %_f"  _3._1_4_1_5_9)  prints  `Pi
+              equals 3.14159'
+
+(drain ['p_port])
+
+     RETURNS: nil
+
+     SIDE EFFECT: If this is an output port then the charac-
+                  ters  in the output buffer are all sent to
+                  the device.  If this is an input port then
+                  all  pending  characters are flushed.  The
+                  default port  for  this  function  is  the
+                  default output port.
+
+
+
+
+
+
+
+
+
+9
+
+9                                   Printed: January 31, 1984
+
+
+
+
+
+
+
+Input/Output                                             5-4
+
+
+(ex [s_filename])
+(vi [s_filename])
+(exl [s_filename])
+(vil [s_filename])
+
+     RETURNS: nil
+
+     SIDE EFFECT: The lisp system starts up an editor on the
+                  file  named  as the argument.  It will try
+                  appending .l to the file if it can't  find
+                  it.   The  functions _e_x_l and _v_i_l will load
+                  the file  after  you  finish  editing  it.
+                  These  functions  will  also  remember the
+                  name of the file  so  that  on  subsequent
+                  invocations, you don't need to provide the
+                  argument.
+
+     NOTE: These functions do not evaluate their argument.
+
+(fasl 'st_name ['st_mapf ['g_warn]])
+
+     WHERE:   st_mapf and g_warn default to nil.
+
+     RETURNS: t if the function succeeded, nil otherwise.
+
+     SIDE EFFECT: this function is designed to  load  in  an
+                  object file generated by the lisp compiler
+                  Liszt.  File names for object
+
+
+
+
+
+
+                         CHAPTER  6
+
+
+                      System Functions
+
+
+
+
+     This chapter describes the functions used  to  interact
+with  internal  components  of the Lisp system and operating
+system.
+
+(allocate 's_type 'x_pages)
+
+     WHERE:   s_type is one of the  FRANZ  LISP  data  types
+              described in 1.3.
+
+     RETURNS: x_pages.
+
+     SIDE EFFECT: FRANZ LISP attempts to allocate x_pages of
+                  type  s_type.   If there aren't x_pages of
+                  memory left, no space  will  be  allocated
+                  and an error will occur.  The storage that
+                  is allocated is not given to  the  caller,
+                  instead  it  is  added to the free storage
+                  list of s_type.  The functions _s_e_g_m_e_n_t and
+                  _s_m_a_l_l-_s_e_g_m_e_n_t  allocate blocks  of storage
+                  and return it to the caller.
+
+(argv 'x_argnumb)
+
+     RETURNS: a symbol whose pname is the x_argnumb_t_h  argu-
+              ment (starting at 0) on the command line which
+              invoked the current lisp.
+
+     NOTE: if x_argnumb is less than zero,  a  fixnum  whose
+           value  is  the number of arguments on the command
+           line is returned.  (_a_r_g_v _0) returns the  name  of
+           the lisp you are running.
+
+(baktrace)
+
+     RETURNS: nil
+
+     SIDE EFFECT: the lisp runtime stack is examined and the
+                  name  of (most) of the functions currently
+                  in  execution  are  printed,  most  active
+                  first.
+
+     NOTE: this will occasionally miss the names of compiled
+           lisp  functions  due to incomplete information on
+           the stack.  If you  are  tracing  compiled  code,
+           then  _b_a_k_t_r_a_c_e  won't  be  able  to interpret the
+
+
+System Functions                                         6-1
+
+
+
+
+
+
+
+System Functions                                         6-2
+
+
+           stack unless  (_s_s_t_a_t_u_s _t_r_a_n_s_l_i_n_k _n_i_l)  was  done.
+           See  the  function  _s_h_o_w_s_t_a_c_k  for another way of
+           printing the lisp runtime stack.   This  misspel-
+           ling is from Maclisp.
+
+(chdir 's_path)
+
+     RETURNS: t iff the system call succeeds.
+
+     SIDE EFFECT: the current directory set to s_path. Among
+                  other things, this will affect the default
+                  location where the input/output  functions
+                  look for and create files.
+
+     NOTE: _c_h_d_i_r follows the standard UNIX  conventions,  if
+           s_path  does  not begin with a slash, the default
+           path is changed to the current path  with  s_path
+           appended.   _C_h_d_i_r  employs  tilde-expansion (dis-
+           cussed in Chapter 5).
+
+(command-line-args)
+
+     RETURNS: a list of the arguments typed on  the  command
+              line, either to the lisp interpreter, or saved
+              lisp dump, or application  compiled  with  the
+              autorun option (liszt -r).
+
+(deref 'x_addr)
+
+     RETURNS: The contents of x_addr, when thought of  as  a
+              longword memory location.
+
+     NOTE: This may be useful in constructing arguments to C
+           functions out of `dangerous' areas of memory.
+
+(dumplisp s_name)
+
+     RETURNS: nil
+
+     SIDE EFFECT: the current lisp is dumped  to  the  named
+                  file.   When  s_name is executed, you will
+                  be in a lisp in the same state as when the
+                  dumplisp was done.
+
+     NOTE: dumplisp will fail if one tries to write over the
+           current  running file. UNIX does not allow you to
+           modify the file you are running.
+
+
+
+
+
+9
+
+9                                   Printed: January 31, 1984
+
+
+
+
+
+
+
+System Functions                                         6-3
+
+
+(eval-when l_time g_exp1 ...)
+
+     SIDE EFFECT: l_time may contain any combination of  the
+                  symbols  _l_o_a_d,  _e_v_a_l,  and  _c_o_m_p_i_l_e.   The
+                  effects of load and compile  is  discussed
+                  in  12.3.2.1 compiler.  If eval is present
+                  however,  this  simply  means   that   the
+                  expressions g_exp1 and so on are evaluated
+                  from  left  to  right.   If  eval  is  not
+                  present, the forms are not evaluated.
+
+(exit ['x_code])
+
+     RETURNS: nothing (it never returns).
+
+     SIDE EFFECT: the lisp system dies with exit code x_code
+                  or 0 if x_code is not specified.
+
+(fake 'x_addr)
+
+     RETURNS: the lisp object at address x_addr.
+
+     NOTE: This is intended to be used by  people  debugging
+           the lisp system.
+
+(fork)
+
+     RETURNS: nil to  the  child  process  and  the  process
+              number of the child to the parent.
+
+     SIDE EFFECT: A copy of the current lisp system is  made
+                  in  memory and both lisp systems now begin
+                  to  run.   This  function  can   be   used
+                  interactively   to  temporarily  save  the
+                  state of Lisp (as shown  below),  but  you
+                  must  be  careful  that  only  one  of the
+                  lisp's interacts with the  terminal  after
+                  the fork.  The _w_a_i_t function is useful for
+                  this.
+
+
+
+
+
+
+
+
+
+
+
+
+
+9
+
+9                                   Printed: January 31, 1984
+
+
+
+
+
+
+
+System Functions                                         6-4
+
+
+
+    ____________________________________________________
+
+    -> (_s_e_t_q _f_o_o '_b_a_r)              ;; set a variable
+    bar
+    -> (_c_o_n_d ((_f_o_r_k)(_w_a_i_t)))        ;; duplicate the lisp system and
+    nil                             ;; make the parent wait
+    -> _f_o_o                          ;; check the value of the variable
+    bar
+    -> (_s_e_t_q _f_o_o '_b_a_z)              ;; give it a new value
+    baz
+    -> _f_o_o                          ;; make sure it worked
+    baz
+    -> (_e_x_i_t)                       ;; exit the child
+    (5274 . 0)                      ;; the _w_a_i_t function returns this
+    -> _f_o_o                          ;; we check to make sure parent was
+    bar                             ;; not modified.
+    ____________________________________________________
+
+
+
+
+(gc)
+
+     RETURNS: nil
+
+     SIDE EFFECT: this causes a garbage collection.
+
+     NOTE: The function _g_c_a_f_t_e_r is not called  automatically
+           after  this function finishes.  Normally the user
+           doesn't have to call _g_c since garbage  collection
+           occurs automatically whenever internal free lists
+           are exhausted.
+
+(gcafter s_type)
+
+     WHERE:   s_type is one of the  FRANZ  LISP  data  types
+              listed in 1.3.
+
+     NOTE: this function is called by the garbage  collector
+           after  a  garbage  collection which was caused by
+           running out of data type s_type.   This  function
+           should  determine if more space need be allocated
+           and if so should allocate it.  There is a default
+           gcafter  function but users who want control over
+           space allocation can define their own -- but note
+           that it must be an nlambda.
+
+
+
+
+
+9
+
+9                                   Printed: January 31, 1984
+
+
+
+
+
+
+
+System Functions                                         6-5
+
+
+(getenv 's_name)
+
+     RETURNS: a symbol whose pname is the value of s_name in
+              the   current  UNIX  environment.   If  s_name
+              doesn't exist in the  current  environment,  a
+              symbol with a null pname is returned.
+
+(hashtabstat)
+
+     RETURNS: a list of fixnums representing the  number  of
+              symbols in each bucket of the oblist.
+
+     NOTE: the oblist is stored a  hash  table  of  buckets.
+           Ideally there would be the same number of symbols
+           in each bucket.
+
+(help [sx_arg])
+
+     SIDE EFFECT: If sx_arg is a symbol then the portion  of
+                  this manual beginning with the descript  files  usu-
+                  ally end in `.o', so _f_a_s_l will append `.o'
+                  to st_name (if it is not already present).
+                  If st_mapf is non nil, then it is the name
+                  of the map file to create.  _F_a_s_l writes in
+                  the  map  file  the names and addresses of
+                  the functions it loads and defines.   Nor-
+                  mally  the map file is created (i.e. trun-
+                  cated    if    it    exists),    but    if
+                  (_s_s_t_a_t_u_s _a_p_p_e_n_d_m_a_p _t) is done then the map
+                  file will be appended.  If g_warn  is  non
+                  nil  and if a function is loaded from  the
+                  file which  is  already  defined,  then  a
+                  warning message will be printed.
+
+     NOTE: _f_a_s_l only looks in the current directory for  the
+           file  to  load. The function _l_o_a_d looks through a
+           user-supplied search path and will call  _f_a_s_l  if
+           it  finds  a  file  with the same root name and a
+           `.o' extension.  In  most cases the user would be
+           better  off  using  the function _l_o_a_d rather than
+           calling _f_a_s_l directly.
+
+
+
+9
+
+9                                   Printed: January 31, 1984
+
+
+
+
+
+
+
+Input/Output                                             5-5
+
+
+(ffasl  'st_file  'st_entry   'st_funcname   ['st_discipline
+['st_library]])
+
+     RETURNS: the binary object created.
+
+     SIDE EFFECT: the Fortran object file st_file is  loaded
+                  into  the lisp system.  St_entry should be
+                  an entry point in the file just loaded.  A
+                  binary  object  will  be  created  and its
+                  entry  field  will  be  set  to  point  to
+                  st_entry.   The  discipline  field  of the
+                  binary will be  set  to  st_discipline  or
+                  "subroutine" by default.  If st_library is
+                  present and non-null, then  after  st_file
+                  is   loaded,   the   libraries   given  in
+                  st_library will  be  searched  to  resolve
+                  external    references.    The   form   of
+                  st_library should be something  like  "-lS
+                  -ltermcap".   In  any  case,  the standard
+                  Fortran libraries will be searched also to
+                  resolve external references.
+
+     NOTE: in F77 on Unix, the entry point for  the  fortran
+           function foo is named `_foo_'.
+
+(filepos 'p_port ['x_pos])
+
+     RETURNS: the current position in the file if  x_pos  is
+              not given or else x_pos if x_pos is given.
+
+     SIDE EFFECT: If x_pos is given, the  next  byte  to  be
+                  read  or  written  to  the port will be at
+                  position x_pos.
+
+(filestat 'st_filename)
+
+     RETURNS: a vector containing various numbers which  the
+              UNIX  operating  system  assigns to files.  if
+              the file doesn't exist, an error  is  invoked.
+              Use _p_r_o_b_e_f to determine if the file exists.
+
+     NOTE: The individual entries can be accesed by mnemonic
+           functions of the form filestat:_f_i_e_l_d, where field
+           may be  any  of  atime,  ctime,  dev,  gid,  ino,
+           mode,mtime,  nlink,  rdev,  size, type, uid.  See
+           the UNIX programmers manual for a  more  detailed
+           description of these quantities.
+
+
+
+
+
+9
+
+9                                   Printed: January 31, 1984
+
+
+
+
+
+
+
+Input/Output                                             5-6
+
+
+(flatc 'g_form ['x_max])
+
+     RETURNS: the number of  characters  required  to  print
+              g_form  using _p_a_t_o_m.  If x_max is given and if
+              _f_l_a_t_c determines that it will return  a  value
+              greater  than  x_max,  then  it  gives  up and
+              returns the current  value  it  has  computed.
+              This  is  useful if you just want to see if an
+              expression is larger than a certain size.
+
+(flatsize 'g_form ['x_max])
+
+     RETURNS: the number of  characters  required  to  print
+              g_form  using  _p_r_i_n_t.  The meaning of x_max is
+              the same as for flatc.
+
+     NOTE: Currently this just _e_x_p_l_o_d_e's g_form  and  checks
+           its length.
+
+(fileopen 'st_filename 'st_mode)
+
+     RETURNS: a port for reading or  writing  (depending  on
+              st_mode) the file st_name.
+
+     SIDE EFFECT: the given file is opened  (or  created  if
+                  opened  for  writing  and  it  doesn't yet
+                  exist).
+
+     NOTE: this function call provides a direct interface to
+           the  operating system's fopen function.  The mode
+           may be more than just "r" for read, "w" for write
+           or "a" for append.  The modes "r+", "w+" and "a+"
+           permit both reading and writing on  a  port  pro-
+           vided  that  _f_s_e_e_k  is  done  between  changes in
+           direction.  See the UNIX  manual  description  of
+           fopen  for  more  details.  This routine does not
+           look through a search path for a given file.
+
+(fseek 'p_port 'x_offset 'x_flag)
+
+     RETURNS: the position in the file after the function is
+              performed.
+
+     SIDE EFFECT: this  function  positions  the  read/write
+                  pointer before a certain byte in the file.
+                  If x_flag is 0 then the pointer is set  to
+                  x_offset  bytes  from the beginning of the
+                  file.  If x_flag is 1 then the pointer  is
+                  set  to  x_offset  bytes  from the current
+                  location in the file.  If x_flag is 2 then
+                  the  pointer is set to x_offset bytes from
+                  the end of the file.
+9
+
+9                                   Printed: January 31, 1984
+
+
+
+
+
+
+
+Input/Output                                             5-7
+
+
+(infile 's_filename)
+
+     RETURNS: a port ready to read s_filename.
+
+     SIDE EFFECT: this tries to open s_filename  and  if  it
+                  cannot  or if there are no ports available
+                  it gives an error message.
+
+     NOTE: to allow your program to continue on a  file-not-
+           found error, you can use something like:
+           (_c_o_n_d ((_n_u_l_l (_s_e_t_q _m_y_p_o_r_t  (_c_a_r  (_e_r_r_s_e_t  (_i_n_f_i_l_e
+           _n_a_m_e) _n_i_l))))
+                       (_p_a_t_o_m '"_c_o_u_l_d_n'_t _o_p_e_n _t_h_e _f_i_l_e")))
+           which will set myport to the port to read from if
+           the  file  exists  or  will print a message if it
+           couldn't open it and also set myport to nil.   To
+           simply determine if a file exists, use _p_r_o_b_e_f.
+
+(load 's_filename ['st_map ['g_warn]])
+
+     RETURNS: t
+
+     NOTE: The function of _l_o_a_d has changed  since  previous
+           releases of FRANZ LISP and the following descrip-
+           tion should be read carefully.
+
+     SIDE EFFECT: _l_o_a_d now serves the function of both  _f_a_s_l
+                  and the old _l_o_a_d.  _L_o_a_d will search a user
+                  defined search path for a lisp  source  or
+                  object  file  with the filename s_filename
+                  (with the extension  .l  or  .o  added  as
+                  appropriate).   The search path which _l_o_a_d
+                  uses is the value of  (_s_t_a_t_u_s _l_o_a_d-_s_e_a_r_c_h-
+                  _p_a_t_h).  The default is (|.| /usr/lib/lisp)
+                  which means look in the current  directory
+                  first  and  then  /usr/lib/lisp.  The file
+                  which _l_o_a_d looks for depends on  the  last
+                  two    characters   of   s_filename.    If
+                  s_filename ends with ".l" then  _l_o_a_d  will
+                  only  look  for a file name s_filename and
+                  will assume that  this  iion
+                  of sx_arg is printed on the terminal.   If
+                  sx_arg  is  a fixnum or the name of one of
+                  the appendicies, that chapter or  appendix
+                  is  printed  on the terminal.  If no argu-
+                  ment is provided, _h_e_l_p prints the  options
+                  that it recognizes.  The program `more' is
+                  used to print the manual on the  terminal;
+                  it will stop after each page and will con-
+                  tinue after the space key is pressed.
+
+(include s_filename)
+
+     RETURNS: nil
+
+     SIDE EFFECT: The given  filename  is  _l_o_a_ded  into  the
+                  lisp.
+
+     NOTE: this is similar to load except  the  argument  is
+           not  evaluated.   Include means something special
+           to the compiler.
+
+(include-if 'g_predicate s_filename)
+
+     RETURNS: nil
+
+     SIDE EFFECT: This has the same effect as  include,  but
+                  is  only actuated if the predicate is non-
+                  nil.
+
+
+
+
+9
+
+9                                   Printed: January 31, 1984
+
+
+
+
+
+
+
+System Functions                                         6-6
+
+
+(includef 's_filename)
+
+     RETURNS: nil
+
+     SIDE EFFECT: this is the same  as  _i_n_c_l_u_d_e  except  the
+                  argument is evaluated.
+
+(includef-if 'g_predicate s_filename)
+
+     RETURNS: nil
+
+     SIDE EFFECT: This has the same effect as includef,  but
+                  is  only actuated if the predicate is non-
+                  nil.
+
+(maknum 'g_arg)
+
+     RETURNS: the address of its argument converted  into  a
+              fixnum.
+
+(monitor ['xs_maxaddr])
+
+     RETURNS: t
+
+     SIDE EFFECT: If xs_maxaddr is t then profiling  of  the
+                  entire   lisp   system   is   begun.    If
+                  xs_maxaddr is a fixnum then  profiling  is
+                  done  only  up  to address xs_maxaddr.  If
+                  xs_maxaddr is not given, then profiling is
+                  stopped  and  the data obtained is written
+                  to the file  'mon.out'  where  it  can  be
+                  analyzed with the UNIX 'prof' program.
+
+     NOTE: this function only works if the lisp  system  has
+           been  compiled  in  a  special way, otherwise, an
+           error is invoked.
+
+(opval 's_arg ['g_newval])
+
+     RETURNS: the value associated  with  s_arg  before  the
+              call.
+
+     SIDE EFFECT: If g_newval is specified, the value  asso-
+                  ciated with s_arg is changed to g_newval.
+
+     NOTE: _o_p_v_a_l keeps track of storage allocation. If s_arg
+           is one of the data types then _o_p_v_a_l will return a
+           list of three fixnums representing the number  of
+           items  of  that  type in use, the number of pages
+           allocated and the number of items  of  that  type
+           per  page.  You  should  never  try to change the
+           value _o_p_v_a_l associates with  a  data  type  using
+           _o_p_v_a_l.
+
+
+                                   Printed: January 31, 1984
+
+
+
+
+
+
+
+System Functions                                         6-7
+
+
+           If s_arg is _p_a_g_e_l_i_m_i_t then _o_p_v_a_l will return (and
+           set  if  g_newval is given) the maximum amount of
+           lisp data pages it  will  allocate.   This  limit
+           should  remain small unless you know your program
+           requires lots of space as this limit  will  catch
+           programs   in  infinite  loops  which  gobble  up
+           memory.
+
+(*process 'st_command ['g_readp ['g_writep]])
+
+     RETURNS: either a fixnum if one argument is given, or a
+              list of two ports and a fixnum if two or three
+              arguments are given.
+
+     NOTE: *_p_r_o_c_e_s_s  starts  another  process   by   passing
+           st_command to the shell (it first tries /bin/csh,
+           then it tries /bin/sh if /bin/csh doesn't exist).
+           If  only one argument is given to *_p_r_o_c_e_s_s, *_p_r_o_-
+           _c_e_s_s waits for the new process to  die  and  then
+           returns  the  exit  code  of the new process.  If
+           more two or three arguments are  given,  *_p_r_o_c_e_s_s
+           starts the process and then returns a list which,
+           depending on the value of g_readp  and  g_writep,
+           may  contain  i/o ports for communcating with the
+           new process.  If g_writep  is  non-null,  then  a
+           port  will  be created which the lisp program can
+           use to send characters to the  new  process.   If
+           g_readp  is non-null, then a port will be created
+           which the lisp program can use to read characters
+           from  the  new  process.   The  value returned by
+           *_p_r_o_c_e_s_s is (readport writeport pid) where  read-
+           port and writeport are either nil or a port based
+           on the value of g_readp and g_writep.  Pid is the
+           process  id of the new process.  Since it is hard
+           to remember the order of  g_readp  and  g_writep,
+           the  functions *_p_r_o_c_e_s_s-_s_e_n_d and *_p_r_o_c_e_s_s-_r_e_c_e_i_v_e
+           were written to perform the common functions.
+
+(*process-receive 'st_command)
+
+     RETURNS: a port which can be read.
+
+     SIDE EFFECT: The command st_command  is  given  to  the
+                  shell  and  it  is  started running in the
+                  background.  The output of that command is
+                  available   for   reading   via  the  port
+                  returned.  The input of the  command  pro-
+                  cess is set to /dev/null.
+
+
+
+
+9
+
+9                                   Printed: January 31, 1984
+
+
+
+
+
+
+
+System Functions                                         6-8
+
+
+(*process-send 'st_command)
+
+     RETURNS: a port which can be written to.
+
+     SIDE EFFECT: The command st_command  is  given  to  the
+                  shell  and  it  is  started  runing in the
+                  background.  The lisp program can  provide
+                  input  for that command by sending charac-
+                  ters to the port returned  by  this  func-
+                  tion.   The  output of the command process
+                  is set to /dev/null.
+
+(process s_pgrm [s_frompipe s_topipe])
+
+     RETURNS: if the optional arguments are  not  present  a
+              fixnum  which  is  the  exit  code when s_prgm
+              dies.  If the optional arguments are  present,
+              it returns a fixnum which is the process id of
+              the child.
+
+     NOTE: This command is obsolete.   New  programs  should
+           use one of the *_p_r_o_c_e_s_s commands given above.
+
+     SIDE EFFECT: If s_frompipe and s_topipe are given, they
+                  are  bound  to ports which are pipes which
+                  direct characters from FRANZ LISP  to  the
+                  new process and to FRANZ LISP from the new
+                  process  respectively.   _P_r_o_c_e_s_s  forks  a
+                  process  named  s_prgm

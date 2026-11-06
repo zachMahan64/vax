@@ -1,0 +1,2386 @@
+he character string
+supplied as
+.UL s .
+.UL scanf
+reads characters, interprets
+them according to a format, and stores the results in its arguments.
+Each routine expects as arguments
+a control string
+.UL format ,
+and a set of arguments,
+.I
+each of which must be a pointer,
+.R
+indicating where the converted input should be stored.
+.if t .sp .4v
+.UL scanf
+returns as its value the number of successfully matched and assigned input
+items.
+This can be used to decide how many input items were found.
+On end of file,
+.UL EOF
+is returned; note that this is different
+from 0, which means that the next input character does not
+match what was called for in the control string.
+.RE
+.nr PD .4v
+.LP
+.UL fread(ptr,\ sizeof(*ptr),\ nitems,\ ioptr)\ FILE\ *ioptr;
+.nr PD 0
+.IP
+.br
+reads
+.UL nitems
+of data beginning at
+.UL ptr
+from file
+.UL ioptr .
+No advance notification
+that binary I/O is being done is required;
+when, for portability reasons,
+it becomes required, it will be done
+by adding an additional character to the mode-string o.\"	@(#)p4	6.2 (Berkeley) 5/9/86
+.\"
+.NH
+LOW-LEVEL I/O
+.PP
+This section describes the 
+bottom level of I/O on the
+.UC UNIX
+system.
+The lowest level of I/O in
+.UC UNIX
+provides no buffering or any other services;
+it is in fact a direct entry into the operating system.
+You are entirely on your own,
+but on the other hand,
+you have the most control over what happens.
+And since the calls and usage are quite simple,
+this isn't as bad as it sounds.
+.NH 2
+File Descriptors
+.PP
+In the
+.UC UNIX
+operating system,
+all input and output is done
+by reading or writing files,
+because all peripheral devices, even the user's terminal,
+are files in the file system.
+This means that a single, homogeneous interface
+handles all communication between a program and peripheral devices.
+.PP
+In the most general case,
+before reading or writing a file,
+it is necessary to inform the system
+of your intent to do so,
+a process called
+``opening'' the file.
+If you are going to write on a file,
+it may also be necessary to create it.
+The system checks your right to do so
+(Does the file exist?
+Do you have permission to access it?),
+and if all is well,
+returns a small positive integer
+called a
+.ul
+file descriptor.
+Whenever I/O is to be done on the file,
+the file descriptor is used instead of the name to identify the file.
+(This is roughly analogous to the use of
+.UC READ(5,...)
+and
+.UC WRITE(6,...)
+in Fortran.)
+All
+information about an open file is maintained by the system;
+the user program refers to the file
+only
+by the file descriptor.
+.PP
+The file pointers discussed in section 3
+are similar in spirit to file descriptors,
+but file descriptors are more fundamental.
+A file pointer is a pointer to a structure that contains,
+among other things, the file descriptor for the file in question.
+.PP
+Since input and output involving the user's terminal
+are so common,
+special arrangements exist to make this convenient.
+When the command interpreter (the
+``shell'')
+runs a program,
+it opens
+three files, with file descriptors 0, 1, and 2,
+called the standard input,
+the standard output, and the standard error output.
+All of these are normally connected to the terminal,
+so if a program reads file descriptor 0
+and writes file descriptors 1 and 2,
+it can do terminal I/O
+without worrying about opening the files.
+.PP
+If I/O is redirected 
+to and from files with
+.UL < 
+and
+.UL > ,
+as in
+.P1
+prog <infile >outfile
+.P2
+the shell changes the default assignments for file descriptors
+0 and 1
+from the terminal to the named files.
+Similar observations hold if the input or output is associated with a pipe.
+Normally file descriptor 2 remains attached to the terminal,
+so error messages can go there.
+In all cases,
+the file assignments are changed by the shell,
+not by the program.
+The program does not need to know where its input
+comes from nor where its output goes,
+so long as it uses file 0 for input and 1 and 2 for output.
+.NH 2
+Read and Write
+.PP
+All input and output is done by
+two functions called
+.UL read
+and
+.UL write .
+For both, the first argument is a file descriptor.
+The second argument is a buffer in your program where the data is to
+come from or go to.
+The third argument is the number of bytes to be transferred.
+The calls are
+.P1
+n_read = read(fd, buf, n);
+
+n_written = write(fd, buf, n);
+.P2
+Each call returns a byte count
+which is the number of bytes actually transferred.
+On reading,
+the number of bytes returned may be less than
+the number asked for,
+because fewer than
+.UL n
+bytes remained to be read.
+(When the file is a terminal,
+.UL read
+normally reads only up to the next newline,
+which is generally less than what was requested.)
+A return value of zero bytes implies end of file,
+and
+.UL -1
+indicates an error of some sort.
+For writing, the returned value is the number of bytes
+actually written;
+it is generally an error if this isn't equal
+to the number supposed to be written.
+.PP
+The number of bytes to be read or written is quite arbitrary.
+The two most common values are 
+1,
+which means one character at a time
+(``unbuffered''),
+and
+512,
+which corresponds to a physical blocksize on many peripheral devices.
+This latter size will be most efficient,
+but even character at a time I/O
+is not inordinately expensive.
+.PP
+Putting these facts together,
+we can write a simple program to copy
+its input to its output.
+This program will copy anything to anything,
+since the input and output can be redirected to any file or device.
+.P1
+#define	BUFSIZE	512	/* best size for PDP-11 UNIX */
+
+main()	/* copy input to output */
+{
+	char	buf[BUFSIZE];
+	int	n;
+
+	while ((n = read(0, buf, BUFSIZE)) > 0)
+		write(1, buf, n);
+	exit(0);
+}
+.P2
+If the file size is not a multiple of
+.UL BUFSIZE ,
+some 
+.UL read
+will return a smaller number of bytes
+to be written by
+.UL write ;
+the next call to 
+.UL read
+after that
+will return zero.
+.PP
+It is instructive to see how
+.UL read
+and
+.UL write
+can be used to construct
+higher level routines like
+.UL getchar ,
+.UL putchar ,
+etc.
+For example,
+here is a version of
+.UL getchar
+which does unbuffered input.
+.P1
+#define	CMASK	0377	/* for making char's > 0 */
+
+getchar()	/* unbuffered single character input */
+{
+	char c;
+
+	return((read(0, &c, 1) > 0) ? c & CMASK : EOF);
+}
+.P2
+.UL c
+.ul
+must
+be declared
+.UL char ,
+because
+.UL read
+accepts a character pointer.
+The character being returned must be masked with
+.UL 0377
+to ensure that it is positive;
+otherwise sign extension may make it negative.
+(The constant
+.UL 0377
+is appropriate for the
+.UC PDP -11
+but not necessarily for other machines.)
+.PP
+The second version of
+.UL getchar
+does input in big chunks,
+and hands out the characters one at a time.
+.P1
+#define	CMASK	0377	/* for making char's > 0 */
+#define	BUFSIZE	512
+
+getchar()	/* buffered version */
+{
+	static char	buf[BUFSIZE];
+	static char	*bufp = buf;
+	static int	n = 0;
+
+	if (n == 0) {	/* buffer is empty */
+		n = read(0, buf, BUFSIZE);
+		bufp = buf;
+	}
+	return((--n >= 0) ? *bufp++ & CMASK : EOF);
+}
+.P2
+.NH 2
+Open, Creat, Close, Unlink
+.PP
+Other than the default
+standard input, output and error files,
+you must explicitly open files in order to
+read or write them.
+There are two system entry points for this,
+.UL open
+and
+.UL creat 
+[sic].
+.PP
+.UL open
+is rather like the
+.UL  fopen
+discussed in the previous section,
+except that instead of returning a file pointer,
+it returns a file descriptor,
+which is just an
+.UL int .
+.P1
+int fd;
+
+fd = open(name, rwmode);
+.P2
+As with
+.UL fopen ,
+the
+.UL name
+argument
+is a character string corresponding to the external file name.
+The access mode argument
+is different, however:
+.UL rwmode
+is 0 for read, 1 for write, and 2 for read and write access.
+.UL open
+returns
+.UL -1
+if any error occurs;
+otherwise it returns a valid file descriptor.
+.PP
+It is an error to 
+try to
+.UL open
+a file that does not exist.
+The entry point
+.UL creat
+is provided to create new files,
+or to re-write old ones.
+.P1
+fd = creat(name, pmode);
+.P2
+returns a file descriptor
+if it was able to create the file
+called
+.UL name ,
+and
+.UL -1
+if not.
+If the file
+already exists,
+.UL creat
+will truncate it to zero length;
+it is not an error to
+.UL creat
+a file that already exists.
+.PP
+If the file is brand new,
+.UL creat
+creates it with the
+.ul
+protection mode 
+specified by
+the
+.UL pmode
+argument.
+In the
+.UC UNIX
+file system,
+there are nine bits of protection information
+associated with a file,
+controlling read, write and execute permission for
+the owner of the file,
+for the owner's group,
+and for all others.
+Thus a three-digit octal number
+is most convenient for specifying the permissions.
+For example,
+0755
+specifies read, write and execute permission for the owner,
+and read and execute permission for the group and everyone else.
+.PP
+To illustrate,
+here is a simplified version of
+the
+.UC UNIX
+utility
+.IT cp ,
+a program which copies one file to another.
+(The main simplification is that our version
+copies only one file,
+and does not permit the second argument
+to be a directory.)
+.P1
+#define NULL 0
+#define BUFSIZE 512
+#define PMODE 0644 /* RW for owner, R for group, others */
+
+main(argc, argv)	/* cp: copy f1 to f2 */
+int argc;
+char *argv[];
+{
+	int	f1, f2, n;
+	char	buf[BUFSIZE];
+
+	if (argc != 3)
+		error("Usage: cp n the
+.UL fopen
+call.
+.nr PD .4v
+.LP
+.UL fwrite(ptr,\ sizeof(*ptr),\ nitems,\ ioptr)\ FILE\ *ioptr;
+.nr PD 0
+.IP
+.br
+Like
+.UL fread ,
+but in the other direction.
+.nr PD .4v
+.LP
+.UL rewind(ioptr)\ FILE\ *ioptr;
+.nr PD 0
+.IP
+.br
+rewinds the stream
+named by
+.UL ioptr .
+It is not very useful except on input,
+since a rewound output file is still open only for output.
+.nr PD .4v
+.LP
+.UL system(string)\ char\ *string;
+.nr PD 0
+.IP
+.br
+The
+.UL string
+is executed by the shell as if typed at the terminal.
+.nr PD .4v
+.LP
+.UL getw(ioptr)\ FILE\ *ioptr;
+.nr PD 0
+.IP
+.br
+returns the next word from the input stream named by
+.UL ioptr .
+.UL EOF
+is returned on end-of-file or error,
+but since this a perfectly good
+integer
+.UL feof
+and
+.UL ferror
+should be used.
+A ``word'' is 16 bits on the
+.UC PDP-11.
+.nr PD .4v
+.LP
+.UL putw(w,\ ioptr)\ FILE\ *ioptr;
+.nr PD 0
+.IP
+.br
+writes the integer
+.UL w
+on the named output stream.
+.nr PD .4v
+.LP
+.UL setbuf(ioptr,\ buf)\ FILE\ *ioptr;\ char\ *buf;
+.nr PD 0
+.IP
+.br
+.UL setbuf
+may be used after a stream has been opened
+but before I/O has started.
+If
+.UL buf
+is
+.UL NULL ,
+the stream will be unbuffered.
+Otherwise the buffer supplied will be used.
+It must be a character array of sufficient size:
+.P1
+char	buf[BUFSIZ];
+.P2
+.nr PD .4v
+.LP
+.UL fileno(ioptr)\ FILE\ *ioptr;
+.nr PD 0
+.IP
+.br
+returns the integer file descriptor associated with the file.
+.nr PD .4v
+.LP
+.UL fseek(ioptr,\ offset,\ ptrname)\ FILE\ *ioptr;\ long\ offset;
+.nr PD 0
+.IP
+.br
+The location of the next byte in the stream
+named by
+.UL ioptr
+is adjusted.
+.UL offset
+is a long integer.
+If
+.UL ptrname
+is 0, the offset is measured from the beginning of the file;
+if
+.UL ptrname
+is 1, the offset is measured from the current read or
+write pointer;
+if
+.UL ptrname
+is 2, the offset is measured from the end of the file.
+The routine accounts properly for any buffering.
+(When this routine is used on
+.UC UNIX \& non-
+systems,
+the offset must be a value returned from
+.UL ftell
+and the ptrname must be 0).
+.ne 3
+.nr PD .4v
+.LP
+.UL long\ ftell(ioptr)\ FILE\ *ioptr;
+.nr PD 0
+.IP
+.br
+The byte offset, measured from the beginning of the file,
+associated with the named stream is returned.
+Any buffering is properly accounted for.
+(On
+.UC UNIX \& non-
+systems the value of this call is useful only
+for handing to
+.UL fseek ,
+so as to position the file to the same place it was when
+.UL ftell
+was called.)
+.nr PD .4v
+.LP
+.UL getpw(uid,\ buf)\ char\ *buf;
+.nr PD 0
+.IP
+.br
+The password file is searched for the given integer user ID.
+If an appropriate line is found, it is copied into
+the character array
+.UL buf ,
+and 0 is returned.
+If no line is found corresponding to the user ID
+then 1 is returned.
+.nr PD .4v
+.LP
+.UL char\ *malloc(num);
+.nr PD 0
+.IP
+.br
+allocates
+.UL num
+bytes.
+The pointer returned is sufficiently well aligned to be usable for any purpose.
+.UL NULL
+is returned if no space is available.
+.nr PD .4v
+.LP
+.UL char\ *calloc(num,\ size);
+.nr PD 0
+.IP
+.br
+allocates space for
+.UL num
+items each of size
+.UL size .
+The space is guaranteed to be set to 0 and the pointer is
+sufficiently well aligned to be usable for any purpose.
+.UL NULL
+is returned if no space is available .
+.nr PD .4v
+.LP
+.UL cfree(ptr)\ char\ *ptr;
+.nr PD 0
+.IP
+.br
+Space is returned to the pool used by
+.UL calloc .
+Disorder can be expected if the pointer was not obtained
+from
+.UL calloc .
+.nr PD .4v
+.LP
+The following are macros whose definitions may be obtained by including
+.UL <ctype.h> .
+.nr PD .4v
+.LP
+.UL isalpha(c)
+returns non-zero if the argument is alphabetic.
+.nr PD .4v
+.LP
+.UL isupper(c)
+returns non-zero if the argument is upper-case alphabetic.
+.nr PD .4v
+.LP
+.UL islower(c)
+returns non-zero if the argument is lower-case alphabetic.
+.nr PD .4v
+.LP
+.UL isdigit(c)
+returns non-zero if the argument is a digit.
+.nr PD .4v
+.LP
+.UL isspace(c)
+returns non-zero if the argument is a spacing character:
+tab, newline, carriage return, vertical tab,
+form feed, space.
+.nr PD .4v
+.LP
+.UL ispunct(c)
+returns non-zero if the argument is
+any punctuation character, i.e., not a space, letter,
+digit or control character.
+.nr PD .4v
+.LP
+.UL isalnum(c)
+returns non-zero if the argument is a letter or a digit.
+.nr PD .4v
+.LP
+.UL isprint(c)
+returns non-zero if the argument is printable \(em
+a letter, digit, or punctuation character.
+.nr PD .4v
+.LP
+.UL iscntrl(c)
+returns non-zero if the argument is a control character.
+.nr PD .4v
+.LP
+.UL isascii(c)
+returns non-zero if the argument is an ascii character, i.e., less than octal 0200.
+.nr PD .4v
+.LP
+.UL toupper(c)
+returns the upper-case character corresponding to the lower-case
+letter
+.UL c.
+.nr PD .4v
+.LP
+.UL tolower(c)
+returns the lower-case character corresponding to the upper-case
+letter
+.UL c .
+                                                                                                                                                                                                                                                                                                                                                                                                    .\" Copyright (c) 1980 Regents of the University of California.
+.\" All rights reserved.  The Berkeley software License Agreement
+.\" specifies the terms and conditions for redistribution.
+.\"
+.\"	@(#)edit.vindex	6.1 (Berkeley) 5/27/86
+.\"
+.bd I
+.ND
+.TL
+Index
+.sp 3
+.2C
+.nf
+addressing, \fIsee\fR line numbers
+append mode, 4
+backslash (\\), 18
+buffer, 2
+command mode, 4
+context search, 8, 10, 13, 18
+control characters (``^'' notation), 8
+control-d, 6
+current filename, 19, 20
+current line (.), 9, 15
+diagnostic messages, 4
+disk, 2
+documentation, 21
+edit (to begin editing session), 3, 7
+editing commands:
+.in +2
+append (a), 4, 7
+change (c), 16
+copy (co), 13
+delete (d), 13-14
+edit (e), 12
+file (f), 19
+global (g), 18-19
+move (m), 12-13
+number (nu), 9
+preserve (pre), 20-21
+print (p), 8
+quit (q), 5, 11
+quit! (q!), 11
+read (r), 20
+recover (rec), 20
+substitute (s), 9-10, 17, 18
+undo (u), 14, 17
+write (w), 5-6, 11, 19-20
+z, 11
+.sp 10i
+! (shell escape), 19
+$= , 15
++, 15
+\-, 15
+//, 8, 18
+??, 18
+\&\fB.\fR, 9, 15
+\&\fB.\fR=, 9, 15
+.in -2
+erasing
+.ti +2
+characters (#), 8
+.ti +2
+lines (@), 8
+ex (text editor), 21
+\fIEx Reference Manual\fR, 21
+file, 1
+file recovery, 20
+filename, 2
+Interrupt (message), 7
+line numbers, \fIsee also\fR current line
+.ti +2
+dollar sign ($), 8, 12-13, 15
+.ti +2
+dot (.), 9, 15
+.ti +2
+relative (+ and \-), 15, 16
+logging out, 6
+login procedure, 2
+``magic'' characters, 21
+non-printing characters, 8
+``not found'' (message), 3
+program, 1
+recovery \fIsee\fR file recovery
+shell, 18
+shell escape (!), 19
+special characters (^, $, \e), 18
+text input mode, 4
+UNIX, 1
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                               +¨    .   #(    ..  ,¨    INDEX  r-¨   	 bibdoc.ms e .¨  Ä testrefs  e                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 from to", NULL);
+	if ((f1 = open(argv[1], 0)) == -1)
+		error("cp: can't open %s", argv[1]);
+	if ((f2 = creat(argv[2], PMODE)) == -1)
+		error("cp: can't create %s", argv[2]);
+
+	while ((n = read(f1, buf, BUFSIZE)) > 0)
+		if (write(f2, buf, n) != n)
+			error("cp: write error", NULL);
+	exit(0);
+}
+.P2
+.P1
+error(s1, s2)	/* print error message and die */
+char *s1, *s2;
+{
+	printf(s1, s2);
+	printf("\en");
+	exit(1);
+}
+.P2
+.PP
+As we said earlier,
+there is a limit (typically 15-25)
+on the number of files which a program
+may have open simultaneously.
+Accordingly, any program which intends to process
+many files must be prepared to re-use
+file descriptors.
+The routine
+.UL close
+breaks the connection between a file descriptor
+and an open file,
+and frees the
+file descriptor for use with some other file.
+Termination of a program
+via
+.UL exit
+or return from the main program closes all open files.
+.PP
+The function
+.UL unlink(filename)
+removes the file
+.UL filename
+from the file system.
+.NH 2
+Random Access \(em Seek and Lseek
+.PP
+File I/O is normally sequential:
+each
+.UL read
+or
+.UL write
+takes place at a position in the file
+right after the previous one.
+When necessary, however,
+a file can be read or written in any arbitrary order.
+The
+system call
+.UL lseek
+provides a way to move around in
+a file without actually reading
+or writing:
+.P1
+lseek(fd, offset, origin);
+.P2
+forces the current position in the file
+whose descriptor is
+.UL fd
+to move to position
+.UL offset ,
+which is taken relative to the location
+specified by
+.UL origin .
+Subsequent reading or writing will begin at that position.
+.UL offset
+is
+a
+.UL long ;
+.UL fd
+and
+.UL origin
+are
+.UL int 's.
+.UL origin
+can be 0, 1, or 2 to specify that 
+.UL offset
+is to be
+measured from
+the beginning, from the current position, or from the
+end of the file respectively.
+For example,
+to append to a file,
+seek to the end before writing:
+.P1
+lseek(fd, 0L, 2);
+.P2
+To get back to the beginning (``rewind''),
+.P1
+lseek(fd, 0L, 0);
+.P2
+Notice the
+.UL 0L
+argument;
+it could also be written as
+.UL (long)\ 0 .
+.PP
+With 
+.UL lseek ,
+it is possible to treat files more or less like large arrays,
+at the price of slower access.
+For example, the following simple function reads any number of bytes
+from any arbitrary place in a file.
+.P1
+get(fd, pos, buf, n) /* read n bytes from position pos */
+int fd, n;
+long pos;
+char *buf;
+{
+	lseek(fd, pos, 0);	/* get to pos */
+	return(read(fd, buf, n));
+}
+.P2
+.PP
+In pre-version 7
+.UC UNIX ,
+the basic entry point to the I/O system
+is called
+.UL seek .
+.UL seek
+is identical to
+.UL lseek ,
+except that its
+.UL  offset 
+argument is an
+.UL int
+rather than  a
+.UL long .
+Accordingly,
+since
+.UC PDP -11
+integers have only 16 bits,
+the
+.UL offset
+specified
+for
+.UL seek
+is limited to 65,535;
+for this reason,
+.UL origin
+values of 3, 4, 5 cause
+.UL seek
+to multiply the given offset by 512
+(the number of bytes in one physical block)
+and then interpret
+.UL origin
+as if it were 0, 1, or 2 respectively.
+Thus to get to an arbitrary place in a large file
+requires two seeks, first one which selects
+the block, then one which
+has
+.UL origin
+equal to 1 and moves to the desired byte within the block.
+.NH 2
+Error Processing
+.PP
+The routines discussed in this section,
+and in fact all the routines which are direct entries into the system
+can incur errors.
+Usually they indicate an error by returning a value of \-1.
+Sometimes it is nice to know what sort of error occurred;
+for this purpose all these routines, when appropriate,
+leave an error number in the external cell
+.UL errno .
+The meanings of the various error numbers are
+listed
+in the introduction to Section II
+of the
+.I
+.UC UNIX
+Programmer's Manual,
+.R
+so your program can, for example, determine if
+an attempt to open a file failed because it did not exist
+or because the user lacked permission to read it.
+Perhaps more commonly,
+you may want to print out the
+reason for failure.
+The routine
+.UL perror
+will print a message associated with the value
+of
+.UL errno ;
+more generally,
+.UL sys\_errno
+is an array of character strings which can be indexed
+by
+.UL errno
+and printed by your program.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 %A Timothy A. Budd
+%T Referemce File Formats
+%I UATR 82-1
+%D 1982
+
+%A Brian W. Kernighan
+%A Lorinda L. Cherry
+%T A System for Typesetting Mathematics
+%J CACM
+%V 18
+%N 3
+%D MAR 1978
+%P 151-156
+%K eqn
+
+%A Software\ Research\ Associates
+%T Software Engineering Automated Tools Index
+%I S\&RA
+%C San Francisco, CA
+%D 1982
+
+%A M. E. Lesk
+%T Tbl - A Program to Format Tables
+%I Bell Laboratories
+%J Unix Programmer's Manual, Vol 2A
+
+%A M. E. Lesk
+%T Some Applications of Inverted Indexes on the UNIX System
+%R Bell Laboratories Computing Science Technical Report 69
+%D JUN 1978
+%K refer
+
+%A Alfred V. Aho
+%A Jeffrey D. Ullman
+%T Principles of Compiler Design
+%I Addison-Wesley
+%D 1977
+%K dragon
+
+%A R. E. Griswold
+%A J. F. Poage
+%A I. P. Polonsky
+%T The SNOBOL4 Programming Language
+%I PRHALL
+%D second edition 1971
+
+%A R. Colt Hoare
+%T A Tour through the Island of Elba
+%I (no listed publisher)
+%C London
+%D 1814
+
+%A Dennie Van\ Tassel
+%T Program Style, Design, Efficiency,
+%I PRHALL
+%D 1978
+%W tab
+%K testing debugging
+
+%A M. A. Harrison
+%A W. L. Ruzzo
+%A J. D. Ullman
+%T Protection in Operating Systems
+%J CACM
+%V 19
+%N 8
+%P 461-471
+%D AUG 1976
+%K hru
+
+%A M. Bishop
+%A L. Snyder
+%T The Transfer of Information and Authority
+in a Protection System
+%J Proceedings of the 7th SOSP
+%P 45-54
+%D 1979
+
+%A John B. Goodenough
+%T A Survey of Program Testing Issues
+%B Research Directions in Software Technology
+%E Peter Wegner
+%I MIT Press
+%P 316-340
+%D 1979
+
+%A R. J. Lipton
+%A L. Snyder
+%T On Synchronization and Security
+%E R. A. DeMillo
+%E D. P. Dobkin
+%E A. K. Jones
+%E R. J. Lipton
+%B Foundations of Secure Computation
+%P 367-388
+%I ACPRESS
+%D 1978
+
+%A C.A.R. Hoare
+%T Procedures and parameters: An axiomatic approach
+%B Symposium on semantics of algorithmic languages
+%E E. Engeler
+%P 102-116
+%S Lecture Notes in Mathematics
+%V 188
+%I Springer-Verlag
+%C Berlin-Heidelberg-New York
+%D 1971
+
+%A A. Girard
+%A J-C Rault
+%T A Programming Technique for Software Reliability
+%B Symposium on Software Reliability
+%I IEEE
+%C Montvale, New Jersey
+%D 1977
+%O (Cited in Glib [32])
+
+%E R. A. DeMillo
+%E D. P. Dobkin
+%E A. K. Jones
+%E R. J. Lipton
+%T Foundations of Secure Computation
+%I ACPRESS
+%D 1978
+%K book
+
+%A T. A. Budd
+%T An APL Complier
+%R UATR 81-17
+%D 1981
+
+%A Douglas Baldwin
+%A Frederick Sayward
+%T Heuristics for Determining Equivalence of Program Mutations
+%R Technical Report Number 161
+%I Yale University
+%D 1979
+
+%A Martin Brooks
+%T Automatic Generation of Test Data for
+Recursive Programs Having Simple Errors
+%I PhD Thesis, Stanford University
+%D 1980
+
+%A A. Snyder
+%T A Portable Compiler for the Language C
+%R Master's Thesis
+%I M.I.T.
+%D 1974
+
+%F BHS--
+%A Timothy A. Budd
+%A Robert Hess
+%A Frederick G. Sayward
+%T User's Guide for the EXPER Mutation Analysis system
+%O (Yale university, memo)
+
+%E I. M. Editor
+%T Book with no author
+%D 1066
+
+%I SDIT
+%T Bullitun of the South Dakota Institute of Technology
+%D 1946
+                                                                                                                                                           .\"	@(#)p6	6.2 (Berkeley) 5/9/86
+.\"
+.NH
+SIGNALS \(em INTERRUPTS AND ALL THAT
+.PP
+This section is concerned with how to
+deal gracefully with signals from
+the outside world (like interrupts), and with program faults.
+Since there's nothing very useful that
+can be done from within C about program
+faults, which arise mainly from illegal memory references
+or from execution of peculiar instructions,
+we'll discuss only the outside-world signals:
+.IT interrupt ,
+which is sent when the
+.UC DEL
+character is typed;
+.IT quit ,
+generated by the
+.UC FS
+character;
+.IT hangup ,
+caused by hanging up the phone;
+and
+.IT terminate ,
+generated by the
+.IT kill
+command.
+When one of these events occurs,
+the signal is sent to
+.IT  all 
+processes which were started
+from the corresponding terminal;
+unless other arrangements have been made,
+the signal
+terminates the process.
+In the
+.IT quit
+case, a core image file is written for debugging
+purposes.
+.PP
+The routine which alters the default action
+is
+called
+.UL signal .
+It has two arguments: the first specifies the signal, and the second
+specifies how to treat it.
+The first argument is just a number code, but the second is the
+address is either a function, or a somewhat strange code
+that requests that the signal either be ignored, or that it be
+given the default action.
+The include file
+.UL signal.h
+gives names for the various arguments, and should always be included
+when signals are used.
+Thus
+.P1
+#include <signal.h>
+ ...
+signal(SIGINT, SIG_IGN);
+.P2
+causes interrupts to be ignored, while
+.P1
+signal(SIGINT, SIG_DFL);
+.P2
+restores the default action of process termination.
+In all cases,
+.UL signal
+returns the previous value of the signal.
+The second argument to
+.UL signal
+may instead be the name of a function
+(which has to be declared explicitly if
+the compiler hasn't seen it already).
+In this case, the named routine will be called
+when the signal occurs.
+Most commonly this facility is used
+to allow the program to clean up
+unfinished business before terminating, for example to
+delete a temporary file:
+.P1
+#include <signal.h>
+
+main()
+{
+	int onintr();
+
+	if (signal(SIGINT, SIG_IGN) != SIG_IGN)
+		signal(SIGINT, onintr);
+
+	/* Process ... */
+
+	exit(0);
+}
+
+onintr()
+{
+	unlink(tempfile);
+	exit(1);
+}
+.P2
+.PP
+Why the test and the double call to
+.UL signal ?
+Recall that signals like interrupt are sent to
+.ul
+all
+processes started from a particular terminal.
+Accordingly, when a program is to be run
+non-interactively
+(started by
+.UL & ),
+the shell turns off interrupts for it
+so it won't be stopped by interrupts intended for foreground processes.
+If this program began by announcing that all interrupts were to be sent
+to the
+.UL onintr
+routine regardless,
+that would undo the shell's effort to protect it
+when run in the background.
+.PP
+The solution, shown above, is to test the state of interrupt handling,
+and to continue to ignore interrupts if they are already being ignored.
+The code as written
+depends on the fact that
+.UL signal
+returns the previous state of a particular signal.
+If signals were already being ignored, the process should continue to ignore them;
+otherwise, they should be caught.
+.PP
+A more sophisticated program may wish to intercept
+an interrupt and interpret it as a request
+to stop what it is doing
+and return to its own command-processing loop.
+Think of a text editor:
+interrupting a long printout should not cause it
+to terminate and lose the work
+already done.
+The outline of the code for this case is probably best written like this:
+.P1
+#include <signal.h>
+#include <setjmp.h>
+jmp_buf	sjbuf;
+
+main()
+{
+	int (*istat)(), onintr();
+
+	istat = signal(SIGINT, SIG_IGN);	/* save original status */
+	setjmp(sjbuf);	/* save current stack position */
+	if (istat != SIG_IGN)
+		signal(SIGINT, onintr);
+
+	/* main processing loop */
+}
+.P2
+.P1
+onintr()
+{
+	printf("\enInterrupt\en");
+	longjmp(sjbuf);	/* return to saved state */
+}
+.P2
+The include file
+.UL setjmp.h
+declares the type
+.UL jmp_buf
+an object in which the state
+can be saved.
+.UL sjbuf
+is such an object; it is an array of some sort.
+The
+.UL setjmp
+routine then saves
+the state of things.
+When an interrupt occurs,
+a call is forced to the
+.UL onintr
+routine,
+which can print a message, set flags, or whatever.
+.UL longjmp
+takes as argument an object stored into by
+.UL setjmp ,
+and restores control
+to the location after the call to
+.UL setjmp ,
+so control (and the stack level) will pop back
+to the place in the main routine where
+the signal is set up and the main loop entered.
+Notice, by the way, that
+the signal
+gets set again after an interrupt occurs.
+This is necessary; most signals are automatically
+reset to their default action when they occur.
+.PP
+Some programs that want to detect signals simply can't be stopped
+at an arbitrary point,
+for example in the middle of updating a linked list.
+If the routine called on occurrence of a signal
+sets a flag and then
+returns instead of calling
+.UL exit
+or
+.UL longjmp ,
+execution will continue
+at the exact point it was interrupted.
+The interrupt flag can then be tested later.
+.PP
+There is one difficulty associated with this
+approach.
+Suppose the program is reading the
+terminal when the interrupt is sent.
+The specified routine is duly called; it sets its flag
+and returns.
+If it were really true, as we said
+above, that ``execution resumes at the exact point it was interrupted,''
+the program would continue reading the terminal
+until the user typed another line.
+This behavior might well be confusing, since the user
+might not know that the program is reading;
+he presumably would prefer to have the signal take effect instantly.
+The method chosen to resolve this difficulty
+is to terminate the terminal read when execution
+resumes after the signal, returning an error code
+which indicates what happened.
+.PP
+Thus programs which catch and resume
+execution after signals should be prepared for ``errors''
+which are caused by interrupted
+system calls.
+(The ones to watch out for are reads from a terminal,
+.UL wait ,
+and
+.UL pause .)
+A program
+whose
+.UL onintr
+program just sets
+.UL intflag ,
+resets the interrupt signal, and returns,
+should usually include code like the following when it reads
+the standard input:
+.P1
+if (getchar() == EOF)
+	if (intflag)
+		/* EOF caused by interrupt */
+	else
+		/* true end-of-file */
+.P2
+.PP
+A final subtlety to keep in mind becomes important
+when signal-catching is combined with execution of other programs.
+Suppose a program catches interrupts, and also includes
+a method (like ``!'' in the editor)
+whereby other programs can be executed.
+Then the code should look something like this:
+.P1
+if (fork() == 0)
+	execl(...);
+signal(SIGINT, SIG_IGN);	/* ignore interrupts */
+wait(&status);	/* until the child is done */
+signal(SIGINT, onintr);	/* restore interrupts */
+.P2
+Why is this?
+Again, it's not obvious but not really difficult.
+Suppose the program you call catches its own interrupts.
+If you interrupt the subprogram,
+it will get the signal and return to its
+main loop, and probably read your terminal.
+But the calling program will also pop out of
+its wait for the subprogram and read your terminal.
+Having two processes reading
+your terminal is very unfortunate,
+since the system figuratively flips a coin to decide
+who should get each line of input.
+A simple way out is to have the parent program
+ignore interrupts until the child is done.
+This reasoning is reflected in the standard I/O library function
+.UL system :
+.P1
+#include <signal.h>
+
+system(s)	/* run command string s */
+char *s;
+{
+	int status, pid, w;
+	register int (*istat)(), (*qstat)();
+
+	if ((pid = fork()) == 0) {
+		execl("/bin/sh", "sh", "-c", s, 0);
+		_exit(127);
+	}
+	istat = signal(SIGINT, SIG_IGN);
+	qstat = signal(SIGQUIT, SIG_IGN);
+	while ((w = wait(&status)) != pid && w != -1)
+		;
+	if (w == -1)
+		status = -1;
+	signal(SIGINT, istat);
+	signal(SIGQUIT, qstat);
+	return(status);
+}
+.P2
+.PP
+As an aside on declarations,
+the function
+.UL signal
+obviously has a rather strange second argument.
+It is in fact a pointer to a function delivering an integer,
+and this is also the type of the signal routine itself.
+The two values
+.UL SIG_IGN
+and
+.UL SIG_DFL
+have the right type, but are chosen so the.\" Copyright (c) 1980 Regents of the University of California.
+.\" All rights reserved.  The Berkeley software License Agreement
+.\" specifies the terms and conditions for redistribution.
+.\"
+.\"	@(#)edittut.ms	6.1 (Berkeley) 5/27/86
+.\"
+.EH 'USD:14-%''Edit:  A Tutorial'
+.OH 'Edit:  A Tutorial''USD:14-%'
+.LP
+.ds u \s-2UNIX\s0
+.ll 5i
+.nr LL 5i
+.ND
+.sp 4
+.ce
+\f3\s+2Edit:  A Tutorial\s0\f1
+.sp
+.ce 3
+.I
+Ricki Blau
+.sp
+James Joyce
+.R
+.sp
+.ce 3
+Computing Services
+University of California
+Berkeley, California 94720
+.sp 3
+.ce
+.I
+ABSTRACT
+.R
+.sp
+.LP
+This narrative introduction to the use of the text editor
+.I edit
+assumes no prior familiarity with computers or with text editing.
+Its aim is to lead the beginning \s-2UNIX\(dg\s+2 user through the
+.FS
+\(dgUNIX is a trademark of Bell Laboratories.
+.FE
+fundamental steps of writing and revising a file of text.
+Edit,
+a version of the text editor
+.I ex,
+was designed to provide an informative environment
+for new and casual users.
+.PP
+We welcome comments and suggestions about this tutorial
+and the \s-2UNIX\s+2 documentation in general.
+.sp .5v
+September 1981
+.bp
+.ll 6.5i
+.nr LL 6.5i
+.nr LT 6.5i
+.ds u \s-2UNIX\s0
+.ce
+\s+2\f3Contents\f1\s0
+.LP
+.nf
+Introduction\ \ \ 3
+.sp
+Session 1\ \ \4
+.in +.5i
+Making contact with \s-2UNIX\s+2\ \ \ 4
+Logging in\ \ \4
+Asking for \fIedit\fR\ \ \ 4
+The ``Command not found'' message\ \ \ 5
+A summary\ \ \5
+Entering text\ \ \ 5
+Messages from \fIedit\fR\ \ \ 5
+Text input mode\ \ \ 6
+Making corrections\ \ \ 6
+Writing text to disk\ \ \ 7
+Signing off\ \ \7
+.in -.5i
+.sp
+Session 2\ \ \ 8
+.in +.5i
+Adding more text to the file\ \ \ 8
+Interrupt\ \ \ 8
+Making corrections\ \ \ 8
+Listing what's in the buffer (p)\ \ \ 9
+Finding things in the buffer\ \ \ 9
+The current line\ \ \ 10
+Numbering lines (nu)\ \ \ 10
+Substitute command (s)\ \ \ 10
+Another way to list what's in the buffer (z)\ \ \ 11
+Saving the modified text\ \ \ 12
+.in -.5i
+.sp
+Session 3\ \ \ 13
+.in +.5i
+Bringing text into the buffer (e)\ \ \ 13
+Moving text in the buffer (m)\ \ \ 13
+Copying lines (copy)\ \ \ 14
+Deleting lines (d)\ \ \ 14
+A word or two of caution\ \ \ 15
+Undo (u) to the rescue\ \ \ 15
+More about the dot (.) and buffer end ($)\ \ \ 16
+Moving around in the buffer (+ and \-)\ \ \ 16
+Changing lines (c)\ \ \ 17
+.in -.5i
+.sp
+Session 4\ \ \ 18
+.in +.5i
+Making commands global (g)\ \ \ 18
+More about searching and substituting\ \ \ 19
+Special characters\ \ \ 19
+Issuing \s-2UNIX\s+2 commands from the editor\ \ \ 20
+Filenames and file manipulation\ \ \ 20
+The file (f) command\ \ \ 20
+Reading additional files (r)\ \ \ 21
+Writing parts of the buffer\ \ \ 21
+Recovering files\ \ \ 21
+Other recovery techniques\ \ \ 21
+Further reading and other information\ \ \ 22
+Using \fIex\fR\ \ \ 22
+.in -.5i
+.sp
+Index\ \ \ 23
+.bp
+.SH
+.ce
+\s+2Introduction\s0
+.PP
+Text editing using a terminal connected to a computer
+allows you to create, modify, and print text
+easily.
+A
+.I
+text editor
+.R
+is a program
+that assists you
+as you create and modify text.
+The text editor you will learn here is named
+.I edit.
+Creating text using edit is as easy as typing it
+on an electric typewriter.
+Modifying text involves telling the text editor 
+what you want to add, change, or delete.
+You can review your text
+by typing a command
+to print the file contents
+as they are currently.
+Another program (which we do not discuss in this
+document), a text formatter,
+rearranges your text
+for you into ``finished form.''
+.PP
+These lessons assume no prior familiarity with computers
+or with text editing.
+They consist of a series of text editing sessions
+which lead you through the fundamental steps
+of creating and revising text.
+After scanning each lesson and before beginning the next,
+you should try the examples at a terminal to get a feeling
+for the actual process of text editing.
+If you set aside some time for experimentation,
+you will soon become familiar with using the
+computer to write and modify text.
+In addition to the actual use of the text editor,
+other features of \s-2UNIX\s0 will be very important to your work.
+You can begin to
+learn about these other features by
+reading one of the other tutorials
+that provide a general introduction to the system.
+You will be ready to proceed with this lesson as soon as
+you are familiar with (1) your terminal and its special keys,
+(2) how to login,
+(3) and the ways of correcting typing errors.
+Let's first define some terms:
+.sp .5
+.IP program 12
+A set of instructions, given to the computer,
+describing the sequence of steps the computer performs
+in order to accomplish a specific task.
+The task must be specific,
+such as balancing your checkbook
+or editing your text.
+A general task,
+such as working for world peace,
+is something we can all do,
+but not something we can currently write programs to do.
+.IP UNIX
+\s-2UNIX\s0 is a special type of program,
+called an operating system, that supervises the machinery
+and all other programs comprising the total
+computer system.
+.IP edit
+.I edit
+is the name of the \s-2UNIX\s0 text editor you will be learning to use,
+and is a program that aids you in writing or revising text.
+Edit was designed for beginning users,
+and is a simplified version of an editor named
+.I ex.
+.IP file
+Each \s-2UNIX\s0 account is allotted
+space for the permanent storage of information,
+such as programs, data or text.
+A file is a logical unit of data,
+for example, an essay, a program,
+or a chapter from a book,
+which is stored on a computer system.
+Once you create a file,
+it is kept until you instruct the system to remove it.
+You may create a file during one \s-2UNIX\s0 session,
+end the session,
+and return to use it at a later time.
+Files contain anything you choose to write and store in them.
+The sizes of files vary to suit your needs;
+one file might hold only a single number,
+yet another might contain
+a very long document or program.
+The only way to save
+information from one session to the next is to store it in a file,
+which you will learn in Session 1.
+.IP filename
+Filenames are used to distinguish one file from another,
+serving the same purpose as the labels of manila
+folders in a file cabinet.
+In order to write or access information in a file,
+you use the name of that file in a \s-2UNIX\s0 command,
+and the system will automatically locate the file.
+.IP disk
+Files are stored on an input/output device called a disk,
+which looks something like a stack of phonograph records.
+Each surface is coated with a material similar to that
+on magnetic recording tape,
+and information is recorded on it.
+.IP buffer
+A temporary work space, made available to the user
+for the duration of a session of text editing
+and used for creating and modifying
+the text file.
+We can think of the buffer as a blackboard that is
+erased after each class, where each session with the editor
+is a class.
+.bp
+.SH
+.ce 1
+\s+2Session 1\s0
+.sp 1
+.SH
+Making contact with \s-1UNIX\s0
+.PP
+To use the editor you must first make contact with the computer
+by logging in to \s-2UNIX\s0.
+We'll quickly review the standard \s-2UNIX\s0 login procedure
+for the two ways you can make contact:
+on a terminal that is directly linked to the computer,
+or over a telephone line where the computer answers your call.
+.SH
+Directly-linked terminals
+.PP
+Turn on your terminal and press the \s-1RETURN\s0 key.
+You are now ready to login.
+.SH
+Dial-up terminals
+.PP
+If your terminal connects with the computer over a telephone line,
+turn on the terminal, dial the system access number,
+and, when you hear a high-pitched tone, place the 
+telephone handset in the acoustic coupler, if you are using one.
+You are now ready to login.
+.SH
+Logging in
+.PP
+The message inviting you to login is:
+.DS I 1i
+login:
+.DE
+.LP
+Type your login name, which identifies you to \s-2UNIX\s0,
+on the same line as the login message,
+and press \s-2RETURN\s+2.
+If the terminal you are using
+has both upper and lower case,
+.B
+be sure you enter your login name in lower case;
+.R
+otherwise \s-2UNIX\s0 assumes your terminal
+has only upper case and will not recognize lower case
+letters you may type.
+\s-2UNIX\s0 types ``login:'' and you reply
+with your login name, for example ``susan'':
+.DS I 1i
+login: \fBsusan\fR \fI(and press the \s-2RETURN\s0 key)\fR
+.DE1066 :testrefs 2797/47
+161 :testrefs 2250/161
+1814 :testrefs 811/97
+1946 :testrefs 2845/72
+1971 :testrefs 690/120 1644/240
+1974 :testrefs 2554/92
+1976 :testrefs 1016/133
+1977 :testrefs 582/107 1885/179
+1978 :testrefs 67/132 427/154 909/106 1448/195 2065/128
+1979 :testrefs 1150/142 1293/154 2250/161
+1980 :testrefs 2412/141
+1981 :testrefs 2194/55
+1982 :testrefs 0/66 200/118
+2a :testrefs 319/107
+69 :testrefs 427/154
+7th :testrefs 1150/142
+8117 :testrefs 2194/55
+821 :testrefs 0/66
+acpres :testrefs 1448/195 2065/128
+addiso :testrefs 582/107
+aho :testrefs 582/107
+alfred :testrefs 582/107
+algori :testrefs 1644/240
+analys :testrefs 2647/149
+apl :testrefs 2194/55
+applic :testrefs 427/154
+approa :testrefs 1644/240
+associ :testrefs 200/118
+author :testrefs 1150/142 2797/47
+automa :testrefs 200/118 2412/141
+axioma :testrefs 1644/240
+baldwi :testrefs 2250/161
+bell :testrefs 319/107 427/154
+bhs :testrefs 2647/149
+bishop :testrefs 1150/142
+book :testrefs 2065/128 2797/47
+brian :testrefs 67/132
+brooks :testrefs 2412/141
+budd :testrefs 0/66 2194/55 2647/149
+bullit :testrefs 2845/72
+cacm :testrefs 67/132 1016/133
+car :testrefs 1644/240
+cherry :testrefs 67/132
+colt :testrefs 811/97
+compil :testrefs 582/107 2554/92
+compli :testrefs 2194/55
+comput :testrefs 427/154 1448/195 2065/128
+dakota :testrefs 2845/72
+data :testrefs 2412/141
+debugg :testrefs 909/106
+demill :testrefs 1448/195 2065/128
+dennie :testrefs 909/106
+design :testrefs 582/107 909/106
+determ :testrefs 2250/161
+direct :testrefs 1293/154
+dobkin :testrefs 1448/195 2065/128
+dougla :testrefs 2250/161
+dragon :testrefs 582/107
+editio :testrefs 690/120
+editor :testrefs 2797/47
+effici :testrefs 909/106
+elba :testrefs 811/97
+engele :testrefs 1644/240
+engine :testrefs 200/118
+eqn :testrefs 67/132
+equiva :testrefs 2250/161
+errors :testrefs 2412/141
+exper :testrefs 2647/149
+file :testrefs 0/66
+format :testrefs 0/66 319/107
+founda :testrefs 1448/195 2065/128
+freder :testrefs 2250/161 2647/149
+genera :testrefs 2412/141
+girard :testrefs 1885/179
+gooden :testrefs 1293/154
+griswo :testrefs 690/120
+guide :testrefs 2647/149
+harris :testrefs 1016/133
+having :testrefs 2412/141
+hess :testrefs 2647/149
+heuris :testrefs 2250/161
+hoare :testrefs 811/97 1644/240
+hru :testrefs 1016/133
+ieee :testrefs 1885/179
+index :testrefs 200/118
+indexe :testrefs 427/154
+inform :testrefs 1150/142
+instit :testrefs 2845/72
+invert :testrefs 427/154
+island :testrefs 811/97
+issues :testrefs 1293/154
+jc :testrefs 1885/179
+jeffre :testrefs 582/107
+john :testrefs 1293/154
+jones :testrefs 1448/195 2065/128
+kernig :testrefs 67/132
+labora :testrefs 319/107 427/154
+langua :testrefs 690/120 1644/240 2554/92
+lectur :testrefs 1644/240
+lesk :testrefs 319/107 427/154
+lipton :testrefs 1448/195 2065/128
+listed :testrefs 811/97
+lorind :testrefs 67/132
+manual :testrefs 319/107
+martin :testrefs 2412/141
+master :testrefs 2554/92
+mathem :testrefs 67/132 1644/240
+mit :testrefs 1293/154 2554/92
+mutati :testrefs 2250/161 2647/149
+notes :testrefs 1644/240
+number :testrefs 2250/161
+operat :testrefs 1016/133
+parame :testrefs 1644/240
+peter :testrefs 1293/154
+phd :testrefs 2412/141
+poage :testrefs 690/120
+polons :testrefs 690/120
+portab :testrefs 2554/92
+press :testrefs 1293/154
+prhall :testrefs 690/120 909/106
+princi :testrefs 582/107
+proced :testrefs 1644/240
+procee :testrefs 1150/142
+progra :testrefs 319/107 690/120 909/106 1293/154 1885/179 2250/161 2412/141
+protec :testrefs 1016/133 1150/142
+publis :testrefs 811/97
+rault :testrefs 1885/179
+recurs :testrefs 2412/141
+refer :testrefs 427/154
+refere :testrefs 0/66
+reliab :testrefs 1885/179
+report :testrefs 427/154 2250/161
+resear :testrefs 200/118 1293/154
+robert :testrefs 2647/149
+ruzzo :testrefs 1016/133
+saywar :testrefs 2250/161 2647/149
+scienc :testrefs 427/154
+sdit :testrefs 2845/72
+second :testrefs 690/120
+secure :testrefs 1448/195 2065/128
+securi :testrefs 1448/195
+semant :testrefs 1644/240
+simple :testrefs 2412/141
+snobol :testrefs 690/120
+snyder :testrefs 1150/142 1448/195 2554/92
+softwa :testrefs 200/118 1293/154 1885/179
+some :testrefs 427/154
+sosp :testrefs 1150/142
+south :testrefs 2845/72
+spring :testrefs 1644/240
+sra :testrefs 200/118
+stanfo :testrefs 2412/141
+style :testrefs 909/106
+survey :testrefs 1293/154
+sympos :testrefs 1644/240 1885/179
+synchr :testrefs 1448/195
+system :testrefs 67/132 427/154 1016/133 1150/142 2647/149
+tab :testrefs 909/106
+tables :testrefs 319/107
+tassel :testrefs 909/106
+tbl :testrefs 319/107
+techni :testrefs 427/154 1885/179 2250/161
+techno :testrefs 1293/154 2845/72
+test :testrefs 2412/141
+testin :testrefs 909/106 1293/154
+thesis :testrefs 2412/141 2554/92
+throug :testrefs 811/97
+timoth :testrefs 0/66 2647/149
+tools :testrefs 200/118
+tour :testrefs 811/97
+transf :testrefs 1150/142
+typese :testrefs 67/132
+uatr :testrefs 0/66 2194/55
+ullman :testrefs 582/107 1016/133
+univer :testrefs 2250/161 2412/141
+unix :testrefs 319/107 427/154
+users :testrefs 2647/149
+van :testrefs 909/106
+vol :testrefs 319/107
+wegner :testrefs 1293/154
+yale :testrefs 2250/161
+                                                                                                                     /¨    .   &    ..  0¨    6.t 1¨    0.t 2¨    1.t 3¨    2.t 4¨    3.t 5¨    4.t 6¨    5.t 7¨  ” Makefile                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    block on any platter is between a sixth and a half a revolution.
+The implication of this is that the best possible layout without
+contiguous blocks uses only half of the bandwidth of any given track.
+If each track contains an odd number of sectors, 
+then it is possible to resolve the rotational delay to any number of sectors
+by finding a block that begins at the desired 
+rotational position on another track.
+The reason that block chaining has not been implemented is because it
+would require rewriting all the disk drivers in the system,
+and the current throughput rates are already limited by the
+speed of the available processors.
+.PP
+Currently only one block is allocated to a file at a time.
+A technique used by the DEMOS file system
+when it finds that a file is growing rapidly,
+is to preallocate several blocks at once,
+releasing them when the file is closed if they remain unused.
+By batching up allocations, the system can reduce the
+overhead of allocating at each write,
+and it can cut down on the number of disk writes needed to
+keep the block pointers on the disk
+synchronized with the block allocation [Powell79].
+This technique was not included because block allocation 
+currently accounts for less than 10% of the time spent in
+a write system call and, once again, the
+current throughput rates are already limited by the speed
+of the available processors.
+.ds RH Functional enhancements
+.sp 2
+.ne 1i
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      
+(In the examples, input you would type appears in
+.B "bold face"
+to distinguish it from the responses from \s-2UNIX\s0.)
+.PP
+\s-2UNIX\s0 will next respond with a request for a password
+as an additional precaution to prevent
+unauthorized people from using your account.
+The password will not appear when you type it,
+to prevent others from seeing it.
+The message is:
+.DS I 1i
+Password:    \fI(type your password and press \s-2RETURN\s+2)\fR
+.DE
+If any of the information you gave during the login
+sequence was mistyped or incorrect,
+\s-2UNIX\s0 will respond with
+.DS I 1i
+Login incorrect.
+.if t .sp .2v
+.if n .sp 1
+login:
+.DE
+in which case you should start the login process anew.
+Assuming that you have successfully
+logged in, \s-2UNIX\s0
+will print the message of the day and eventually will present
+you with a % at the beginning of a fresh line.
+The % is the \s-2UNIX\s0 prompt symbol
+which tells you that \s-2UNIX\s0 is ready to accept a command.
+.bd I 3
+.SH
+Asking for \fIedit\fP
+.fl
+.bd I
+.PP
+You are ready to tell \s-2UNIX\s0 that you
+want to work with edit, the text editor.
+Now is a convenient time to choose
+a name for the file of text you are about to create.
+To begin your editing session,
+type
+.B edit
+followed by a space and then the filename
+you have selected; for example, ``text''.
+After that,
+press the \s-2RETURN\s0 key and wait for edit's response:
+.DS I 1i
+% \fBedit text\fP    \fI(followed by a \s-2RETURN\s+2)\fR
+"text" No such file or directory
+:
+.DE
+If you typed the command correctly,
+you will now be in communication with edit.
+Edit has set aside a buffer for use as
+a temporary working space during your current editing session.
+Since ``text'' is a new file we are about to create
+the editor was unable to find that file, which it
+confirms by saying:
+.DS I 1i
+"text" No such file or directory
+.DE
+On the next line appears edit's prompt ``:'',
+announcing that you are in \f2command mode\f1 and
+edit expects a command from you.
+You may now begin to create the new file.
+.SH
+The ``Command not found'' message
+.PP
+If you misspelled edit by typing, say, ``editor'',
+this might appear:
+.DS I 1i
+% \fBeditor\fP
+editor: Command not found
+%
+.DE
+Your mistake in calling edit ``editor'' was
+treated by \s-2UNIX\s0 as a request
+for a program named ``editor''.
+Since there is no program
+named ``editor'',
+\s-2UNIX\s0 reported that the program was ``not found''.
+A new % indicates that \s-2UNIX\s0 is ready for another command,
+and you may then enter the correct command.
+.SH
+A summary
+.PP
+Your exchange with \s-2UNIX\s0 as you logged in and made contact with edit
+should look something like this:
+.DS I 1i
+login: \fBsusan\fP
+Password:
+\&... A Message of General Interest ...
+% \fBedit text\fP
+"text" No such file or directory
+:
+.DE
+.SH
+Entering text
+.PP
+You may now begin entering text into the buffer.
+This is done by \fIappending\fP (or adding) text to whatever
+is currently in the buffer.
+Since there is nothing in the buffer at the moment,
+you are appending text to nothing;
+in effect, 
+since you are adding text to nothing
+you are creating text.
+Most edit commands have two equivalent forms:
+a word that suggests what the command does,
+and a shorter abbreviation of that word.
+Many beginners find the full command names
+easier to remember at first,
+but once you are familiar with editing you may
+prefer to type the shorter abbreviations.
+The command to input text is ``append''.
+(It may be abbreviated ``a''.)
+Type
+.B append
+and press the \s-2RETURN\s0 key.
+.DS I 1i
+% \fBedit text
+\fR:\|\fBappend
+.R
+.DE
+.SH
+.bd I 3
+Messages from
+.I edit
+.fl
+.bd I
+.PP
+If you make a mistake in entering a command and
+type something that edit does not recognize,
+edit will respond with a message
+intended to help you diagnose your error.
+For example, if you misspell the command to input text by typing,
+perhaps, ``add'' instead of ``append'' or ``a'',
+you will receive this message:
+.DS I 1i
+:\|\fBadd\fR
+add: Not an editor command
+:
+.DE
+When you receive a diagnostic message,
+check what you typed in order to determine what
+part of your command confused edit.
+The message above means that edit
+was unable to recognize your mistyped command
+and, therefore, did not execute it.
+Instead, a new ``:''
+appeared to let you know that
+edit is again ready to execute a command.
+.SH
+Text input mode
+.PP
+By giving the command ``append'' (or using the abbreviation ``a''),
+you entered
+.I
+text input mode,
+.R
+also known as
+.I
+append mode.
+.R
+When you enter text input mode,
+edit stops sending you a prompt.
+You will not receive any prompts
+or error messages
+while in text input mode.
+You can enter
+pretty much anything you want on the lines.
+The lines are transmitted one by one to the buffer
+and held there during the editing session.
+You may append as much text as you want, and
+.I
+when you wish to stop entering text lines you should
+type a period as the only character on the line
+and press the \s-2RETURN\s0 key.
+.R
+When you type the period and press \s-2RETURN\s0,
+you signal that you want to stop appending text,
+and edit responds by allowing
+you to exit text input mode and reenter command mode.
+Edit will again
+prompt you for a command by printing ``:''.
+.PP
+Leaving append mode does not destroy the text in
+the buffer.
+You have to leave append
+mode to do any of the other kinds of editing,
+such as changing, adding, or printing text.
+If you type a period as the first character and
+type any other character on the same line,
+edit will believe you want to remain in append mode
+and will not let you out.
+As this can be very frustrating, 
+be sure to type
+.B only
+the period and the \s-2RETURN\s0 key.
+.PP
+This is a good place to learn an important
+lesson about computers and text:  a blank space is
+a character as far as a computer is concerned.  
+If you so much as type a period followed by a blank
+(that is, type a period and then the space bar on the keyboard),
+you will remain in append mode with the last line of text
+being:
+.DS I 1i
+.B
+.ps +2
+\&.
+.ps -2
+.R
+.DE
+Let's say that you enter the lines 
+(try to type
+.B exactly
+what you see, including ``thiss''):
+.DS I 1i
+.B
+This is some sample text.
+And thiss is some more text.
+Text editing is strange, but nice.
+\&.
+.R
+.DE
+The last line is the period followed by a \s-2RETURN\s0
+that gets you out of append mode.  
+.SH
+Making corrections
+.PP
+If you have read a general introduction to \s-2UNIX\s0,
+you will recall that it is possible to erase individual
+letters that you have typed.
+This is done by typing the designated erase character
+as many times as there are characters
+you want to erase.
+.PP
+The usual erase character varies from place to place and 
+user to user.  Often it
+is the backspace (control-H),
+so you can correct typing errors
+in the line you are typing
+by holding down the \s-1CTRL\s+1 key
+and typing the ``H'' key.  (Sometimes it is the DEL key.)
+If you type the erase character
+you will notice
+that the terminal backspaces in the line you are on.
+You can backspace over your error,
+and then type what you want to be the rest of the line.
+.PP
+If you make a bad start
+in a line
+and would like to begin again,
+you can either backspace to the beginning of the line
+or you can use the at-sign ``@'' to erase everything on the line:
+.DS I 1i
+.B
+Text edtiing is strange, but@
+Text editing is strange, but nice.
+.R
+.fl
+.bd S
+.DE
+When you type the at-sign (@), you erase
+the entire line typed so far
+and are given a fresh line to type on.
+You may immediately begin to retype the line.
+This, unfortunately, does not work after you type the
+line and press \s-2RETURN\s+2.  
+To make corrections in lines that have been completed,
+it is necessary to use the editing commands
+covered in the next sessions.
+.SH
+Writing text to disk
+.PP
+You are now ready to edit the text.  One common operation
+is to write the text to disk as a file for safekeeping
+after the session is over.
+This is the only way to save information from one session to the next,
+since the editor's buffer is temporary and will last only until the
+end of the editing session.
+Learning how to write a file to disk is second in
+importance only to entering the text.
+To write the contents of the buffer to a disk
+file, use the command ``write''
+(or its abbreviation ``w''.\"	@(#)bibdoc.ms	6.1 (Berkeley) 6/2/86
+.\"
+.EH 'USD:31-%''BIB \- A Program for Formatting Bibliographies'
+.OH 'BIB \- A Program for Formatting Bibliographies''USD:31-%'
+.nr LL 6.5i
+.nr LT 6.5i
+.TL
+\fBBIB \- A Program for Formatting Bibliographies\fP
+.AU
+Timothy A. Budd
+.AI
+The University of Arizona
+Department of Computer Science
+Tucson, Arizona 85721
+.PP
+\fIBib\fP is a program for collecting and formatting reference lists in
+documents.  It is a preprocessor to the nroff/troff typesetting systems,
+(much like the \fItbl\fP [.tbl.] and \fIeqn\fP [.eqn.] programs) and an alternative
+to the \fIrefer\fP [.lesk refer.] bibliography program.  \fIBib\fP takes two
+inputs: a document to be formatted and a library of references.  Imprecise
+citations in the source document are replaced by more conventional
+citation strings, the appropriate references are selected from the reference
+file, and commands are generated to format both citation and the referenced
+item in the bibliography.
+.PP
+An imprecise citation is a list of words surrounded by the characters
+[\&. .].  Words (which are truncated to six letters)
+in the imprecise citation are matched against entries in the reference file,
+and if an entry is found that matches all words, that reference is used.
+For example:
+.de 2Q
+.sp
+.QS
+.QS
+..
+.de 2E
+.sp
+.QE
+.QE
+..
+.2Q
+.PP
+In Brooks's interesting book [\&. brooks mythical.] various reasons ...
+.2E
+.PP
+Multiple citations are indicated by simply placing a comma in the imprecise
+citation:
+.2Q
+.PP
+In [\&.kernig tools, kernig elements.], Kernighan and Plauger have ...
+.2E
+.PP
+Embedded newlines, tabs and extra blanks within the
+imprecise citation are ignored.
+.PP
+Judicious use of the K (keyword) field in references in the database
+can simplify citations
+considerably.  Also additional information can be placed into citations by
+surrounding text with curly braces.
+The additional information is inserted verbatim into the citation,
+e.g. [.dragon {,\ Chapter 6}.].
+Note that it may be desirable to use non-breakable spaces, in order that the
+citation not be split across a line boundary by \fItroff\fP, for example:
+.2Q
+.PP
+For a description of LR parsing, see [\&.dragon {,\e\0Chapter 6}.] by Aho and Ullman.
+.2E
+.PP
+An alternative citation style can be used by surrounding the imprecise
+citation with {\&. and .\&}.  Most document styles just give the
+raw citation, without the braces, in this case.  This is useful, for example,
+to refer to citations in running text.
+.2Q
+.PP
+For a discussion of this point, see reference {\&.dragon.\&}.
+.2E
+.PP
+The algorithm used by \fIbib\fP scans the source input in two passes.
+In the first pass,
+references are collected and the location of citations marked.
+In the second pass, these marks are replaced by the appropriate citation,
+and the entire list of references is dumped following a call on the macro
+\&.[].
+This macro is left untouched.
+However, this can be altered to achieve other typographic
+effects.
+.PP
+An exception to this process is made in those instances where
+references are indicated in footnotes.  In this case the macro that
+generates the reference is placed immediately after each line in which
+the reference is cited.
+.PP
+Reference files are prepared for \fIbib\fP using \fIinvert\fP.
+By default \fIinvert\fP places an inverted index for the
+reference list in the file INDEX.  Unless the user specifies an
+alternative (see the \-p switch described below), this is the first file
+searched by \fIbib\fP in attempting to locate a reference.  If the entry is not found
+in the user's file, a standard system-wide index is searched.  If the
+entry is still not found in the system file, a warning message is produced
+and a blank citation is generated.
+.PP
+The format for entries in the reference file is described more fully in
+the section `Reference File Formats'.
+This format is similar to that used by \fIrefer\fP
+with the following exceptions:
+.IP 1.
+An F field, if present, overrides whatever citation string would otherwise
+be constructed.
+.IP 2.
+Certain defined names can be used, and will be expanded differently by
+different document styles.  For example, the string CACM is expanded into
+`Communications of the ACM' by some document styles, `Comm.
+ACM' by others,
+and `Comm. of the Assoc. of Comp. Mach.' by yet others.
+Appendix 1 lists the currently recognized names.
+.IP 3.
+The program automatically abbreviates names, reverses names, and
+hyphenates strings of contiguous references, if requested.
+.IP 4.
+A reference can have more than one editor field, and editor's names
+can be abbreviated, reversed, and/or printed in cap/small caps style,
+independent of any processing done to authors names.
+.PP
+Since the user's index is searched before the system index, if the
+user wants to alter a specific entry in the system index (say to change
+the name W. E. Howden to William E. Howden, for example) it is a simple
+matter to copy the system information into a private database and make
+the changes locally.
+.PP
+Citation formats are either determined by explicit switch settings or,
+more generally, by using a predefined formatting style.  In the latter form,
+usage looks something like:
+.sp
+.ce
+bib \-t\fIstyle\fP [files]
+.sp
+where \fIstyle\fP is a citation style.
+Currently the following citation styles are available:
+.IP stdn\0\0 6m
+(standard numeric) numeric citation.  Reference entries are listed in
+citation order.
+.IP stdsn
+same as stdn, but references are sorted by senior author followed by date.
+.IP stda
+(standard alphabetic) citations are three letters followed by the last two
+digits of the date.  For papers with a single author, the letters are the
+first three letters of the authors last name (e.g. Knu).
+In papers with two authors the first two letters are from the first author
+followed by one letter from the second (e.g. HoU). If three or more
+authors are given the first letters from the first three authors are used
+(e.g. AHU).
+.IP openn
+same as stdsn, only using an open reference format (each major entry is on
+a new line\u1\d).
+.FS
+1. The open reference format is adapted from \fIA Handbook for Scholars\fP,
+by Mary-Claire van Leunen, published by Knopf, 1978.
+.FE
+.IP opena
+same as stda, but using an open format.
+.IP foot
+footnoted references.
+.IP supn
+same as stdn, but using superscripts.
+.IP spe
+format used by the journal \fISoftware\(emPractice and Experience\fP.
+Eventually there will be macro packages available for several journal styles.
+.PP
+It is possible to alter slightly the format of standard styles.  For example,
+to generate references in standard numeric style, but abbreviate first names,
+the following can be used:
+.sp
+.ce
+bib \-tstdn \-aa ...
+.PP
+If two reference items create the same citation string (this can happen
+if two papers authored by the same person in a single year are referred to
+in one paper) a disambiguating final letter is added to the citation
+(i.e., Knu79 becomes Knu79a and Knu79b).
+As noted previously, this can be altered by using the F field.
+.PP
+For the purposes of sorting by author, the last name is taken to be the last
+word of the name field.  This means some care must be taken when names contain
+embedded blanks, such a

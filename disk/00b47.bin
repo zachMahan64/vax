@@ -1,0 +1,2716 @@
+expression\fR
+.DE
+The expression must be of type integer and be positive but be no larger than the number of labels in the list.
+Control is passed to the statement marked by the label whose position in the list is equal to the expression.
+.NH 2
+Go To Statement
+.PP
+In unconditional and computed \fBgoto\fR
+statements, it is permissible to separate the \fBgo\fR and \fBto\fR words, as in
+.DS B
+.B
+go to xyz
+.R
+.DE
+.NH 2
+Dot Names
+.PP
+Fortran uses a restricted character set,
+and represents certain operators by multi-character sequences.
+There is an option (\fBdots=on\fR; see Section 10.2) which forces the compiler to recognize the forms
+in the second column below:
+.DS
+.B
+.TS
+center;
+ll.
+<	.lt.
+<=	.le.
+>	.gt.
+>=	.ge.
+==	.eq.
+\*~=	.ne.
+&	.and.
+|	.or.
+&&	.andand.
+|\||	.oror.
+\*~	.not.
+true	.true.
+false	.false.
+.TE
+.R
+.DE
+In this mode, no structure element may be named
+.B lt,
+.B le,
+etc.
+The readable forms in the left column are always recognized.
+.NH 2
+Complex Constants
+.PP
+A complex constant may be written as a paren Loops
+.PP
+The simple arithmetic progression is a very common one in numerical applications.
+EFL has a special loop form for ranging over an ascending arithmetic sequence
+.DS B
+\fBdo \fIvariable \fB= \fIexpression-1, expression-2, expression-3\fR
+     \fIstatement\fR
+.DE
+The variable is first given the value
+.I expression-1.
+The statement is executed, then
+.I expression-3
+is added to the variable.
+The loop is repeated until the variable exceeds
+.I expression-2.
+If
+.I expression-3
+and the preceding comma are omitted, the increment is taken to be 1.
+The loop above is equivalent to
+.DS B
+t2 = expression-2
+t3 = expression-3
+for(variable = expression-1 , variable <= t2 , variable += t3)
+     statement
+.DE
+(The compiler translates EFL
+.B do
+statements into Fortran
+DO statements,
+which are in turn usually compiled into excellent code.)
+The
+.B do
+.I variable
+may not be changed inside of the loop,
+and
+.I expression-1
+must not exceed
+.I expression-2.
+The sum of the first hundred positive integers could be computed by
+.DS B
+.B
+n = 0
+do i = 1, 100
+           n += i
+.R
+.DE
+.NH 2
+Branch Statements
+.PP
+Most of the need for branch statements in programs can be
+averted by using the loop and test constructs,
+but there are programs where they are very useful.
+.NH 3
+Goto Statement
+.PP
+The most general, and most dangerous, branching statement is the simple unconditional
+.DS B
+\fBgoto \fIlabel\fR
+.DE
+After executing this statement, the next statement performed is the one following the given label.
+Inside of a
+.B select
+the case labels of that block may be used as labels, as in the following example:
+.KS
+.B
+.TS
+center;
+lll .
+select(k)
+	{
+	case 1:
+		error(7)
+
+	case 2:
+		k = 2
+		goto case 4
+
+	case 3:
+		k = 5
+		goto case 4
+
+	case 4:
+		fixup(k)
+		goto default
+
+	default:
+		prmsg("ouch")
+	}
+.TE
+.KE
+.R
+(If two
+.B select
+statements are nested,
+the case labels of the outer
+.B select
+are not accessible from the inner one.)
+.NH 3
+Break Statement
+.PP
+A safer statement is one which transfers control to the statement following the current
+.B select
+or loop form.
+A statement of this sort is almost always needed in a
+.B repeat
+loop:
+.DS B
+.B
+repeat
+    {
+    \fIdo a computation
+    if\|( finished )
+          \fBbreak\fI
+    }
+.R
+.DE
+More general forms permit controlling a branch out of more than one construct.
+.DS C
+.B
+break 3
+.R
+.DE
+transfers control to the statement following the third loop and/or
+.B select
+surrounding the statement.
+It is possible to specify which type of construct
+(\fBfor\fR, \fBwhile\fR, \fBrepeat\fR, \fBdo\fR, or \fBselect\fR)
+is to be counted.
+The statement
+.DS C
+.B
+break while
+.R
+.DE
+breaks out of the first surrounding
+.B while
+statement.
+Either of the statements
+.DS B
+.B
+break 3 for
+break for 3
+.R
+.DE
+will transfer to the statement after the third enclosing
+.B for
+loop.
+.NH 3
+Next Statement
+.PP
+The
+.B next
+statement causes the first surrounding loop statement to go on to the next iteration:
+the next operation performed is the
+test of a
+.B while,
+the
+.I iteration-statement
+of a
+.B for,
+the body of a
+.B repeat,
+the test of a
+.B repeat...until,
+or the increment of a
+.B do.
+Elaborations similar to those for
+.B break
+are available:
+.DS B
+.B
+next
+next 3
+next 3 for
+next for 3
+.R
+.DE
+A
+.B next
+statement ignores
+.B select
+statements.
+.NH 3
+Return
+.PP
+The last statement of a procedure is followed by a return of control to the caller.
+If it is desired to effect such a return from any other point in the procedure, a
+.DS B
+\fBreturn\fR
+.DE
+statement may be executed.
+Inside a function procedure, the function value is specified as an argument of the statement:
+.DS B
+\fBreturn ( \fIexpression \fB)
+.DE
+.NH 2
+Input/Output Statements
+.PP
+EFL has two input statements (\fBread\fR and \fBreadbin\fR),
+two output statements (\fBwrite\fR and \fBwritebin\fR),
+and three control statements (\fBendfile\fR, \fBrewind\fR, and \fBbackspace\fR).
+These forms may be used either as a primary with a
+.B integer
+value
+or as a statement.
+If an exception occurs when one of these forms is used as a statement,
+the result is undefined but will probably be treated as a fatal error.
+If they are used in a context where they return a value,
+they return
+zero if no exception occurs.
+For the input forms, a negative value indicates end-of-file and
+a positive value an error.
+The input/output part of EFL very strongly reflects the facilities of Fortran.
+.NH 3
+Input/Output Units
+.PP
+Each I/O statement refers to a `unit',
+identified by a small positive integer.
+Two special units are defined by EFL,
+the
+.I "standard input unit"
+and the
+.I "standard output unit."
+These particular units are assumed if no unit is specified in an I/O transmission statement.
+.PP
+The data on the unit are organized into
+.I records.
+These records may be read or written in a fixed sequence,
+and each transmission moves an integral number of records.
+Transmission proceeds from the first record until the
+.I "end of file."
+.NH 3
+Binary Input/Output
+.PP
+The
+.B readbin
+and
+.B writebin
+statements transmit data in a machine-dependent but swift manner.
+The statements are of the form
+.DS B
+\fBwritebin( \fIunit \fB, \fIbinary-output-list \fB)\fR
+\fBreadbin( \fIunit \fB, \fIbinary-input-list \fB)\fR
+.DE
+Each statement moves one unformatted record between storage and the device.
+The
+.I unit
+is an integer expression.
+A
+.I binary-output-list
+is an
+.I iolist
+(see below) without any format specifiers.
+A
+.I binary-input-list
+is an
+.I iolist
+without format specifiers in which each of the expressions
+is a variable name, array element, or structure member.
+.NH 3
+Formatted Input/Output
+.PP
+The
+.B read
+and
+.B write
+statements
+transmit data in the form of lines of characters.
+Each statement moves one or more records (lines).
+Numbers are translated into decimal notation.
+The exact form of the lines is determined by format specifications,
+whether provided explicitly in the statement
+or implicitly.
+The syntax of the statements is
+.DS B
+\fBwrite( \fIunit \fB,\fI formatted-output-list \fB)\fR
+\fBread( \fIunit \fB,\fI formatted-input-list \fB)\fR
+.DE
+The lists are of the same form as for binary I/O,
+except that the lists may include format specifications.
+If the
+.I unit
+is omitted, the standard input or output unit is used.
+.NH 3
+Iolists
+.PP
+An
+.I iolist
+specifies a set of values to be written or a set of variables into which
+values are to be read.
+An
+.I iolist
+is a list of one or more
+.I ioexpressions
+of the form
+.DS B
+\fIexpression
+\fB{ \fIiolist \fB}
+\fIdo-specification \fB{ \fIiolist \fB}\fR
+.DE
+For formatted I/O,
+an
+.I ioexpression
+may also have the forms
+.DS B
+\fIioexpression \fB:\fI format-specifier
+\fB:\fI format-specifier\fR
+.DE
+A
+.I do-specification
+looks just like a
+.B do
+statement, and has a similar effect:
+the values in the braces are transmitted repeatedly until the
+.B do
+execution is complete.
+.NH 3
+Formats
+.PP
+The following are permissible
+.I format-specifiers.
+The quantities
+@w@, @d@, and @k@ must be integer constant expressions.
+.KS
+.TS
+center;
+ll .
+\fBi(\fIw\fB)\fR	integer with \fIw\fR digits
+\fBf(\fIw\fB,\fId\fB)\fR	floating point number of \fIw\fR characters,
+	\fId\fR of them to the right of the decimal point.
+\fBe(\fIw\fB,\fId\fB)\fR	floating point number of \fIw\fR characters,
+	\fId\fR of them to the right of the decimal point,
+	with the exponent field marked with the letter \fBe\fR
+\fBl(\fIw\fB)\fR	logical field of width \fIw\fR characters,
+	the first of which is \fBt\fR or \fBf\fR
+	(the rest are blank on output, ignored on input)
+	standing for \fBtrue\fR and \fBfalse\fR respectively
+\fBc\fR	character string of width equal to the length of the datum
+\fBc(\fIw\fB)\fR	character string of width \fIw\fR
+\fBs(\fIk\fB)\fR	skip \fIk\fR lines
+\fBx(\fIk\fB)\fR	skip \fIk\fR spaces
+" ... "	use the characters inside the string as a Fortran format
+.TE
+.KE
+If no format is specified for an item in a formatted input/output statement,
+a default form is chosen.
+.PP
+If an item in a list is an array name,
+then the entire array is transmitted as a sequence of elements,
+each with its own format.
+The elements are transmitted in column-major order,
+the same order used for array initializations.
+.NH 3
+Manipulation statements
+.PP
+The three input/output statementthesized list of real quantities, such as
+.DS C
+.B
+(1.5, 3.0)
+.R
+.DE
+The preferred notation is by a type coercion,
+.DS C
+.B
+complex(1.5, 3.0)
+.R
+.DE
+.NH 2
+Function Values
+.PP
+The preferred way to return a value from a function in EFL is the
+@bold return ( value )@
+construct.
+However, the name of the function acts as a variable to which values may be assigned;
+an ordinary
+@bold return@
+statement returns the last value assigned to that name as the function value.
+.NH 2
+Equivalence
+.PP
+A statement of the form
+.EQ C
+bold equivalence ~ v sub 1 ,~  v sub 2 ,~ ...,~ v sub n
+.EN
+declares that each of the @v sub i@ starts at the same memory location.
+Each of the @v sub i@ may be a variable name, array element name, or structure member.
+.NH 2
+Minimum and Maximum Functions
+.PP
+There are a number of non-generic functions in this category,
+which differ in the required types of the arguments and the type of the return value.
+They may also have variable numbers of arguments, but all the arguments must have the same type.
+.DS
+.TS
+center;
+ccc
+lll .
+Function	Argument Type	Result Type
+_
+.B
+amin0	integer	real
+amin1	real	real
+min0	integer	integer
+min1	real	integer
+dmin1	long real	long real
+
+amax0	integer	real
+amax1	real	real
+max0	integer	integer
+max1	real	integer
+dmax1	long real	long real
+.R
+.TE
+.DE
+.NH 1
+COMPILER OPTIONS
+.PP
+A number of options can be used to control the output
+and to tailor it for various compilers and systems.
+The defaults chosen are conservative, but it is sometimes necessary to change the output to match peculiarities of the
+target environment.
+.PP
+Options are set with statements of the form
+.DS C
+\fBoption \fI\*([[ \fIopt \fI\*(]]\fR
+.DE
+where each
+.I opt
+is of one of the forms
+.DS B
+.I
+optionname
+optionname \fB= \fIoptionvalue
+.R
+.DE
+The
+.I optionvalue
+is either a constant (numeric or string) or
+a name associated with that option.
+The two names
+.B yes
+and
+.B no
+apply to a number of options.
+.NH 2
+Default Options
+.PP
+Each option has a default setting.
+It is possible to change the whole set of defaults to those appropriate
+for a particular environment
+by using the
+.B system
+option.
+At present, the only valid values are
+.B system=unix
+and
+.B system=gcos.
+.NH 2
+Input Language Options
+.PP
+The
+.B dots
+option determines whether the compiler recognizes
+.B .lt.
+and similar forms.  The default setting is
+.B no.
+.NH 2
+Input/Output Error Handling
+.PP
+The
+.B ioerror
+option can be given three values:
+.B none
+means that none of the I/O statements may be used in expressions, since there is no way to detect errors.
+The implementation of the
+.B ibm
+form uses ERR= and END= clauses.
+The implementation of the
+.B fortran77
+form uses IOSTAT= clauses.
+.NH 2
+Continuation Conventions
+.PP
+By default, continued Fortran statements are indicated by a character in column 6 (Standard Fortran).
+The option
+.B "continue=column1"
+puts an ampersand (\fB&\fR) in the first column of the continued lines instead.
+.NH 2
+Default Formats
+.PP
+If no format is specified for a datum in an
+iolist
+for a
+.B read
+or
+.B write
+statement, a default is provided.
+The default formats can be changed by setting certain options
+.DS
+.TS
+center;
+cc
+ll.
+Option	Type
+_
+\fBiformat\fR	integer
+\fBrformat\fR	real
+\fBdformat\fR	long real
+\fBzformat\fR	complex
+\fBzdformat\fR	long complex
+\fBlformat\fR	logical
+.TE
+.DE
+The associated value must be a Fortran format, such as
+.DS C
+.B
+option rformat=f22.6
+.R
+.DE
+.NH 2
+Alignments and Sizes
+.PP
+In order to implement
+.B character
+variables, structures, and the
+.B sizeof
+and
+.B lengthof
+operators, it is necessary to know how much space various Fortran data types require,
+and what boundary alignment properties they demand.
+The relevant options are
+.DS
+.B
+.TS
+center;
+ccc
+lll.
+Fortran Type	Size Option	Alignment Option
+_
+integer	isize	ialign
+real	rsize	ralign
+long real	dsize	dalign
+complex	zsize	zalign
+logical	lsize	lalign
+.R
+.TE
+.DE
+The sizes are given in terms of an arbitrary unit;
+the alignment is given in the same units.
+The option
+.B charperint
+gives the number of characters per
+.B integer
+variable.
+.NH 2
+Default Input/Output Units
+.PP
+The options
+.B ftnin
+and
+.B ftnout
+are the numbers of the standard input and output units.
+The default values are
+.B ftnin=5
+and
+.B ftnout=6.
+.NH 2
+Miscellaneous Output Control Options
+.PP
+Each Fortran procedure generated by the compiler will be preceded by the value of the
+.B procheader
+option.
+.PP
+No Hollerith strings will be passed as subroutine arguments if
+.B hollincall=no
+is specified.
+.PP
+The Fortran statement numbers normally start at 1 and increase by 1.
+It is possible to change the increment value by using the
+.B deltastno
+option.
+.ta .5i 1i 1.5i 2i 2.5i 3.0i
+.NH 1
+EXAMPLES
+.PP
+In order to show the flavor or programming in EFL,
+we present a few examples.
+They are short, but show some of the convenience of the language.
+.NH 2
+File Copying
+.PP
+The following short program copies the standard input to the standard output,
+provided that the input is a formatted file containing
+lines no longer than a hundred characters.
+.DS 
+.B
+procedure   # main program
+character(100) line
+
+while( read( , line) == 0 )
+	write( , line)
+end
+.R
+.DE
+Since
+.B read
+returns
+zero
+until the end of file (or a read error),
+this program keeps reading and writing until the input is exhausted.
+.NH 2
+Matrix Multiplication
+.PP
+The following procedure multiplies the
+@m times n@ matrix a
+by the
+@n times p@ matrix b
+to give the @m times p@ matrix c.
+The calculation obeys the formula
+@c sub ij ~=~ sum a sub ik b sub kj@.
+.DS 
+.ta .7i 1.4i 2.1i 2.8i
+.B
+procedure matmul(a,b,c, m,n,p)
+integer i, j, k, m, n, p
+long real a(m,n), b(n,p), c(m,p)
+.sp .3
+do i = 1,m
+do j = 1,p
+	{
+	c(i,j) = 0
+	do k = 1,n
+		c(i,j) += a(i,k) \(** b(k,j)
+	}
+end
+.R
+.DE
+.NH 2
+Searching a Linked List
+.PP
+Assume we have a list of pairs of numbers @(x,y)@.
+The list is stored as a linked list sorted in ascending order of @x@ values.
+The following procedure searches this list for a particular value of @x@
+and returns the corresponding @y@ value.
+.DS 
+.B
+.ta .7i 1.4i 2.1i 2.8i
+define LAST	0
+define NOTFOUND	\-1
+
+integer procedure val(list, first, x)
+
+#   list is an array of structures.
+#   Each structure contains a thread index value, an x, and a y value.
+.sp .3
+struct
+	{
+	integer nextindex
+	integer x, y
+	} list(\(**)
+.sp .3
+integer first, p, arg
+
+for(p = first , p\*~=LAST && list(p).x<=x , p = list(p).nextindex)
+	if(list(p).x == x)
+		return( list(p).y )
+
+return(NOTFOUND)
+end
+.R
+.DE
+The search is a single
+.B for
+loop that begins with the head of the list
+and examines items until either the list is exhausted
+(p==LAST)
+or until it is known that the specified value is not on the list
+(list(p).x > x).
+The two tests in the conjunction must
+be performed in the specified order
+to avoid using an invalid subscript in the
+.B list(p)
+reference.
+Therefore, the
+.B &&
+operator is used.
+The next element in the chain is found by the iteration statement
+.B "p=list(p).nextindex".
+.NH 2
+Walking a Tree
+.PP
+As an example of a more complicated problem, let us imagine we have
+an expression tree stored in a common area,
+and that we want to print out an infix form of the tree.
+Each node is either a leaf (containing a numeric value)
+or it is a binary operator, pointing to a left and a right descendant.
+In a recursive language,
+such a tree walk would be implement by the following simple pseudocode:
+.DS 
+.I
+if this node is a leaf
+	print its value
+otherwise
+	print a left parenthesis
+	print the left node
+	print the operator
+	print the right node
+	print a right parenthesis
+.R
+.DE
+In a nonrecursive language like EFL, it is necessary to maintain an explicit stack
+to keep track of the current state of the computation.
+The following procedure
+calls a procedure
+.B outch
+to print a single character
+and a procedure
+.B outval
+to print a value.
+.DS 
+.ta .7i 1.4i 2.1i 2.8i
+.B
+procedure walk(first)	# print out an expression tree
+.sp .5
+integer first		# index of root node
+integer currentnode
+integer stackdepth
+common(nodes) struct
+	{
+	character(1) op
+	integer leftp, rightp
+	real val
+	} tree(100)	# array of structures
+.sp .5
+struct
+	{
+	integer nextstate
+	integer nodep
+	} stackframe(100)
+.sp .5
+define NODE	tree(currentnode)
+define STACK	stackfram.\" Copyright (c) 1986 Regents of the University of California.
+.\" All rights reserved.  The Berkeley software License Agreement
+.\" specifies the terms and conditions for redistribution.
+.\"
+.\"	@(#)ustreamwrite.c	6.3 (Berkeley) 5/8/86
+.\"
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <sys/un.h>
+#include <stdio.h>
+
+#define DATA "Half a league, half a league . . ."
+
+/*
+ * This program connects to the socket named in the command line and sends a
+ * one line message to that socket. The form of the command line is
+ * ustreamwrite pathname 
+ */
+main(argc, argv)
+	int argc;
+	char *argv[];
+{
+	int sock;
+	struct sockaddr_un server;
+	char buf[1024];
+
+	/* Create socket */
+	sock = socket(AF_UNIX, SOCK_STREAM, 0);
+	if (sock < 0) {
+		perror("opening stream socket");
+		exit(1);
+	}
+	/* Connect socket using name specified by command line. */
+	server.sun_family = AF_UNIX;
+	strcpy(server.sun_path, argv[1]);
+
+	if (connect(sock, &server, sizeof(struct sockaddr_un)) < 0) {
+		close(sock);
+		perror("connecting stream socket");
+		exit(1);
+	}
+	if (write(sock, DATA, sizeof(DATA)) < 0)
+		perror("writing on stream socket");
+}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          gremlinfile
+1 208.00 256.00
+3
+208.00 256.00
+448.00 256.00
+-1.00 -1.00
+1 0
+0 
+ 3
+328.00 56.00
+320.41 64.85
+322.31 57.90
+316.62 53.47
+328.00 56.00
+-1.00 -1.00
+6 0
+0 
+ 3
+272.00 56.00
+280.46 47.97
+277.86 54.70
+283.06 59.69
+272.00 56.00
+-1.00 -1.00
+6 0
+0 
+ 4
+249.60 438.40
+272.00 438.40
+249.60 460.80
+249.60 416.00
+272.00 438.40
+227.20 438.40
+-1.00 -1.00
+6 0
+0 
+ 3
+224.00 400.00
+224.00 336.00
+275.20 336.00
+275.20 400.00
+224.00 400.00
+-1.00 -1.00
+6 0
+0 
+ 3
+249.60 400.00
+249.60 416.00
+-1.00 -1.00
+6 0
+0 
+ 3
+224.00 387.20
+275.20 387.20
+275.20 374.40
+224.00 374.40
+224.00 361.60
+275.20 361.60
+275.20 348.80
+224.00 348.80
+-1.00 -1.00
+6 0
+0 
+ 4
+268.80 380.80
+265.60 380.80
+268.80 384.00
+268.80 377.60
+272.00 380.80
+265.60 380.80
+-1.00 -1.00
+6 0
+0 
+ 5
+272.00 380.80
+297.60 377.60
+300.80 352.00
+284.80 326.40
+275.20 316.80
+-1.00 -1.00
+6 0
+0 
+ 3
+275.20 316.80
+284.25 319.06
+278.59 320.19
+277.46 325.85
+275.20 316.80
+-1.00 -1.00
+6 0
+0 
+ 4
+249.60 291.20
+249.60 307.20
+249.60 307.20
+249.60 275.20
+265.60 291.20
+233.60 291.20
+-1.00 -1.00
+6 0
+0 
+ 4
+401.60 291.20
+401.60 307.20
+401.60 307.20
+401.60 275.20
+417.60 291.20
+385.60 291.20
+-1.00 -1.00
+6 0
+0 
+ 4
+393.60 438.40
+416.00 438.40
+393.60 460.80
+393.60 416.00
+416.00 438.40
+371.20 438.40
+-1.00 -1.00
+6 0
+0 
+ 3
+368.00 400.00
+368.00 336.00
+419.20 336.00
+419.20 400.00
+368.00 400.00
+-1.00 -1.00
+6 0
+0 
+ 3
+393.60 400.00
+393.60 416.00
+-1.00 -1.00
+6 0
+0 
+ 3
+368.00 387.20
+419.20 387.20
+419.20 374.40
+368.00 374.40
+368.00 361.60
+419.20 361.60
+419.20 348.80
+368.00 348.80
+-1.00 -1.00
+6 0
+0 
+ 4
+376.80 368.80
+373.60 368.80
+376.80 372.00
+376.80 365.60
+380.00 368.80
+373.60 368.80
+-1.00 -1.00
+6 0
+0 
+ 5
+372.00 368.00
+352.00 364.00
+340.00 348.00
+372.00 308.00
+-1.00 -1.00
+6 0
+0 
+ 3
+372.00 308.00
+367.60 318.80
+367.20 311.60
+360.40 309.20
+372.00 308.00
+-1.00 -1.00
+6 0
+0 
+ 3
+412.00 304.00
+436.00 336.00
+-1.00 -1.00
+6 0
+0 
+ 5
+436.00 336.00
+456.00 332.00
+476.00 336.00
+488.00 332.00
+-1.00 -1.00
+6 0
+0 
+ 5
+424.00 316.00
+448.00 312.00
+472.00 316.00
+488.00 312.00
+-1.00 -1.00
+6 0
+0 
+ 3
+488.00 312.00
+480.00 324.00
+488.00 332.00
+-1.00 -1.00
+6 0
+0 
+ 4
+249.60 214.40
+272.00 214.40
+249.60 236.80
+249.60 192.00
+272.00 214.40
+227.20 214.40
+-1.00 -1.00
+6 0
+0 
+ 3
+224.00 176.00
+224.00 112.00
+275.20 112.00
+275.20 176.00
+224.00 176.00
+-1.00 -1.00
+6 0
+0 
+ 3
+249.60 176.00
+249.60 192.00
+-1.00 -1.00
+6 0
+0 
+ 3
+224.00 163.20
+275.20 163.20
+275.20 150.40
+224.00 150.40
+224.00 137.60
+275.20 137.60
+275.20 124.80
+224.00 124.80
+-1.00 -1.00
+6 0
+0 
+ 4
+268.80 156.80
+265.60 156.80
+268.80 160.00
+268.80 153.60
+272.00 156.80
+265.60 156.80
+-1.00 -1.00
+6 0
+0 
+ 5
+272.00 156.80
+297.60 153.60
+300.80 128.00
+284.80 102.40
+275.20 92.80
+-1.00 -1.00
+6 0
+0 
+ 3
+275.20 92.80
+284.25 95.06
+278.59 96.19
+277.46 101.85
+275.20 92.80
+-1.00 -1.00
+6 0
+0 
+ 4
+249.60 67.20
+249.60 83.20
+249.60 83.20
+249.60 51.20
+265.60 67.20
+233.60 67.20
+-1.00 -1.00
+6 0
+0 
+ 4
+401.60 67.20
+401.60 83.20
+401.60 83.20
+401.60 51.20
+417.60 67.20
+385.60 67.20
+-1.00 -1.00
+6 0
+0 
+ 4
+393.60 214.40
+416.00 214.40
+393.60 236.80
+393.60 192.00
+416.00 214.40
+371.20 214.40
+-1.00 -1.00
+6 0
+0 
+ 3
+368.00 176.00
+368.00 112.00
+419.20 112.00
+419.20 176.00
+368.00 176.00
+-1.00 -1.00
+6 0
+0 
+ 3
+393.60 176.00
+393.60 192.00
+-1.00 -1.00
+6 0
+0 
+ 3
+368.00 163.20
+419.20 163.20
+419.20 150.40
+368.00 150.40
+368.00 137.60
+419.20 137.60
+419.20 124.80
+368.00 124.80
+-1.00 -1.00
+6 0
+0 
+ 4
+376.80 144.80
+373.60 144.80
+376.80 148.00
+376.80 141.60
+380.00 144.80
+373.60 144.80
+-1.00 -1.00
+6 0
+0 
+ 5
+372.00 144.00
+352.00 140.00
+340.00 124.00
+372.00 84.00
+-1.00 -1.00
+6 0
+0 
+ 3
+372.00 84.00
+367.60 94.80
+367.20 87.60
+360.40 85.20
+372.00 84.00
+-1.00 -1.00
+6 0
+0 
+ 3
+412.00 80.00
+436.00 112.00
+-1.00 -1.00
+6 0
+0 
+ 5
+436.00 112.00
+456.00 108.00
+476.00 112.00
+488.00 108.00
+-1.00 -1.00
+6 0
+0 
+ 5
+424.00 92.00
+448.00 88.00
+472.00 92.00
+488.00 88.00
+-1.00 -1.00
+6 0
+0 
+ 3
+488.00 88.00
+480.00 100.00
+488.00 108.00
+-1.00 -1.00
+6 0
+0 
+ 4
+337.60 47.20
+337.60 63.20
+337.60 63.20
+337.60 31.20
+353.60 47.20
+321.60 47.20
+-1.00 -1.00
+6 0
+0 
+ 4
+376.80 132.80
+373.60 132.80
+376.80 136.00
+376.80 129.60
+380.00 132.80
+373.60 132.80
+-1.00 -1.00
+6 0
+0 
+ 5
+372.00 132.00
+360.00 132.00
+336.00 120.00
+332.00 80.00
+-1.00 -1.00
+6 0
+0 
+ 3
+332.00 80.00
+335.40 91.16
+330.54 85.82
+323.75 88.25
+332.00 80.00
+-1.00 -1.00
+6 0
+0 
+ 3
+268.00 68.00
+316.00 56.00
+-1.00 -1.00
+4 0
+0 
+ 3
+268.00 56.00
+320.00 44.00
+-1.00 -1.00
+4 0
+0 
+ 0
+232.00 464.00
+232.00 464.00
+262.00 464.00
+292.00 464.00
+-1.00 -1.00
+1 1
+9 Process 1
+ 0
+380.00 464.00
+380.00 464.00
+410.00 464.00
+440.00 464.00
+-1.00 -1.00
+1 1
+9 Process 2
+ 0
+236.00 240.00
+236.00 240.00
+266.00 240.00
+296.00 240.00
+-1.00 -1.00
+1 1
+9 Process 1
+ 0
+380.00 240.00
+380.00 240.00
+410.00 240.00
+440.00 240.00
+-1.00 -1.00
+1 1
+9 Process 2
+ 0
+440.00 320.00
+440.00 320.00
+455.00 320.00
+470.00 320.00
+-1.00 -1.00
+1 1
+4 NAME
+ 0
+440.00 96.00
+440.00 96.00
+455.00 96.00
+470.00 96.00
+-1.00 -1.00
+1 1
+4 NAME
+ -1
+                                                                                                                                                                                                                                                                                                        .\" Copyright (c) 1986 Regents of the University of California.
+.\" All rights reserved.  The Berkeley software License Agreement
+.\" specifies the terms and conditions for redistribution.
+.\"
+.\"	@(#)gremlins	6.1 (Berkeley) 5/4/86
+.\"
+.sp |1i
+.GS C
+height 6i
+file pipe.grn
+.GE
+.bp
+.sp |1i
+.GS C
+height 6i
+file socketpair.grn
+.GE
+.bp
+.sp |1i
+.GS C
+height 6i
+file accept.grn
+.GE
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      e(stackdepth)
+.sp .5
+#   nextstate values
+define DOWN	1
+define LEFT	2
+define RIGHT	3
+.DE
+.DS
+.B
+#   initialize stack with root node
+stackdepth = 1
+STACK.nextstate = DOWN
+STACK.nodep = first
+.DE
+.DS
+.B
+while( stackdepth > 0 )
+	{
+	currentnode = STACK.nodep
+	select(STACK.nextstate)
+		{
+		case DOWN:
+			if(NODE.op == " ")   # a leaf
+				{
+				outval( NODE.val )
+				stackdepth \-= 1
+				}
+			else	{   # a binary operator node
+				outch( "(" )
+				STACK.nextstate = LEFT
+				stackdepth += 1
+				STACK.nextstate = DOWN
+				STACK.nodep = NODE.leftp
+				}
+.sp .5
+		case LEFT:
+			outch( NODE.op )
+			STACK.nextstate = RIGHT
+			stackdepth += 1
+			STACK.nextstate = DOWN
+			STACK.nodep = NODE.rightp
+.sp .5
+		case RIGHT:
+			outch( ")" )
+			stackdepth \-= 1
+		}
+	}
+end
+.DE
+.NH 1
+PORTABILITY
+.PP
+One of the major goals of the EFL language is to make it easy to write portable programs.
+The output of the EFL compiler is intended to be acceptable to any Standard Fortran
+compiler
+(unless the
+.B fortran77
+option is specified).
+.NH 2
+Primitives
+.PP
+Certain EFL operations cannot be implemented in portable Fortran,
+so a few machine-dependent procedures must be provided in each environment.
+.NH 3
+Character String Copying
+.PP
+The subroutine
+.B ef1asc
+is called to copy one character string to another.
+If the target string is shorter than the source,
+the final characters are not copied.
+If the target string is longer, its end is padded with blanks.
+The calling sequence is
+.DS B
+subroutine ef1asc(a, la, b, lb)
+integer a(\(**), la, b(\(**), lb
+.DE
+and it must copy the first
+.B lb
+characters from
+.B b
+to the first
+.B la
+characters of
+.B a.
+.NH 3
+Character String Comparisons
+.PP
+The function
+.B ef1cmc
+is invoked to determine the order of two character strings.
+The declaration is
+.DS B
+integer function ef1cmc(a, la, b, lb)
+integer a(\(**), la, b(\(**), lb
+.DE
+The function returns a negative value if the string
+.B a
+of length
+.B la
+precedes the string
+.B b
+of length
+.B lb.
+It returns zero if the strings are equal, and a positive value otherwise.
+If the strings are of differing length, the comparison is carried out
+as if the end of the shorter string were padded with blanks.
+.NH 1
+ACKNOWLEDGMENTS
+.PP
+A. D. Hall originated the EFL language and wrote the first compiler for it;
+he also gave inestimable aid when I took up the project.
+B. W. Kernighan and W. S. Brown made a number of useful suggestions about the language and about this report.
+N. L. Schryer has acted as willing, cheerful, and severe first user
+and helpful critic of each new version and facility.
+J. L. Blue, L. C. Kaufman, and D. D. Warner
+made very useful contributions by making serious use of the compiler,
+and noting and tolerating its misbehaviors.
+.NH 1
+REFERENCE
+.IP 1.
+B. W. Kernighan,
+``Ratfor \(em A Preprocessor for a Rational Fortran'',
+Bell Laboratories Computing Science Technical Report #55
+.bp
+.SH
+APPENDIX A.  Relation Between EFL and Ratfor
+.PP
+There are a number of differences between Ratfor and EFL,
+since EFL is a defined language while Ratfor is
+the union of the special control structures and the language accepted by the underlying Fortran compiler.
+Ratfor running over Standard Fortran is almost a subset of EFL.
+Most of the features described in the Atavisms section are present to ease
+the conversion of Ratfor programs to EFL.
+.PP
+There are a few incompatibilities:
+The syntax of the
+.B for
+statement is slightly different in the two languages:
+the three clauses are separated by semicolons in Ratfor,
+but by commas in EFL.
+(The initial and iteration statements may be compound statements in EFL because of this change).
+The input/output syntax is quite different in the two languages,
+and there is no FORMAT statement in EFL.
+There are no ASSIGN or assigned GOTO statements in EFL.
+.PP
+The major linguistic additions are
+character data,
+factored declaration syntax,
+block structure,
+assignment and sequential test operators,
+generic functions,
+and
+data structures.
+EFL permits more general forms for expressions,
+and provides a more uniform syntax.
+(One need not worry about the Fortran/Ratfor restrictions
+on subscript or DO expression forms, for example.)
+.SH
+APPENDIX B.  COMPILER
+.SH
+B.1.  Current Version
+.PP
+The current version of the EFL compiler is a two-pass translator written in
+portable C.
+It implements all of the features of the language described above except for
+.B "long complex"
+numbers.
+Versions of this compiler run under the
+.SM GCOS
+and
+.UX
+operating systems.
+.SH
+B.2.  Diagnostics
+.PP
+The EFL compiler diagnoses all syntax errors.
+It gives the line and file name (if known) on which the error was detected.
+Warnings are given for variables that are used but not explicitly declared.
+.SH
+B.3.  Quality of Fortran Produced
+.PP
+The Fortran produced by EFL is quite clean and readable.
+To the extent possible, the variable names that appear in the EFL program are used in the Fortran code.
+The bodies of loops and test constructs are indented.
+Statement numbers are consecutive.
+Few unneeded GOTO and CONTINUE statements are used.
+It is considered a compiler bug if incorrect Fortran is produced
+(except for escaped lines).
+The following is the Fortran procedure produced by the EFL compiler for
+the matrix multiplication example (Section 11.2):
+.DS B
+.B
+\0\0\0\0\0\0subroutine\0matmul(a,\0b,\0c,\0m,\0n,\0p)
+\0\0\0\0\0\0integer\0m,\0n,\0p
+\0\0\0\0\0\0double\0precision\0a(m,\0n),\0b(n,\0p),\0c(m,\0p)
+\0\0\0\0\0\0integer\0i,\0j,\0k
+\0\0\0\0\0\0do\0\03\0i\0=\01,\0m
+\0\0\0\0\0\0\0\0\0do\0\02\0j\0=\01,\0p
+\0\0\0\0\0\0\0\0\0\0\0\0c(i,\0j)\0=\00
+\0\0\0\0\0\0\0\0\0\0\0\0do\0\01\0k\0=\01,\0n
+\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0c(i,\0j)\0=\0c(i,\0j)+a(i,\0k)*b(k,\0j)
+\0\0\01\0\0\0\0\0\0\0\0\0\0\0continue
+\0\0\02\0\0\0\0\0\0\0\0continue
+\0\0\03\0\0\0\0\0continue
+\0\0\0\0\0\0end
+.R
+.DE
+The following is the procedure for the tree walk (Section 11.4):
+.DS B
+.B
+\0\0\0\0\0\0subroutine\0walk(first)
+\0\0\0\0\0\0integer\0first
+\0\0\0\0\0\0common\0/nodes/\0tree
+\0\0\0\0\0\0integer\0tree(4,\0100)
+\0\0\0\0\0\0real\0tree1(4,\0100)
+\0\0\0\0\0\0integer\0staame(2,\0100),\0stapth,\0curode
+\0\0\0\0\0\0integer\0const1(1)
+\0\0\0\0\0\0equivalence\0(tree(1,1),\0tree1(1,1))
+\0\0\0\0\0\0data\0const1(1)/4h\0\0\0\0/
+c\0print\0out\0an\0expression\0tree
+c\0index\0of\0root\0node
+c\0array\0of\0structures
+c\0\0\0nextstate\0values
+c\0\0\0initialize\0stack\0with\0root\0node
+\0\0\0\0\0\0stapth\0=\01
+\0\0\0\0\0\0staame(1,\0stapth)\0=\01
+\0\0\0\0\0\0staame(2,\0stapth)\0=\0first
+\0\0\01\0\0if\0(stapth\0.le.\00)\0goto\0\09
+\0\0\0\0\0\0\0\0\0curode\0=\0staame(2,\0stapth)
+\0\0\0\0\0\0\0\0\0goto\0\07
+\0\0\02\0\0\0\0\0\0\0\0if\0(tree(1,\0curode)\0.ne.\0const1(1))\0goto\03
+\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0call\0outval(tree1(4,\0curode))
+c\0a\0leaf
+\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0stapth\0=\0stapth-1
+\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0goto\0\04
+\0\0\03\0\0\0\0\0\0\0\0\0\0\0call\0outch(1h()
+c\0a\0binary\0operator\0node
+\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0staame(1,\0stapth)\0=\02
+\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0stapth\0=\0stapth+1
+\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0staame(1,\0stapth)\0=\01
+\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0staame(2,\0stapth)\0=\0tree(2,\0curode)
+\0\0\04\0\0\0\0\0\0\0\0goto\0\08
+\0\0\05\0\0\0\0\0\0\0\0call\0outch(tree(1,\0curode))
+\0\0\0\0\0\0\0\0\0\0\0\0staame(1,\0stapth)\0=\03
+\0\0\0\0\0\0\0\0\0\0\0\0stapth\0=\0stapth+1
+\0\0\0\0\0\0\0\0\0\0\0\0staame(1,\0stapth)\0=\01
+\0\0\0\0\0\0\0\0\0\0\0\0staame(2,\0stapth)\0=\0tree(3,\0curode)
+\0\0\0\0\0\0\0\0\0\0\0\0goto\0\08
+\0\0\06\0\0\0\0\0\0\0\0call\0outch(1h))
+\0\0\0\0\0\0\0\0\0\0\0\0stapth\0=\0stapth-1
+\0\0\0\0\0\0\0\0\0\0\0\0goto\0\08
+\0\0\07\0\0\0\0\0\0\0\0if\0(staame(1,\0stapth)\0.eq.\03)\0goto\0\06
+\0\0\0\0\0\0\0\0\0\0\0\0if\0(staame(1,\0stapth)\0.eq.\02)\0goto\0\05
+\0\0\0\0\0\0\0\0\0\0\0\0if\0(staame(1,\0stapth)\0.eq.\01)\0goto\0\02
+\0\0\08\0\0\0\0\0continue
+\0\0\0\0\0\0\0\0\0goto\0\01
+\0\0\09\0\0continue
+\0\0\0\0\0\0end
+.R
+.DE
+.SH
+APPENDIX C.  CONSTRAINTS ON THE DESIGN OF THE EFL LANGUAGE
+.PP
+Although Fortran can be used to simulate any finite computation,
+there are realistic limits on the generality of a language that can be
+translated into Fortran.
+The design of EFL was constrained by the implementation strategy.
+Certain of the restrictions"
+This changes all the upper case letters in the region to their lower
+case equivalent.
+.dc "case-region-upper" "Not Bound"
+This changes all the lower case letters in the region to their upper
+case equivalent.
+.dc "case-word-capitalize" "ESC C"
+This capitalizes the current word by making the current letter upper
+case and making the rest of the word lower case.  Point is moved to
+the end of the word.  If point is not positioned on a word it is first
+moved forward to the beginning of the next word.  If a negative
+argument is supplied that many words
+.IQ before
+point are capitalized.
+This is useful for correcting the word just typed without having to
+move point to the beginning of the word yourself.
+.dc "case-word-lower" "ESC L"
+This lower-cases the current word and leaves point at the end of it.
+If point is in the middle of a word the rest of the word is
+converted.  If point is not in a word it is first moved forward to the
+beginning of the next word.  If a negative argument is supplied that
+many words
+.IQ before
+point are converted to lower case.  This is useful
+for correcting the word just typed without having to move point to the
+beginning of the word yourself.
+.dc "case-word-upper" "ESC U"
+This upper-cases the current word and leaves point at the end of it.
+If point is in the middle of a word the rest of the word is
+converted.  If point is not in a word it is first moved forward to the
+beginning of the next word.  If a negative argument is supplied that
+many words
+.IQ before
+point are converted to upper case.  This is useful
+for correcting the word just typed without having to move point to the
+beginning of the word yourself.
+.dc "character-to-octal-insert" "Not Bound"
+This inserts a Back-slash followed by the ascii value of the next
+character typed.  For example, "C-G" inserts the string "\\007".
+.dc "cd" "Not Bound"
+This changes the current directory.
+.dc "clear-and-redraw" "ESC C-L"
+This clears the entire screen and redraws all the windows.  Use this
+when \s-2JOVE\s0 gets confused about what's on the screen, or when the screen
+gets filled with garbage characters or output from another program.
+.dc "comment-format" "(variable)"
+This variable tells \s-2JOVE\s0 how to format your comments when you run the
+command
+.IQ fill-comment.
+Its format is this:
+.ID
+<open pattern>%!<line header>%c<line trailer>%!<close pattern>
+.DE
+The %!, %c, and %! must appear in the format; everything else is optional.
+A newline (represented by %n) may appear in the open or close patterns.  %%
+is the representation for %.  The default comment format is for C comments.
+See
+.IQ fill-comment
+for more.
+.dc "compile-it" "C-X C-E"
+This compiles your program by running the UNIX command "make" into a buffer,
+and automatically parsing the error messages that are created (if any).  See
+the
+.IQ parse-errors
+and
+.IQ parse-special-errors
+commands.  To compile
+a C program without "make", use "C-U C-X C-E" and \s-2JOVE\s0 will prompt
+for a command to run instead of make.  (And then the command you type will
+become the default command.)  You can use this to parse the output from the
+C compiler or the "grep" or "lint" programs.
+.dc "continue-process" "Not Bound"
+This sends SIGCONT to the current interactive process,
+.IQ if
+the process
+is currently stopped.
+.dc "copy-region" "ESC W"
+This takes all the text in the region and copies it onto the kill ring
+buffer.  This is just like running
+.IQ kill-region
+followed by the
+.IQ yank
+command.  See the
+.IQ kill-region
+and
+.IQ yank
+commands.
+.dc "current-error" "Not Bound"
+This moves to the current error in the list of parsed errors.  See the
+.IQ next-error
+and
+.IQ previous-error
+commands for more detailed
+information.
+.dc "date" "Not Bound"
+This prints the date on the message line.
+.dc "define-mode-word-abbrev" "Not Bound"
+This defines a mode-specific abbreviation.
+.dc "define-global-word-abbrev" "Not Bound"
+This defines a global abbreviation.
+.dc "delete-blank-lines" "C-X C-O"
+This deletes all the blank lines around point.  This is useful when you
+previously opened many lines with "C-O" and now wish to delete the
+unused ones.
+.dc "delete-buffer" "C-X K"
+This deletes a buffer and frees up all the memory associated with it.
+Be careful!  Once a buffer has been deleted it is gone forever.  \s-2JOVE\s0
+will ask you to confirm if you try to delete a buffer that needs
+saving.  This command is useful for when \s-2JOVE\s0 runs out of space to
+store new buffers.
+.dc "delete-macro" "Not Bound"
+This deletes a macro from the list of named macros.  It is an error to
+delete the keyboard-macro.  Once the macro is deleted it is gone forever.
+If you are about to save macros to a file and decide you don't want to save
+a particular one, delete it.
+.dc "delete-next-character" "C-D"
+This deletes the character that's just after point (that is, the
+character under the cursor).  If point is at the end of a line, the
+line separator is deleted and the next line is joined with the current
+one.
+.dc "delete-other-windows" "C-X 1"
+This deletes all the other windows except the current one.  This can be
+thought of as going back into One Window mode.
+.dc "delete-previous-character" "Rubout"
+This deletes the character that's just before point (that is, the
+character before the cursor).  If point is at the beginning of the
+line, the line separator is deleted and that line is joined with the
+previous one.
+.dc "delete-white-space" "ESC \\\\"
+This deletes all the Tabs and Spaces around point.
+.dc "delete-current-window" "C-X D"
+This deletes the current window and moves point into one of the
+remaining ones.  It is an error to try to delete the only remaining
+window.
+.dc "describe-bindings" "Not Bound"
+This types out a list containing each bound key and the command that gets
+invoked every time that key is typed.  To make a wall chart of \s-2JOVE\s0
+commands, set
+.IQ send-typeout-to-buffer
+to "on" and \s-2JOVE\s0 will
+store the key bindings in a buffer which you can save to a file and then
+print.
+.dc "describe-command" "Not Bound"
+This prints some info on a specified command.
+.dc "describe-key" "Not Bound"
+This waits for you to type a key and then tells the name of the
+command that gets invoked every time that key is hit.  Once you have
+the name of the command you can use the
+.IQ describe-command
+command
+to find out exactly what it does.
+.dc "describe-variable" "Not Bound"
+This prints some info on a specified variable.
+.dc "digit" "ESC [0-9]"
+This reads a numeric argument.  When you type "ESC" followed by a
+number, "digit" keeps reading numbers until you type some other
+command.  Then that command is executes with the numeric argument you
+specified.
+.dc "digit-1" "Not Bound"
+This pretends you typed "ESC 1".  This is useful for terminals that
+have keypads that send special sequences for numbers typed on the
+keypad as opposed to numbers typed from the keyboard.  This can save
+having type "ESC" when you want to specify an argument.
+.dc "digit-2" "Not Bound"
+This pretends you typed "ESC 2".  This is useful for terminals that
+have keypads that send special sequences for numbers typed on the
+keypad as opposed to numbers typed from the keyboard.  This can save
+having type "ESC" when you want to specify an argument.
+.dc "digit-3" "Not Bound"
+This pretends you typed "ESC 3".  This is useful for terminals that
+have keypads that send special sequences for numbers typed on the
+keypad as opposed to numbers typed from the keyboard.  This can save
+having type "ESC" when you want to specify an argument.
+.dc "digit-4" "Not Bound"
+This pretends you typed "ESC 4".  This is useful for terminals that
+have keypads that send special sequences for numbers typed on the
+keypad as opposed to numbers typed from the keyboard.  This can save
+having type "ESC" when you want to specify an argument.
+.dc "digit-5" "Not Bound"
+This pretends you typed "ESC 5".  This is useful for terminals that
+have keypads that send special sequences for numbers typed on the
+keypad as opposed to numbers typed from the keyboard.  This can save
+having type "ESC" when you want to specify an argument.
+.dc "digit-6" "Not Bound"
+This pretends you typed "ESC 6".  This is useful for terminals that
+have keypads that send special sequengremlinfile
+1 208.00 256.00
+3
+208.00 256.00
+432.00 256.00
+-1.00 -1.00
+1 0
+0 
+ 0
+384.00 244.00
+384.00 244.00
+402.00 244.00
+420.00 244.00
+-1.00 -1.00
+1 1
+5 child
+ 0
+232.00 244.00
+232.00 244.00
+253.00 244.00
+274.00 244.00
+-1.00 -1.00
+1 1
+6 parent
+ 0
+232.00 468.00
+232.00 468.00
+253.00 468.00
+274.00 468.00
+-1.00 -1.00
+1 1
+6 parent
+ 3
+340.00 104.00
+339.45 115.65
+336.67 108.99
+329.46 108.99
+340.00 104.00
+-1.00 -1.00
+6 0
+0 
+ 3
+300.00 100.00
+309.84 106.26
+302.68 105.37
+299.11 111.63
+300.00 100.00
+-1.00 -1.00
+6 0
+0 
+ 4
+376.80 169.60
+373.60 169.60
+376.80 172.80
+376.80 166.40
+380.00 169.60
+373.60 169.60
+-1.00 -1.00
+6 0
+0 
+ 4
+376.80 156.80
+373.60 156.80
+376.80 160.00
+376.80 153.60
+380.00 156.80
+373.60 156.80
+-1.00 -1.00
+6 0
+0 
+ 3
+368.00 163.20
+419.20 163.20
+419.20 150.40
+368.00 150.40
+368.00 137.60
+419.20 137.60
+419.20 124.80
+368.00 124.80
+-1.00 -1.00
+6 0
+0 
+ 3
+393.60 176.00
+393.60 192.00
+-1.00 -1.00
+6 0
+0 
+ 3
+368.00 176.00
+368.00 112.00
+419.20 112.00
+419.20 176.00
+368.00 176.00
+-1.00 -1.00
+6 0
+0 
+ 4
+393.60 214.40
+416.00 214.40
+393.60 236.80
+393.60 192.00
+416.00 214.40
+371.20 214.40
+-1.00 -1.00
+6 0
+0 
+ 3
+358.40 108.80
+359.12 118.10
+356.25 113.09
+350.53 113.81
+358.40 108.80
+-1.00 -1.00
+6 0
+0 
+ 5
+272.00 169.60
+297.60 169.60
+323.20 160.00
+358.40 108.80
+-1.00 -1.00
+6 0
+0 
+ 4
+268.80 169.60
+265.60 169.60
+268.80 172.80
+268.80 166.40
+272.00 169.60
+265.60 169.60
+-1.00 -1.00
+6 0
+0 
+ 3
+352.00 51.20
+249.60 51.20
+-1.00 -1.00
+6 0
+0 
+ 3
+249.60 83.20
+352.00 83.20
+-1.00 -1.00
+6 0
+0 
+ 4
+352.00 67.20
+352.00 51.20
+352.00 83.20
+-1.00 -1.00
+6 180
+0 
+ 4
+249.60 67.20
+249.60 83.20
+249.60 83.20
+249.60 51.20
+265.60 67.20
+233.60 67.20
+-1.00 -1.00
+6 0
+0 
+ 3
+275.20 92.80
+284.25 95.06
+278.59 96.19
+277.46 101.85
+275.20 92.80
+-1.00 -1.00
+6 0
+0 
+ 5
+272.00 156.80
+297.60 153.60
+300.80 128.00
+284.80 102.40
+275.20 92.80
+-1.00 -1.00
+6 0
+0 
+ 4
+268.80 156.80
+265.60 156.80
+268.80 160.00
+268.80 153.60
+272.00 156.80
+265.60 156.80
+-1.00 -1.00
+6 0
+0 
+ 3
+224.00 163.20
+275.20 163.20
+275.20 150.40
+224.00 150.40
+224.00 137.60
+275.20 137.60
+275.20 124.80
+224.00 124.80
+-1.00 -1.00
+6 0
+0 
+ 3
+249.60 176.00
+249.60 192.00
+-1.00 -1.00
+6 0
+0 
+ 3
+224.00 176.00
+224.00 112.00
+275.20 112.00
+275.20 176.00
+224.00 176.00
+-1.00 -1.00
+6 0
+0 
+ 4
+249.60 214.40
+272.00 214.40
+249.60 236.80
+249.60 192.00
+272.00 214.40
+227.20 214.40
+-1.00 -1.00
+6 0
+0 
+ 3
+358.40 332.80
+359.12 342.10
+356.25 337.09
+350.53 337.81
+358.40 332.80
+-1.00 -1.00
+6 0
+0 
+ 5
+272.00 393.60
+297.60 393.60
+323.20 384.00
+358.40 332.80
+-1.00 -1.00
+6 0
+0 
+ 4
+268.80 393.60
+265.60 393.60
+268.80 396.80
+268.80 390.40
+272.00 393.60
+265.60 393.60
+-1.00 -1.00
+6 0
+0 
+ 3
+352.00 275.20
+249.60 275.20
+-1.00 -1.00
+6 0
+0 
+ 3
+249.60 307.20
+352.00 307.20
+-1.00 -1.00
+6 0
+0 
+ 4
+352.00 291.20
+352.00 275.20
+352.00 307.20
+-1.00 -1.00
+6 180
+0 
+ 4
+249.60 291.20
+249.60 307.20
+249.60 307.20
+249.60 275.20
+265.60 291.20
+233.60 291.20
+-1.00 -1.00
+6 0
+0 
+ 3
+275.20 316.80
+284.25 319.06
+278.59 320.19
+277.46 325.85
+275.20 316.80
+-1.00 -1.00
+6 0
+0 
+ 5
+272.00 380.80
+297.60 377.60
+300.80 352.00
+284.80 326.40
+275.20 316.80
+-1.00 -1.00
+6 0
+0 
+ 4
+268.80 380.80
+265.60 380.80
+268.80 384.00
+268.80 377.60
+272.00 380.80
+265.60 380.80
+-1.00 -1.00
+6 0
+0 
+ 3
+224.00 387.20
+275.20 387.20
+275.20 374.40
+224.00 374.40
+224.00 361.60
+275.20 361.60
+275.20 348.80
+224.00 348.80
+-1.00 -1.00
+6 0
+0 
+ 3
+249.60 400.00
+249.60 416.00
+-1.00 -1.00
+6 0
+0 
+ 3
+224.00 400.00
+224.00 336.00
+275.20 336.00
+275.20 400.00
+224.00 400.00
+-1.00 -1.00
+6 0
+0 
+ 4
+249.60 438.40
+272.00 438.40
+249.60 460.80
+249.60 416.00
+272.00 438.40
+227.20 438.40
+-1.00 -1.00
+6 0
+0 
+ 3
+272.00 292.00
+284.00 300.00
+284.00 296.00
+304.00 296.00
+304.00 288.00
+284.00 288.00
+284.00 284.00
+272.00 292.00
+-1.00 -1.00
+6 0
+0 
+ 3
+272.00 68.00
+284.00 76.00
+284.00 72.00
+304.00 72.00
+304.00 64.00
+284.00 64.00
+284.00 60.00
+272.00 68.00
+-1.00 -1.00
+6 0
+0 
+ 0
+316.00 64.00
+316.00 64.00
+331.00 64.00
+346.00 64.00
+-1.00 -1.00
+1 1
+4 PIPE
+ 0
+316.00 288.00
+316.00 288.00
+331.00 288.00
+346.00 288.00
+-1.00 -1.00
+1 1
+4 PIPE
+ 5
+372.00 156.00
+348.00 156.00
+300.00 100.00
+-1.00 -1.00
+6 0
+0 
+ 5
+372.00 168.00
+332.00 160.00
+324.00 136.00
+340.00 104.00
+-1.00 -1.00
+6 0
+0 
+ -1
+  #
+# Copyright (c) 1986 Regents of the University of California.
+# All rights reserved.  The Berkeley software License Agreement
+# specifies the terms and conditions for redistribution.
+#
+#	@(#)Makefile	6.1 (Berkeley) 4/29/86
+#
+SRCS=	efl
+MACROS=	-msU
+PRINTER=Pdp
+EQN=	deqn -${PRINTER}
+TBL=	dtbl -${PRINTER}
+TROFF=	ditroff -${PRINTER}
+
+paper:	paper.${PRINTER}
+	lpr -${PRINTER} -n paper.${PRINTER}
+
+paper.${PRINTER}: ${SRCS}
+	${TBL} ${SRCS} | ${EQN} | ${TROFF} ${MACROS} -t > paper.${PRINTER}
+
+clean:
+	rm -f paper.[PT]* *.spell errs Errs make.out
+
+spell:	${SRCS}
+	@for i in ${SRCS}; do \
+		echo $$i; spell $$i | sort | comm -23 - spell.ok > $$i.spell; \
+	done
+                                                                                                                                                                                                                                                                                                                                                                               È    .   #(    ..  È    jove.1  È    jove.2  È    jove.3   È  ¸ jove.4                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          #
+# Copyright (c) 1986 Regents of the University of California.
+# All rights reserved.  The Berkeley software License Agreement
+# specifies the terms and conditions for redistribution.
+#
+#	@(#)Makefile	6.1 (Berkeley) 4/24/86
+#
+SRCS=	trek.me
+MACROS=	-me
+PRINTER=Pdp
+TBL=	dtbl -${PRINTER}
+TROFF=	ditroff -${PRINTER}
+
+paper:	paper.${PRINTER}
+	lpr -${PRINTER} -n paper.${PRINTER}
+
+paper.${PRINTER}: ${SRCS}
+	${TBL} ${SRCS} | ${TROFF} ${MACROS} -t > paper.${PRINTER}
+
+clean:
+	rm -f paper.[PT]* *.spell errs Errs make.out
+
+spell:	${SRCS}
+	@for i in ${SRCS}; do \
+		echo $$i; spell $$i | sort | comm -23 - spell.ok > $$i.spell; \
+	done
+                                                                                                                                                                                                                                                                                                                                                                                                           Allman
+Faire
+Klingon
+Klingons
+L.R
+Onboard
+Queene
+S.R
+Spock
+Starbase
+Starbases
+Stardate
+Starsystem
+TO:02:06:12
+Torpedoes
+Trek''USD:34
+U.S.S
+USD:34
+XII
+amt1
+anual
+arp
+atus
+ca
+ck
+cl
+course1
+da
+dist
+distresslist
+ds
+es
+est
+filename
+fo
+ft
+hasers
+ields
+impcost
+isual
+lrscan
+mages
+mo
+mov
+mpulse
+na
+ndock
+omputer
+onboard
+orpedo
+ove
+partway
+pheff
+pture
+rscan
+shuttlecraft
+spread1
+srscan
+st
+starbase
+starbases
+stardate
+stardates
+starsystem
+starsystems
+ta
+torpedoes
+trek.me
+utomatic
+warpcost
+woops
+x,y
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      .\"	@(#)jove.2	6.1 (Berkeley) 5/30/86
+.\"
+.NH 1
+Commands for English Text
+.XS \n(PN
+\*(SN Commands for English Text
+.XE
+.LP
+\s-2JOVE\s0 has many commands that work on the basic units of English text:
+words, sentences and paragraphs.
+.NH 2
+Word Commands
+.XS \n(PN 5n
+\*(SN Word Commands
+.XE
+.LP
+\s-2JOVE\s0 has commands for moving over or operating on words.
+By convention,
+they are all ESC commands.
+.IP "ESC F" 20n
+Move Forward over a word.
+.IP "ESC B" 20n
+Move Backward over a word.
+.IP "ESC D" 20n
+Kill forward to the end of a word.
+.IP "ESC Rubout" 20n
+Kill backward to the beginning of a word.
+.LP
+Notice how these commands form a group that parallels the character-
+based commands,
+C-F,
+C-B,
+C-D,
+and Rubout.
+.LP
+The commands ESC F and ESC B move forward and backward over words.
+They are thus analogous to Control-F and Control-B,
+which move over single characters.
+Like their Control- analogues,
+ESC F and ESC B move several words if given an argument.
+ESC F with a negative argument moves backward like ESC B,
+and ESC B with a negative argument moves forward.
+Forward motion stops right after the last letter of the word,
+while backward motion stops right before the first letter.
+.LP
+It is easy to kill a word at a time.
+ESC D kills the word after point.
+To be precise,
+it kills everything from point to the place ESC F would move to.
+Thus,
+if point is in the middle of a word,
+only the part after point is killed.
+If some punctuation comes after point,
+and before the next word,
+it is killed along with the word.
+If you wish to kill only the next word but not the punctuation,
+simply do ESC F to get to the end,
+and kill the word backwards with ESC Rubout.
+ESC D takes arguments just like ESC F.
+.LP
+ESC Rubout kills the word before point.
+It kills everything from point back to where ESC B would move to.
+If point is after the space in "FOO, BAR",
+then "FOO, " is killed.
+If you wish to kill just "FOO",
+then do a ESC B and a ESC D instead of a ESC Rubout.
+.NH 2
+Sentence Commands
+.XS \n(PN 5n
+\*(SN Sentence Commands
+.XE
+.LP
+The \s-2JOVE\s0 commands for manipulating sentences and paragraphs are
+mostly ESC commands,
+so as to resemble the word-handling commands.
+.IP "ESC A" 20n
+Move back to the beginning of the sentence.
+.IP "ESC E" 20n
+Move forward to the end of the sentence.
+.IP "ESC K" 20n
+Kill forward to the end of the sentence.
+.IP "C-X Rubout" 20n
+Kill back to the beginning of the sentence.
+.LP
+The commands ESC A and ESC E move to the beginning and end of the
+current sentence,
+respectively.
+They were chosen to resemble
+Control-A and Control-E,
+which move to the beginning and end of a line.
+Unlike them,
+ESC A and ESC E if repeated or given numeric arguments
+move over successive sentences.
+\s-2JOVE\s0 considers a sentence to end wherever there is a ".",
+"?", or "!" followed by the end of a line
+or by one or more spaces.
+Neither ESC A nor ESC E moves past the
+end of the line or spaces which delimit the sentence.
+.LP
+Just as C-A and C-E have a kill command,
+C-K,
+to go with them,
+so ESC A and ESC E have a corresponding kill command ESC K which kills from
+point to the end of the sentence.
+With minus one as an argument it
+kills back to the beginning of the sentence.
+Positive arguments serve as a repeat count.
+.LP
+There is a special command,
+C-X Rubout for killing back to the beginning of a sentence,
+because this is useful when you change your
+mind in the middle of composing text.
+.NH 2
+Paragraph Commands
+.XS \n(PN 5n
+\*(SN Paragraph Commands
+.XE
+.LP
+The \s-2JOVE\s0 commands for handling paragraphs are
+.IP "ESC [" 20n
+Move back to previous paragraph beginning.
+.IP "ESC ]" 20n
+Move forward to next paragraph end.
+.LP
+ESC [ moves to the beginning of the current or previous paragraph, while
+ESC ] moves to the end of the current or next paragraph.  Paragraphs are
+delimited by lines of differing indent, or lines with text formatter
+commands, or blank lines.  \s-2JOVE\s0 knows how to deal with most indented
+paragraphs correctly, although it can get confused by one- or two-line
+paragraphs delimited only by indentation.
+.NH 2
+Text Indentation Commands
+.XS \n(PN 5n
+\*(SN Text Indentation Commands
+.XE
+.LP
+.IP "Tab" 20n
+Indent "appropriately" in a mode-dependent fashion.
+.IP "LineFeed" 20n
+Is the same as Return,
+except it copies the indent of the line you just left.
+.IP "ESC M" 20n
+Moves to the line's first non-blank character.
+.LP
+.LP
+The way to request indentation is with the Tab command.
+Its precise effect depends on the major mode.
+In \fIText\fP mode,
+it indents to the next tab stop.
+In \fIC\fP mode,
+it indents to the "right" position for C programs.
+.LP
+To move over the indentation on a line,
+do ESC M (\fIfirst-non-blank\fP).
+This command,
+given anywhere on a line,
+positions the cursor at the first non-blank, non-tab character on the line.
+.NH 2
+Text Filling
+.XS \n(PN 5n
+\*(SN Text Filling
+.XE
+.LP
+\fIAuto Fill\fP mode causes text to be \fIfilled\fP
+(broken up into lines that fit in a specified width)
+automatically as you type it in.
+If you alter existing text so that it is no longer properly filled,
+\s-2JOVE\s0 can fill it again if you ask.
+.LP
+Entering \fIAuto Fill\fP mode is done with ESC X \fIauto-fill-mode\fP.
+From then on,
+lines are broken automatically at spaces when they get longer than the
+desired width.
+To leave \fIAuto Fill\fP mode,
+once again execute ESC X \fIauto-fill-mode\fP.
+When \fIAuto Fill\fP mode is in effect,
+the word \fBFill\fP appears in the mode line.
+.LP
+If you edit the middle of a paragraph,
+it may no longer correctly be filled.
+To refill a paragraph,
+use the command ESC J (\fIfill-paragraph\fP).
+It causes the paragraph that point is inside to be filled.
+All the line breaks are removed and new ones inserted where necessary.
+.LP
+The maximum line width for filling is in the variable \fIright-margin\fP.
+Both ESC J and auto-fill make sure that no line exceeds this width.
+The value of \fIright-margin\fP is initially 72.
+.LP
+Normally ESC J figures out the indent of the paragraph and uses that same
+indent when filling.  If you want to change the indent of a paragraph you
+set \fIleft-margin\fP to the new position and type C-U\ ESC\ J.
+\fIfill-paragraph\fP, when supplied a numeric argument, uses the value of
+\fIleft-margin\fP.
+.LP
+If you know where you want to set the right margin but you don't know the
+actual value, move to where you want to set the value and use the
+\fIright-margin-here\fP command.  \fIleft-margin-here\fP does the same
+for the \fIleft-margin\fP variable.
+.NH 2
+Case Conversion Commands
+.XS \n(PN 5n
+\*(SN Case Conversion Commands
+.XE
+.LP
+.IP "ESC L" 15n
+Convert following word to lower case.
+.IP "ESC U" 15n
+Convert following word to upper case.
+.IP "ESC C" 15n
+Capitalize the following word.
+.LP
+.LP
+The word conversion commands are most useful.
+ESC L converts the word after point to lower case,
+moving past it.
+Thus,
+successive ESC L's convert successive words.
+ESC U converts to all capitals instead,
+while ESC C puts the first letter of the word into upper case and the
+rest into lower case.
+All these commands convert several words at once if given an argument.
+They are especially convenient for
+converting a large amount of text from all upper case to mixed case,
+because you can move through the test using ESC L,
+ESC U or ESC C on each word as appropriate.
+.LP
+When given a negative argument,
+the word case conversion commands apply to
+the appropriate number of words before point,
+but do not move point.
+This is convenient when you have just typed a word in the wrong case.
+You can give the case conversion command and continue typing.
+.LP
+If a word case conversion command is given in the middle of a word,
+it applies only to the part of the word which follows the cursor,
+treating it as a whole word.
+.LP
+The other case conversion functions are \fIcase-region-upper\fP and
+\fIcase-region-lower\fP,
+which convert everything between point and mark to the specified case.
+Point and mark remain unchanged.
+.NH 2
+Commands for Fixing Typos
+.XS \n(PN 5n
+\*(SN Commands for Fixing Typos
+.XE
+.LP
+In this section we describe the commands that are especially useful
+for the times when you catch a mistake on your text after you have made it,
+or change your mind while ces for numbers typed on the
+keypad as opposed to numbers typed from the keyboard.  This can save
+having type "ESC" when you want to specify an argument.
+.dc "digit-7" "Not Bound"
+This pretends you typed "ESC 7".  This is useful for terminals that
+have keypads that send special sequences for numbers typed on the
+keypad as opposed to numbers typed from the keyboard.  This can save
+having type "ESC" when you want to specify an argument.
+.dc "digit-8" "Not Bound"
+This pretends you typed "ESC 8".  This is useful for terminals that
+have keypads that send special sequences for numbers typed on the
+keypad as opposed to numbers typed from the keyboard.  This can save
+having type "ESC" when you want to specify an argument.
+.dc "digit-9" "Not Bound"
+This pretends you typed "ESC 9".  This is useful for terminals that
+have keypads that send special sequences for numbers typed on the
+keypad as opposed to numbers typed from the keyboard.  This can save
+having type "ESC" when you want to specify an argument.
+.dc "digit-0" "Not Bound"
+This pretends you typed "ESC 0".  This is useful for terminals that
+have keypads that send special sequences for numbers typed on the
+keypad as opposed to numbers typed from the keyboard.  This can save
+having type "ESC" when you want to specify an argument.
+.dc "dirs" "Not Bound"
+This prints out the directory stack.  See the "cd", "pushd", "popd"
+commands for more info.
+.dc "disable-biff" "(variable)"
+When this is set, \s-2JOVE\s0 disables biff when you're editing and enables it
+again when you get out of \s-2JOVE\s0, or when you pause to the parent shell
+or push to a new shell. (This means arrival of new mail will not be
+immediately apparent but will not cause indiscriminate writing on the
+display). The default is "off".
+.dc "dstop-process" "Not Bound"
+Send the "dsusp" character to the current process.  This is the
+character that suspends a process on the next read from the
+terminal.  Most people have it set to C-Y.  This only works if
+you have the interactive process feature, and if you are in a
+buffer bound to a process.
+.dc "edit-word-abbrevs" "Not Bound"
+This creates a buffer with a list of each abbreviation and the phrase
+it expands into, and enters a recursive edit to let you change the
+abbreviations or add some more.  The format of this list is
+"abbreviation:phrase" so if you add some more you should follow that
+format.  It's probably simplest just to copy some already existing
+abbreviations and edit them.  When you are done you type "C-X C-C" to
+exit the recursive edit.
+.dc "end-of-file" "ESC >"
+This moves point forward to the end of the buffer.  This sometimes
+prints the "Point Pushed" message.  If the end of the buffer isn't on
+the screen \s-2JOVE\s0 will set the mark so you can go back to where you were
+if you want.
+.dc "end-of-line" "C-E"
+This moves point to the end of the current line.  If the line is too
+long to fit on the screen \s-2JOVE\s0 will scroll the line to the left to
+make the end of the line visible.  The line will slide back to its
+normal position when you move backward past the leftmost visible character
+or when you move off the line altogether.
+.dc "end-of-window" "ESC ."
+This moves point to the last character in the window.
+.dc "eof-process" "Not Bound"
+Sends EOF to the current interactive process.  This only works on
+versions of \s-2JOVE\s0 which run under 4.2-3 BSD VAX UNIX.  You can't send
+EOF to processes on the 2.9 BSD PDP-11 UNIX.
+.dc "erase-buffer" "Not Bound"
+This erases the contents of the specified buffer.  This is like
+.IQ delete-buffer
+except it only erases the contents of the buffer, not
+the buffer itself.  If you try to erase a buffer that needs saving you
+will be asked to confirm it.
+.dc "error-window-size" "(variable)"
+This is the percentage of the screen to use for the error-window on the
+screen.  When you execute
+.IQ compile-it,
+.IQ error-window-size
+percent of the screen will go to the error window.  If the window already
+exists and is a different size, it is made to be this size.  The default
+value is 20%.
+.dc "exchange-point-and-mark" "C-X C-X"
+This moves point to mark and makes mark the old point.  This is for
+quickly moving from one end of the region to another.
+.dc "execute-named-command" "ESC X"
+This is the way to execute a command that isn't bound to any key.
+When you are prompted with ": " you can type the name of the
+command.  You don't have to type the entire name.  Once the command
+is unambiguous you can type Space and \s-2JOVE\s0 will fill in the rest for
+you.
+If you are not sure of the name of the command, type "?" and \s-2JOVE\s0
+will print a list of all the commands that you could possibly match
+given what you've already typed.  If you don't have any idea what the
+command's name is but you know it has something to do with windows
+(for example), you can do "ESC X apropos window" and \s-2JOVE\s0 will print a
+list of all the commands that are related to windows.
+If you find yourself constantly executing the same commands this way
+you probably want to bind them to keys so that you can execute them
+more quickly.  See the
+.IQ bind-to-key
+command.
+.dc "execute-keyboard-macro" "C-X E"
+This executes the keyboard macro.  If you supply a numeric argument the
+macro is executed that many times.
+.dc "execute-macro" "Not Bound"
+This executes a specified macro.  If you supply a numeric argument the
+macro is executed that many times.
+.dc "exit-jove" "C-X C-C"
+This exits \s-2JOVE\s0.  If any buffers need saving \s-2JOVE\s0 will print a warning
+message and ask for confirmation.  If you leave without saving your
+buffers all your work will be lost.  If you made a mistake and really
+do want to exit then you can.  If you are in a recursive editing level
+.IQ exit-jove
+will return you from that.
+.dc "file-creation-mode" "(variable)"
+This variable has an octal value.
+It contains the mode (see
+.IQ chmod(1)
+) with which files should be created.  This mode gets modified by your
+current umask setting (see
+.IQ umask(1)
+).  The default value is usually
+.IQ 0666
+or
+.IQ 0644.
+.dc "files-should-end-with-newline" "(variable)"
+This variable indicates that all files should always have a newline
+at the end.  This is often necessary for line printers and the like.
+When set, if \s-2JOVE\s0 is writing a file whose last character is not a
+newline, it will add one automatically.
+.dc "fill-comment" "Not Bound"
+This command fills in your C comments to make them pretty and readable.
+This filling is done according the variable
+.IQ comment-format.
+.DS L
+/*
+ * the default format makes comments like this.
+ */
+.DE
+This can be changed by changing the format variable.  Other languages
+may be supported by changing the format variable appropriately.  The
+formatter looks backwards from dot for an open comment symbol.  If 
+found, all indentation is done relative the position of the first character
+of the open symbol.  If there is a matching close symbol, the entire 
+comment is formatted.  If not, the region between dot and the open symbol
+is reformatted.
+.dc "fill-paragraph" "ESC J"
+This rearranges words between lines so that all the lines in the current
+paragraph extend as close to the right margin as possible, 

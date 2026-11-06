@@ -1,0 +1,797 @@
+:cd=\EJ:\
+	:im=\EQ:ei=\ER:ic@:co#88:sf=\EG:tc=blit:
+Ma|oblit|ojerq|first version of blit rom:\
+	:do=^J:AL=\Ef%+ :DL=\Ee%+ :mi:dl=\EE:ei=\ER:im=\EQ:dc=\EO:da:db:\
+	:al=\EF:cd=\EJ:ce=\EK:cl=^L:cm=\EY%r%+ %+ :co#88:li#72:nd=\EC:\
+	:up=\EA:vb=\E^G:am:ul:pt:eo:
+Mb|daleblit|daleterm|blit running Dale DeJager's ROM:\
+	:ku=\EA:kd=\EB:kr=\EC:kl=\ED:so=\EU!:se=\EV!:us=\EU":ue=\EV":\
+	:da@:db@:tc=oblit:
+Mc|datapoint|dp3|dp3360|datapoint 3360:\
+	:do=^J:am:le=^H:bs:cd=^_:ce=^^:cl=^]^_:co#82:ho=^]:li#25:nd=^x:up=^z:
+#From: cbosgd!utcs!romwa@ucbvax.berkeley.edu (mark dornfeld)
+#		This termcap is for the LANPAR Technologies VISION 3220
+#	terminal.  The function key definitions k0-k5 represent the
+#	edit keypad: FIND, INSERT HERE, REMOVE, SELECT, PREV SCREEN,
+#	NEXT SCREEN. The key definitions k6-k9 represent the PF1 to
+#	PF4 keys.
+v0|v3220|LANPAR Vision II model 3220/3221/3222:\
+	:co#80:li#24:cl=\E[H\E[J:bs:am:cm=\E[%i%d;%dH:nd=\E[C:up=\E[A:\
+	:ce=\E[K:cd=\E[J:so=\E[7m:se=\E[m:us=\E[4m:ue=\E[m:\
+	:is=\E>\E[?3l\E[?7h\E[?8h\E[p:ks=\E=:ke=\E>:\
+	:kn#10:k0=\E[1~:k1=\E[2~:k2=\E[3~:k3=\E[4~:k4=\E[5~:k5=\E[6~:\
+	:k6=\E[OP:k7=\E[OQ:k8=\E[OR:k9=\E[OS:\
+	:ku=\E[A:kd=\E[B:kr=\E[C:kl=\E[D:\
+	:kh=\E[H:pt:sr=\EM:xn:\
+	:dl=\E[M:dc=\E[P:ei=\E[4l:al=\E[L:im=\E[4h:mi:
+# From ucbvax!faletti (Faletti@Berkeley)
+# FREEDOM 100 by Liberty Electronics USA, SF.
+# :kh=^^:  left out because it precludes using change-to-alternate-file in vi.
+# Basic Freedom 100 entry, works with VI at 1200 baud.
+Md|f100|freedom100|freedom|freedom 100 no padding:\
+	:am:bs:bw:mi:ms:pt:co#80:kn#20:li#24:\
+	:ct=\E3:st=\E1:is=\Eg\Ef\r\Ed:kr=^L:\
+	:cl=^Z:do=^J:ho=^^:kb=^H:kl=^H:\:kd=^V:\
+	:ko=dc,al,dl,cl,bt,ce,cd:ku=^K:le=^H:nd=^L:\
+	:ch=\E]%+ :cm=\E=%+ %+ :cv=\E[%+ :sr=\Ej:up=^K:\
+	:al=\EE:bt=\EI:cd=\EY:ce=\ET:dc=\EW:dl=\ER:ei=\Er:im=\Eq:\
+	:se=\EG0:so=\EG4:ue=\EG0:us=\EG8:as=\E$:ae=\E%:\
+	:vb=\Eb\200\200\Ed:\
+	:k1=^A@\r:k2=^AA\r:k3=^AB\r:k4=^AC\r:k5=^AD\r:\
+	:k6=^AE\r:k7=^AF\r:k8=^AG\r:k9=^AH\r:k0=^AI\r:\
+	:hs:ts=\Eg\Ef:fs=\r:ds=\Eg\Ef\r:
+Me|f100-rv|freedom100-rv|freedom-rv|freedom100 with reverse video at 1200:\
+	:is=\Eg\Ef\r\Eb:vb=\Ed\200\200\Eb:tc=freedom100:
+# VI at 9600 baud (or EMACS at 1200 -- but may be more than is needed for emacs)
+Mf|f100-v|freedom100-v|freedom-v|freedom100 for 9600 vi or 1200 emacs:\
+	:al=6.5*\EE:dl=11.5*\ER:\
+	:vb=\Eb\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\Ed:\
+	:tc=freedom100:
+Mx|f100-v-rv|freedom100-v-rv|freedom-v-rv|freedom100 rev. vid. for 9600 vi:\
+	:al=6.5*\EE:dl=11.5*\ER:is=\Eg\Ef\r\Eb:\
+	:vb=\Ed\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\Eb:\
+	:tc=freedom100:
+# EMACS at 9600 baud -- this still needs some more work on the padding
+My|f100-e|freedom100-e|freedom-e|freedom100 for 9600 emacs:\
+	:al=8.5*\EE:dl=11.5*\ER:ip=6:\
+	:vb=\Eb\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\Ed:\
+	:tc=freedom100:
+Mz|f100-e-rv|freedom100-e-rv|freedom-e-rv|freedom100 rev. vid. for emacs 9600:\
+	:al=8.5*\EE:dl=11.5*\ER:ip=6:is=\Eg\Ef\r\Eb:\
+	:vb=\Ed\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\Eb:\
+	:tc=freedom100:
+zM|f110-v|freedom110-v|freedom110 for 9600 vi or 1200 emacs:\
+	:is=\Eg\Ef\r\Ed\EO:dc=\EO\EW:im=\EO\Eq:\
+	:al=6.5*\EE:dl=11.5*\ER:\
+	:vb=\Eb\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\Ed:\
+	:tc=freedom100:
+# (from kerch@lll-crg)
+L1|f200|freedom200| Freedom 200 VDT by Liberty Electronics :\
+	:if=/usr/lib/tabset/stdcrt:al=\EE:am:bs:bt=\EI:cd=\EY:\
+	:ce=\ET:cl=^Z:cm=\E=%+ %+ :co#80:dc=\EW:dl=\ER:do=^V:\
+	:ds=\Eh:ei=\Er:im=\Eq:is=\Eg\El\E\041\062:\
+	:k1=^A@\r:k2=^AA\r:k3=^AB\r:k4=^AC\r:k5=^AD\r:\
+	:k6=^AE\r:k7=^AE\r:k8=^AF\r:k9=^AG\r:kd=^V:kr=L:\
+	:ku=^K:li#24:ms:nd=^L:se=\EG0:so=\EG4:sr=\Ej:\
+	:te=\EJ\E\\2\E|\041\061^L^Y:ti=\E\\1\EK\E|\041\061L^Y:\
+	:ts=\Ef:ue=\EG0:up=^K:us=\EG8:vb=\Eb\Ed:hs:i2=\E^O\Eg:\
+	:ts=\Ef:fs=^M:ds=\E^N:
+Mg|dg|dg6053|data general 6053:\
+	:do=^J:am:le=^H:bs:cm=^P%r%.%.:cl=^L:ho=^H:nd=^S:\
+	:up=^W:ce=^K:co#80:li#24:
+Mi|cdi|cdi1203:\
+	:am:le=^H:bs:hc:os:co#80:dC#200:do=^J:
+# ^S is an arrow key!  Boy is this guy in for a surprise on v7!
+Ml|sol:\
+	:do=^J:am:le=^Y:ho=^H:bs:cm=\E^1%.\E^2%.:cl=^K:ho=^N:co#64:li#16:\
+	:nd=^S:up=^W:kl=^A:kr=^S:ku=^W:kd=^Z:ma=^A^H^S ^W^P^Z^N:
+Mn|xl83|Cybernex XL-83:\
+	:do=^J:am:le=^H:bs:cd=62^P:ce=3^O:cl=62^L:cm=^W%+ %+ :co#80:ho=^K:\
+	:kd=^J:kl=^H:ku=^N:li#24:up=^N:nd=^I:
+Mo|omron|Omron 8025AG:\
+	:do=^J:al=\EL:am:le=^H:bs:cd=\ER:co#80:ce=\EK:cl=\EJ:\
+	:da:db:dc=\EP:dl=\EM:ho=\EH:li#24:nd=\EC:se=\E4:sf=\ES:\
+	:so=\Ef:sr=\ET:up=\EA:ve=:vs=\EN:
+Mp|plasma|plasma panel:\
+	:am:le=^H:bs:cl=^L:co#85:ho=^^:li#45:nd=\030:up=\026:do=^J:
+Mq|pty|psuedo teletype:\
+	:do=^J:co#80:li#24:am:cl=\EJ:le=^H:bs:cm=\EG%+ %+ :nd=\EC:\
+	:up=\EA:ce=\EK:cd=\EL:al=\EP:dl=\EN:ic=\EO:\
+	:so=\Ea$:se=\Eb$:us=\Ea!:ue=\Eb!:
+Mr|remote|virtual remote terminal:\
+	:co#79:am@:nl@:tc=virtual:
+Ms|swtp|ct82|southwest technical products ct82:\
+	:do=^J:am:le=^d:bc=^d:\
+	:al=^\^y:cd=^v:ce=^F:cl=^L:cm=%r^k%.%.:co#82:li#20:\
+	:dl=^z:nd=^s:up=^a:so=^^^v:se=^^^F:dc=^\^h:ic=^\^x:ho=^p:\
+	:ei=:sf=^n:sr=^o:ll=^c:im=:\
+	:is=^\^r^^^s^^^d^]^w^i^s^^^]^^^o^]^w^r^i:
+Mt|terak|Terak emulating Datamedia 1520:\
+	:tc=dm1520:
+# From john@ucbrenoir  Tue Sep 24 13:14:44 1985
+M4|sun-12|Sun 12-line window:\
+	:li#12:co#80:tc=sun:
+M5|sun-1|Sun 1-line window for sysline:\
+	:li#1:co#80:es:hs:ts=\r:fs=\E[K:ds=^L:tc=sun:
+Mv|virtual|VIRTUAL|cb unix virtual terminal:\
+	:do=^J:co#80:li#24:am:cl=\E\112:le=^H:bs:cm=\E\107%r%.%.:nd=\E\103:\
+	:up=\E\101:ce=\E\113:cd=\E\114:al=\E\120:dl=\E\116:im=:ei=:ic=\E\117:\
+	:da:db:kl=\E\104:kr=\E\103:ku=\E\101:kd=\E\102:kh=\E\105:\
+	:so=\E\141\004:se=\E\142\004:us=\E\141\001:ue=\E\142\001:
+Mw|it2|intertube2|intertec data systems intertube 2:\
+	:do=^J:am:bs:cl=^L:co#80:ho=^A:li#25:up=^Z:ce=\EK:\
+	:cm=^N%+ %+ :ch=^P%\102%.:cv=^K%.:nd=^F:do=\n:ll=^K^X\r:\
+	:so=\E0P:se=\E0@:
+Mx|delta|dd5000|delta data 5000:\
+	:do=^J:am:le=^H:bs:cl=^NR:cm=^O%\068%+9%\068%+9:co#80:li#27:\
+	:ho=^NQ:nc:nd=^Y:up=^Z:ce=^NU:dc=^NV:ma=^K^J^Z^P^Y :xr:
+My|mdl110|cybernex mdl-110:\
+	:cm=^P%+ %+ :co#80:li#24:am:cl=70^X:le=^H:bs:do=^J:\
+	:nd=^U:up=^Z:ho=^Y:ce=145^N@^V:cd=145^NA^W:al=65^NA^N^]:\
+	:dl=40^NA^N^^:im=:ei=:ic=3.5^NA^]:dm=:ed=:dc=3.5^NA^^:\
+	:so=^NF:se=^NG:ta=43\t:ma=^Z^P:cd=6^N@^V
+Mz|zen30|z30|zentec 30:\
+	:do=^J:mi:co#80:li#24:ma=^L ^R^L^K^P:ul:\
+	:al=1.5*\EE:le=^H:bs:ce=1.0*\ET:cm=\E=%+ %+ :cl=\E*:\
+	:ho=^^:nd=^L:se=\EG0:so=\EG6:up=^K:im=\Eq:ei=\Er:\
+	:am:dc=\EW:dl=1.5*\ER:cd=\EY:
+m0|modgraph|mod|Modgraph terminal emulating vt100, 24x80:\
+	:xn@:rf@:sr=5\EM\E[K:vs=\E\^9;0s\E\^7;1s:\
+	:is=\E\^9;0s\E\^7;1s\E[3g\E\^11;9s\E\^11;17s\E\^11;25s\E\^11;33s\E\^11;41s\E\^11;49s\E\^11;57s\E\^11;65s\E\^11;73s\E\^11;81s\E\^11;89s:\
+	:tc=vt100:
+# dmchat is like DM2500, but DOES need "all that padding" (jcm 1/31/82)
+# also, has a meta-key (MT)
+# from goldberger@su-csli.arpa
+MX|dmchat|dmchat version of datamedia 2500:\
+	:al=1*^P\n^X^]^X^]:\
+	:MT:km:\
+	:dl=2^P^Z^X^]:\
+	:tc=dm2500:
+# # --------------------------------
+#
+# N: ANN ARBOR
+#
+# Needs function keys added.
+# Originally from Mike O'Brien@Rand and Howard Katseff at Bell Labs.
+# Highly modified 6/22 by Mike O'Brien.
+# split out into several for the various screen sizes by dave-yost@rand
+# Modifications made 3/82 by Mark Horton
+# Modified by Tom Quarles at UCB for greater efficiency and more diversity
+# status line moved to top of screen, vb removed 5/82
+#
+# assumes the following setup:
+# A: 0000 1010  0001 0000
+# B: 9600  0100 1000  0000 0000  1000 0000  17  19
+# C: 56   66   0    0    9600  0110 1100
+# D: 0110 1001   1   0
+#
+#	Briefly, the settings are for the following modes:
+#	   (values are for bit set/clear with * indicating our preference
+#	    and the value used to test these termcaps)
+#	Note that many of these settings are irelevent to the termcap
+#	and are just set to the default mode of the terminal as shipped
+#	by the factory.
+#
+# A menu: 0000 1010  0001 0000
+#	Block/underline cursor*
+#	blinking/nonblinking cursor*
+#	key click/no key click*
+#	bell/no bell at column 72*
+#
+#	key pad is cursor control*/key pad is numeric
+#	return and line feed/return for <cr> key *
+#	repeat after .5 sec*/no repeat
+#	repeat at 25/15 chars per sec. *
+#
+#	hold data until pause pressedGÑ¡]?Ş­Ré­ĞP‚á­ĞQbĞ  ­Ñï   ïAĞÿİQ¼‹ ±¼g İQûï:   û ï        İßï8  İûï/  ï/      ¼` ğ   ï/      ¼g ğ   ïî.      ¼p ğ    Â<^Ş­ìPĞP[Õ¬Ô«Ğ«kÔ«Ğ««ß­Üİ[İ ûï!&  ÕPĞ¬«Õ­äÕ­è+Ñ­ä«Ñ­ä«Ñ­è«Â«­äŞ­äP}`«Ğ­äÔ­èŞï~   ­ĞÔ­ØĞ­Ø­Ôß­Äß­Ğİûï&  İ    ûïÊ%  ĞP­üÔïøO  İ İ[İ ûïŸ%  Ë    ­ü~ûïµ%  ÕïÓO  èİ ß­ÄİûïÇ%  İ­üûï©%  İ ß­Üİ ûï_%    Ğï¡O  @(#)strncat.s	5.3 (Berkeley) 3/9/86 @ Ğ¬VGĞ¬SĞSQ: ÿÿaøĞQSĞ¬Q<ÿÿRÑVRĞVRÂRV: RaÂRQ(RacÕVß”cÂPRÂRQÖR(RacĞ¬P Îì÷^Ğïg?  Íğ÷Õ¬)Ëüÿÿ¬PxıPPÑPï ¬PxPPÒï°6  QÊQPÕï—6  İ Éï6  ~İï6  ûïŠ  Óø  ¬Èï~6  ¬ŞÍş÷Yİ¬ßïr6  İYûïa  İYûï¨  ÀPYßÍø÷ûïz  ßÍø÷ûï/  ÁP~ßïB6  İYûï,  İYûïs  ÀPYÕï6  İï6  İYûï¹#  İYûïP  ÀPYéïï5  $û ïç  İPßïû5  İYûïŞ  İYûï%  ÀPYÕïÈ5  ßïİ5  İYûïk#  ÀYŞÍÿû[Ğ¬Zhö%‹öX‹`ĞÍğ÷Pİ@ï‰  İ[ûï@#  =ÑX
+IŞ­ÿPÑ[P@ÑX%Ñ˜ŠXÑXm   ÂÑÍğ÷ïj7  ¿İÍğ÷ßïv5  İ[ûïQ  İ[ûï˜  ÀP[˜ŠX²ö
+‹”kİ¬İ¬İ¬İ¬İ¬ßÍÿûİYûï  ßÍş÷ûïd  ĞPXÑX   2 Xİßï?M  İ İXßÍş÷İïá4  ûïò  ÕPàïÒ4  û ï5  ĞPÍô÷ÑPÿÿÿÿÕÍô÷1› İ İûïZ  İ ûï­"  Ë    P~ûïÆ"  İûïA  İßïi4  ûï"!  ĞPÍì÷İ ûï$  ßï4  İYûï¹!  İ>ßÍş÷ûïd  ÁPYÁXPŞÍş÷QÃQYQÃQP~İYİÍì÷ûï®*  İÍì÷ûï«$  İ ûï¶  àï4  İ ûïe"  ĞPXÑXÍô÷ë  Õ¬Ğ¬ïí3  Ğ¬ïá3  Õ¬Ëüÿÿ¬PĞPïØ3  ÕïÂ3  ÷ïL  İßï”3  ßïüK  ûï?  áï 3  !İ İİûïº  ĞPï‡3  İİİPûï~     İïp3  ûïù#  Îïb3     Â^Ğïa3  ­üÕ¬Ğ¬ïR3  Ğ­üP  Â ^Ş­ğ[Ô«Ğ«kĞ¬«Ô«ß­àİ[İ ûï!  ÕPÎPÕ­ìÖ­èĞ­èP   İ¬ûï
+   İPûï{  ÀÂ^Õï—4  ßïWK  ß­ğûï=  Öï4  Å<ï@K  PÃP¼­øß­øûï  ĞPZĞª[Şïê3  WÑgïK  ÀWÕgğÕg1Œ Ál  ª­üĞ§V	Ñf­üÀVÕfóĞ¦YĞ¦XİYİZûï„   ĞPYİXİZûïv   ĞPXĞ§PÑP FÑP=Ñ[YÑ[Y3Ñª-Ñ[X1Ñ[X#Ñª$Ñ[YÑªÑ[XÑ[XÑª	ĞZPÑ[YÜÅ  §PÀP­øß­øûïL   ĞPZÖª Ø Ğ¬[Ğ¬ZÑZ:İ«ûï9  Âm  PÀPZÃ«ZPÀ«PÀ¼  PÇPQÄQÃQPQÃQZP  Â^Ç€Q ¼PÄ€Q PÃP¼­üÇ€Q ¼­øÕ­üÀ€Q ­ü×­øŞïİI  YÇ<­üPÄ<PÃP­ü‰Ç<­üZÇ<ZPÄ<PÃPZ‰Æ<ZĞZ‰Á p ­øPÇPQÄQÃQPï¹I  Õ­ø(˜FZİZûï…  ĞP­ôÑ­øP-İZûïr  ÂP­øÖZÜ˜FZÃZ~ûïY  ÀP­ø×ZÕ­øêĞZïeI  Ğ­ø[Ğ[ïbI  İZûï3  ÑPn  Ğï11  ÔZ
+ÂJï"1  [ÖZÑ[Jï1  ìĞï1  Á[‰ĞZ‰Ôï!I  ŞïûH  P  ŞïÌH  [Şï2  ZŠ‹ûĞ¬PÅ P@ï!2  ZŞï¨H  [Š‹Š‹Š‹Ö[Á¬YÅiP@ï2  ZŠ‹Š‹Š‹İyİ[ûï¯   ĞP[Ád   y~İ[ûï›   ĞP[Ád   y~İ[ûï‡   ĞP[Ád   y~İ[ûïs   ĞP[Ğ¬PÑ d   ö2«Ğ¬PÃd    PÆd   PÀ0PöP«À[Ğ¬PÁd    ~İ[ûï*   ĞP[ŞïéG  P   Ç¬PxPPÃP¬P2nP2mP Ğ¬[Ö[Ñ¬
+Ç
+¬PÇ
+PQÄ
+QÃQPQÀ0QöQ‹ö ‹Ç
+¬PÄ
+PÃP¬PÀ0PöP‹Ğ[P@(#)errlst.c	5.2 (Berkeley) 3/9/86  '  '  '  4'  D'  \'  f'  €'  ’'  ¤'  ´'  À'  Ò'  ä'  ö'  (  (  $(  0(  B(  Q(  a(  p(  (  •(  ©(  È(  ×(  æ(  ş(  )  !)  0)  <)  O)  `)  v)  )  ®)  Í)  ê)  û)  *  ;*  R*  l*  *  ¬*  Ü*  ó*  +  "+  9+  ]+  ~+  —+  ±+  Í+  å+  ,  (,  =,  P,  r,  …,  ’,  ¦,  º,  Í,  Ü,  Error 0 Not owner No such file or directory No such process Interrupted system call I/O error No such device or address Arg list too long Exec format error Bad file number No children No more processes Not enough memory Permission denied Bad address Block device required Device busy File exists Cross-device link No such device Not a directory Is a directory Invalid argument File table overflow Too many open files Inappropriate ioctl for device Text file busy File too large No space left on device Illegal seek Read-only file system Too many links Broken pipe Argument too large Result too large Operation would block Operation now in progress Operation already in progress Socket operation on non-socket Destination address required Message too long Protocol wrong type for socket Option not supported by protocol Protocol not supported Socket type not supported Operation not supported on socket Protocol family not supported Address family not supported by protocol family Address already in use Can't assign requested address Network is down Network is unreachable Network dropped connection on reset Software caused connection abort Connection reset by peer No buffer space available Socket is already connected Socket is not connected Can't send after socket shutdown Too many references: can't splice Connection timed out Connection refused Too many levels of symbolic links File name too long Host is down Host is unreachable Directory not empty Too many processes Too many users Disc quota exceeded ï      ¼\ ğ   ïz      ¼… ğ   ïf      ¼a ğ   @(#)strlen.s	5.3 (Berkeley) 3/9/86    Ğ¬Q: ÿÿaøÃ¬QP  Ğ­Rï   ­¼B ï   ÕQĞPï 0  ÎPbÔPb     ¼ïâ      ¼;ò   Â^Ğ¬­èĞ¬PĞ@ïÛ?  ­ìĞ@ïR@  ­ğß­ôß­èİ¬ûïh  ÕPÎPÑ­ì­øÑ­ğ­ü7Ğ­ø­ìĞ¬PĞ­ì@ï˜?  Ğ­ü­ğĞ¬PĞ­ğ@ï@  İ ß­èİ¬ûï  ÕP·Ğ­ôP    Â^İ ß­øûï   ÕPÎPÕ¬Ğ­ø¼Ğ­øPï&      ¼t ğ   @(#)strncpy.s	5.3 (Berkeley) 3/9/86 @ Ğ¬VRĞ¬SĞ¬Q<ÿÿRÑVRĞVRÂRV: RaÂRQ(RacÕVß'ÀPVÂPRÂRQ(Rac<ÿÿRÑVRĞVRÂRV, c RcÕVæĞ¬P ï      ¼ò   Â^™B­üĞ¬­ğ2ÿ­ìß­ìÁ\~İ¬ûïN  ×­ìĞ­ğPÖ­ğ”`6á­ü$Î­ìPÑP­ø”½ğ˜½ğPÑP
+Ö­ğß­ìš½ğ~ß­ìš ~ûï  Ğ¬P    	
+ !"#$ &'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~€‚ƒ„…†‡ˆ‰Š‹Œ‘’“”•–—˜™š›œŸ ¡¢£¤¥¦§¨©ª«¬­®¯°±²³´µ¶·¸¹º»¼½¾¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏĞÑÒÓÔÕÖ×ØÙÚÛÜİŞßàáâãäåæçèéêëìíîïğñòóôõö÷øùúûüışÿÀ1± ÔTSĞ­üSá£Á££TÑ£TÑR
+R³Ö£ÔcÖ­ğ»İ­üİRûïÍ  ÕPã­ğ Ö­ğºï­şÿÿS}½üTàT©ÀP­ğÔRÕPÕTšS•CïŒşÿÿÎR×QS…×TõPá}T½üÂP­ğàRôPšR•Bïaşÿÿ1eÿÖP×QĞRã­ğ Ğ­ğPÎ ÿ^Ğ¬[Ğ¬­üĞ¬\Ô­ğ<ÿÿPĞ[Q}½üTÃQURÑPRĞRP0eÿĞQ[áRÜ•‹¾Ğ^U|Y|Vš‹PP Xœ² ² ¦² ² ² ² ² ² ì¬² ²á² ¸ÃÃÃÃÃÃÃÃÃ² ² ² ² ² ² ² ² ² ² Ÿ½ ² ½ ² ² ² ² ² ² ² ² ² ² ² ² s² ² ½ ² ² ² ² ² ² ² ² ² ² Ÿäøÿ² ² ² øÿ² ² ² ² ² Ê ² s² ² P…1ğş1ÙÈ@   ZŒ P11ÿĞXPàZÎPĞŒR: PbĞQUĞRQ1!0123456789abcdef0123456789ABCDEFĞRĞSïÔÿÿÿWĞRĞSïÅÿÿÿWáZïÊÿÿÿWÎSVÔQÀUĞŒPïRSPQAg…ñ VRñÿ|V”e;0®áZzÕ¬üuÑSxPáZXPPqĞW0qYÊ   ZïlPùP
+n4
+n® 
+®
+néŒ ï÷   
+nª ùŒ
+nÖW8
+nïíÿÿÿ®; ®ÕWáZ+qáZ qÖWàZĞXÃQUVÂWVÂVX&ÀWQİQH¥ RÂ]RÂRX(VaHa, a0X¾ ÃWQÁVSUÃQUXÃXYP àZàZRĞWP	ÂPXÂPY0"ıÃXYP7ÂXYĞXP0ıáR×PšR}½üTôT0¼üëR…Ö­ğ}T½üÜĞYP1hı1cı0R RÂPYİQĞPWÂP^, `RWnĞWPĞ^Q0ÃüÀW^ĞQĞŒPP…Ğ^Q1iÿÈ€   Z1RıÈ Z1LıÈZ1FıÈZ1@ıà ZàZÈZàZŞIiY>I ĞY	ŞHhX>H ĞXÈZ1ıÔXÈZÊZ1ıàZĞŒYæÌZÎYYŞĞŒXÙÎXXÔàZĞX0ëÁ­øXWĞWVÔWÑWĞWÃWPøPnW®#ó VĞWPÖ­øÖWøPïHÿÿÿ W®xÿWPˆ­ï@®®QĞWVŸïSşÿÿŸ¡0¡0Sƒ, a‘Vc”c8Va¡0¡ÃVUQĞnSÔWé­ï-ƒÖWĞ­øP0ƒÑPVĞVPÂPVÂP­ø(PacĞ­øP, a0PcĞXPàZã	Z.ƒÎ­øPÑPXĞXPÂPX, a0PcĞXPÑPVĞVPÂPX(PacĞXP@£ RÂ]RÂRPĞPXÂPX, a0PcĞSUºDeB+’ ÖXàZĞX0Ò ĞXWÑWĞWÃWPøPnW®Ö­øÃWPøPï=şÿÿ W®xÿWPˆ­ï@®àZ=®Q&ĞQVÃ­ôPùPn8nï—ÿÿÿeĞVQàZ1,ıŒ ¥ü1%ıĞWV×XĞ­ø­ôĞ­ø1ÁşÁ­øP0ÂPÑPX(ĞWVÂPX®Q0¥şàZà	Z‘u0û‘e.ÖUáZ•1İü®Q0±ÿäZÚàZĞXÕXĞXâZ1.ÿ1+ÿ”­ïpŒU1Ÿ rUU–­ïïUR¢€RÄ;RÂÄ R¢RÆÄ   R0‚ qPUÖRĞR­øÎRRÑR
+dïá   UÂRÀ	Rï\   tPTUPUùP	®ø	® ®tï²    UPUùP®ĞXWŸïœşÿÿÑnÀ­øWÑW	qU ˆ® ®®ˆ­ï®ÔPĞ­ø®   pPÔT~ïM   SÕRÎRRâR áTRdcPÀSóTòåRgPPÑRÀïÄÿÿÿQÎRRÁ(RSáSïA   Âï®ÿÿÿQšBïb   T B      ÈC      G @    ¾M ¼    [É¿  u­Å+¨¶pPB<ò‡   öVvÓˆµbºõ2>HÛQS'±ïë¥I[ÙÍÿ¿—ı¼¶#,;
+Í                          È:„äÜ’› ÀX®ï  İ ûï]  ĞPZİûïO  ĞPZİûïA  ĞPZÔPİ/İZûï¢  ĞPYĞZYÖYû ï3   ÔXû ï  ĞP[ÖXİYİkûï   ÕPãû ïA   ĞXPû ï6   ¬  Õï`  ßï\  ßïF  ûïo  ĞPïD  İï<  ûïÁ    Õï,  İï$  ûïO  Ôï   Ğ¬[Ğ[ZÔXÌXÖ[˜kY.ÑY"ñÑX‘k\‘«"Ö[kŠÑXÙÑY#öYï5  ”k”zĞ[PÑY	
+ÑY ÑY
+¶öYïa5  ”‹˜kYÑY	
+ÑY ÑY
+ĞÖ[ê  Ğ¬[İ=İ[ûï«  ĞP[ÔPÖ[°  Õïv  ßït  ßï\  ûï…  ĞPïZ  ÔPİïO  İ   ßïó4  ûï¬  ĞP[İÖ[˜kZÑZ	öÑZ ñÑZ
+ìÕZÈÑZ#Ã”ï¾4  Ğ[ï»5  İ[ûïìşÿÿĞP[Ğ[ï¬5  İ[ûïÙşÿÿĞP[Ğ[ï5  İ[ûïÆşÿÿĞP[Ôï5  Ôï5  1Å ˜«ZÑZ 
+ÑZ	ÑZ
+Èïl5  1œ İßï­  İ[ûï¼  ÕPÎİßï›  İ[ûï§  ÕP˜«ZÑZ 
+ÑZ	ÑZ
+	Êï%5  Vİßïn  İ[ûïv  ÕP˜«ZÑZ 
+ÑZ	ÑZ
+	Èïô4  %İßïD  İ[ûïE  ÕP#İ[ûï|şÿÿĞPïÑ4  İ[ûïòıÿÿĞP[•k1Qÿ‘ï¤3  #‘k#Ö[˜kZÑZ öÑZ	ñĞ[ï4  •kÔï”4  İ
+İ[ûïå  ĞP[”kŞïh4  P  @(#)fgets.c	5.3 (Berkeley) 3/9/86    Ğ¬[Ğ¬ZÑ¬yÃ¬YÕj%İZûïj   ÕPYP‹×¬×Y‘P
+”k'ÕªÛÑjYĞjY:
+Yº×PÂPY(Yºk”cÂYjĞQªĞ¬P(YºkÂYjĞQªÂY¬ĞS[Ã¬YšÑ[¬”k×ÔP ®¸^Ğ¬[á«¨«è/process data unless pause pressed*
+#	slow scroll/no slow scroll*
+#	Hold in area/don't hold in area*
+#	functions keys have default*/function keys disabled on powerup
+#
+#	show/don't show position of cursor during page transmit*
+#	unused
+#	unused
+#	unused
+#
+# B menu: 9600  0100 1000  0000 0000  1000 0000  17  19
+#	Baud rate (9600*)
+#
+#	2 bits of parity - 00=odd,01=even*,10=space,11=mark
+#	1 stop bit*/2 stop bits
+#	parity error detection off*/on
+#
+#	keyboard local/on line*
+#	half/full duplex*
+#	disable/do not disable keyboard after data transmission*
+#
+#	transmit entire page/stop transmission at cursor*
+#	transfer/do not transfer protected characters*
+#	transmit all characters/transmit only selected characters*
+#	transmit all selected areas/transmit only 1 selected area*
+#
+#	transmit/do not transmit line seperators to host*
+#	transmit/do not transmit page tab stops tabs to host*
+#	transmit/do not transmit column tab stop tabs to host*
+#	transmit/do not transmit graphics control (underline,inverse..)*
+#
+#	enable*/disable auto XON/XOFF control
+#	require/do not require receipt of a DC1 from host after each LF*
+#	pause key acts as a meta key/pause key is pause*
+#	unused
+#
+#	unused
+#	unused
+#	unused
+#	unused
+#
+#	XON character (17*)
+#	XOFF character (19*)
+#
+# C menu: 56   66   0    0    9600  0110 1100
+#	number of lines to print data on (printer) (56*)
+#
+#	number of lines on a sheet of paper (printer) (66*)
+#
+#	left margin (printer) (0*)
+#
+#	number of pad chars on new line to printer (0*)
+#
+#	printer baud rate (9600*)
+#
+#	printer parity: 00=odd,01=even*,10=space,11=mark
+#	printer stop bits: 2*/1
+#	print/do not print guarded areas*
+#
+#	new line is: 01=LF,10=CR,11=CRLF*
+#	unused
+#	unused
+#
+# D menu: 0110 1001   1   0
+#	LF is newline/LF is down one line, same column*
+#	wrap to preceeding line if move left from col 1*/don't wrap
+#	wrap to next line if move right from col 80*/don't wrap
+#	backspace is/is not destructive*
+#
+#	display*/ignore DEL character
+#	display will not/will scroll*
+#	page/column tab stops*
+#	erase everything*/erase unprotected only
+#
+#	editing extent: 0=display,1=line*,2=field,3=area
+#
+#	unused
+#
+N0|aaa-29-np|aaa-29 with no padding (for psl):\
+	:al=\E[L:ce=\E[K:cl=\E[H\E[J:dc=\E[P:dl=\E[M:ic=\E[@:tc=aaa-29:
+NA|aaa-unk|ann arbor ambassador (internal - don't use this directly):\
+	:do=^J:al=3\E[L:am:le=^H:bs:\
+	:cd=\E[J:ce=5\E[K:cl=156\E[H\E[J:cm=\E[%i%d;%dH:co#80:\
+	:dc=4\E[P:dl=3\E[M:ho=\E[H:ic=4\E[@:\
+	:md=\E[1m:mr=\E[7m:mb=\E[5m:mk=\E[8m:me=\E[m:\
+	:ku=\EM:kd=\ED:kl=\E[D:kr=\E[C:kh=\E[H:ko=cl,dc,dl,ce,cd:\
+	:ks=\EP`?z~[H~[[J`>z~[[J`8xz~[M`4xz~[[D`6xz~[[C`2xz~[D\E\\:\
+	:ke=\EP`?y~[H~[[J`>y~[[2J`8xy~[M`4xy~[[D`6xy~[[C`2xy~[D\E\\:\
+	:ch=\E[%i%d`:ul:ei=:im=:pt:bw:bt=\E[Z:\
+	:mi:nd=\E[C:se=\E[m:so=\E[7m:ue=\E[m:us=\E[4m:up=\EM:
+NB|aaa-18|ann arbor ambassador/18 lines:\
+	:ti=\E[2J\E[18;0;0;18p:te=\E[60;0;0;18p\E[18;1H\E[J:\
+	:is=\EP`+x~M\E\\\E[m\E7\E[60;0;0;18p\E[3g\E[f\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E8\E[>6h\E[1Q:\
+	:li#18:tc=aaa-unk:
+NC|aaa-20|ann arbor ambassador/20 lines:\
+	:ti=\E[2J\E[20;0;0;20p:te=\E[60;0;0;20p\E[20;1H\E[J:\
+	:is=\EP`+x~M\E\\\E[m\E7\E[60;0;0;20p\E[3g\E[f\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E8\E[>6h\E[1Q:\
+	:li#20:tc=aaa-unk:
+ND|aaa-22|ann arbor ambassador/22 lines:\
+	:ti=\E[2J\E[22;0;0;22p:te=\E[60;0;0;22p\E[22;1H\E[J:\
+	:is=\EP`+x~M\E\\\E[m\E7\E[60;0;0;22p\E[3g\E[f\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E8\E[>6h\E[1Q:\
+	:li#22:tc=aaa-unk:
+NE|aaa-24|ann arbor ambassador/24 lines:\
+	:ti=\E[2J\E[24;0;0;24p:te=\E[60;0;0;24p\E[24;1H\E[J:\
+	:is=\EP`+x~M\E\\\E[m\E7\E[60;0;0;24p\E[3g\E[f\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E8\E[>6h\E[1Q:\
+	:li#24:tc=aaa-unk:
+NF|aaa-26|ann arbor ambassador/26 lines:\
+	:ti=\E[2J\E[26;0;0;26p:te=\E[60;0;0;26p\E[26;1H\E[J:\
+	:is=\EP`+x~M\E\\\E[m\E7\E[60;0;0;26p\E[3g\E[f\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E8\E[>6h\E[1Q:\
+	:li#26:tc=aaa-unk:
+NG|aaa-28|ann arbor ambassador/28 lines:\
+	:ti=\E[2J\E[28;0;0;28p:te=\E[60;0;0;28p\E[28;1H\E[J:\
+	:is=\EP`+x~M\E\\\E[m\E7\E[60;0;0;28p\E[3g\E[f\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E8\E[>6h\E[1Q:\
+	:li#28:tc=aaa-unk:
+NH|aaa|aaa-30|ambas|ambassador|ann arbor ambassador/30 lines:\
+	:ti=\E[2J\E[30;0;0;30p:te=\E[60;0;0;30p\E[30;1H\E[J:\
+	:is=\EP`+x~M\E\\\E[m\E7\E[60;0;0;30p\E[3g\E[f\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E8\E[>6h\E[1Q:\
+	:li#30:tc=aaa-unk:
+NI|aaa-36|ann arbor ambassador/36 lines:\
+	:ti=\E[2J\E[36;0;0;36p:te=\E[60;0;0;36p\E[36;1H\E[J:\
+	:is=\EP`+x~M\E\\\E[m\E7\E[60;0;0;36p\E[3g\E[f\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E8\E[>6h\E[1Q:\
+	:li#36:tc=aaa-unk:
+NJ|aaa-40|ann arbor ambassador/40 lines:\
+	:ti=\E[2J\E[40;0;0;40p:te=\E[60;0;0;40p\E[40;1H\E[J:\
+	:is=\EP`+x~M\E\\\E[m\E7\E[60;0;0;40p\E[3g\E[f\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E8\E[>6h\E[1Q:\
+	:li#40:tc=aaa-unk:
+NK|aaa-48|ann arbor ambassador/48 lines:\
+	:ti=\E[2J\E[48;0;0;48p:te=\E[60;0;0;48p\E[48;1H\E[J:\
+	:is=\EP`+x~M\E\\\E[m\E7\E[60;0;0;48p\E[3g\E[f\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E8\E[>6h\E[1Q:\
+	:li#48:tc=aaa-unk:
+NL|aaa-60|ann arbor ambassador/60 lines:\
+	:ti=\E[2J\E[60;0;0;60p:te=\E[60;0;0;60p\E[60;1H\E[J:\
+	:is=\EP`+x~M\E\\\E[m\E7\E[60;0;0;60p\E[3g\E[f\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E8\E[>6h\E[1Q:\
+	:li#60:tc=aaa-unk:
+NS|aaa-unk-s|ann arbor ambassador unknown with/status:\
+	:es:hs:i2=\E7\E[>51h\E[H\E[2K\E[>51l\E8:\
+	:ts=\E7\E[>51h\E[H\E[2K\E[%i%d`:fs=\E[>51l\E8:\
+	:ds=\E7\E[>51h\E[H\E[2K\E[>51l\E8:\
+	:tc=aaa-unk:
+NM|aaa-18-s|ambassador|ann arbor ambassador/18 lines + status line:\
+	:ti=\E[2J\E[18;1;0;18p:\
+	:te=\E[60;1;0;18p\E[17;1H\E[J:\
+	:is=\EP`+x~M\E\\\E[m\E7\E[60;1;0;18p\E[3g\E[f\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E8\E[>6h\E[1Q:\
+	:li#17:tc=aaa-unk-s:
+NN|aaa-20-s|ambassador|ann arbor ambassador/20 lines + status line:\
+	:ti=\E[2J\E[20;1;0;20p:\
+	:te=\E[60;1;0;20p\E[19;1H\E[J:\
+	:is=\EP`+x~M\E\\\E[m\E7\E[60;1;0;20p\E[3g\E[f\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E8\E[>6h\E[1Q:\
+	:li#19:tc=aaa-unk-s:
+NO|aaa-22-s|ambassador|ann arbor ambassador/22 lines + status line:\
+	:ti=\E[2J\E[22;1;0;22p:\
+	:te=\E[60;1;0;22p\E[21;1H\E[J:\
+	:is=\EP`+x~M\E\\\E[m\E7\E[60;1;0;22p\E[3g\E[f\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E8\E[>6h\E[1Q:\
+	:li#21:tc=aaa-unk-s:
+NP|aaa-24-s|ambassador|ann arbor ambassador/24 lines + status line:\
+	:ti=\E[2J\E[24;1;0;24p:\
+	:te=\E[60;1;0;24p\E[23;1H\E[J:\
+	:is=\EP`+x~M\E\\\E[m\E7\E[60;1;0;24p\E[3g\E[f\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E8\E[>6h\E[1Q:\
+	:li#23:tc=aaa-unk-s:
+NQ|aaa-26-s|ambassador|ann arbor ambassador/26 lines + status line:\
+	:ti=\E[2J\E[26;1;0;26p:\
+	:te=\E[60;1;0;26p\E[25;1H\E[J:\
+	:is=\EP`+x~M\E\\\E[m\E7\E[60;1;0;26p\E[3g\E[f\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E8\E[>6h\E[1Q:\
+	:li#25:tc=aaa-unk-s:
+NR|aaa-28-s|ambassador|ann arbor ambassador/28 lines + status line:\
+	:ti=\E[2J\E[28;1;0;28p:\
+	:te=\E[60;1;0;28p\E[27;1H\E[J:\
+	:is=\EP`+x~M\E\\\E[m\E7\E[60;1;0;28p\E[3g\E[f\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E8\E[>6h\E[1Q:\
+	:li#27:tc=aaa-unk-s:
+NT|aaa-30-s|ambassador|ann arbor ambassador/30 lines + status line:\
+	:ti=\E[2J\E[30;1;0;30p:\
+	:te=\E[60;1;0;30p\E[29;1H\E[J:\
+	:is=\EP`+x~M\E\\\E[m\E7\E[60;1;0;30p\E[3g\E[f\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E8\E[>6h\E[1Q:\
+	:li#29:tc=aaa-unk-s:
+NU|aaa-36-s|ambassador|ann arbor ambassador/36 lines + status line:\
+	:ti=\E[2J\E[36;1;0;36p:\
+	:te=\E[60;1;0;36p\E[35;1H\E[J:\
+	:is=\EP`+x~M\E\\\E[m\E7\E[60;1;0;36p\E[3g\E[f\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E8\E[>6h\E[1Q:\
+	:li#35:tc=aaa-unk-s:
+NV|aaa-40-s|ambassador|ann arbor ambassador/40 lines + status line:\
+	:ti=\E[2J\E[40;1;0;40p:\
+	:te=\E[60;1;0;40p\E[39;1H\E[J:\
+	:is=\EP`+x«ÎP³P «ôŞ­»PÕïÏ   ò˜«PÀïÃ   PĞP«Õ«Hà«ßß­¼˜«~ûï‚  ÕPÕ­ì2 ­üĞ­ì­üİ­üûï²  ĞP«¨«¼¨«Ğ­ü«Ñ[\[  *áïõ  ßïŞ  ûï/  áïô  ßïİ  ûï  á«ĞPĞ«PİPİ«˜«~ûïP  ĞPkĞ««á«Ş­»PÑ«PÔ«×k!Ñkÿÿÿÿ¨«á«
+ª«¨ «Ôk1øşš»PÖ« €Ğ¬[û ïk  ĞPZ‘«+ĞPÑPr   3ÑPw   :ÔPÔPĞPX˜kPÑPa   ÚÕXĞPĞPÉ   PW$ÕXĞPÔPĞPWÕXĞPĞPÉ   PWİ¶  İWİ¬ûï  ĞPY›‘kaİİ İYûïı   ÔjöYªÔªÕX° ª‘kr÷ª÷ªÔªĞªªĞZP@(#)index.s	5.3 (Berkeley) 3/9/86     }¬QÕR: ÿÿaøĞQPŞï,  Sâ c BcU–e<ÿÿT*TacùĞQP•`ÔP”e”cĞQS: ÿÿc:RÿÿcĞQSëÃSQTÖT:RTcĞQP   Ğ¬[İ[ûï=  İ İ ˜«~ûï   ÔkĞ««ª0«á«ª« ïÎ      ¼ò @(#)rindex.s	5.3 (Berkeley) 3/9/86    }¬QÕR: ÿÿaøĞQPŞïx  Sâ c$BcU–eÔT*ÿÿac÷•aĞQTÖQìĞTP”e”cĞQSÔT: ÿÿc·P:RPcĞQSëĞQTÁQS×PàÃSQPÖP:RPcĞQTÁQS×PïĞTP   @(#)strcmp.s	5.3 (Berkeley) 3/9/86    Ğ¬QĞ¬SƒcaP˜PPÔUƒQÿUƒSÿP‘PUPUÖU)UacÂUQ: UaÛÂPScP˜PPÂPUÂUQ: UaƒcaP˜PPÔP  @(#)strncmp.s	5.3 (Berkeley) 3/9/86   Ğ¬Q}¬SÔUƒQÿUƒSÿP‘PUPUÖUÑTUĞTU)UacÂUT'ÂUQ: UaÎÂPScP˜PPÂPUÂUQ: UaƒcaP˜PPÔP    ®€^İ¬ûïd  ÕPÔPß­Àİ¬ûï4  ÕPì<­ÈPÊÿÿÿPÑP    Øßïê  ûïŸ   ĞPZÆİZûïå   ĞP[]Ñk­ÄìßïÄ  ßïÚ.  ûïË  Á[~ßïÉ.  ûïb  ß­€ßï¹.  ûï&  ÕP´±­€­À­Ñ­„­Ä¦İZûï   Şï‘.  PİZûï   1Oÿ    Ğ¬[İkûï=  ÎkÔ«İ[ûï    İ İ¬ûï>   ĞPZÑZÿÿÿÿ%İ  ûï™  ĞP[
+ĞZkÔ«Ğ[PİZûïí  ÔP  ïâ	      ¼ò  Ğ¬[Ô«Õ«İ   Á[~İkûïM   ĞP«Õ«ÔPÑ««ÒÁ[PÁ«PZµªèÃ«  P<ªQÑQPÖ<ªPÀP«Õj©ĞZP  ïj	      ¼ò ïZ	      ¼&ò @(#)strcat.s	5.3 (Berkeley) 3/9/86  À }¬VĞVQ: ÿÿaøĞQS: ÿÿg(ÿÿgcĞQWíÂWQÖQ(QgcĞVP@(#)strcpy.s	5.3 (Berkeley) 3/9/86  @ Ğ¬SĞ¬V: ÿÿf(ÿÿfcĞQVíÂVQÖQ(QfcĞ¬P ï¢      ¼
+ò ï’      ¼S ğ   ï~      ¼m ğ   ïj      ¼o ğ   ïV      ¼n ğ   ïB      ¼l ğ   ï.      ¼T ğÕ¬ĞQ¼  ï      ¼y ğ    ®¸^Ğ¬[á«¨«ª«à«wÎPÔYĞYXš¬Pá« ¬­ÿĞXİXß­ÿ˜«~ûïµ  ĞPYÔk1ê Ğ«Z1´ ß­¸˜«~ûïâ  ÕPÕ­è2 ­øĞ­è­øİ­øûï  ĞPZĞZ«G¨«á«’Ğ«Z¬»Ö«Á«ZPÑ«P	‘¬
+1hÿÃZ«XİXİZ˜«~ûï0  ĞPYĞZ«1tÿ¨«Ğ­ø«Ñ[p[  ˜ï  ~ûïn  ÕPâ« ĞZ«ÔYĞYX ÃZ«YĞYXĞZ«İYİZ˜«~ûïÓ  ĞPYÃ«k¬ŠĞZ«ÑXY1äş¨ «1Ôş Ğ¬[2«PÊùÿÿÿPÑP@Ğ«Z:ÃZ«Y3ĞZ«³„ «ÔPĞ«PĞPkİYİZ˜«~ûïk  ÑPY¨ «ÎPÔP  Ğ¬[ÎZ³«2à«-İ[ûï‡ÿÿÿĞPZ˜«~ûï5   ÕPÎZá«
+İ«ûïó  ÔkÔ«Ô«Ô«´«”«ĞZP  ï      ¼ò  ÕïX*  VŞïÀ  Z³ªĞZPÀZÑZì\  èû ïP   ÕP*ĞïÃ  ĞkP³ !À[Ñ[ï*  Ğï£  ÔPĞïú)  [ÕkÔÕkİİûï6  ĞPkĞkP  Â^û ï¾  ĞP­üİİPûï  ĞPï¼)  ÕPÔPx­üPÁïª)  Pï¨)  Şï  ZĞï—)  [ĞZ‹ÀZÑZì\  ñİİ­üûïÉ   ĞPïr  ĞP Õïf)  û ïÿÿÿÕPĞïR)  [Õkİİûï   ĞPkÀ[Ñ[ï7)  â Ğ¬[Õï$)  "ŞïŒ  YÑYì\  ;³©İYûkÀYåĞïú(  ZÕjĞjP³ İjûkÀZÑZïİ(  à  ßïşÿÿûï—ÿÿÿ    û ïåÿÿÿİ¬ûï]æÿÿ Ğ¬[Ğ¬ZÄ[ZİZûïÆ   ĞPYİZİYûï6   ĞYP  İ¬ûïæ   @(#)bzero.s	5.3 (Berkeley) 3/9/86     Ğ¬S
+ÂP¬, c Pc<ÿÿPÑ¬Pë, c ¬c   ï¾      ¼>ò ï®      ¼Y ğ     Â^ß­úİt@İ¬ûï   ÕPÔPĞP ïv      ¼6ò  ÕïL(  ^û ï  ĞPXĞXï9(  İ ûï  ĞP[ÃXPÃXQÒQQËQ[QÃQPXİXûïç  ÖPÔPÔZĞYÀYYÖZÑïö'  YòĞZïğ'  Ãïå'  XÑ¬X
+ĞYÔZÎXĞïÎ'  YĞïË'  ZÀYY´ÖZÁXYPÑ¬PïĞJï4'  [İZûï    ĞJï!'  [‹ĞkJï'  ïköZ«Á[P  Â^Á¬PxPPĞPZÑZïe'  Ğï]'  ­üÇZ­ü­øÁïM'  Z­üĞ­øİ­üûï  ĞP[Ñ[ÿÿÿÿĞ¬PĞ[@ï«&  ÁZ[kÀZ[õ­øõ  Õ¬Ã¬ZšjPÑPï   šª[ĞKïw&  jĞZKïn&    Â^Ô­ôÕ¬İ¬ûïyşÿÿÃ¬­üš½üPÑPï   Ö­ôĞ­üPš Zİİ­üûï¦   ĞPZÁZPxP[Ñ[ï&  Â[Ãï€&  PÀP[Õ­ô@ÕZ!ÁZPxPZÑZïd&  ÂZÃïV&  PÀPZÑ¬[Ñ¬ZĞ¬Pİ¬ûï#ÿÿÿİ¬ûïÙıÿÿĞP­øÔPÑ¬­øÑ¬[Ğ¬PĞ[PİPİ­øİ¬ûï_   Ğ­øP ÔZÔYĞJïu%  [ÑY¬Ñ[¬ĞZPÖYĞk[Õ[çÖZÑZÔÎP  @(#)bcopy.s	5.3 (Berkeley) 3/9/86   @ Ğ¬QĞ¬SĞ¬VÑQS
+ÂPV(Pac<ÿÿPÑVPï(VacÀVQÀVS<ÿÿPÂPVÂPQÂPS(Pac<ÿÿPÂPQÂPSÑVPãÂVQÂVS(Vac   ïN       ¼@ ğ     Áï<  ¬~İĞ\SĞ^\¼Ğï'  PÀ£ï  ï      ï
+       ¼ò ĞPï  ÎP                                                                                                                        @(#) Copyright (c) 1983,1986 Regents of the University of California.
+ All rights reserved.
+    @(#)shutdown.c	5.6 (Berkeley) 5/26/86   /dev/                         -n  
+
+NO LOGINS: System going down at %5.5s
+
+   /etc/nologin    /fastboot   @8           „    X  „  ,  X  ,  ,  ´   x   <   <              ??? shutdown shutdown: '%c' - unknown flag
+ Usage: shutdown [ -krhfn ] shutdowntime [ message ]
+ shutdown: Incompatible switches 'fast' & 'nosync'
+ NOT super-user
+   Shutdown at %5.5s (in  %d hour%s  s  %d minute%s)  s  [pid %d]
+  /etc/utmp shutdown: /etc/utmp FINAL  sleeper w 
+
+ 	...%s 
+System shutdown time has arrived
+ %s by %s: %s reboot halt shutdown but you'll have to do it yourself
+ /etc/reboot reboot -l /etc/halt halt -l now That must be tomorrow
+Can't you wait till then?
+ Bad time format
+ 	*** %sSystem shutdown message from %s@%s ***
+
+ System going down at %5.5s
+ System going down in %d minute%s
+ s  System going down in %d second%s
+ s  System going down IMMEDIATELY
+ w w 	%s
+ @(#)fputc.c	5.2 (Berkeley) 3/9/86   @(#)getpwnamuid.c	5.2 (Berkeley) 3/9/86 @(#)getpwent.c	5.2 (Berkeley) 3/9/86            P  r r /etc/passwd @(#)atoi.c	5.2 (Berkeley) 3/9/86    @(#)ndbm.c	5.3 (Berkeley) 3/9/86    =   9   5   1   -   )   %   !                  	         ¿Ò 1Şã1r«4G¨(fõ3Y³C!ˆdÕ&Yo;VVu7{Ê‰0…-éØéĞT;/ª>®ú›[´2/aí1˜ƒ<=ã`fvK_zÇ™‡lõG6Ÿ$C w$M¼ú³†¦6ß7ä0íÃ)Yn!N³6VŸ1pğû&±„Ç83¬)Å]H+Ü<Íû©5;7Õ1™g$+Ó#)
+n©Ÿ0µ%õa3˜Û	$²ş¤· 2nV01}D9R7N•:#6ş8WÍÇ)9:{Š2ˆ}õxº|~L'\æ‹»° /qÃ¶.pag .dir ndbm: split not paired
+   @(#)getlogin.c	5.3 (Berkeley) 5/9/86    /etc/utmp   @(#)fprintf.c	5.2 (Berkeley) 3/9/86 @(#)perror.c	5.2 (Berkeley) 3/9/86  :  Unknown error 
+  @(#)printf.c	5.2 (Berkeley) 3/9/86  @(#)setbuf.c	5.2 (Berkeley) 3/9/86  @(#)ctype_.c	5.4 (Berkeley) 3/9/86            (((((                  ˆAAAAAABBBBBB                                                                                                                                    @(#)setjmperr.c	5.2 (Berkeley) 3/9/86   longjmp botch
+ longjmp botch
+   @(#)sleep.c	5.2 (Berkeley) 3/9/86   @(#)syslog.c	5.9 (Berkeley) 5/7/86  /dev/log    /dev/console    ÿÿÿÿ    (U  ÿ      <%d> %.15s  [%d] :  error %d   syslog  @(#)alarm.c	5.2 (Berkeley) 3/9/86   @(#)ctime.c	5.5 (Berkeley) 3/9/86                                       ¶     M  ·  :   /      w   /  ²        ³  /      ´  /  :       /  A   ¿  Y   (      Y   /  ¿  Y   (      Y         w   /        ¨U           ÌU            üU           V           V           ,V     ÿÿÿÿ                Day Mon 00 00:00:00 1900
+ SunMonTueWedThuFriSat JanFebMarAprMayJunJulAugSepOctNovDec    F   @(#)signal.c	5.2 (Berkeley) 3/9/86  @(#)time.c	5.3 (Berkeley) 3/9/86    @(#)sprintf.c	5.2 (Berkeley) 3/9/86 @(#)doprnt.c	5.4 (Berkeley) 3/9/86  @(#)ttyslot.c	5.2 (Berkeley) 3/9/86 @(#)getttyent.c	5.4 (Berkeley) 5/19/86  /etc/ttys       r r on off secure window=   @(#)filbuf.c	5.3 (Berkeley) 3/9/86  @(#)fopen.c	5.2 (Berkeley) 3/9/86                                                                                                                                                                                                                                                                   @(#)rew.c	5.2 (Berkeley) 3/9/86                                                                                                                                                                                                                                                                 @(#)ttyname.c	5.2 (Berkeley) 3/9/86 /dev/   @(#)closedir.c	5.2 (Berkeley) 3/9/86    @(#)opendir.c	5.2 (Berkeley) 3/9/86 @(#)readdir.c	5.2 (Berkeley) 3/9/86 @(#)flsbuf.c	5.2 (Berkeley) 3/9/86  @(#)findiop.c	5.6 (Berkeley) 3/9/86                                                                                                                                                                ~M\E\\\E[m\E7\E[60;1;0;40p\E[3g\E[f\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E8\E[>6h\E[1Q:\
+	:li#39:tc=aaa-unk-s:
+NW|aaa-48-s|ann arbor ambassador/48 lines+sl:\
+	:ti=\E[2J\E[48;1;0;48p:te=\E[60;1;0;48p\E[47;1H\E[J:\
+	:is=\EP`+x~M\E\\\E[m\EP`?y~[[2J~[[H\E7\E[60;1;0;48p\E[3g\E[f\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E8\E[>6h\E[1Q:\
+	:li#47:tc=aaa-unk-s:
+NX|aaa-60-s|ambassador|ann arbor ambassador/60 lines + status line:\
+	:ti=\E[2J\E[60;1;0;60p:te=\E[60;1;0;60p\E[59;1H\E[J:\
+	:is=\EP`+x~M\E\\\E[m\E7\E[60;1;0;60p\E[3g\E[f\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E8\E[>6h\E[1Q:\
+	:li#59:tc=aaa-unk-s:
+NY|aaa-18-rv|ambassador/18 lines+rv:\
+	:md=\E[1;7m:mr=\E[m:mb=\E[5;7m:mk=\E[7;8m:me=\E[7m:\
+	:us=\E[4;7m:ue=\E[7m:se=\E[7m:so=\E[m:\
+	:is=\EP`+x~M\E\\\E[7m\E7\E[60;0;0;18p\E[3g\E[f\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E8\E[>6h\E[1Q:\
+	:tc=aaa-18:
+NZ|aaa-20-rv|ambassador/20 lines+rv:\
+	:md=\E[1;7m:mr=\E[m:mb=\E[5;7m:mk=\E[7;8m:me=\E[7m:\
+	:us=\E[4;7m:ue=\E[7m:se=\E[7m:so=\E[m:\
+	:is=\EP`+x~M\E\\\E[7m\E7\E[60;0;0;20p\E[3g\E[f\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E8\E[>6h\E[1Q:\
+	:tc=aaa-20:
+Na|aaa-22-rv|ambassador/22 lines+rv:\
+	:md=\E[1;7m:mr=\E[m:mb=\E[5;7m:mk=\E[7;8m:me=\E[7m:\
+	:us=\E[4;7m:ue=\E[7m:se=\E[7m:so=\E[m:\
+	:is=\EP`+x~M\E\\\E[7m\E7\E[60;0;0;22p\E[3g\E[f\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E8\E[>6h\E[1Q:\
+	:tc=aaa-22:
+Nb|aaa-24-rv|ambassador/24 lines+rv:\
+	:md=\E[1;7m:mr=\E[m:mb=\E[5;7m:mk=\E[7;8m:me=\E[7m:\
+	:us=\E[4;7m:ue=\E[7m:se=\E[7m:so=\E[m:\
+	:is=\EP`+x~M\E\\\E[7m\E7\E[60;0;0;24p\E[3g\E[f\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E8\E[>6h\E[1Q:\
+	:tc=aaa-24:
+Nc|aaa-26-rv|ambassador/26 lines+rv:\
+	:md=\E[1;7m:mr=\E[m:mb=\E[5;7m:mk=\E[7;8m:me=\E[7m:\
+	:us=\E[4;7m:ue=\E[7m:se=\E[7m:so=\E[m:\
+	:is=\EP`+x~M\E\\\E[7m\E7\E[60;0;0;26p\E[3g\E[f\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E8\E[>6h\E[1Q:\
+	:tc=aaa-26:
+Nd|aaa-28-rv|ambassador/28 lines+rv:\
+	:md=\E[1;7m:mr=\E[m:mb=\E[5;7m:mk=\E[7;8m:me=\E[7m:\
+	:us=\E[4;7m:ue=\E[7m:se=\E[7m:so=\E[m:\
+	:is=\EP`+x~M\E\\\E[7m\E7\E[60;0;0;28p\E[3g\E[f\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E8\E[>6h\E[1Q:\
+	:tc=aaa-28:
+Ne|aaa-30-rv|ann arbor ambassador/30 lines in reverse video:\
+	:md=\E[1;7m:mr=\E[m:mb=\E[5;7m:mk=\E[7;8m:me=\E[7m:\
+	:us=\E[4;7m:ue=\E[7m:se=\E[7m:so=\E[m:\
+	:is=\EP`+x~M\E\\\E[7m\E7\E[60;0;0;30p\E[3g\E[f\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E8\E[>6h\E[1Q:\
+	:tc=aaa-30:
+Nf|aaa-36-rv|ann arbor ambassador/36 lines in reverse video:\
+	:md=\E[1;7m:mr=\E[m:mb=\E[5;7m:mk=\E[7;8m:me=\E[7m:\
+	:us=\E[4;7m:ue=\E[7m:se=\E[7m:so=\E[m:\
+	:is=\EP`+x~M\E\\\E[7m\E7\E[60;0;0;36p\E[3g\E[f\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E8\E[>6h\E[1Q:\
+	:tc=aaa-36:
+Ng|aaa-40-rv|ann arbor ambassador/40 lines in reverse video:\
+	:md=\E[1;7m:mr=\E[m:mb=\E[5;7m:mk=\E[7;8m:me=\E[7m:\
+	:us=\E[4;7m:ue=\E[7m:se=\E[7m:so=\E[m:\
+	:is=\EP`+x~M\E\\\E[7m\E7\E[60;0;0;40p\E[3g\E[f\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E8\E[>6h\E[1Q:\
+	:tc=aaa-40:
+Nh|aaa-48-rv|ann arbor ambassador/48 lines in reverse video:\
+	:md=\E[1;7m:mr=\E[m:mb=\E[5;7m:mk=\E[7;8m:me=\E[7m:\
+	:us=\E[4;7m:ue=\E[7m:se=\E[7m:so=\E[m:\
+	:is=\EP`+x~M\E\\\E[7m\E7\E[60;0;0;48p\E[3g\E[f\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E8\E[>6h\E[1Q:\
+	:tc=aaa-48:
+Ni|aaa-60-rv|ann arbor ambassador/60 lines in reverse video:\
+	:md=\E[1;7m:mr=\E[m:mb=\E[5;7m:mk=\E[7;8m:me=\E[7m:\
+	:us=\E[4;7m:ue=\E[7m:se=\E[7m:so=\E[m:\
+	:is=\EP`+x~M\E\\\E[7m\E7\E[60;0;0;60p\E[3g\E[f\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E8\E[>6h\E[1Q:\
+	:tc=aaa-60:
+Nj|aaa-18-rv-s|aaa-18-s-rv|ambassador/18 lines+sl+rv:\
+	:md=\E[1;7m:mr=\E[m:mb=\E[5;7m:mk=\E[7;8m:me=\E[7m:\
+	:us=\E[4;7m:ue=\E[7m:se=\E[7m:so=\E[m:\
+	:ti=\E[2J\E[18;1;0;18p:te=\E[60;1;0;18p\E[17;1H\E[J:li#17:\
+	:is=\EP`+x~M\E\\\E[7m\E7\E[60;1;0;18p\E[3g\E[f\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E8\E[>6h\E[1Q:\
+	:tc=aaa-unk-s:
+Nk|aaa-20-rv-s|aaa-20-s-rv|ambassador/20 lines+sl+rv:\
+	:md=\E[1;7m:mr=\E[m:mb=\E[5;7m:mk=\E[7;8m:me=\E[7m:\
+	:us=\E[4;7m:ue=\E[7m:se=\E[7m:so=\E[m:\
+	:ti=\E[2J\E[20;1;0;20p:te=\E[60;1;0;20p\E[19;1H\E[J:li#19:\
+	:is=\EP`+x~M\E\\\E[7m\E7\E[60;1;0;20p\E[3g\E[f\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E8\E[>6h\E[1Q:\
+	:tc=aaa-unk-s:
+Nl|aaa-22-rv-s|aaa-22-s-rv|ambassador/22 lines+sl+rv:\
+	:md=\E[1;7m:mr=\E[m:mb=\E[5;7m:mk=\E[7;8m:me=\E[7m:\
+	:us=\E[4;7m:ue=\E[7m:se=\E[7m:so=\E[m:\
+	:ti=\E[2J\E[22;1;0;22p:te=\E[60;1;0;22p\E[21;1H\E[J:li#21:\
+	:is=\EP`+x~M\E\\\E[7m\E7\E[60;1;0;22p\E[3g\E[f\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E8\E[>6h\E[1Q:\
+	:tc=aaa-unk-s:
+Nm|aaa-24-rv-s|aaa-24-s-rv|ambassador/24 lines+sl+rv:\
+	:md=\E[1;7m:mr=\E[m:mb=\E[5;7m:mk=\E[7;8m:me=\E[7m:\
+	:us=\E[4;7m:ue=\E[7m:se=\E[7m:so=\E[m:\
+	:ti=\E[2J\E[24;1;0;24p:te=\E[60;1;0;24p\E[23;1H\E[J:li#23:\
+	:is=\EP`+x~M\E\\\E[7m\E7\E[60;1;0;24p\E[3g\E[f\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E8\E[>6h\E[1Q:\
+	:tc=aaa-unk-s:
+Nn|aaa-26-rv-s|aaa-26-s-rv|ambassador/26 lines+sl+rv:\
+	:md=\E[1;7m:mr=\E[m:mb=\E[5;7m:mk=\E[7;8m:me=\E[7m:\
+	:us=\E[4;7m:ue=\E[7m:se=\E[7m:so=\E[m:\
+	:ti=\E[2J\E[26;1;0;26p:te=\E[60;1;0;26p\E[25;1H\E[J:li#25:\
+	:is=\EP`+x~M\E\\\E[7m\E7\E[60;1;0;26p\E[3g\E[f\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E8\E[>6h\E[1Q:\
+	:tc=aaa-unk-s:
+No|aaa-28-rv-s|aaa-28-s-rv|ambassador/28 lines+sl+rv:\
+	:md=\E[1;7m:mr=\E[m:mb=\E[5;7m:mk=\E[7;8m:me=\E[7m:\
+	:us=\E[4;7m:ue=\E[7m:se=\E[7m:so=\E[m:\
+	:ti=\E[2J\E[28;1;0;28p:te=\E[60;1;0;28p\E[27;1H\E[J:li#27:\
+	:is=\EP`+x~M\E\\\E[7m\E7\E[60;1;0;28p\E[3g\E[f\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E8\E[>6h\E[1Q:\
+	:tc=aaa-unk-s:
+Np|aaa-rv|aaa-30-rv-s|aaa-30-s-rv|ambassador/30 lines+sl+rv:\
+	:md=\E[1;7m:mr=\E[m:mb=\E[5;7m:mk=\E[7;8m:me=\E[7m:\
+	:us=\E[4;7m:ue=\E[7m:se=\E[7m:so=\E[m:\
+	:ti=\E[2J\E[30;1;0;30p:te=\E[60;1;0;30p\E[29;1H\E[J:li#29:\
+	:is=\EP`+x~M\E\\\E[7m\E7\E[60;1;0;30p\E[3g\E[f\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E8\E[>6h\E[1Q:\
+	:tc=aaa-unk-s:
+Nq|aaa-36-rv-s|aaa-36-s-rv|ambassador/36 lines+sl+rv:\
+	:md=\E[1;7m:mr=\E[m:mb=\E[5;7m:mk=\E[7;8m:me=\E[7m:\
+	:us=\E[4;7m:ue=\E[7m:se=\E[7m:so=\E[m:\
+	:ti=\E[2J\E[36;1;0;36p:te=\E[60;1;0;36p\E[35;1H\E[J:li#35:\
+	:is=\EP`+x~M\E\\\E[7m\E7\E[60;1;0;36p\E[3g\E[f\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E8\E[>6h\E[1Q:\
+	:tc=aaa-unk-s:
+Nr|aaa-40-rv-s|aaa-40-s-rv|ambassador/40 lines+sl+rv:\
+	:md=\E[1;7m:mr=\E[m:mb=\E[5;7m:mk=\E[7;8m:me=\E[7m:\
+	:us=\E[4;7m:ue=\E[7m:se=\E[7m:so=\E[m:\
+	:ti=\E[2J\E[40;1;0;40p:te=\E[60;1;0;40p\E[39;1H\E[J:li#39:\
+	:is=\EP`+x~M\E\\\E[7m\E7\E[60;1;0;40p\E[3g\E[f\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E8\E[>6h\E[1Q:\
+	:tc=aaa-unk-s:
+Ns|aaa-48-rv-s|aaa-48-s-rv|ambassador/48 lines+sl+rv:\
+	:md=\E[1;7m:mr=\E[m:mb=\E[5;7m:mk=\E[7;8m:me=\E[7m:\
+	:us=\E[4;7m:ue=\E[7m:se=\E[7m:so=\E[m:\
+	:ti=\E[2J\E[48;1;0;48p:te=\E[60;1;0;48p\E[47;1H\E[J:li#47:\
+	:is=\EP`+x~M\E\\\E[7m\E7\E[60;1;0;48p\E[3g\E[f\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E8\E[>6h\E[1Q:\
+	:tc=aaa-unk-s:
+Nt|aaa-60-rv-s|aaa-60-s-rv|ambassador/60 lines+sl+rv:\
+	:md=\E[1;7m:mr=\E[m:mb=\E[5;7m:mk=\E[7;8m:me=\E[7m:\
+	:us=\E[4;7m:ue=\E[7m:se=\E[7m:so=\E[m:\
+	:ti=\E[2J\E[60;1;0;60p:te=\E[60;1;0;60p\E[59;1H\E[J:li#59:\
+	:is=\EP`+x~M\E\\\E[7m\E7\E[60;1;0;60p\E[3g\E[f\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E8\E[>6h\E[1Q:\
+	:tc=aaa-unk-s:
+NL|aaa-24-ctxt|ann arbor ambassador/24 lines:\
+	:ti=\E[30;1H\E[K\E[24;0;0;24p:te=\E[60;1;0;24p\E[60;1H\E[K:tc=aaa-24:
+NL|aaa-24-rv-ctxt|ambassador/24+rv:\
+	:ti=\E[30;1H\E[K\E[24;0;0;24p:te=\E[60;1;0;24p\E[60;1H\E[K:tc=aaa-24-rv:
+NL|aaa-s-ctxt|aaa-30-s-ctxt|hairy aaa:\
+   4     ”M                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  CĞ^ZÁZPĞPYĞYXÕ‰úÑYhÂYĞYïÚ3  ÔïĞ<  İïÎ3  İXİjûï   İPûï/  »   ı    Â^Îï¤| 1  ÑPm   3ÑPs   2ßï6  ûï  İ¼ûï„   uÑPd   ÌÖïŒ dÖïŒ \Öïÿ‹ TÀ¬Ğ¼P‘`-Æ˜ PÑPb   ÅÔ[Ğ¬Pİ ûï_  ĞP­üÕPĞPKï| À¬×¬Ö[Ñ[ô  ĞÎKï| ×¬§Ğïâ‹ P Îìû^Õï‹ ĞPÔPİPİ¬ûïV*  ĞPï{‹ ÕPİ¬ûï¹  Èï¢‹ İ¬ßïJ5  ûï9  Ôï[‹ ÔïY‹ Ôï[‹ ÔïQ‹ ÔïS‹ ÔïQ‹ ÔïO‹ ÔïM‹ ÔïK‹ ÔïQ‹ û ï&  İ¬ßïY;  ûïØ  Õï8‹ Ô­ì#Ğ­ìPÎï;  QxQ@ï1{ PĞ­ìQĞPAïô‚ Ö­ìĞ­ìPÑ@ï{ ÿÿÿÿËÔï½Š Áï&;  PÆPÖPÆPÁPP­ìİ­ìûï2.  ĞPïƒŠ ÕP.ßï|4  ûïf  ÖïxŠ ÕïnŠ ßïˆ4  ûïK  ÔïYŠ Ôï_Š Ğï\Š ÕïJŠ 1ÆÔ[Ğï/Š P”K`Ö[Ñ[­ìîÔY1ŸÅYï3;  PËïŒ:  YQÄï€:  QÀQPÁïj:  P­øÕYÅYï;  ­ü#ÅYï;  PËïZ:  YQÄïN:  QÀQPÁï4:  P­üİYßï÷3  ßÍìûûïz  İï>:  ßÍìûİ­üûïª  Àï2:  ­üÑ­ü­øİÅYï¦:  PËïÿ9  YQÄïó9  QÀQPÁïá9  P­üİYßï±3  ßÍìûûï  İïã9  ßÍìûİ­øûïO  Àï×9  ­øÑ­ø­üİÅYïK:  PËï¤9  YQÄï˜9  QÀQPÁïŠ9  P­üĞïå9  [BÁ[ï‰ ~İï‰ ßïS3  ßÍìûûï¯  İïu9  ßÍìûİ­øûïá  À[ïäˆ Àïb9  ­øÑ­ø­ü·ÕY<ÃïJ9  PÀï«9  PÆï<9  PÀP­üİï/9  ßïÿ2  İ­øûï•  Ö­øÑ­ø­üàÖYÑYï9  1UşÔïˆ Ôïˆ ÔYgxït9  ~ßïµx  ÅYïj9  PËïÃ8  YQÄï·8  QÀQPÀï¥8  Pxïò8  P~ûï7  ÔZxZPŸ@ïvx  ûïß  Öïˆ ÖZÑZï9  İÖYÑYï8  Ôïˆ û ï
+  Õïè‡ *û ï  İïá‡ ûïŞ(  ÕïÄ‡ İï¼‡ ûï,  Ôïî‡ Ôïì‡ ÔY1!ÅYï¸8  ­ôİï”8  ßïîW  ÅYï£8  PËïü7  YQÄïğ7  QÀQPÀïÚ7  Pxï+8  P~ûïp  ÑïŒ[  U	 İYßï¸1  ûï6  Ô­ğ'Öï{‡ İïÁ7  ßï³1  Á­ğ­ô~ûï(  Àï°7  ­ğÑ­ğï*8  1… Çï›7  ­ğ~ßï2[  ßïT7  ûïg  ÕP¬Ô­üÑ­üïv7  ¾Á­ü­ğPÆPÁ­ü­ğQÇQRxRRÃRQRxRQÒQQš@ïëZ  PÊQP$İï;7  ßï41  Á­ğ­ôPÁ­üP~ûï™  ÖïÉ† Ö­üÖYÑYï7  1Óşİï€† ûï}'  Õïc† İï[† ûï<+  Áïn† ïe† PÀïj† PÀï_† PÁï`† P[İïX† İïN† İïD† İï:† İï0† İ[ßï©0  ûïù  Áï7† ï*† PÀï/† PÄï„6  PÁï† P­ìİï† İï† İï† İï† İ­ìßï…0  ûï®  İïô… İïò… Åïì… ï;6  PÁïÜ… P~ßï~0  ûï  Õï“… TÔ­ìÔ­ü2İï6  İ­üûï«  ÕPÕïg… İ­üßï[0  ûïE  Ö­ìÖ­üÑ­üïÇ5  Äİ­ìßïH0  ûï%  €Îô»^Ğ¬[<kPÊÿÿÿPĞPZĞZPÑP    8ÑP @  =ÑP `  -ÑP €  3ÑP    2İïó„ ßïö/  ûïÆ  Öïó„ Öïè„ Öïİ„ ÖïÑ„ ÖïÙ„ ÔZĞJ«(Íü¿1 ÑZÁZPxï@5  PPÑ«P	Ğï5  PËï!5  «PÀï5  P×PÒï5  QÊQPĞPWİZßï‚/  ßÍô»ûï  İWßÍô»İÍü¿ûïF  ÑWïÅ4  Öï]„ Ãï¸4  PÀWPÆï®4  PÀPïF„ ÖZÑZ1]ÿÔZĞJ«XÍø¿1ùİï„4  ßï./  İÍø¿ûïí  ÕPâİïi4  ßÍ àxï“4  Íø¿~ûïÖ  Öïöƒ ÔYÑYï‰4  ¶ĞIÍ àÍø¿1… ÕZ1 ÁYÍô¿ÑÍô¿ÁÍô¿Pxï64  PPÑ«P	Ğï4  PËï4  «PÀïú3  P×PÒï	4  QÊQPĞPWİÍô¿ßï™.  ßÍô»ûï  İWßÍô»İÍø¿ûï:  ÑWï¹3  ÖïQƒ ÖY1`ÿÃï©3  PÀWPÆïŸ3  PÀPï7ƒ àİï‹3  ßïX.  İÍø¿ûïô   ÕPÅİïp3  ßÍ Àxïš3  Íø¿~ûïİ  Öïƒ ÔXÑXï3  ™ĞHÍ ÀÍø¿1§ ÁYZPÄïw3  PÀPÁXPÍô¿ÑÍô¿ÁÍô¿Pxï63  PPÑ«P	Ğï3  PËï3  «PÀïú2  P×PÒï	3  QÊQPĞPWİÍô¿ßï¼-  ßÍô»ûï  İWßÍô»İÍø¿ûï:   ÑWï¹2  ÖïQ‚ Ãï¬2  PÀWPÆï¢2  PÀPï:‚ ÖX1>ÿÖZÑZ1ñı Â^Çï3  ¬ZÕïú /Åï^2  ïm2  PÑ¬Pİ¬İïÙ İ¬ßïB-  ûï©  ĞPÎï_2  PxP¬­üÑ­üï42  1‘ İ¬İ¬ûïÈ   ÕP$İ¬İï‘ İ¬ßï-  ûïa  Àïÿ1  ïª Ô[ÑKï¹q ÿÿÿÿ1Š ÑKïxy ¬:Á­ü¬PÑKïgy P*İ¬İï? İ­üÃ¬KïOy ~İKïwq ßïù,  ûïş  Ö[¦Ô[Ñ[­üœİïŒ1  Á[¬~ûï*   ÕPİ¬İïó€ İ¬ßïœ,  ûïÃ  Öï Ö[ÁÔP  ÕïÆ€ 1ê Ñ¬ïA1  Ñ¬ï31  İ¬ßï¬,  ûï…  Ñ¬ï1  eÇï1  ¬PÄï1  PÃP¬Pİ¬ßï‘,  ûïT  Çïò0  ¬~İïQ€ ßï«0  ûï¾
+  ÕPHÇïÒ0  ¬~İï1€ ßï‹0  ûï(  WÇ¬PĞï€ QÇ¬RxRRÃR¬RxRRÒRR˜@aPÊRPĞPÇ¬PxPPÃP¬PxPPÇ¬QĞï× R˜AbSÈPSöSAbÔP Â(^Ôïá0  Ôïã0  ÔïÙ0  ÔïË0  Ô­ü1PÅï»0  ­ü­ôÁï±0  ­ô­äÑ­äï0  7BÃ­ô­äPÇPQxQQÃQPQxQPÃ­ô­äQÆQšAï—S  RÊPRöRAï‹S  ×­äÑ­äïÌ/  ÁÖ­äÅïY0  ­üPËï°/  ­üQÄï£/  QÀQPÀï‰/  PÃ­ôP­ìÅï00  ­üPËï‡/  ­üQÄïz/  QÀQPÀïl/  PÃ­ôP­èÎï»/  PxP­üPËï«/  ­üQxQQÁQ@ï2  [İ ûïN  ĞPï'O  ĞU	 ïèR  Ğ­üïO  Ãï1/  PÑ­üP$Çï¬/  ï£/  PÄï /  PÃPï”/  P÷PïìN  ÷ïˆ/  ïßN  ÷ï/  ïÖN  Ã­ô­äïÎN  ÔïÌN  ÔïÒN  ÔïÄN  ÔïÂN  ÔïÄN  ÔïÂN  ÔïÀN  Ô­àĞ­àPÔ@ï´N  Ö­àÑ­àï­.  èxï$/  ~ßïen  Å­üï/  PËïr.  ­üQÄïe.  QÀQPÀïS.  Pxï .  P~ûïå  Ô­à1• ÖïGN  Ç­àPxPPÃP­àPxPPÇ­àQ˜AïİP  RÊPRöRAïÑP  x­àP@ïñm  Z<jPÓ ğ  PI<jPÊÿÿÿPÑP @  ÖïãM  ×ïåM  Ç­àPxPPÃP­àPxPPÇ­àQ˜Aï{P  RÈPRöRAïoP  Ö­àÑ­àïH.  01^ÿÇ­àPxPPÃP­àPxPPÇ­àQ˜AïAP  RÊPRöRAï5P  Ö­àÑ­à   ÉÕ­ü<Ô­àÇ­àPxPPÃP­àPxPPÇ­àQ˜AïP  RÈPRöRAïöO  ×ï<M  Ö­àÑ­àÇÔ­ØĞ­ØPÔ@ïYM  Ô­àĞ­àPx­ØQÀØ]  QÀPPÀPQ´aò­àãÖ­ØÑ­Ø ÌÕ­üÃï-  PÀïe-  PÆïö,  PÀP­èĞ­ì­ğ-Ç­ğPxPPÃP­ğPxPPÇ­ğQšAïpP  RÊPRöRAïdP  Ö­ğÑ­ğ­èÌÔ­ğ1®Ô­ÜÔ­à1¦ Á­ğ­ôPÀ­àPÆPĞï | QÁ­ğ­ôRÀ­àRÇRSxSSÃSRSxSRÒRR˜@aPÊRP7Á­à­ğPÇPQxQQÃQPQxQPÁ­à­ğQÆQšAïëO  RÈPRöRAïßO  Ö­Ü2Á­à­ğPÇPQxQQÃQPQxQPÁ­à­ğQÆQšAï´O  RÊPRöRAï¨O  Ö­àÑ­àïı+  1MÿÑ­Üïğ+  |ÖïÌK  Åï&,  ­ğPÆïM,  PÖ@ïíK  Åï,  ­ğPÇï6,  PQÄï.,  QÃQPQÇï,  QPÄï,  PÃPQPxPPÆï,  PÅïÕ+  ­ğQÆïü+  QxQQÀØ]  QÀPPÀPQ¶adÕ­Ü_À­ÜïQK  Ç­ğPÇ­ğQxQQÃQ­ğQš@ïëN  PÃQ RïQRPPÃï;+  QÎQQxQÿ   QÒQQËQP­øİßïK  İ­øßïİ*  ûï¼  Àï+  ­ğÁï +  ­ğPÃ­ô­äQÑPQ1;şĞ­ğ­Ü-Ç­ğPxPPÃP­ğPxPPÇ­ğQšAïjN  RÊPRöRAï^N  Ö­ğÃ­ô­äPÑ­ğP1‘ Á­ğ­ôPÆPĞïz QÁ­ğ­ôRÇRSxSSÃSRSxSRÒRR˜@aPÊRP’Ç­ğPxPPÃP­ğPxPPÇ­ğQšAïüM  RÈPRöRAïğM  Öï6J  ŠÇ­ğPxPPÃP­ğPxPPÇ­ğQšAïÊM  RÊPRöRAï¾M  Ö­ğÇï*  ­ğPÄï*  PÃP­ğP¼Ñ­Ü­ğWÇ­ÜPÇ­ÜQxQQÃQ­ÜQš@ïƒM  PÃQ RïQRPPÃïÓ)  QÎQQxQÿ   QÒQQËQP­øİßï²I  İ­øßïu)  ûïT  Æï )  ­ğİ­ğßï3M  ßïU)  ûïd  Ö­ğÃÜ  ïp)  PxPPÎï•)  QxQPPÑ­ğPÆÀïHI  ïë)  Àï5I  ïØ)  Àï.I  ïÑ)  ÀïI  ï¾)  (ïI  kİï)  ßïêH  Å­üï)  PËï÷(  ­üQÄïê(  QÀQPÀïÔ(  Pxï%)  P~ûï  Ö­üÑ­üïÙ(  1£øÔ­àÔ­ÜZÃ­àï4)  PÑPïÀ(  Ã­àï")  PĞï­(  PİPĞ­ÜPİ@ïG+  Åï¡(  PPÀïù(  Pxï¾(  P~ûï±  Àï{(  ­àÖ­ÜÑ­àïÚ(  œ”ï)  ”ï )  İ    ßï$(  İûï{   Â^Ğ¬PĞ 8PĞ@ïv!  PĞ¬QšA`PÁPP­üÀQ¬ĞYjĞ¬PÇ 8QxQQÃQ 8QÀYQxQPÒPPËP­üPEĞIïí  [ĞIï	  ZĞYX&Ò[PËP¬PÑPZÀ¬I¼ÀYXxY[[xYZZÀ[[ÀZZÖXĞ¬PÑX 8ĞÖYĞ¬PÑY 8Œ Â^Ğ¬[İ    İ[İûï  ÕP1ßï5#  ûïã  İ¬ûïA  İ¬ßï)#  ûïÇ  Èïw ÑË\T İÔ­üÔ­ølÃ­üï¬'  PÑPï8'  Ã­üïš'  PĞï%'  PĞP­ôİPİûïQ  Ğ­øQĞPAï±)  İ­ôĞ­øPİ@ËØÅ«8PPÀË˜ Px«dP~ûïi   Àïá&  ­üÖ­øÑ­üï@'  Š  Ğ¬[İ x	¬~İï=v ûïú  ÕPßï"  ßï"  ûïi  ĞPİ[İ¬İïv ûï  ÑP[ØÔP  İ x	¬~İïïu ûï¬  İ¬İ¬İïÜu ûï¹  ĞP[Ñ[¬2Õï¾u ßï$"  ûï›  Ôï©u Ô[”K¼Ö[Ñ[ï &  ñĞPÔP   Â^Ğ¬PĞ 8PÏP· €  H    + Ğ¬Pİ 8ßïÙ!  ßï¢#  ûï;  Ğ¬PĞ¬QšA`PÑPÿ   ĞPÔPï ¬PxPPxPPöP­ÿxÿ¬P˜­ÿQÒQQš@¼PÊQPš­ÿQÑPQĞPÔPï ¬PÀPPxPPöP­ÿxş¬P˜­ÿQÒQQš@¼PÊQPš­ÿQÑPQĞPÔPï ¬PxPPöP­ÿxı¬P˜­ÿQÒQQš@¼PÊQPš­ÿQÑPQĞPÔP  Ğ¬PĞ 8PÏPn Y  7    + Ğ¬Pİ 8ßïø   ßï©"  ûïB  Ğ¬PĞ¬Q”A`ï ¬PxPPxPPxÿ¬QšA¼RÊPRöRA¼ï ¬PÀPPxPPxş¬Qİï ¬PxPPxı¬QË  Ğ¬PĞ 8PÏPp [  9    + Ğ¬Pİ 8ßïƒ   ßï"  ûï´   Ğ¬PĞ¬QÿA`ï ¬PxPPxPPxÿ¬QšA¼RÈPRöRA¼ï ¬PÀPPxPPxş¬Qİï ¬PxPPxı¬QË Â^Ğ¬[Ô­üÔZ‘k96Å
+­üP˜‹QÀPQÃ0Q­üÖZÖ[Ö[˜kPÑP	öÑP ñÑP+èÑP-á‘k0ÅÕZÎ­üPĞ­üP   Î ü^Ğ¬[á«<ª«ŞÍ ü«Ğ««2 «İ[Á\~İ¬ûï
+  İ[ûï*  ¨«Ô«Ô«Ôkİ[Á\~İ¬ûïì	  á«ÎPÔP    Â ^Ş­à[Õ¬(•¼#Ğ¬kİ¬ûï÷  ĞP«À[Şï®  kĞ«À[ÑïÀ"  ïÓ  Ğï³"  PĞ@ï£   PŞï…  PĞPkİkûï±  ĞP«À[Şïy  kĞ«Ş­àPÃP[PÆPÁP~ß­àİûï       ßï@   Á\~İ¬ûï.	  áï;   ÎPÔP  ïò      ¼$ò @(#)errlst.c	5.2 (Berkeley) 3/9/86        8  H  `  j  „  –  ¨  ¸  Ä  Ö  è  ú      (  4  F  U  e  t  …  ™  ­  Ì  Û  ê      %  4  @  S  d  z  ”  ²  Ñ  î  ÿ    ?  V  p  ’  °  à  ÷     &   =   a   ‚   ›   µ   Ñ   é   
+!  ,!  A!  T!  v!  ‰!  –!  ª!  	:ti=\E[30;1H\E[K\E[30;1;0;30p:te=\E[60;1;0;30p\E[59;1H\E[K:tc=aaa-30-s:
+NL|aaa-s-rv-ctxt|aaa-30-s-rv-ctxt|hairy aaa:\
+	:md=\E[1;7m:mr=\E[m:mb=\E[5;7m:mk=\E[7;8m:me=\E[7m:\
+	:us=\E[4;7m:ue=\E[7m:se=\E[7m:so=\E[m:\
+	:is=\EP`+x~M\E\\\E[7m\E7\E[60;1;0;30p\E[3g\E[f\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E8\E[>6h\E[1Q:\
+	:ti=\E[30;1H\E[K\E[30;1;0;30p:te=\E[60;1;0;30p\E[59;1H\E[K:\
+	:li#29:tc=aaa-unk-s:
+NH|aaa-ctxt|aaa-30-ctxt|ann arbor ambassador/30 lines:\
+	:ti=\E[30;0;0;30p:te=\E[60;0;0;30p\E[60;1H\E[K:tc=aaa-30:
+NH|aaa-rv-ctxt|aaa-30-rv-ctxt|ann arbor ambassador/30 lines:\
+	:ti=\E[30;0;0;30p:te=\E[60;0;0;30p\E[60;1H\E[K:\
+	:md=\E[1;7m:mr=\E[m:mb=\E[5;7m:mk=\E[7;8m:me=\E[7m:\
+	:us=\E[4;7m:ue=\E[7m:se=\E[7m:so=\E[m:\
+	:is=\EP`+x~M\E\\\E[7m\E7\E[60;0;0;30p\E[3g\E[f\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E[8a\EH\E8\E[>6h\E[1Q:\
+	:li#30:tc=aaa-unk:
+Nd|aaa-db|ann arbor ambassador 30/destructive backspace:\
+	:ti=\E[H\E[J\E[30;0;0;30p:te=\E7\E[60;0;0;30p\E8:li#30:\
+	:is=\E[60;0;0;30p\E[H\E[J\E[1Q\E[m\E[20l\E[>30h:le=\E[D:bc=\E[D:bs@:\
+	:tc=aaa-unk:
+N1|aa|annarbor|4080|ann arbor 4080:\
+	:do=^J:pt:ct=^\^P^P:st=^]^P1:cm=^O%r%\066%.%>^S^L%+@:\
+	:co#80:li#40:le=^H:bs:cl=2^L:up=^N:nd=^_:ho=^K:am:\
+	:kb=^^:kd=^J:ku=^N:kl=^H:kr=^_:kh=^K:ma=^_ ^N^P:
+# # --------------------------------
+#
+# T: TELETYPE
+#
+# We need descriptions for the model 40.  There are known to be at least three
+# flavors of the 40, both seem more like IBM half duplex forms fillers than
+# ASCII terminals.  They have lots of awful braindamage, such as printing
+# a visible newline indicator after each newline.  The 40-1 is a half duplex
+# terminal and is hopeless.  The 40-2 is braindamaged but has hope and is
+# described here.  The 40-4 is a 3270 lookalike and beyond hope.
+# The terminal has visible bell but I don't know it - it's
+# null here to prevent it from showing the BL character.
+# There is an \EG in nl because of a bug in vi (if stty says you have
+# a "newline" style terminal (-crmode) vi figures all it needs is nl
+# to get crlf, even if cr is not ^M.)
+T0|40|tty40|ds40|ds40/2|ds40-2|dataspeed40|teletype dataspeed 40/2:\
+	:cl=160\ER:cd=160\EJ:al=160\EL:dl=160\EM:dc=50\EP:im=:ei=:ic=50\E\^:\
+	:nd=\EC:up=\E7:bs:cr=\EG:nl=\EG\EB:do=\EB:co#80:li#24:vb=:\
+	:so=\E3:se=\E4:
+T3|33|tty33|tty|model 33 teletype:\
+	:do=^J:co#72:hc:os:
+T4|43|tty43|model 43 teletype:\
+	:do=^J:kb=^h:am:le=^H:bs:hc:os:co#132:
+T7|37|tty37|model 37 teletype:\
+	:do=^J:le=^H:bs:hc:hu=\E8:hd=\E9:up=\E7:os:
+# From jwb Wed Mar 31 13:25:09 1982 remote from ihuxp
+# This entry appears to avoid the top line - I have no idea why.
+TT|4424|tty4424|teletype 4424M:\
+	:al=\EL:da:db:ip=2:im=:ei=:ic=\E\^:dc=\EP:dl=\EM:\
+	:co#80:li#23:am:cl=\E[2;H\E[J:bs:cm=\E[%i%2;%2H\E[B:\
+	:nd=\E[C:up=\E[A:pt:mi:sr=\ET:\
+	:ce=\E[K:so=\E[7m:se=\E[m:us=\E[4m:ue=\E[m:\
+	:is=\E[m\E[2;24r:\
+	:kd=\E[B:kl=\E[D:ku=\E[A:kr=\E[C:\
+	:kh=\E[H:k1=\EOP:k2=\EOQ:k3=\EOR:k4=\EOS:
+# Teletype blit.
+# # --------------------------------
+#
+# V: VISUAL
+#
+# The Visual 200 beeps when you type a character in insert mode.
+# This is a horribly obnoxious misfeature, and some of the entries
+# below try to get around the problem by ignoring the feature or
+# turning it off when inputting a character.  They are said not to
+# work well at 300 baud.  (You could always cut the wire to the bell!)
+#From mike@brl-vgr Mon Nov 14 08:34:29 1983
+V2|vi200|vis200|visual 200 with function keys:\
+	:so=\E4:se=\E3:ms:do=^J:\
+	:al=\EL:am:le=^H:bs:cd=\Ey:ce=\Ex:cl=\Ev:\
+	:cm=\EY%+ %+ :co#80:dc=\EO:dl=\EM:ho=\EH:\
+	:im=:ei=:ic=\Ei \b\Ej:\
+	:is=\E3\Eb\Ej\E\\\El\EG\Ec\Ek:\
+	:k0=\EP:k1=\EQ:k2=\ER:k3=\E :k4=\E!:k5=\E":k6=\E#:\
+	:k7=\E$:k8=\E%:k9=\E&:kl=\ED:kr=\EC:ku=\EA:kd=\EB:kh=\EH:\
+	:li#24:nd=\EC:pt:sr=\EI:up=\EA:vs=\Ed:ve=\Ec:
+VR|vi200-rv-ic|visual 200 reverse video using insert char:\
+	:ei=\Ej:im=\Ei:ic@:tc=vi200-rv:
+# The older Visuals didn't come with function keys. This entry uses
+# ks and ke so that the keypad keys can be used as function keys.
+# If your version of vi doesn't support function keys you may want
+# to use V2.
+Vf|vi200-f|visual|visual 200 no function keys:\
+	:do=^J:al=\EL:am:le=^H:bs:cd=\Ey:ce=4*\Ex:cl=\Ev:\
+	:cm=\EY%+ %+ :co#80:dc=4*\EO:dl=4*\EM:ho=\EH:\
+	:im=:ei=:ic=\Ei \b\Ej:\
+	:is=\E3\Eb\Ej\E\\\El\EG\Ed\Ek:ks=\E=:ke=\E>:\
+	:k0=\E?p:k1=\E?q:k2=\E?r:k3=\E?s:k4=\E?t:k5=\E?u:k6=\E?v:\
+	:k7=\E?w:k8=\E?x:k9=\E?y:kl=\ED:kr=\EC:ku=\EA:kd=\EB:kh=\EH:\
+	:li#24:nd=\EC:pt:sr=\EI:up=\EA:vs=\Ed:ve=\Ec:
+Vr|vi200-rv|visual 200 reverse video:\
+	:so=\E4:se=\E3:sr@:vs@:ve@:tc=vi200:
+Vt|vi200-ic|visual 200 using insert char:\
+	:ei=\Ej:im=\Ei:ic@:tc=vi200:
+# From: jbs@athena.mit.edu	Jeff Siegal
+V5|vi55|Visual 55:\
+	:im=\Ea:ei=\Eb:mi:dc=\Ew:dm=:ed=:al=\EL:dl=\EM:cs=\E_%+A%+A:\
+	:ho=\EH:cl=\Ev:is=\Ev\E_AX\Eb\EW\E9P\ET:so=\EU:se=\ET:ms:\
+	:do=^J:le=^H:bs:cd=\EJ:ce=\EK:cm=\EY%+ %+ :co#80:li#24:\
+	:nd=\EC:pt:sr=\EI:up=\EA:ku=\EA:kd=\EB:kr=\EC:kl=\ED:kb=^H:
+# # --------------------------------
+#
+# X: TEKTRONIX
+#
+Xa|tek|tek4012|4012|tektronix 4012:\
+	:do=^J:is=\E^O:le=^H:bs:cl=1000\E^L:co#75:ns:li#35:os:
+Xb|tek4013|4013|tektronix 4013:\
+	:as=\E^N:ae=\E^O:dF#1000:tc=4012:
+Xc|tek4014|4014|tektronix 4014:\
+	:is=\E^O\E9:co#81:li#38:dF#1000:tc=tek4012:
+Xd|tek4015|4015|tektronix 4015:\
+	:as=\E^N:ae=\E^O:tc=4014:
+Xe|tek4014-sm|4014-sm|tektronix 4014 in small font:\
+	:is=\E^O\E\072:co#121:li#58:tc=tek4014:
+Xf|tek4015-sm|4015-sm|tektronix 4015 in small font:\
+	:as=\E^N:ae=\E^O:tc=4014sm:
+# I think the 1000UP is supposed to be so expensive it never happens.
+X4|tek4023|4023|tex|tektronix 4023:\
+	:do=^J:so=^_P:se=^_@:cm=\034%r%+ %+ :nd=\t:le=^H:\
+	:bs:cl=4\E^L:co#80:li#24:am:up=1000UP:vt#4:
+# Can't use cursor motion because it's memory relative, and because
+# it only works in the workspace, not the monitor.  Same for home.
+# Likewise, standout only works in the workspace.
+# 145 ms padding on al and AL taken out since it doesn't seem to be needed much.
+X5|4025|4027|4024|tek4025|tek4027|tek4024|4025cu|4027cu|tektronix 4024/4025/4027:\
+	:sf=^F^J:do=^F^J:is=\41com 31\r\n^_sto 9 17 25 33 41 49 57 65 73\r:\
+	:ks=^_lea p4 /h/\r^_lea p8 /k/\r^_lea p6 / /\r^_lea p2 /j/\r^_lea f5 /H/\r^_lea p5 /H/\r:\
+	:ke=^_lea p2\r^_lea p4\r^_lea p6\r^_lea p8\r^_lea p5\r^_lea f5\r:\
+	:am:le=^H:bs:da:db:pt:li#34:co#80:cl=^_era\r\n\n:up=^K:nd=^_rig\r:\
+	:al=^_up\r^_ili\r:dl=^_dli\r^F:\
+	:dc=^_dch\r:im=^_ich\r:ei=^F^_dow\r^K:nl=^F\n:\
+	:cd=^_dli 50\r:CC=^_:AL=^_up\r^_ili %d\r:DL=^_dli %d\r^F:\
+	:UP=^_up %d\r:DO=^_dow %d\r:LE=^_lef %d\r:RI=^_rig %d\r:
+X7|4025-17|4027-17|tek 4025 17 line window:\
+	:li#17:tc=4025:
+X8|4025-17ws|4027-17ws|tek 4025 17 line window in workspace:\
+	:is=\41com 31\r\n^_sto 9,17,25,33,41,49,57,65,73\r^_wor 17\r^_mon 17\r:\
+	:ti=^_wor h\r:te=^_mon h\r:so=^_att e\r:se=^_att s\r:tc=4025-17:
+X9|4025ex|4027ex|tek 4025 w/!:\
+	:ti=\41com 31\r:te=^_com 33\r:\
+	:is=^_com 33\r\n\41sto 9,17,25,33,41,49,57,65,73\r:tc=4025:
+# From jcoker @ ucbic
+Xp|4107|tek4107|Tektronix 4107 graphics terminal with memory:\
+	:ti=\E[?6l\E[H\E[J:te=\E[?6h\E%!0\ELBP0\E%!1\E[32;1f:\
+	:is=\E%!0\ELBP0\E%!1\E[H\E[2g\EH\E[8C\EH\E[8C\EH\E[8C\EH\E[8C\EH\E[8C\EH\E[8C\EH\E[8C\EH\E[8C\EH\E[8C\EH\E[J:\
+	:li#32:do=^J:al=3\E[L:xn:am:le=^H:bs:cd=\E[J:\
+	:ce=5\E[K:cl=156\E[H\E[J:cm=\E[%i%d;%dH:co#80:dc=4\E[P:dl=3\E[M:\
+	:ho=\E[H:ic=4\E[@:md=\E[1m:mr=\E[7m:mb=\E[5m:me=\E[m:ku=\EM:\
+	:kd=\ED:kl=\E[D:kr=\E[C:kh=\E[H:\
+	:ul:ei=:im=:pt:bw:bt=\E[Z:mi:nd=\E[C:se=\E[m:so=\E[7m:\
+	:ue=\E[m:us=\E[4m:up=\EM:
+#  Tektronix 4107 with sysline
+Xq|4107-s|tek4107-s|Tektronix 4107 with sysline but no memory:\
+	:is=\E%!1\E[2;32r\E[132D\E[2g\EH\E[8C\EH\E[8C\EH\E[8C\EH\E[8C\EH\E[8C\EH\E[8C\EH\E[8C\EH\E[8C\EH\E[8C\EH\E[J:\
+	:es:hs:i2=\E7\E[?6l\E[2K\E[?6h\E8:ts=\E7\E[?6l\E[2K\E[;%i%df:\
+	:fs=\E[?6h\E8:ds=\E7\E[?6l\E[2K\E[?6h\E8:tc=4107:
+# From cbosg!teklabs!davem Wed Sep 16 21:11:41 1981
+# Here's the comamnd file that I use to get rogue to work on the 4025.
+# It should work with any program using the old curses (e.g. it better
+# not try to scroll, or cursor addressing won't work.  Also, you can't
+# see the cursor.)
+# (This "learns" the arrow keys for rogue. I have adapted it for termcap - mrh)
+Xr|4025-cr|tek 4025 for curses and rog¾!  Ñ!  à!  Error 0 Not owner No such file or directory No such process Interrupted system call I/O error No such device or address Arg list too long Exec format error Bad file number No children No more processes Not enough memory Permission denied Bad address Block device required Device busy File exists Cross-device link No such device Not a directory Is a directory Invalid argument File table overflow Too many open files Inappropriate ioctl for device Text file busy File too large No space left on device Illegal seek Read-only file system Too many links Broken pipe Argument too large Result too large Operation would block Operation now in progress Operation already in progress Socket operation on non-socket Destination address required Message too long Protocol wrong type for socket Option not supported by protocol Protocol not supported Socket type not supported Operation not supported on socket Protocol family not supported Address family not supported by protocol family Address already in use Can't assign requested address Network is down Network is unreachable Network dropped connection on reset Software caused connection abort Connection reset by peer No buffer space available Socket is already connected Socket is not connected Can't send after socket shutdown Too many references: can't splice Connection timed out Connection refused Too many levels of symbolic links File name too long Host is down Host is unreachable Directory not empty Too many processes Too many users Disc quota exceeded @(#)strlen.s	5.3 (Berkeley) 3/9/86    Ğ¬Q: ÿÿaøÃ¬QP  Â^İ ß­øûï   ÕPÎPÕ¬Ğ­ø¼Ğ­øPï^      ¼t ğ     Â^™B­üĞ¬­ğ2ÿ­ìß­ìÁ\~İ¬ûïN  ×­ìĞ­ğPÖ­ğ”`6á­ü$Î­ìPÑP­ø”½ğ˜½ğPÑP
+Ö­ğß­ìš½ğ~ß­ìš ~ûïà  Ğ¬P    	
+ !"#$ &'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~€‚ƒ„…†‡ˆ‰Š‹Œ‘’“”•–—˜™š›œŸ ¡¢£¤¥¦§¨©ª«¬­®¯°±²³´µ¶·¸¹º»¼½¾¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏĞÑÒÓÔÕÖ×ØÙÚÛÜİŞßàáâãäåæçèéêëìíîïğñòóôõö÷øùúûüışÿÀ1± ÔTSĞ­üSá£Á££TÑ£TÑR
+R³Ö£ÔcÖ­ğ»İ­üİRûï™  ÕPã­ğ Ö­ğºï­şÿÿS}½üTàT©ÀP­ğÔRÕPÕTšS•CïŒşÿÿÎR×QS…×TõPá}T½üÂP­ğàRôPšR•Bïaşÿÿ1eÿÖP×QĞRã­ğ Ğ­ğPÎ ÿ^Ğ¬[Ğ¬­üĞ¬\Ô­ğ<ÿÿPĞ[Q}½üTÃQURÑPRĞRP0eÿĞQ[áRÜ•‹¾Ğ^U|Y|Vš‹PP Xœ² ² ¦² ² ² ² ² ² ì¬² ²á² ¸ÃÃÃÃÃÃÃÃÃ² ² ² ² ² ² ² ² ² ² Ÿ½ ² ½ ² ² ² ² ² ² ² ² ² ² ² ² s² ² ½ ² ² ² ² ² ² ² ² ² ² Ÿäøÿ² ² ² øÿ² ² ² ² ² Ê ² s² ² P…1ğş1ÙÈ@   ZŒ P11ÿĞXPàZÎPĞŒR: PbĞQUĞRQ1!0123456789abcdef0123456789ABCDEFĞRĞSïÔÿÿÿWĞRĞSïÅÿÿÿWáZïÊÿÿÿWÎSVÔQÀUĞŒPïRSPQAg…ñ VRñÿ|V”e;0®áZzÕ¬üuÑSxPáZXPPqĞW0qYÊ   ZïlPùP
+n4
+n® 
+®
+néŒ ï÷   
+nª ùŒ
+nÖW8
+nïíÿÿÿ®; ®ÕWáZ+qáZ qÖWàZĞXÃQUVÂWVÂVX&ÀWQİQH¥ RÂ]RÂRX(VaHa, a0X¾ ÃWQÁVSUÃQUXÃXYP àZàZRĞWP	ÂPXÂPY0"ıÃXYP7ÂXYĞXP0ıáR×PšR}½üTôT0¼üëR…Ö­ğ}T½üÜĞYP1hı1cı0R RÂPYİQĞPWÂP^, `RWnĞWPĞ^Q0ÃüÀW^ĞQĞŒPP…Ğ^Q1iÿÈ€   Z1RıÈ Z1LıÈZ1FıÈZ1@ıà ZàZÈZàZŞIiY>I ĞY	ŞHhX>H ĞXÈZ1ıÔXÈZÊZ1ıàZĞŒYæÌZÎYYŞĞŒXÙÎXXÔàZĞX0ëÁ­øXWĞWVÔWÑWĞWÃWPøPnW®#ó VĞWPÖ­øÖWøPïHÿÿÿ W®xÿWPˆ­ï@®®QĞWVŸïSşÿÿŸ¡0¡0Sƒ, a‘Vc”c8Va¡0¡ÃVUQĞnSÔWé­ï-ƒÖWĞ­øP0ƒÑPVĞVPÂPVÂP­ø(PacĞ­øP, a0PcĞXPàZã	Z.ƒÎ­øPÑPXĞXPÂPX, a0PcĞXPÑPVĞVPÂPX(PacĞXP@£ RÂ]RÂRPĞPXÂPX, a0PcĞSUºDeB+’ ÖXàZĞX0Ò ĞXWÑWĞWÃWPøPnW®Ö­øÃWPøPï=şÿÿ W®xÿWPˆ­ï@®àZ=®Q&ĞQVÃ­ôPùPn8nï—ÿÿÿeĞVQàZ1,ıŒ ¥ü1%ıĞWV×XĞ­ø­ôĞ­ø1ÁşÁ­øP0ÂPÑPX(ĞWVÂPX®Q0¥şàZà	Z‘u0û‘e.ÖUáZ•1İü®Q0±ÿäZÚàZĞXÕXĞXâZ1.ÿ1+ÿ”­ïpŒU1Ÿ rUU–­ïïUR¢€RÄ;RÂÄ R¢RÆÄ   R0‚ qPUÖRĞR­øÎRRÑR
+dïá   UÂRÀ	Rï\   tPTUPUùP	®ø	® ®tï²    UPUùP®ĞXWŸïœşÿÿÑnÀ­øWÑW	qU ˆ® ®®ˆ­ï®ÔPĞ­ø®   pPÔT~ïM   SÕRÎRRâR áTRdcPÀSóTòåRgPPÑRÀïÄÿÿÿQÎRRÁ(RSáSïA   Âï®ÿÿÿQšBïb   T B      ÈC      G @    ¾M ¼    [É¿  u­Å+¨¶pPB<ò‡   öVvÓˆµbºõ2>HÛQS'±ïë¥I[ÙÍÿ¿—ı¼¶#,;
+Í                          È:„äÜ’› ÀX®ï ïB      ¼ò ï2      ¼ò ï"      ¼ò ï      ¼y ğ    ®¸^Ğ¬[á«¨«ª«à«wÎPÔYĞYXš¬Pá« ¬­ÿĞXİXß­ÿ˜«~ûïµ  ĞPYÔk1ê Ğ«Z1´ ß­¸˜«~ûïâ  ÕPÕ­è2 ­øĞ­è­øİ­øûï  ĞPZĞZ«G¨«á«’Ğ«Z¬»Ö«Á«ZPÑ«P	‘¬
+1hÿÃZ«XİXİZ˜«~ûï0  ĞPYĞZ«1tÿ¨«Ğ­ø«Ñ[à:  ˜ïP  ~ûïn  ÕPâ« ĞZ«ÔYĞYX ÃZ«YĞYXĞZ«İYİZ˜«~ûïÓ  ĞPYÃ«k¬ŠĞZ«ÑXY1äş¨ «1Ôş Ğ¬[2«PÊùÿÿÿPÑP@Ğ«Z:ÃZ«Y3ĞZ«³„ «ÔPĞ«PĞPkİYİZ˜«~ûïk  ÑPY¨ «ÎPÔP  Ğ¬[ÎZ³«2à«-İ[ûï‡ÿÿÿĞPZ˜«~ûï5   ÕPÎZá«
+İ«ûïó  ÔkÔ«Ô«Ô«´«”«ĞZP  ï      ¼ò  ÕïD_ VŞïü  Z³ªĞZPÀZÑZ\<  èû ïP   ÕP*Ğïÿ  ĞkP³ !À[Ñ[ïü^ Ğïß  ÔPĞïæ^ [ÕkÔÕkİİûï6  ĞPkĞkP  Â^û ï¾  ĞP­üİİPûï  ĞPï¨^ ÕPÔPx­üPÁï–^ Pï”^ ŞïJ  ZĞïƒ^ [ĞZ‹ÀZÑZ\<  ñİİ­üûïÉ   ĞPï®  ĞP ÕïR^ û ïÿÿÿÕPĞï>^ [Õkİİûï   ĞPkÀ[Ñ[ï#^ â Ğ¬[Õï^ "ŞïÈ  YÑY\<  ;³©İYûkÀYåĞïæ] ZÕjĞjP³ İjûkÀZÑZïÉ] à  ßïşÿÿûï—ÿÿÿ    û ïåÿÿÿİ¬ûïU   Ğ¬[Ğ¬ZÄ[ZİZûïÆ   ĞPYİZİYûï6   ĞYP  İ¬ûïæ   @(#)bzero.s	5.3 (Berkeley) 3/9/86     Ğ¬S
+ÂP¬, c Pc<ÿÿPÑ¬Pë, c ¬c   ï¾      ¼>ò ï®      ¼Y ğ     Â^ß­úİt@İ¬ûï   ÕPÔPĞP ïv      ¼6ò  Õï8] ^û ï  ĞPXĞXï%] İ ûï  ĞP[ÃXPÃXQÒQQËQ[QÃQPXİXûïç  ÖPÔPÔZĞYÀYYÖZÑïâ\ YòĞZïÜ\ ÃïÑ\ XÑ¬X
+ĞYÔZÎXĞïº\ YĞï·\ ZÀYY´ÖZÁXYPÑ¬PïĞJï \ [İZûï    ĞJï\ [‹ĞkJï\ ïköZ«Á[P  Â^Á¬PxPPĞPZÑZïQ\ ĞïI\ ­üÇZ­ü­øÁï9\ Z­üĞ­øİ­üûï  ĞP[Ñ[ÿÿÿÿĞ¬PĞ[@ï—[ ÁZ[kÀZ[õ­øõ  Õ¬Ã¬ZšjPÑPï   šª[ĞKïc[ jĞZKïZ[   Â^Ô­ôÕ¬İ¬ûïyşÿÿÃ¬­üš½üPÑPï   Ö­ôĞ­üPš Zİİ­üûï¦   ĞPZÁZPxP[Ñ[ïz[ Â[Ãïl[ PÀP[Õ­ô@ÕZ!ÁZPxPZÑZïP[ ÂZÃïB[ PÀPZÑ¬[Ñ¬ZĞ¬Pİ¬ûï#ÿÿÿİ¬ûïÙıÿÿĞP­øÔPÑ¬­øÑ¬[Ğ¬PĞ[PİPİ­øİ¬ûï_   Ğ­øP ÔZÔYĞJïaZ [ÑY¬Ñ[¬ĞZPÖYĞk[Õ[çÖZÑZÔÎP  @(#)bcopy.s	5.3 (Berkeley) 3/9/86   @ Ğ¬QĞ¬SĞ¬VÑQS
+ÂPV(Pac<ÿÿPÑVPï(VacÀVQÀVS<ÿÿPÂPVÂPQÂPS(Pac<ÿÿPÂPQÂPSÑVPãÂVQÂVS(Vac   ïN       ¼@ ğ     Áïx	  ¬~İĞ\SĞ^\¼Ğïc	  PÀ£ïZ	  ï      ï
+       ¼ò ĞPï=	  ÎP   ¼                                                               @(#)icheck.c	5.1 (Berkeley) 5/28/85             ?      ÿ   ÿ  ÿ                  >   ~   ş   ş   *&N>*>NŠ>6^>>>^>6^>>>^*>>*>>.n>>>>*>nª>6^>>>^>6^>>>^&66.66&n666>.>n®N^^n^^nN^^^~n~NÎ>6^>>>^>6^>>>^>6^>>>^>>>>>>>~>>>>>>~¾*>>*>>.n>>>>*>nª>>>>>>>~>>>>>>~¾N^^n^^nN^^^~n~NÎŠª®Î¾ª¾ÎŠ 		 		
+		
+ @					!
+
+		
+		
+ !@€    t4  t4      t4              t5  Bad flag
+ %s:
+ Not enough core; duplicates unchecked
+ No Updates
+ spare super block %d cylinder group %d inodes %d-%d csum cg %d: bad magic number
+ free block free frag files %6u (r=%u,d=%u,b=%u,c=%u,sl=%u)
+ used %7ld (i=%ld,ii=%ld,b=%ld,f=%ld)
+ free %7ld (b=%ld,f=%ld)
+ %ld missing
+ missing%5ld
+ bad mode %u
+ logical data block %d 1st indirect logical data block %d 2nd indirect logical data block %d %ld bad; inode=%u, class=%s
+ %ld dup block; inode=%u, class=%s
+ %ld dup frag; inode=%u, class=%s
+ %ld arg; frag %d of %d, inode=%u, class=%s
+ bad size %d to duped
+ bad bno %d to duped
+ bad super block %s: bad magic number
+ FS SEEK FS WRITE No Update
+ isblock bad fs_frag %d
+ clrblock bad fs_frag %d
+ setblock bad fs_frag %d
+  @(#)atol.c	5.2 (Berkeley) 3/9/86    @(#)fprintf.c	5.2 (Berkeley) 3/9/86 @(#)perror.c	5.2 (Berkeley) 3/9/86  :  Unknown error 
+  @(#)printf.c	5.2 (Berkeley) 3/9/86  F   @(#)time.c	5.3 (Berkeley) 3/9/86    @(#)sprintf.c	5.2 (Berkeley) 3/9/86 @(#)doprnt.c	5.4 (Berkeley) 3/9/86  @(#)flsbuf.c	5.2 (Berkeley) 3/9/86  @(#)findiop.c	5.6 (Berkeley) 3/9/86                                                                                                                                                                                                                                                                                                                

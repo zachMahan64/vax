@@ -1,0 +1,2865 @@
+letter
+and consist of letters, digits and
+underscores.
+Variables may be given values by writing, for example,
+.DS
+	user=fred\ box=m000\ acct=mh0000
+.DE
+which assigns values to the variables
+\fBuser, box\fP and \fBacct.\fP
+A variable may be set to the null string
+by saying, for example,
+.DS
+	null=
+.DE
+The value of a variable is substituted
+by preceding its name with \fB$\|;\fP
+for example,
+.DS
+	echo $user
+.DE
+will echo \fIfred.\fP
+.LP
+Variables may be used interactively
+to provide abbreviations for frequently
+used strings.
+For example,
+.DS
+	b=/usr/fred/bin
+	mv pgm $b
+.DE
+will move the file \fIpgm\fP
+from the current directory to the directory \fB/usr/fred/bin\|.\fR
+A more general notation is available for parameter
+(or variable)
+substitution, as in,
+.DS
+	echo ${user}
+.DE
+which is equivalent to
+.DS
+	echo $user
+.DE
+and is used when the parameter name is
+followed by a letter or digit.
+For example,
+.DS
+	tmp=/tmp/ps
+	ps a >${tmp}a
+.DE
+will direct the output of \fIps\fR
+to the file \fB/tmp/psa,\fR
+whereas,
+.DS
+	ps ahip between external files and
+internal characters, and must all be retained
+or modified consistently.
+They may be redefined, to
+cause input or output to be transmitted to or from strange
+places, including other programs or internal memory;
+but the character set used must be consistent in all routines;
+a value of zero returned by
+.I
+input
+.R
+must mean end of file; and
+the relationship between
+.I
+unput
+.R
+and
+.I
+input
+.R
+must be retained
+or the Lex look~ahead will not work.
+Lex does not look ahead at all if it does not have to,
+but every rule ending in
+.ft I
++ \(** ?
+.ft R
+or
+.ft I
+$
+.ft R
+or containing
+.ft I
+/
+.ft R
+implies look~ahead.
+Look~ahead is also necessary to match an expression that is a prefix
+of another expression.
+See below for a discussion of the character set used by Lex.
+The standard Lex library imposes
+a 100 character limit on backup.
+.PP
+Another Lex library routine that the user will sometimes want
+to redefine is
+.I
+yywrap()
+.R
+which is called whenever Lex reaches an end-of-file.
+If
+.I
+yywrap
+.R
+returns a 1, Lex continues with the normal wrapup on end of input.
+Sometimes, however, it is convenient to arrange for more
+input to arrive
+from a new source.
+In this case, the user should provide
+a
+.I
+yywrap
+.R
+which
+arranges for new input and
+returns 0.  This instructs Lex to continue processing.
+The default
+.I
+yywrap
+.R
+always returns 1.
+.PP
+This routine is also a convenient place
+to print tables, summaries, etc. at the end
+of a program.  Note that it is not
+possible to write a normal rule which recognizes
+end-of-file; the only access to this condition is
+through
+.I
+yywrap.
+.R
+In fact, unless a private version of
+.I
+input()
+.R
+is supplied
+a file containing nulls
+cannot be handled,
+since a value of 0 returned by
+.I
+input
+.R
+is taken to be end-of-file.
+.PP
+.2C
+.NH
+Ambiguous Source Rules.
+.PP
+Lex can handle ambiguous specifications.
+When more than one expression can match the
+current input, Lex chooses as follows:
+.IP 1)
+The longest match is preferred.
+.IP 2)
+Among rules which matched the same number of characters,
+the rule given first is preferred.
+.LP
+Thus, suppose the rules
+.TS
+center;
+l l.
+integer	keyword action ...;
+[a\-z]+	identifier action ...;
+.TE
+to be given in that order.  If the input is
+.I integers ,
+it is taken as an identifier, because
+.I [a\-z]+
+matches 8 characters while
+.I integer
+matches only 7.
+If the input is
+.I integer ,
+both rules match 7 characters, and
+the keyword rule is selected because it was given first.
+Anything shorter (e.g. \fIint\fR\|) will
+not match the expression
+.I integer
+and so the identifier interpretation is used.
+.PP
+The principle of preferring the longest
+match makes rules containing
+expressions like
+.I \&.\(**
+dangerous.
+For example,
+.TS
+center;
+l.
+\&\(fm.\(**\(fm
+.TE
+might seem a good way of recognizing
+a string in single quotes.
+But it is an invitation for the program to read far
+ahead, looking for a distant
+single quote.
+Presented with the input
+.TS
+center;
+l l.
+\&\(fmfirst\(fm quoted string here, \(fmsecond\(fm here
+.TE
+the above expression will match
+.TS
+center;
+l l.
+\&\(fmfirst\(fm quoted string here, \(fmsecond\(fm
+.TE
+which is probably not what was wanted.
+A better rule is of the form
+.TS
+center;
+l.
+\&\(fm[^\(fm\en]\(**\(fm
+.TE
+which, on the above input, will stop
+after
+.I \(fmfirst\(fm .
+The consequences
+of errors like this are mitigated by the fact
+that the
+.I \&.
+operator will not match newline.
+Thus expressions like
+.I \&.\(**
+stop on the
+current line.
+Don't try to defeat this with expressions like
+.I [.\en]+
+or
+equivalents;
+the Lex generated program will try to read
+the entire input file, causing
+internal buffer overflows.
+.PP
+Note that Lex is normally partitioning
+the input stream, not searching for all possible matches
+of each expression.
+This means that each character is accounted for
+once and only once.
+For example, suppose it is desired to
+count occurrences of both \fIshe\fR and \fIhe\fR in an input text.
+Some Lex rules to do this might be
+.TS
+center;
+l l.
+she	s++;
+he	h++;
+\en	|
+\&.	;
+.TE
+where the last two rules ignore everything besides \fIhe\fR and \fIshe\fR.
+Remember that . does not include newline.
+Since \fIshe\fR includes \fIhe\fR, Lex will normally
+.I
+not
+.R
+recognize
+the instances of \fIhe\fR included in \fIshe\fR,
+since once it has passed a \fIshe\fR those characters are gone.
+.PP
+Sometimes the user would like to override this choice.  The action
+REJECT
+means ``go do the next alternative.''
+It causes whatever rule was second choice after the current
+rule to be executed.
+The position of the input pointer is adjusted accordingly.
+Suppose the user really wants to count the included instances of \fIhe\fR:
+.TS
+center;
+l l.
+she	{s++; REJECT;}
+he	{h++; REJECT;}
+\en	|
+\&.	;
+.TE
+these rules are one way of changing the previous example
+to do just that.
+After counting each expression, it is rejected; whenever appropriate,
+the other expression will then be counted.  In this example, of course,
+the user could note that \fIshe\fR includes \fIhe\fR but not
+vice versa, and omit the REJECT action on \fIhe\fR;
+in other cases, however, it
+would not be possible a priori to tell
+which input characters
+were in both classes.
+.PP
+Consider the two rules
+.TS
+center;
+l l.
+a[bc]+	{ ... ; REJECT;}
+a[cd]+	{ ... ; REJECT;}
+.TE
+If the input is
+.I ab ,
+only the first rule matches,
+and on
+.I ad
+only the second matches.
+The input string
+.I accb
+matches the first rule for four characters
+and then the second rule for three characters.
+In contrast, the input
+.I accd
+agrees with
+the second rule for four characters and then the first
+rule for three.
+.PP
+In general, REJECT is useful whenever
+the purpose of Lex is not to partition the input
+stream but to detect all examples of some items
+in the input, and the instances of these items
+may overlap or include each other.
+Suppose a digram table of the input is desired;
+normally the digrams overlap, that is the word
+.I the
+is considered to contain
+both
+.I th
+and
+.I he .
+Assuming a two-dimensional array named
+.ul
+digram
+to be incremented, the appropriate
+source is
+.TS
+center;
+l l.
+%%
+[a\-z][a\-z]	{
+	digram[yytext[0]][yytext[1]]++;
+	REJECT;
+	}
+\.	;
+\en	;
+.TE
+where the REJECT is necessary to pick up
+a letter pair beginning at every character, rather than at every
+other character.
+.2C
+.NH
+Lex Source Definitions.
+.PP
+Remember the format of the Lex
+source:
+.TS
+center;
+l.
+{definitions}
+%%
+{rules}
+%%
+{user routines}
+.TE
+So far only the rules have been described.  The user needs
+additional options,
+though, to define variables for use in his program and for use
+by Lex.
+These can go either in the definitions section
+or in the rules section.
+.PP
+Remember that Lex is turning the rules into a program.
+Any source not intercepted by Lex is copied
+into the generated program.  There are three classes
+of such things.
+.IP 1)
+Any line which is not part of a Lex rule or action
+which begins with a blank or tab is copied into
+the Lex generated program.
+Such source input prior to the first %% delimiter will be external
+to any function in the code; if it appears immediately after the first
+%%,
+it appears in an appropriate place for declarations
+in the function written by Lex which contains the actions.
+This material must look like program fragments,
+and should precede the first Lex rule.
+.IP
+As a side effect of the above, lines which begin with a blank
+or tab, and which contain a comment,
+are passed through to the generated program.
+This can be used to include comments in either the Lex source or
+the generated code.  The comments should follow the host
+language convention.
+.IP 2)
+Anything included between lines containing
+only
+.I %{
+and
+.I %}
+is
+copied out as above.  The delimiters are discarded.
+This format permits entering text like preprocessor statements that
+must begin in column 1,
+or copying lines that do not look like programs.
+.IP 3)
+Anything after the third %% delimiter, regardless of formats, etc.,
+is copied out after the Lex output.
+.PP
+Definitions intended for Lex are given
+before the first %% delimiter.  Any line in this section
+not contained between %{ and %}, and begining
+in column 1, is assumed to define Lex substitution strings.
+The format of such lines is
+.TS
+cente >$tmpa
+.DE
+would cause the value of the variable \fBtmpa\fP
+to be substituted.
+.LP
+Except for \fB$?\fP the following
+are set initially by the shell.
+\fB$?\fP is set after executing each command.
+.RS
+.IP \fB$?\fP 8
+The exit status (return code)
+of the last command executed
+as a decimal string.
+Most commands return a zero exit status
+if they complete successfully,
+otherwise a non-zero exit status is returned.
+Testing the value of return codes is dealt with
+later under \fBif\fP and \fBwhile\fP commands.
+.IP \fB$#\fP 8
+The number of positional parameters
+(in decimal).
+Used, for example, in the \fIappend\fP command
+to check the number of parameters.
+.IP \fB$$\fP 8
+The process number of this shell (in decimal).
+Since process numbers are unique among
+all existing processes, this string is
+frequently used to generate
+unique
+temporary file names.
+For example,
+.DS
+	ps a >/tmp/ps$$
+	\*(ZZ
+	rm /tmp/ps$$
+.DE
+.IP \fB$\|!\fP 8
+The process number of the last process
+run in the background (in decimal).
+.IP \fB$\(mi\fP 8
+The current shell flags, such as
+\fB\(mix\fR and \fB\(miv\|.\fR
+.RE
+.LP
+Some variables have a special meaning to the
+shell and should be avoided for general
+use.
+.RS
+.IP \fB$\s-1MAIL\s0\fP 8
+When used interactively
+the shell looks at the file
+specified by this variable
+before it issues a prompt.
+If the specified file has been modified
+since it
+was last looked at the shell
+prints the message
+\fIyou have mail\fP before prompting
+for the next command.
+This variable is typically set
+in the file \fB.profile,\fP
+in the user's login directory.
+For example,
+.DS
+	\s-1MAIL\s0=/usr/spool/mail/fred
+.DE
+.IP \fB$\s-1HOME\s0\fP 8
+The default argument
+for the \fIcd\fP command.
+The current directory is used to resolve
+file name references that do not begin with
+a \fB/\|,\fR
+and is changed using the \fIcd\fP command.
+For example,
+.DS
+	cd /usr/fred/bin
+.DE
+makes the current directory \fB/usr/fred/bin\|.\fR
+.DS
+	cat wn
+.DE
+will print on the terminal the file \fIwn\fP
+in this directory.
+The command
+\fIcd\fP with no argument
+is equivalent to
+.DS
+	cd $\s-1HOME\s0
+.DE
+This variable is also typically set in the
+the user's login profile.
+.IP \fB$\s-1PATH\s0\fP 8
+A list of directories that contain commands (the \fIsearch path\fR\|).
+Each time a command is executed by the shell
+a list of directories is searched
+for an executable file.
+.ne 5
+If \fB$\s-1PATH\s0\fP is not set
+then the current directory,
+\fB/bin\fP, and \fB/usr/bin\fP are searched by default.
+.ne 5
+Otherwise \fB$\s-1PATH\s0\fP consists of directory
+names separated by \fB:\|.\fP
+For example,
+.DS
+	\s-1PATH\s0=\fB:\fP/usr/fred/bin\fB:\fP/bin\fB:\fP/usr/bin
+.DE
+specifies that the current directory
+(the null string before the first \fB:\fP\|),
+\fB/usr/fred/bin, /bin \fRand\fP /usr/bin\fR
+are to be searched in that order.
+In this way individual users
+can have their own `private' commands
+that are accessible independently
+of the current directory.
+If the command name contains a \fB/\fR then this directory search
+is not used; a single attempt
+is made to execute the command.
+.IP \fB$\s-1PS1\s0\fP 8
+The primary shell prompt string, by default, `\fB$\ \fR'.
+.IP \fB$\s-1PS2\s0\fP 8
+The shell prompt when further input is needed,
+by default, `\fB>\ \fR'.
+.IP \fB$\s-1IFS\s0\fP 8
+The set of characters used by \fIblank
+interpretation\fR (see section 3.4).
+.RE
+.SH
+2.5\ The\ test\ command
+.LP
+The \fItest\fP command, although not part of the shell,
+is intended for use by shell programs.
+For example,
+.DS
+	test \(mif file
+.DE
+returns zero exit status if \fIfile\fP
+exists and non-zero exit status otherwise.
+In general \fItest\fP evaluates a predicate
+and returns the result as its exit status.
+Some of the more frequently used \fItest\fP
+arguments are given here, see \fItest\fP (1)
+for a complete specification.
+.DS
+	test s		true if the argument \fIs\fP is not the null string
+	test \(mif file	true if \fIfile\fP exists
+	test \(mir file	true if \fIfile\fP is readable
+	test \(miw file	true if \fIfile\fP is writable
+	test \(mid file	true if \fIfile\fP is a directory
+.DE
+.SH
+2.6\ Control\ flow\ -\ while
+.LP
+The actions of
+the \fBfor\fP loop and the \fBcase\fP
+branch are determined by data available to the shell.
+A \fBwhile\fP or \fBuntil\fP loop
+and an \fBif then else\fP branch
+are also provided whose
+actions are determined by the exit status
+returned by commands.
+A \fBwhile\fP loop has the general form
+.DS
+	\fBwhile\fP \fIcommand-list\*1\fP
+	\fBdo\fP \fIcommand-list\*2\fP
+	\fBdone\fP
+.DE
+.LP
+The value tested by the \fBwhile\fP command
+is the exit status of the last simple command
+following \fBwhile.\fP
+Each time round the loop
+\fIcommand-list\*1\fP is executed;
+if a zero exit status is returned then
+\fIcommand-list\*2\fP
+is executed;
+otherwise, the loop terminates.
+For example,
+.DS
+	while test $1
+	do \*(ZZ
+	\*(DOshift
+	done
+.DE
+is equivalent to
+.DS
+	for i
+	do \*(ZZ
+	done
+.DE
+\fIshift\fP is a shell command that
+renames the positional parameters
+\fB$2, $3, \*(ZZ\fR as \fB$1, $2, \*(ZZ\fR
+and loses \fB$1\|.\fP
+.LP
+Another kind of use for the \fBwhile/until\fP
+loop is to wait until some
+external event occurs and then run
+some commands.
+In an \fBuntil\fP loop
+the termination condition is reversed.
+For example,
+.DS
+	until test \(mif file
+	do sleep 300; done
+	\fIcommands\fP
+.DE
+will loop until \fIfile\fP exists.
+Each time round the loop it waits for
+5 minutes before trying again.
+(Presumably another process
+will eventually create the file.)
+.SH
+2.7\ Control\ flow\ -\ if
+.LP
+Also available is a
+general conditional branch
+of the form,
+.DS
+	\fBif\fP \fIcommand-list
+	\fBthen	\fIcommand-list
+	\fBelse	\fIcommand-list
+	\fBfi\fR
+.DE
+that tests the value returned by the last simple command
+following \fBif.\fP
+.LP
+The \fBif\fP command may be used
+in conjunction with the \fItest\fP command
+to test for the existence of a file as in
+.DS
+	if test \(mif file
+	then	\fIprocess file\fP
+	else	\fIdo something else\fP
+	fi
+.DE
+.LP
+An example of the use of \fBif, case\fP
+and \fBfor\fP constructions is given in
+section 2.10\|.
+.LP
+A multiple test \fBif\fP command
+of the form
+.DS
+	if \*(ZZ
+	then	\*(ZZ
+	else	if \*(ZZ
+		then	\*(ZZ
+		else	if \*(ZZ
+			\*(ZZ
+			fi
+		fi
+	fi
+.DE
+may be written using an extension of the \fBif\fP
+notation as,
+.DS
+	if \*(ZZ
+	then	\*(ZZ
+	elif	\*(ZZ
+	then	\*(ZZ
+	elif	\*(ZZ
+	\*(ZZ
+	fi
+.DE
+.LP
+The following example is the \fItouch\fP command
+which changes the `last modified' time for a list
+of files.
+The command may be used in conjunction
+with \fImake\fP (1) to force recompilation of a list
+of files.
+.DS
+	flag=
+	for i
+	do case $i in
+	\*(DC\(mic)	flag=N ;;
+	\*(DC\*(ST)	if test \(mif $i
+	\*(DC	then	ln $i junk$$; rm junk$$
+	\*(DC	elif test $flag
+	\*(DC	then	echo file \\\\\'$i\\\\\' does not exist
+	\*(DC	else	>$i
+	\*(DC	fi
+	\*(DO esac
+	done
+.DE
+The \fB\(mic\fP flag is used in this command to
+force subsequent files to be created if they do not already exist.
+Otherwise, if the file does not exist, an error message is printed.
+The shell variable \fIflag\fP
+is set to some non-null string if the \fB\(mic\fP
+argument is encountered.
+The commands
+.DS
+	ln \*(ZZ; rm \*(ZZ
+.DE
+make a link to the file and then remove it
+thus causing the last modified date to be updated.
+.LP
+The sequence
+.DS
+	if command1
+	then	command2
+	fi
+.DE
+may be written
+.DS
+	command1 && command2
+.DE
+Conversely,
+.DS
+	command1 \*(VT\*(VT command2
+.DE
+executes \fIcommand2\fP only if \fIcommand1\fP
+fails.
+In each case the value returned
+is that of the last simple command executed.
+.SH
+2.8\ Command\ grouping
+.LP
+Commands may be grouped in two ways,
+.DS
+	\fB{\fI command-list\fB ; }\fR
+.DE
+and
+.DS
+	\fB(\fI command-list\fB )\fR
+.DE
+.LP
+In the first \fIcommand-list\fP is simply executed.
+The second form executes \fIcommand-list\fP
+as a separate process.
+For example,
+.DS
+	(cd x; rm junk )
+.DE
+executes \fIrm junk\fP in the directory
+\fBx\fP without changing the current
+directory of the invoking shell.
+.LP
+The commands
+.DS
+	cd x; rm junk
+.DE
+have the same effect but leave the invoking
+shell in the directory \fBx.\fP
+.SH
+2.9\ Debugging\ shell\ procedures
+.LP
+The shell provides two tracing mechanisms
+to help when debugging shell procedures.
+The first is invoked within the procedure
+as
+.DS
+	set \(miv
+r;
+l l.
+name translation
+.TE
+and it
+causes the string given as a translation to
+be associated with the name.
+The name and translation
+must be separated by at least one blank or tab, and the name must begin with a letter.
+The translation can then be called out
+by the {name} syntax in a rule.
+Using {D} for the digits and {E} for an exponent field,
+for example, might abbreviate rules to recognize numbers:
+.TS
+center;
+l l.
+D	[0\-9]
+E	[DEde][\-+]?{D}+
+%%
+{D}+	printf("integer");
+{D}+"."{D}\(**({E})?	|
+{D}\(**"."{D}+({E})?	|
+{D}+{E}		printf("real");
+.TE
+Note the first two rules for real numbers;
+both require a decimal point and contain
+an optional exponent field,
+but the first requires at least one digit before the
+decimal point and the second requires at least one
+digit after the decimal point.
+To correctly handle the problem
+posed by a Fortran expression such as
+.I 35.EQ.I ,
+which does not contain a real number, a context-sensitive
+rule such as
+.TS
+center;
+l l.
+[0\-9]+/"."EQ	printf("integer");
+.TE
+could be used in addition to the normal rule for integers.
+.PP
+The definitions
+section may also contain other commands, including the
+selection of a host language, a character set table,
+a list of start conditions, or adjustments to the default
+size of arrays within Lex itself for larger source programs.
+These possibilities
+are discussed below under ``Summary of Source Format,''
+section 12.
+.2C
+.NH
+Usage.
+.PP
+There are two steps in
+compiling a Lex source program.
+First, the Lex source must be turned into a generated program
+in the host general purpose language.
+Then this program must be compiled and loaded, usually with
+a library of Lex subroutines.
+The generated program
+is on a file named
+.I lex.yy.c .
+The I/O library is defined in terms of the C standard
+library [6].
+.PP
+The C programs generated by Lex are slightly different
+on OS/370, because the
+OS compiler is less powerful than the UNIX or GCOS compilers,
+and does less at compile time.
+C programs generated on GCOS and UNIX are the same.
+.PP
+.I
+UNIX.
+.R
+The library is accessed by the loader flag
+.I \-ll .
+So an appropriate
+set of commands is
+.KS
+.in 5
+lex source
+cc lex.yy.c \-ll
+.in 0
+.KE
+The resulting program is placed on the usual file
+.I
+a.out
+.R
+for later execution.
+To use Lex with Yacc see below.
+Although the default Lex I/O routines use the C standard library,
+the Lex automata themselves do not do so;
+if private versions of
+.I
+input,
+output
+.R
+and
+.I unput
+are given, the library can be avoided.
+.PP
+.2C
+.NH
+Lex and Yacc.
+.PP
+If you want to use Lex with Yacc, note that what Lex writes is a program
+named
+.I
+yylex(),
+.R
+the name required by Yacc for its analyzer.
+Normally, the default main program on the Lex library
+calls this routine, but if Yacc is loaded, and its main
+program is used, Yacc will call
+.I
+yylex().
+.R
+In this case each Lex rule should end with
+.TS
+center;
+l.
+return(token);
+.TE
+where the appropriate token value is returned.
+An easy way to get access
+to Yacc's names for tokens is to
+compile the Lex output file as part of
+the Yacc output file by placing the line
+.TS
+center;
+l.
+# include "lex.yy.c"
+.TE
+in the last section of Yacc input.
+Supposing the grammar to be
+named ``good'' and the lexical rules to be named ``better''
+the UNIX command sequence can just be:
+.TS
+center;
+l.
+yacc good
+lex better
+cc y.tab.c \-ly \-ll
+.TE
+The Yacc library (\-ly) should be loaded before the Lex library,
+to obtain a main program which invokes the Yacc parser.
+The generations of Lex and Yacc programs can be done in
+either order.
+.2C
+.NH
+Examples.
+.PP
+As a trivial problem, consider copying an input file while
+adding 3 to every positive number divisible by 7.
+Here is a suitable Lex source program
+.TS
+center;
+l l.
+%%
+	int k;
+[0\-9]+	{
+	k = atoi(yytext);
+	if (k%7 == 0)
+	     printf("%d", k+3);
+	else
+	     printf("%d",k);
+	}
+.TE
+to do just that.
+The rule [0\-9]+ recognizes strings of digits;
+.I
+atoi
+.R
+converts the digits to binary
+and stores the result in
+.ul
+k.
+The operator % (remainder) is used to check whether
+.ul
+k
+is divisible by 7; if it is,
+it is incremented by 3 as it is written out.
+It may be objected that this program will alter such
+input items as
+.I 49.63
+or
+.I X7 .
+Furthermore, it increments the absolute value
+of all negative numbers divisible by 7.
+To avoid this, just add a few more rules after the active one,
+as here:
+.TS
+center;
+l l.
+%%
+	int k;
+\-?[0\-9]+	{
+	k = atoi(yytext);
+	printf("%d",
+	  k%7 == 0 ? k+3 : k);
+	}
+\-?[0\-9.]+	ECHO;
+[A-Za-z][A-Za-z0-9]+	ECHO;
+.TE
+Numerical strings containing
+a ``.'' or preceded by a letter will be picked up by
+one of the last two rules, and not changed.
+The
+.I if\-else
+has been replaced by
+a C conditional expression to save space;
+the form
+.ul
+a?b:c
+means ``if
+.I a
+then
+.I b
+else
+.I c ''.
+.PP
+For an example of statistics gathering, here
+is a program which histograms the lengths
+of words, where a word is defined as a string of letters.
+.TS
+center;
+l l.
+	int lengs[100];
+%%
+[a\-z]+	lengs[yyleng]++;
+\&.	|
+\en	;
+%%
+.T&
+l s.
+yywrap()
+{
+int i;
+printf("Length  No. words\en");
+for(i=0; i<100; i++)
+     if (lengs[i] > 0)
+          printf("%5d%10d\en",i,lengs[i]);
+return(1);
+}
+.TE
+This program
+accumulates the histogram, while producing no output.  At the end
+of the input it prints the table.
+The final statement
+.I
+return(1);
+.R
+indicates that Lex is to perform wrapup.  If
+.I
+yywrap
+.R
+returns zero (false)
+it implies that further input is available
+and the program is
+to continue reading and processing.
+To provide a
+.I
+yywrap
+.R
+that never
+returns true causes an infinite loop.
+.PP
+As a larger example,
+here are some parts of a program written by N. L. Schryer
+to convert double precision Fortran to single precision Fortran.
+Because Fortran does not distinguish upper and lower case letters,
+this routine begins by defining a set of classes including
+both cases of each letter:
+.TS
+center;
+l l.
+a	[aA]
+b	[bB]
+c	[cC]
+\&...
+z	[zZ]
+.TE
+An additional class recognizes white space:
+.TS
+center;
+l l.
+W	[ \et]\(**
+.TE
+The first rule changes
+``double precision'' to ``real'', or ``DOUBLE PRECISION'' to ``REAL''.
+.TS
+center;
+l.
+{d}{o}{u}{b}{l}{e}{W}{p}{r}{e}{c}{i}{s}{i}{o}{n} {
+     printf(yytext[0]==\(fmd\(fm? "real" : "REAL");
+     }
+.TE
+Care is taken throughout this program to preserve the case
+(upper or lower)
+of the original program.
+The conditional operator is used to
+select the proper form of the keyword.
+The next rule copies continuation card indications to
+avoid confusing them with constants:
+.TS
+center;
+l l.
+^"     "[^ 0]	ECHO;
+.TE
+In the regular expression, the quotes surround the
+blanks.
+It is interpreted as
+``beginning of line, then five blanks, then
+anything but blank or zero.'' 
+Note the two different meanings of
+.I ^ .
+There follow some rules to change double precision
+constants to ordinary floating constants.
+.TS
+center;
+l.
+[0\-9]+{W}{d}{W}[+\-]?{W}[0\-9]+     |
+[0\-9]+{W}"."{W}{d}{W}[+\-]?{W}[0\-9]+     |
+"."{W}[0\-9]+{W}{d}{W}[+\-]?{W}[0\-9]+     {
+     /\(** convert constants \(**/
+     for(p=yytext; \(**p != 0; p++)
+          {
+          if (\(**p == \(fmd\(fm || \(**p == \(fmD\(fm)
+               \(**p=+ \(fme\(fm\- \(fmd\(fm;
+          ECHO;
+          }
+.TE
+After the floating point constant is recognized, it is
+scanned by the
+.ul
+for
+loop
+to find the letter
+.I d
+or
+.I D .
+The program than adds
+.c
+.I \(fme\(fm\-\(fmd\(fm ,
+which converts
+it to the next letter of the alphabet.
+The modified constant, now single-precision,
+is written out again.
+There follow a series of names which must be respelled to remove
+their initial \fId\fR.
+By using the
+array
+.I
+yytext
+.R
+the same action suffices for all the names (only a sample of
+a rather long list is given here).
+.TS
+center;
+l l.
+{d}{s}{i}{n}	|
+{d}{c}{o}{s}	|
+{d}{s}{q}{r}{t}	|
+{d}{a}{t}{a}{n}	|
+\&...
+{d}{f}{l}{o}{a}{t}	printf("%s",yytext+1);
+.TE
+Another list of names must have initial \fId\fR changed to initial \fIa\fR:
+.TS
+center;
+l l.
+{d}{l}{o}{g}	|
+{d}{l}{o}{g}10	|
+{d}{m}{i}{n}1	|
+{d}{m}{a}{x}1	{
+	yytext[0] =+ \(fma\(fm \- \(fmd\(fm;
+	ECHO;
+	}
+.TE
+And one routine
+must have initial \fId\fR changed to initial \fIr\fR:
+.TS
+center;
+l l.
+{d}1{m}{a}{c}{h}	{yytext[0] =+ \(fmr\(fm  \- \(fmd\(fm;
+		ECHO;
+		}
+.TE
+To avoid such name.\"	@(#)t3	6.1 (Berkeley) 5/22/86
+.\"
+.SH
+3.0\ Keyword\ parameters
+.LP
+Shell variables may be given values
+by assignment
+or when a shell procedure is invoked.
+An argument to a shell procedure of the form
+\fIname=value\fP
+that precedes the command name
+causes \fIvalue\fP
+to be assigned to \fIname\fP
+before execution of the procedure begins.
+The value of \fIname\fP in the invoking
+shell is not affected.
+For example,
+.DS
+	user=fred\ command
+.DE
+will execute \fIcommand\fP with
+\fBuser\fP set to \fIfred\fP.
+The \fB\(mik\fR flag causes arguments of the form
+\fIname=value\fP to be interpreted in this way
+anywhere in the argument list.
+Such \fInames\fP are sometimes
+called keyword parameters.
+If any arguments remain they
+are available as positional
+parameters \fB$1, $2, \*(ZZ\|.\fP
+.LP
+The \fIset\fP command
+may also be used to set positional parameters
+from within a procedure.
+For example,
+.DS
+	set\ \(mi\ \*(ST
+.DE
+will set \fB$1\fP to the first file name
+in the current directory, \fB$2\fP to the next,
+and so on.
+Note that the first argument, \(mi, ensures correct treatment
+when the first file name begins with a \(mi\|.
+.LP
+.SH
+3.1\ Parameter\ transmission
+.LP
+When a shell procedure is invoked both positional
+and keyword parameters may be supplied with the call.
+Keyword parameters are also made available implicitly
+to a shell procedure
+by specifying in advance that such parameters
+are to be exported.
+For example,
+.DS
+	export\ user\ box
+.DE
+marks the variables \fBuser\fP and \fBbox\fP
+for export.
+When a shell procedure is invoked
+copies are made of all exportable variables
+for use within the invoked procedure.
+Modification of such variables
+within the procedure does not
+affect the values in the invoking shell.
+It is generally true of
+a shell procedure
+that it
+may not modify the state
+of its caller without explicit
+request on the part of the caller.
+(Shared file descriptors are an
+exception to this rule.)
+.LP
+Names whose value is intended to remain
+constant may be declared \fIreadonly\|.\fP
+The form of this command is the same as that of the \fIexport\fP
+command,
+.DS
+	readonly name \*(ZZ
+.DE
+Subsequent attempts to set readonly variables
+are illegal.
+.SH
+3.2\ Parameter\ substitution
+.LP
+If a shell parameter is not set
+then the null string is substituted for it.
+For example, if the variable \fBd\fP
+is not set
+.DS
+	echo $d
+.DE
+or
+.DS
+	echo ${d}
+.DE
+will echo nothing.
+A default string may be given
+as in
+.DS
+	echo ${d\(mi\fB.\fR}
+.DE
+which will echo
+the value of the variable \fBd\fP
+if it is set and `\fB.\fP' otherwise.
+The default string is evaluated using the usual
+quoting conventions so that
+.DS
+	echo ${d\(mi\'\*(ST\'}
+.DE
+will echo \fB\*(ST\fP if the variable \fBd\fP
+is not set.
+Similarly
+.DS
+	echo ${d\(mi$1}
+.DE
+will echo the value of \fBd\fP if it is set
+and the value (if any) of \fB$1\fP otherwise.
+A variable may be assigned a default value
+using
+the notation
+.DS
+	echo ${d=\fB.\fR}
+.DE
+which substitutes the same string as
+.DS
+	echo ${d\(mi\fB.\fR}
+.DE
+and if \fBd\fP were not previously set
+then it will be set to the string `\fB.\fP'\|.
+(The notation ${\*(ZZ=\*(ZZ}
+is not available for positional parameters.)
+.LP
+If there is no sensible default then
+the notation
+.DS
+	echo ${d?message}
+.DE
+will echo the value of the variable \fBd\fP if it has
+one, otherwise \fImessage\fP is printed by the shell and
+execution of the shell procedure is abandoned.
+If \fImessage\fP is absent then a standard message
+is printed.
+A shell procedure that requires some parameters
+to be set might start as follows.
+.DS
+	:\ ${user?}\ ${acct?}\ ${bin?}
+	\*(ZZ
+.DE
+Colon (\fB:\fP) is a command
+that is
+built in to the shell and does nothing
+once its arguments have been evaluated.
+If any of the variables \fBuser, acct\fP
+or \fBbin\fP are not set then the shell
+will abandon execution of the procedure.
+.SH
+3.3\ Command\ substitution
+.LP
+The standard output from a command can be
+substituted in a similar way to parameters.
+The command \fIpwd\fP prints on its standard
+output the name of the current directory.
+For example, if the current directory is
+\fB/usr/fred/bin\fR
+then the command
+.DS
+	d=\`pwd\`
+.DE
+is equivalent to
+.DS
+	d=/usr/fred/bin
+.DE
+.LP
+The entire string between grave accents (\`\*(ZZ\`)
+is taken as the command
+to be executed
+and is replaced with the output from
+the command.
+The command is written using the usual
+quoting conventions
+except that a \fB\`\fR must be escaped using
+a \fB\\\|.\fR
+For example,
+.DS
+	ls \`echo "$1"\`
+.DE
+is equivalent to
+.DS
+	ls $1
+.DE
+Command substitution occurs in all contexts
+where parameter substitution occurs (including \fIhere\fP documents) and the
+treatment of the resulting text is the same
+in both cases.
+This mechanism allows string
+processing commands to be used within
+shell procedures.
+An example of such a command is \fIbasename\fP
+which removes a specified suffix from a string.
+For example,
+.DS
+	basename main\fB.\fPc \fB.\fPc
+.DE
+will print the string \fImain\|.\fP
+Its use is illustrated by the following
+fragment from a \fIcc\fP command.
+.DS
+	case $A in
+	\*(Ca\*(ZZ
+	\*(Ca\*(ST\fB.\fPc)	B=\`basename $A \fB.\fPc\`
+	\*(Ca\*(ZZ
+	esac
+.DE
+that sets \fBB\fP to the part of \fB$A\fP
+with the suffix \fB.c\fP stripped.
+.LP
+Here are some composite examples.
+.RS
+.IP \(bu
+.ft B
+for i in \`ls \(mit\`; do \*(ZZ
+.ft R
+.br
+The variable \fBi\fP is set
+to the names of files in time order,
+most recent first.
+.IP \(bu
+.ft B
+set \`date\`; echo $6 $2 $3, $4
+.ft R
+.br
+will print, e.g.,
+.ft I
+1977 Nov 1, 23:59:59
+.ft R
+.RE
+.SH
+3.4\ Evaluation\ and\ quoting
+.LP
+The shell is a macro processor that
+provides parameter substitution, command substitution and file
+name generation for the arguments to commands.
+This section discusses the order in which
+these evaluations occur and the
+effects of the various quoting mechanisms.
+.LP
+Commands are parsed initially according to the grammar
+given in appendix A.
+Before a command is executed
+the following
+substitutions occur.
+.RS
+.IP \(bu
+parameter substitution, e.g. \fB$user\fP
+.IP \(bu
+command substitution, e.g. \fB\`pwd\`\fP
+.RS
+.LP
+Only one evaluation occurs so that if, for example, the value of the variable
+\fBX\fP
+is the string \fI$y\fP
+then
+.DS
+	echo $X
+.DE
+will echo \fI$y\|.\fP
+.RE
+.IP \(bu
+blank interpretation
+.RS
+.LP
+Following the above substitutions
+the resulting characters
+are broken into non-blank words (\fIblank interpretation\fP).
+For this purpose `blanks' are the characters of the string
+\fB$\s-1IFS\s0\fP.
+By default, this string consists of blank, tab and newline.
+The null string
+is not regarded as a word unless it is quoted.
+For example,
+.DS
+	echo \'\'
+.DE
+will pass on the null string as the first argument to \fIecho\fP,
+whereas
+.DS
+	echo $null
+.DE
+will call \fIecho\fR with no arguments
+if the variable \fBnull\fP is not set
+or set to the null string.
+.RE
+.IP \(bu
+file name generation
+.RS
+.LP
+Each word
+is then scanned for the file pattern characters
+\fB\*(ST, ?\fR and \fB[\*(ZZ]\fR
+and an alphabetical list of file names
+is generated to replace the word.
+Each such file name is a separate argument.
+.RE
+.RE
+.LP
+The evaluations just described also occur
+in the list of words associated with a \fBfor\fP
+loop.
+Only substitution occurs
+in the \fIword\fP used
+for a \fBcase\fP branch.
+.LP
+As well as the quoting mechanisms described
+earlier using \fB\\\fR and \fB\'\*(ZZ\'\fR
+a third quoting mechanism is provided using double quotes.
+Within double quotes parameter and command substitution
+occurs but file name generation and the interpretation
+of blanks does not.
+The following characters
+have a special meaning within double quotes
+and may be quoted using \fB\\\|.\fP
+.DS
+	\fB$	\fPparameter substitution
+	\fB\`\fP	command substitution
+	\fB"\fP	ends the quoted string
+	\fB\e\fP	quotes the special characters \fB$ \` " \e\fP
+.DE
+For example,
+.DS
+	echo "$x"
+.DE
+will pass the value of the variable \fBx\fP as a
+single argument to \fIecho.\fP
+Similarly,
+.DS
+	echo "$\*(ST"
+.DE
+will pass the positional parameters as a single
+argument and is equivalent to
+.DS
+	echo "$1 $2 \*(ZZ"
+.DE
+The notation \fB$@\fP
+is the same as \fB$\*(ST\fR
+except when it is quoted.
+.DS
+	echo "$@"
+.DE
+will pass the positional parameters, unevaluated, to \fIecho\fRs as \fIdsinx\fR being detected as instances
+of \fIdsin\fR, some final rules pick up longer words as identifiers
+and copy some surviving characters:
+.TS
+center;
+l l.
+[A\-Za\-z][A\-Za\-z0\-9]\(**	|
+[0\-9]+	|
+\en	|
+\&.	ECHO;
+.TE
+Note that this program is not complete; it
+does not deal with the spacing problems in Fortran or
+with the use of keywords as identifiers.
+.br
+.2C
+.NH
+Left Context Sensitivity.
+.PP
+Sometimes
+it is desirable to have several sets of lexical rules
+to be applied at different times in the input.
+For example, a compiler preprocessor might distinguish
+preprocessor statements and analyze them differently
+from ordinary statements.
+This requires
+sensitivity
+to prior context, and there are several ways of handling
+such problems.
+The \fI^\fR operator, for example, is a prior context operator,
+recognizing immediately preceding left context just as \fI$\fR recognizes
+immediately following right context.
+Adjacent left context could be extended, to produce a facility similar to
+that for adjacent right context, but it is unlikely
+to be as useful, since often the relevant left context
+appeared some time earlier, such as at the beginning of a line.
+.PP
+This section describes three means of dealing
+with different environments: a simple use of flags,
+when only a few rules change from one environment to another,
+the use of
+.I
+start conditions
+.R
+on rules,
+and the possibility of making multiple lexical analyzers all run
+together.
+In each case, there are rules which recognize the need to change the
+environment in which the
+following input text is analyzed, and set some parameter
+to reflect the change.  This may be a flag explicitly tested by
+the user's action code; such a flag is the simplest way of dealing
+with the problem, since Lex is not involved at all.
+It may be more convenient,
+however,
+to have Lex remember the flags as initial conditions on the rules.
+Any rule may be associated with a start condition.  It will only
+be recognized when Lex is in
+that start condition.
+The current start condition may be changed at any time.
+Finally, if the sets of rules for the different environments
+are very dissimilar,
+clarity may be best achieved by writing several distinct lexical
+analyzers, and switching from one to another as desired.
+.PP
+Consider the following problem: copy the input to the output,
+changing the word \fImagic\fR to \fIfirst\fR on every line which began
+with the letter \fIa\fR, changing \fImagic\fR to \fIsecond\fR on every line
+which began with the letter \fIb\fR, and changing
+\fImagic\fR to \fIthird\fR on every line which began
+with the letter \fIc\fR.  All other words and all other lines
+are left unchanged.
+.PP
+These rules are so simple that the easiest way
+to do this job is with a flag:
+.TS
+center;
+l l.
+	int flag;
+%%
+^a	{flag = \(fma\(fm; ECHO;}
+^b	{flag = \(fmb\(fm; ECHO;}
+^c	{flag = \(fmc\(fm; ECHO;}
+\en	{flag =  0 ; ECHO;}
+magic	{
+	switch (flag)
+	{
+	case \(fma\(fm: printf("first"); break;
+	case \(fmb\(fm: printf("second"); break;
+	case \(fmc\(fm: printf("third"); break;
+	default: ECHO; break;
+	}
+	}
+.TE
+should be adequate.
+.PP
+To handle the same problem with start conditions, each
+start condition must be introduced to Lex in the definitions section
+with a line reading
+.TS
+center;
+l l.
+%Start	name1 name2 ...
+.TE
+where the conditions may be named in any order.
+The word \fIStart\fR may be abbreviated to \fIs\fR or \fIS\fR.
+The conditions may be referenced at the
+head of a rule with the <> brackets:
+.TS
+center;
+l.
+<name1>expression
+.TE
+is a rule which is only recognized when Lex is in the
+start condition \fIname1\fR.
+To enter a start condition,
+execute the action statement
+.TS
+center;
+l.
+BEGIN name1;
+.TE
+which changes the start condition to \fIname1\fR.
+To resume the normal state,
+.TS
+center;
+l.
+BEGIN 0;
+.TE
+resets the initial condition
+of the Lex automaton interpreter.
+A rule may be active in several
+start conditions:
+.TS
+center;
+l.
+<name1,name2,name3>
+.TE
+is a legal prefix.  Any rule not beginning with the
+<> prefix operator is always active.
+.PP
+The same example as before can be written:
+.TS
+center;
+l l.
+%START AA BB CC
+%%
+^a	{ECHO; BEGIN AA;}
+^b	{ECHO; BEGIN BB;}
+^c	{ECHO; BEGIN CC;}
+\en	{ECHO; BEGIN 0;}
+<AA>magic	printf("first");
+<BB>magic	printf("second");
+<CC>magic	printf("third");
+.TE
+where the logic is exactly the same as in the previous
+method of handling the problem, but Lex does the work
+rather than the user's code.
+.2C
+.NH
+Character Set.
+.PP
+The programs generated by Lex handle
+character I/O only through the routines
+.I
+input,
+output,
+.R
+and
+.I
+unput.
+.R
+Thus the character representation
+provided in these routines
+is accepted by Lex and employed to return
+values in
+.I
+yytext.
+.R
+For internal use
+a character is represented as a small integer
+which, if the standard library is used,
+has a value equal to the integer value of the bit
+pattern representing the character on the host computer.
+Normally, the letter
+.I a
+is represented as the same form as the character constant
+.I \(fma\(fm .
+If this interpretation is changed, by providing I/O
+routines which translate the characters,
+Lex must be told about
+it, by giving a translation table.
+This table must be in the definitions section,
+and must be bracketed by lines containing  only
+``%T''.
+The table contains lines of the form
+.TS
+center;
+l.
+{integer} {character string}
+.TE
+which indicate the value associated with each character.
+Thus the next example
+.GS 2
+.TS
+center;
+l l.
+%T
+ 1	Aa
+ 2	Bb
+\&...
+26	Zz
+27	\en
+28	+
+29	\-
+30	0
+31	1
+\&...
+39	9
+%T
+.TE
+.sp
+.ce 1
+Sample character table.
+.GE
+maps the lower and upper case letters together into the integers 1 through 26,
+newline into 27, + and \- into 28 and 29, and the
+digits into 30 through 39.
+Note the escape for newline.
+If a table is supplied, every character that is to appear either
+in the rules or in any valid input must be included
+in the table.
+No character
+may be assigned the number 0, and no character may be
+assigned a bigger number than the size of the hardware character set.
+.2C
+.NH
+Summary of Source Format.
+.PP
+The general form of a Lex source file is:
+.TS
+center;
+l.
+{definitions}
+%%
+{rules}
+%%
+{user subroutines}
+.TE
+The definitions section contains
+a combination of
+.IP 1)
+Definitions, in the form ``name space translation''.
+.IP 2)
+Included code, in the form ``space code''.
+.IP 3)
+Included code, in the form
+.TS
+center;
+l.
+%{
+code
+%}
+.TE
+.ns
+.IP 4)
+Start conditions, given in the form
+.TS
+center;
+l.
+%S name1 name2 ...
+.TE
+.ns
+.IP 5)
+Character set tables, in the form
+.TS
+center;
+l.
+%T
+number space character-string
+\&...
+%T
+.TE
+.ns
+.IP 6)
+Changes to internal array sizes, in the form
+.TS
+center;
+l.
+%\fIx\fR\0\0\fInnn\fR
+.TE
+where \fInnn\fR is a decimal integer representing an array size
+and \fIx\fR selects the parameter as follows:
+.TS
+center;
+c c
+c l.
+Letter	Parameter
+p	positions
+n	states
+e	tree nodes
+a	transitions
+k	packed character classes
+o	output array size
+.TE
+.LP
+Lines in the rules section have the form ``expression  action''
+where the action may be continued on succeeding
+lines by using braces to delimit it.
+.PP
+Regular expressions in Lex use the following
+operators:
+.br
+.TS
+center;
+l l.
+x	the character "x"
+"x"	an "x", even if x is an operator.
+\ex	an "x", even if x is an operator.
+[xy]	the character x or y.
+[x\-z]	the characters x, y or z.
+[^x]	any character but x.
+\&.	any character but newline.
+^x	an x at the beginning of a line.
+<y>x	an x when Lex is in start condition y.
+x$	an x at the end of a line.
+x?	an optional x.
+x\(**	0,1,2, ... instances of x.
+x+	1,2,3, ... instances of x.
+x|y	an x or a y.
+(x)	an x.
+x/y	an x but only if followed by y.
+{xx}	the translation of xx from the
+	definitions section.
+x{m,n}	\fIm\fR through \fIn\fR occurrences of x
+.TE
+.NH
+Caveats and Bugs.
+.PP
+There are pathological expressions which
+produce exponential growth of the tables when
+converted to deterministic machines;
+fortunately, they are rare.
+.PP
+REJECT does not rescan the input; instead it remembers the results of the previous
+scan.  This means that if a rule with trailing context is found, and
+REJECT executed, the user
+must not have used
+.ul
+unput
+to change the characters forthcoming
+from the input stream.
+This is the only restric
+and is equivalent to
+.DS
+	echo "$1" "$2" \*(ZZ
+.DE
+.LP
+The following table gives, for each quoting mechanism,
+the shell metacharacters that are evaluated.
+.DS
+.ce
+.ft I
+metacharacter
+.ft
+.in 1.5i
+	\e	$	*	\`	"	\'
+\'	n	n	n	n	n	t
+\`	y	n	n	t	n	n
+"	y	y	n	y	t	n
+
+	t	terminator
+	y	interpreted
+	n	not interpreted
+
+.in
+.ft B
+.ce
+Figure 2. Quoting mechanisms
+.ft
+.DE
+.LP
+In cases where more than one evaluation of a string
+is required the built-in command \fIeval\fP
+may be used.
+For example,
+if the variable \fBX\fP has the value
+\fI$y\fP, and if \fBy\fP has the value \fIpqr\fP
+then
+.DS
+	eval echo $X
+.DE
+will echo the string \fIpqr\|.\fP
+.LP
+In general the \fIeval\fP command
+evaluates its arguments (as do all commands)
+and treats the result as input to the shell.
+The input is read and the resulting command(s)
+executed.
+For example,
+.DS
+	wg=\\'eval who\*(VTgrep\\'
+	$wg fred
+.DE
+is equivalent to
+.DS
+	who\*(VTgrep fred
+.DE
+In this example,
+\fIeval\fP is required
+since there is no interpretation
+of metacharacters, such as \fB\*(VT\|,\fP following
+substitution.
+.SH
+3.5\ Error\ handling
+.LP
+The treatment of errors detected by
+the shell depends on the type of error
+and on whether the shell is being
+used interactively.
+An interactive shell is one whose
+input and output are connected
+to a terminal (as determined by
+\fIgtty\fP (2)).
+A shell invoked with the \fB\(mii\fP
+flag is also interactive.
+.LP
+Execution of a command (see also 3.7) may fail
+for any of the following reasons.
+.IP \(bu
+Input output redirection may fail.
+For example, if a file does not exist
+or cannot be created.
+.IP \(bu
+The command itself does not exist
+or cannot be executed.
+.IP \(bu
+The command terminates abnormally,
+for example, with a "bus error"
+or "memory fault".
+See Figure 2 below for a complete list
+of UNIX signals.
+.IP \(bu
+The command terminates normally
+but returns a non-zero exit status.
+.LP
+In all of these cases the shell
+will go on to execute the next command.
+Except for the last case an error
+message will be printed by the shell.
+All remaining errors cause the shell
+to exit from a command procedure.
+An interactive shell will return
+to read another command from the terminal.
+Such errors include the following.
+.IP \(bu
+Syntax errors.
+e.g., if \*(ZZ then \*(ZZ done
+.IP \(bu
+A signal such as interrupt.
+The shell waits for the current
+command, if any, to finish execution and
+then either exits or returns to the terminal.
+.IP \(bu
+Failure of any of the built-in commands
+such as \fIcd.\fP
+.LP
+The shell flag \fB\(mie\fP
+causes the shell to terminate
+if any error is detected.
+.DS
+1	hangup
+2	interrupt
+3*	quit
+4*	illegal instruction
+5*	trace trap
+6*	IOT instruction
+7*	EMT instruction
+8*	floating point exception
+9	kill (cannot be caught or ignored)
+10*	bus error
+11*	segmentation violation
+12*	bad argument to system call
+13	write on a pipe with no one to read it
+14	alarm clock
+15	software termination (from \fIkill\fP (1))
+
+.DE
+.ft B
+.ce
+Figure 3. UNIX signals\(dg
+.ft
+.FS
+\(dg Additional signals have been added in Berkeley Unix.  See sigvec(2) or signal(3C)
+for an up-to-date list.
+.FE
+Those signals marked with an asterisk
+produce a core dump
+if not caught.
+However,
+the shell itself ignores quit which is the only
+external signal that can cause a dump.
+The signals in this list of potential interest
+to shell programs are 1, 2, 3, 14 and 15.
+.SH
+3.6\ Fault\ handling
+.LP
+Shell procedures normally terminate
+when an interrupt is received from the
+terminal.
+The \fItrap\fP command is used
+if some cleaning up is required, such
+as removing temporary files.
+For example,
+.DS
+	trap\ \'rm\ /tmp/ps$$; exit\'\ 2
+.DE
+sets a trap for signal 2 (terminal
+interrupt), and if this signal is received
+will execute the commands
+.DS
+	rm /tmp/ps$$; exit
+.DE
+\fIexit\fP is
+another built-in command
+that terminates execution of a shell procedure.
+The \fIexit\fP is required; otherwise,
+after the trap has been taken,
+the shell will resume executing
+the procedure
+at the place where it was interrupted.
+.LP
+UNIX signals can be handled in one of three ways.
+They can be ignored, in which case
+the signal is never sent to the process.
+They can be caught, in which case the process
+must decide what action to take when the
+signal is received.
+Lastly, they can be left to cause
+termination of the process without
+it having to take any further action.
+If a signal is being ignored
+on entry to the shell procedure, for example,
+by invoking it in the background (see 3.7) then \fItrap\fP
+commands (and the signal) are ignored.
+.LP
+The use of \fItrap\fP is illustrated
+by this modified version of the \fItouch\fP
+command (Figure 4).
+The cleanup action is to remove the file \fBjunk$$\fR\|.
+.DS
+	flag=
+	trap\ \'rm\ \(mif\ junk$$;\ exit\'\ 1 2 3 15
+	for i
+	do\ case\ $i\ in
+	\*(DC\(mic)	flag=N ;;
+	\*(DC\*(ST)	if\ test\ \(mif\ $i
+	\*(DC	then	ln\ $i\ junk$$;\ rm\ junk$$
+	\*(DC	elif\ test\ $flag
+	\*(DC	then	echo\ file\ \\\\\'$i\\\\\'\ does\ not\ exist
+	\*(DC	else	>$i
+	\*(DC	fi
+	\*(DOesac
+	done
+.DE
+.sp
+.ft B
+.ce
+Figure 4. The touch command
+.ft
+.sp
+The \fItrap\fP command
+appears before the creation
+of the temporary file;
+otherwise it would be
+possible for the process
+to die without removing
+the file.
+.LP
+Since there is no signal 0 in UNIX
+it is used by the shell to indicate the
+commands to be executed on exit from the
+shell procedure.
+.LP
+A procedure may, itself, elect to
+ignore signals by specifying the null
+string as the argument to trap.
+The following fragment is taken from the
+\fInohup\fP command.
+.DS
+	trap \'\' 1 2 3 15
+.DE
+which causes \fIhangup, interrupt, quit \fRand\fI kill\fR
+to be ignored both by the
+procedure and by invoked commands.
+.LP
+Traps may be reset by saying
+.DS
+	trap 2 3
+.DE
+which resets the traps for signals 2 and 3 to their default values.
+A list of the current values of traps may be obtained
+by writing
+.DS
+	trap
+.DE
+.LP
+The procedure \fIscan\fP (Figure 5) is an example
+of the use of \fItrap\fP where there is no exit
+in the trap command.
+\fIscan\fP takes each directory
+in the current directory, prompts
+with its name, and then executes
+commands typed at the terminal
+until an end of file or an interrupt is received.
+Interrupts are ignored while executing
+the requested commands but cause
+termination when \fIscan\fP is
+waiting for input.
+.DS
+	d=\`pwd\`
+	for\ i\ in\ \*(ST
+	do\ if\ test\ \(mid\ $d/$i
+	\*(DOthen\ cd\ $d/$i
+	\*(DO\*(THwhile\ echo\ "$i:"
+	\*(DO\*(TH\*(WHtrap\ exit\ 2
+	\*(DO\*(TH\*(WHread\ x
+	\*(DO\*(THdo\ trap\ :\ 2;\ eval\ $x;\ done
+	\*(DOfi
+	done
+.DE
+.sp
+.ft B
+.ce
+Figure 5. The scan command
+.ft
+.sp
+\fIread x\fR is a built-in command that reads one line from the
+standard input
+and places the result in the variable \fBx\|.\fP
+It returns a non-zero exit status if either
+an end-of-file is read or an interrupt
+is received.
+.SH
+3.7\ Command\ execution
+.LP
+To run a command (other than a built-in) the shell first creates
+a new process using the system call \fIfork.\fP
+The execution environment for the command
+includes input, output and the states of signals, and
+is established in the child process
+before the command is executed.
+The built-in command \fIexec\fP
+is used in the rare cases when no fork
+is required
+and simply replaces the shell with a new command.
+For example, a simple version of the \fInohup\fP
+command looks like
+.DS
+	trap \\'\\' 1 2 3 15
+	exec $\*(ST
+.DE
+The \fItrap\fP turns off the signals specified
+so that they are ignored by subsequently created commands
+and \fIexec\fP replaces the shell by the command
+specified.
+.LP
+Most forms of input output redirection have already been
+described.
+In the following \fIword\fP is only subject
+to parameter and command substitution.
+No file name generation or blank interpretation
+takes place so that, for example,
+.DS
+		echo \*(ZZ >\*(ST.c
+.DE
+will write its output into a file whose name is \fB\*(ST.c\|.\fP
+Input output specifications are evaluated left to right
+as they appear in the command.
+.IP >\ \fIword\fP 12
+The standard output (file descriptor 1)
+is sent to the file \fIword\fP which is
+created if it does not already exist.
+.IP \*(AP\ \fIword\fP 12
+The standard output is sent to file \fIword.\fP
+If the file exists then output is appended
+(by seeking to the end);
+otherwise the file.\"	@(#)m.mac	6.1 (Berkeley) 4/17/86
+.\"
+.if \n(mo=1 .ds mo January
+.if \n(mo=2 .ds mo February
+.if \n(mo=3 .ds mo March
+.if \n(mo=4 .ds mo April
+.if \n(mo=5 .ds mo May
+.if \n(mo=6 .ds mo June
+.if \n(mo=7 .ds mo July
+.if \n(mo=8 .ds mo August
+.if \n(mo=9 .ds mo September
+.if \n(mo=10 .ds mo October
+.if \n(mo=11 .ds mo November
+.if \n(mo=12 .ds mo December
+.if \n(dw=1 .ds dw Sunday
+.if \n(dw=2 .ds dw Monday
+.if \n(dw=3 .ds dw Tuesday
+.if \n(dw=4 .ds dw Wednesday
+.if \n(dw=5 .ds dw Thursday
+.if \n(dw=6 .ds dw Friday
+.if \n(dw=7 .ds dw Saturday
+.\"
+.bd S B 3
+.ds NR "\s-1NROFF\s+1
+.ds TR "\s-1TROFF\s+1
+.ds Nr "N\s-2ROFF\s+2
+.ds Tr "T\s-2ROFF\s+2
+.nr PS 10
+.hy14
+.ds u \v'-0.3m'\s-2
+.ds d \s0\v'0.3m'
+.nr a .8i
+.nr b 1.6i
+.nr c 2.4i
+.nr d 2.9i
+.nr e 0.25i
+.nr p 0 1
+.nr s 0 1
+.af p 1
+.af s 1
+.nr m -1i
+.nr x 0 1
+.nr y 0+\nmu
+.ev1
+.ps \n(PS-2
+.vs \n(PS
+.ll6.5i
+'in 0
+.ev
+.tr &.
+.de xx
+.sp 0.4
+..
+.de ht
+.tl `\*(Nr/\*(Tr User's Manual``USD:24-%`
+.\" .tl 'updated to May 15, 1977'''\".tl 'Version \n(mo/\n(dy/\n(yr'''
+..
+.de he
+.tl `USD:24-%``\*(Nr/\*(Tr User's Manual`
+.\" .tl 'updated to May 15, 1977'''\".tl 'Version \n(mo/\n(dy/\n(yr'''
+..
+.de hd
+.\".tl '\(rn'''
+.if \\n%>1 \{'sp |.30i
+.if e .he
+.if o .ht
+.ps \\n(S2
+.ps \\n(S1
+.ft
+'sp |.9i\}
+.nr x 0 1
+.nr y 0+\\nmu
+.ch fo \\nmu
+.if \\n(dn .fz
+.ns
+.mx
+.nr cl 0 1
+.mk
+..
+.de fz
+.fn
+.nf
+.fy
+.fi
+.ef
+..
+.de fx
+.if \\nx .di fy
+..
+.de fo
+.cx
+.nr dn 0
+.if \\nx .xf
+.nr x 0 \"disable fx
+.ie \\n(2C&(\\n+(cl<2) \{\
+.po +3.4i
+.rt
+.nr y 0+\\nmu
+.ch fo \\nmu
+.if \\n(dn .fz
+.ns \}
+.el \{\
+.po 26i/27u
+.nr S1 \\n(.s
+.ps
+.nr S2 \\n(.s
+.ps 10
+'bp \}
+..
+.de 2C
+.br
+.mk
+.nr 2C 1
+.ll 3.1i
+.ev 1
+.ll 3.1i
+.ev
+..
+.de 1C
+.br
+.nr 2C 0
+.ll 6.5i
+.ev1
+.ll 6.5i
+.ev
+..
+.de co
+.de cx
+.br
+\fI(Continued next page.)\fP
+.br
+.rm cx
+\\..
+..
+.de pp
+'ps \\n(PS
+.ftR
+.\"'tl ''- % -''
+'bp
+..
+.wh 0 hd
+.wh 12i fo
+.wh \nmu fx
+.ch fo \nmu
+.de fn
+.da FN
+.ev1
+.if \\n+x=1 .fs
+.fi
+.ti0
+..
+.de xf
+.ev1
+.nf
+.FN
+.rm FN
+.di
+.ev
+..
+.de fs
+.ti0
+\l'1i'
+.br
+..
+.de ef
+.br
+.ev
+.di
+.nr y -\\n(dn
+.if \\nx=1 .nr y -2p
+.ch fo \\nyu
+.if \\n(nl+\\n(.v-\\n(.p-\\ny .ch fo \\n(nlu+\\n(.vu
+..
+.wh -.6i pp
+.de h1
+.xx
+.ne 5
+.nf
+.ta \\nau \\nbu \\ncu \\ndu +\\neu
+.ft I
+.bd I 3
+Request	Initial	If No
+Form	Value\\$2	Argument	Notes\\$1	Explanation
+.bd I
+.ft R
+.ft
+.fi
+.in \\ndu
+..
+.de bt
+.ftR
+.xx
+.ne 1.1
+.ti0
+..
+.de b1
+.br
+.ti0
+..
+.de pg
+.ft R
+.fi
+.in0
+.xx
+.ne 1.1
+..
+.de sc
+.pg
+\fI\\*H\\np.\\n+s.\|\\c
+.ftR
+.ul
+..
+.de mh
+.nr s 0
+.in0
+.xx
+.ne 2.5
+.ft B
+\\*H\\n+p.
+..
+.de x1
+.xx
+.in.5i
+.nf
+..
+.de x2
+.xx
+.in0
+.fi
+..
+.de EM
+.br
+\&\c
+'bp
+.pl2i
+..
+.em EM
+.de TS
+.sp
+..
+.de TE
+.sp
+.ce 0
+.ft R
+.ps \n(PS
+.ta \\nau \\nbu \\ncu \\ndu +\\neu
+..
+                                                                                                                                                                                                                                                                                                                                                                                                                                                           #
+# Copyright (c) 1986 Regents of the University of California.
+# All rights reserved.  The Berkeley software License Agreement
+# specifies the terms and conditions for redistribution.
+#
+#	@(#)Makefile	6.3 (Berkeley) 4/21/86
+#
+INTRO=	m0
+TUTOR=	m0a
+PAPER=	m1 m2 m3 m4
+APNDX1=	m5
+APNDX2=	table1
+APNDX3=	table2
+MACROS=	m.mac
+PRINTER=Pdp
+TBL=	dtbl -${PRINTER}
+TROFF=	ditroff -${PRINTER}
+LPR=	lpr -n -${PRINTER}
+
+paper:	intro.${PRINTER} tutor.${PRINTER} paper.${PRINTER}
+paper:	apndx1.${PRINTER} apndx2.${PRINTER} apndx3.${PRINTER} 
+	${LPR} intro.${PRINTER}
+	${LPR} tutor.${PRINTER}
+	${LPR} paper.${PRINTER}
+	${LPR} apndx1.${PRINTER}
+	${LPR} apndx2.${PRINTER}
+	${LPR} apndx3.${PRINTER}
+
+intro.${PRINTER}: ${INTRO}
+	${TROFF} -t ${MACROS} ${INTRO} > intro.${PRINTER}
+
+tutor.${PRINTER}: ${TUTOR}
+	${TBL} ${TUTOR} | ${TROFF} -t ${MACROS} - > tutor.${PRINTER}
+
+paper.${PRINTER}: ${PAPER}
+	${TBL} ${PAPER} | ${TROFF} -t ${MACROS} - > paper.${PRINTER}
+
+apndx1.${PRINTER}: ${APNDX1}
+	${TROFF} -t ${MACROS} ${APNDX1} > apndx1.${PRINTER}
+
+apndx2.${PRINTER}: ${APNDX2}
+	${TROFF} -t ${MACROS} ${APNDX2} > apndx2.${PRINTER}
+
+apndx3.${PRINTER}: ${APNDX3}
+	${TROFF} -t ${MACROS} ${APNDX3} > apndx3.${PRINTER}
+
+clean:
+	rm -f intro.${PRINTER} tutor.${PRINTER} paper.${PRINTER} \
+		apndx1.${PRINTER} apndx2.${PRINTER} apndx3.${PRINTER} \
+		*.spell errs Errs make.out
+
+spell:	${INTRO} ${TUTOR} ${PAPER} ${APNDX1} ${APNDX2} ${APNDX3}
+	@for i in ${INTRO} ${TUTOR} ${PAPER} ${APNDX1} ${APNDX2} ${APNDX3}; do \
+		echo $$i; spell $$i | sort | comm -23 - spell.ok > $$i.spell; \
+	done
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             .\"	@(#)add	6.1 (Berkeley) 4/17/86
+.\"
+.nr i 1i
+.de H
+'sp |.5i-1
+.tl 'May 15, 1977'''
+'sp |1i
+..
+.de F
+'bp
+..
+.wh 0 H
+.wh -1i F
+.de pp
+.ft R
+.sp
+.ti 0
+..
+.de h
+.sp
+.ti0
+\fB\\$1\fP
+.br
+..
+.ce
+.ftB
+Summary of Changes to N/TROFF Since October 1976 Manual
+.ft
+.ta \niu
+.in \niu
+.h Options
+.pp
+-h	(Nroff only) Output tabs used during horizontal spacing
+to speed output as well as reduce output byte count.
+Device tab settings assumed to be every
+8 nominal character widths.
+The default settings of input (logical) tabs is also
+initialized to every 8 nominal character widths.
+.pp
+-z	Efficiently suppresses formatted output.
+Only message output will occur (from "tm"s and diagnostics).
+.h "Old Requests"
+.pp
+\&.ad\ c	The adjustment type indicator "c" may now also be a number
+previously obtained from the ".j" register (see below).
+.pp
+\&.so\ name	The contents of file "name" will be interpolated
+at the point the "so" is encountered.
+Previously, the interpolation was done upon return to the file-reading input level.
+.h "New Request"
+.pp
+\&.ab\ text	\
+Prints "text" on the message output and terminates
+without further processing.
+If "text" is missing, "User Abort." is printed.
+Does not cause a break.
+The output buffer is flushed.
+.pp
+\&.fz F N	\
+forces f_ont "F" to be in siz_e N.
+N may have the form N, +N, or -N.
+For example,
+     .fz 3 -2
+.br
+will cause an implicit \es-2 every time font 3 is entered,
+and a corresponding \es+2 when it is left.
+Special font characters occurring during the
+reign of font F will have the same size modification.
+If special characters are to be treated differently,
+     .fz S F N
+.br
+may be used to specify the size treatment of special
+characters during font F.
+For example,
+     .fz 3 -3
+     .fz S 3 -0
+.br
+will cause automatic reduction of font 3 by 3 points
+while the special characters would not be affected.
+Any ``.fp'' request specifying a font on some position
+must precede ``.fz'' requests relating to that position.
+.h "New Predefined Number Registers."
+.pp
+\&.k	Read-only. Contains the horizontal size
+of the text portion (without indent) of the current
+partially collected output line, if any, in
+the current environment.
+.pp
+\&.j	Read-only. A number representing the current adjustment mode and type.
+Can be saved and later given to the "ad" request to restore a previous mode.
+.pp
+\&.P	Read-only.
+1 if the current page is being printed,
+and zero otherwise.
+.pp
+\&.L	Read-only.
+Contains the current line-spacing parameter ("ls").
+.pp
+\&c.	General register access to the input line-number
+in the current input file.
+Contains the same value as the read-only ".c" register.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                    is created.
+.IP <\ \fIword\fP 12
+The standard input (file descriptor 0)
+is taken from the file \fIword.\fP
+.IP \*(HE\ \fIword\fP 12
+The standard input is taken from the lines
+of shell input that follow up to but not
+including a line consisting only of \fIword.\fP
+If \fIword\fP is quoted then no interpretation
+of the document occurs.
+If \fIword\fP is not quoted
+then parameter and command substitution
+occur and \fB\\\fP is used to quote
+the characters \fB\\\fP \fB$\fP \fB\`\fP and the first character
+of \fIword.\fP
+In the latter case \fB\\newline\fP is ignored (c.f. quoted strings).
+.IP >&\ \fIdigit\fP 12
+The file descriptor \fIdigit\fP is duplicated using the system
+call \fIdup\fP (2)
+and the result is used as the standard output.
+.IP <&\ \fIdigit\fP 12
+The standard input is duplicated from file descriptor \fIdigit.\fP
+.IP <&\(mi 12
+The standard input is closed.
+.IP >&\(mi 12
+The standard output is closed.
+.LP
+Any of the above may be preceded by a digit in which
+case the file descriptor created is that specified by the digit
+instead of the default 0 or 1.
+For example,
+.DS
+	\*(ZZ 2>file
+.DE
+runs a command with message output (file descriptor 2)
+directed to \fIfile.\fP
+.DS
+	\*(ZZ 2>&1
+.DE
+runs a command with its standard output and message output
+merged.
+(Strictly speaking file descriptor 2 is created
+by duplicating file descriptor 1 but the effect is usually to
+merge the two streams.)
+.LP
+The environment for a command run in the background such as
+.DS
+	list \*(ST.c \*(VT lpr &
+.DE
+is modified in two ways.
+Firstly, the default standard input
+for such a command is the empty file \fB/dev/null\|.\fR
+This prevents two processes (the shell and the command),
+which are running in parallel, from trying to
+read the same input.
+Chaos would ensue
+if this were not the case.
+For example,
+.DS
+	ed file &
+.DE
+would allow both the editor and the shell
+to read from the same input at the same time.
+.LP
+The other modification to the environment of a background
+command is to turn off the QUIT and INTERRUPT signals
+so that they are ignored by the command.
+This allows these signals to be used
+at the terminal without causing background
+commands to terminate.
+For this reason the UNIX convention
+for a signal is that if it is set to 1
+(ignored) then it is never changed
+even for a short time.
+Note that the shell command \fItrap\fP
+has no effect for an ignored signal.
+.SH
+3.8\ Invoking\ the\ shell
+.LP
+The following flags are interpreted by the shell
+when it is invoked.
+If the first character of argument zero is a minus,
+then commands are read from the file \fB.profile\|.\fP
+.IP \fB\(mic\fP\ \fIstring\fP
+.br
+If the \fB\(mic\fP flag is present then
+commands are read from \fIstring\|.\fP
+.IP \fB\(mis\fP
+If the \fB\(mis\fP flag is present or if no
+arguments remain
+then commands are read from the standard input.
+Shell output is written to
+file descriptor 2.
+.IP \fB\(mii\fP
+If the \fB\(mii\fP flag is present or
+if the shell input and output are attached to a terminal (as told by \fIgtty\fP)
+then this shell is \fIinteractive.\fP
+In this case TERMINATE is ignored (so that \fBkill 0\fP
+does not kill an interactive shell) and INTERRUPT is caught and ignored
+(so that \fBwait\fP is interruptable).
+In all cases QUIT is ignored by the shell.
+.SH
+Acknowledgements
+.LP
+The design of the shell is
+based in part on the original UNIX shell
+.[
+unix command language thompson
+.]
+and the PWB/UNIX shell,
+.[
+pwb shell mashey unix
+.]
+some
+features having been taken from both.
+Similarities also exist with the
+command interpreters
+of the Cambridge Multiple Access System
+.[
+cambridge multiple access system hartley
+.]
+and of CTSS.
+.[
+ctss
+.]
+.LP
+I would like to thank Dennis Ritchie
+and John Mashey for many
+discussions during the design of the shell.
+I am also grateful to the members of the Computing Science Research Center
+and to Joe Maranzano for their
+comments on drafts of this document.
+.SH
+.[
+$LIST$
+.]
+                                                                                                                                                                                   .\"	@(#)t4	6.1 (Berkeley) 5/22/86
+.\"
+.bp
+.SH
+Appendix\ A\ -\ Grammar
+.LP
+.DS
+\fIitem:		word
+		input-output
+		name = value
+.sp 0.8
+simple-command: item
+		simple-command item
+.sp 0.8
+command:	simple-command
+		\fB( \fIcommand-list \fB)
+		\fB{ \fIcommand-list \fB}
+		\fBfor \fIname \fBdo \fIcommand-list \fBdone
+		\fBfor \fIname \fBin \fIword \*(ZZ \fBdo \fIcommand-list \fBdone
+		\fBwhile \fIcommand-list \fBdo \fIcommand-list \fBdone
+		\fBuntil \fIcommand-list \fBdo \fIcommand-list \fBdone
+		\fBcase \fIword \fBin \fIcase-part \*(ZZ \fBesac
+		\fBif \fIcommand-list \fBthen \fIcommand-list \fIelse-part \fBfi
+.sp 0.8
+\fIpipeline:		command
+		pipeline \fB\*(VT\fI command
+.sp 0.8
+andor:		pipeline
+		andor \fB&&\fI pipeline
+		andor \fB\*(VT\*(VT\fI pipeline
+.sp 0.8
+command-list:	andor
+		command-list \fB;\fI
+		command-list \fB&\fI
+		command-list \fB;\fI andor
+		command-list \fB&\fI andor
+.sp 0.8
+input-output:	\fB> \fIfile
+		\fB< \fIfile
+		\fB\*(AP \fIword
+		\fB\*(HE \fIword
+.sp 0.8
+file:		word
+		\fB&\fI digit
+		\fB&\fI \(mi
+.sp 0.8
+case-part:	pattern\fB ) \fIcommand-list\fB ;;
+.sp 0.8
+\fIpattern:		word
+		pattern \fB\*(VT\fI word
+.sp 0.8
+\fIelse-part:	\fBelif \fIcommand-list\fB then\fI command-list else-part\fP
+		\fBelse \fIcommand-list\fI
+		empty
+.sp 0.8
+empty:
+.sp 0.8
+word:		\fRa sequence of non-blank characters\fI
+.sp 0.8
+name:		\fRa sequence of letters, digits or underscores starting with a letter\fI
+.sp 0.8
+digit:		\fB0 1 2 3 4 5 6 7 8 9\fP
+.DE
+.LP
+.bp
+.SH
+Appendix\ B\ -\ Meta-characters\ and\ Reserved\ Words
+.LP
+a) syntactic
+.RS
+.IP \fB\*(VT\fR 6
+pipe symbol
+.IP \fB&&\fR 6
+`andf' symbol
+.IP \fB\*(VT\*(VT\fR 6
+`orf' symbol
+.IP \fB;\fP 6
+command separator
+.IP \fB;;\fP 6
+case delimiter
+.IP \fB&\fP 6
+background commands
+.IP \fB(\ )\fP 6
+command grouping
+.IP \fB<\fP 6
+input redirection
+.IP \fB\*(HE\fP 6
+input from a here document
+.IP \fB>\fP 6
+output creation
+.IP \fB\*(AP\fP 6
+output append
+.sp 2
+.RE
+.LP
+b) patterns
+.RS
+.IP \fB\*(ST\fP 6
+match any character(s) including none
+.IP \fB?\fP 6
+match any single character
+.IP \fB[...]\fP 6
+match any of the enclosed characters
+.sp 2
+.RE
+.LP
+c) substitution
+.RS
+.IP \fB${...}\fP 6
+substitute shell variable
+.IP \fB\`...\`\fP 6
+substitute command output
+.sp 2
+.RE
+.LP
+d) quoting
+.RS
+.IP \fB\e\fP 6
+quote the next character
+.IP \fB\'...\'\fP 6
+quote the enclosed characters except for \'
+.IP \fB"\&..."\fR 6
+quote the enclosed characters except
+for \fB$ \` \e "\fP
+.sp 2
+.RE
+.LP
+e) reserved words
+.DS
+.ft B
+if then else elif fi
+case in esac
+for while until do done
+{  }
+.ft
+.DE
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     

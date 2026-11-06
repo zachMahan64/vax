@@ -1,0 +1,2083 @@
+ or `# ' for the super-user.
+.TP 15
+.B savehist
+\c
+is given a numeric value to control the number of entries of the
+history list that are saved in ~/.history when the user logs out.
+Any command which has been referenced in this many events will be saved.
+During start up the shell sources ~/.history into the history list
+enabling history to be saved across logins.
+Too large values of
+.I savehist
+will slow down the shell during start up.
+.TP 15
+.B shell
+\c
+The file in which the shell resides.
+This is used in forking shells to interpret files which have execute
+bits set, but which are not executable by the system.
+(See the description of
+.I "Non-builtin Command Execution"
+below.)
+Initialized to the (system-dependent) home of the shell.
+.TP 15
+.B status
+\c
+The status returned by the last command.
+If it terminated abnormally, then 0200 is added to the status.
+Builtin commands which fail return exit status `1',
+all other builtin commands set status `0'.
+.TP 15
+.B time
+\c
+Controls automatic timing of commands.
+If se.\"	@(#)ed.1	6.1 (Berkeley) 4/29/85
+.\"
+.TH ED 1 "April 29, 1985"
+.AT 3
+.if t .ds q \(aa
+.if n .ds q '
+.SH NAME
+ed \- text editor
+.SH SYNOPSIS
+.B ed
+[
+.B \-
+] [
+.B \-x
+] [ name ]
+.SH DESCRIPTION
+.I Ed
+is the standard text editor.
+.PP
+If a
+.I name
+argument is given,
+.I ed
+simulates an
+.I e
+command (see below)\| on the named file; that is to say,
+the file is read into
+.I ed's
+buffer so that it can be edited.
+If 
+.B \-x
+is present, an
+.I x
+command is simulated first to handle an encrypted file.
+The optional
+.B \-
+suppresses the printing
+of explanatory output
+and should be used
+when the standard input is
+an editor script.
+.PP
+.I Ed
+operates on a copy of any file it is editing; changes made
+in the copy have no effect on the file until a
+.IR w ""
+(write)\|
+command is given.
+The copy of the text being edited resides
+in a temporary file called the 
+.IR buffer .
+.PP
+Commands to
+.I ed
+have a simple and regular structure: zero or
+more
+.I addresses
+followed by a single character
+.I command,
+possibly
+followed by parameters to the command.
+These addresses specify one or more lines in the buffer.
+Missing addresses are supplied by default.
+.PP
+In general, only one command may appear on a line.
+Certain commands allow the 
+addition of text to the buffer.
+While
+.I ed
+is accepting text, it is said
+to be in
+.I  "input mode."
+In this mode, no commands are recognized;
+all input is merely collected.
+Input mode is left by typing a period `\fB.\fR' alone at the
+beginning of a line.
+.PP
+.I Ed
+supports a limited form of
+.I "regular expression"
+notation.
+A regular expression specifies
+a set of strings of characters.
+A member of this set of strings is said to be
+.I matched
+by the regular expression.
+In the following specification for regular expressions
+the word `character' means any character but newline.
+.IP 1.
+Any character except a special character
+matches itself.
+Special characters are
+the regular expression delimiter plus
+.RB \e\|[\| .
+and sometimes ^\|*\|$.
+.IP 2.
+A
+.B .
+matches any character.
+.IP 3.
+A \e followed by any character except a digit or (\|) matches that character.
+.IP 4.
+A nonempty string
+.I s
+bracketed
+.RI [ \|s\| ]
+(or
+.RI [^ s\| ])
+matches any character in (or not in)
+.I s.
+In 
+.I s,
+\e has no special meaning, and ] may only appear as
+the first letter.
+A substring 
+.I a\-b,
+with
+.I a
+and
+.I b
+in ascending ASCII order, stands for the inclusive
+range of ASCII characters.
+.IP 5.
+A regular expression of form 1-4 followed by * matches a sequence of
+0 or more matches of the regular expression.
+.IP 6.
+A regular expression,
+.I x,
+of form 1-8, bracketed
+.RI \e( \|x\| \e)
+matches what
+.I x
+matches.
+.IP 7.
+A \e followed by a digit 
+.I n
+matches a copy of the string that the
+bracketed regular expression beginning with the
+.IR n th
+\e( matched.
+.IP 8.
+A regular expression of form 1-8,
+.I x,
+followed by a regular expression of form 1-7,
+.I y
+matches a match for
+.I x
+followed by a match for
+.I y,
+with the
+.I x
+match being as long as possible while still permitting a
+.I y
+match.
+.IP 9.
+A regular expression of form 1-8 preceded by ^
+(or followed by $), is constrained to matches that
+begin at the left (or end at the right) end of a line.
+.IP 10.
+A regular expression of form 1-9 picks out the
+longest among the leftmost matches in a line.
+.IP 11.
+An empty regular expression stands for a copy of the
+last regular expression encountered.
+.PP
+Regular expressions are used in addresses to specify
+lines and in one command
+(see
+.I s
+below)\|
+to specify a portion of a line which is to be replaced.
+If it is desired to use one of
+the regular expression metacharacters as an ordinary
+character, that character may be preceded by `\e'.
+This also applies to the character bounding the regular
+expression (often `/')\| and to `\e' itself.
+.PP
+To understand addressing in
+.I ed
+it is necessary to know that at any time there is a
+.I  "current line."
+Generally speaking, the current line is
+the last line affected by a command; however,
+the exact effect on the current line
+is discussed under the description of
+the command.
+Addresses are constructed as follows.
+.TP
+1.
+The character `\fB.\fR' addresses the current line.
+.TP
+2.
+The character `$' addresses the last line of the buffer.
+.TP
+3.
+A decimal number
+.I n
+addresses the
+.IR n -th
+line of the buffer.
+.TP
+4.
+`\(fm\fIx\fR' addresses the line marked with the name
+.IR x ,
+which must be a lower-case letter.
+Lines are marked with the
+.I k
+command described below.
+.TP
+5.
+A regular expression enclosed in slashes `/' addresses
+the line found by searching forward from the current line
+and stopping at the first line containing a
+string that matches the regular expression.
+If necessary the search wraps around to the beginning of the
+buffer.
+.TP
+6.
+A regular expression enclosed in queries `?' addresses
+the line found by searching backward from the current line
+and stopping at the first line containing
+a string that matches the regular expression.
+If necessary
+the search wraps around to the end of the buffer.
+.TP
+7.
+An address followed by a plus sign `+'
+or a minus sign `\-' followed by a decimal number specifies that address plus
+(resp. minus)\| the indicated number of lines.
+The plus sign may be omitted.
+.TP
+8.
+If an address begins with `+' or `\-'
+the addition or subtraction is taken with respect to the current line;
+e.g. `\-5' is understood to mean `\fB.\fR\-5'.
+.TP
+9.
+If an address ends with `+' or `\-',
+then 1 is added (resp. subtracted).
+As a consequence of this rule and rule 8,
+the address `\-' refers to the line before the current line.
+Moreover,
+trailing
+`+' and `\-' characters
+have cumulative effect, so `\-\-' refers to the current
+line less 2.
+.TP
+10.
+To maintain compatibility with earlier versions of the editor,
+the character `^' in addresses is 
+equivalent to `\-'.
+.PP
+Commands may require zero, one, or two addresses.
+Commands which require no addresses regard the presence
+of an address as an error.
+Commands which accept one or two addresses
+assume default addresses when insufficient are given.
+If more addresses are given than such a command requires,
+the last one or two (depending on what is accepted)\| are used.
+.PP
+Addresses are separated from each other typically by a comma
+`\fB,\fR'.
+They may also be separated by a semicolon
+`\fB;\fR'.
+In this case the current line `\fB.\fR' is set to
+the previous address before the next address is interpreted.
+This feature can be used to determine the starting
+line for forward and backward searches (`/', `?')\|.
+The second address of any two-address sequence
+must correspond to a line following the line corresponding to the first address.
+The special form `%'
+is an abbreviation for the address pair `1,$'.
+.PP
+In the following list of
+.I ed
+commands, the default addresses
+are shown in parentheses.
+The parentheses are not part of
+the address, but are used to show that the given addresses are
+the default.
+.PP
+As mentioned, it is generally illegal for more than one
+command to appear on a line.
+However, most commands may be suffixed by `p'
+or by `l', in which case
+the current line is either
+printed or listed respectively
+in the way discussed below.
+Commands may also be suffixed by `n',
+meaning the output of the command is to
+be line numbered.
+These suffixes may be combined in any order.
+.TP 5
+.RB (\| .\| )\|a
+.br
+.ns
+.TP 5
+<text>
+.br
+.ns
+.TP 5
+.B .
+.br
+The append command reads the given text
+and appends it after the addressed line.
+`\fB.\fR' is left
+on the last line input, if there
+were any, otherwise at the addressed line.
+Address `0' is legal for this command; text is placed
+at the beginning of the buffer.
+.TP 5
+.RB (\| .\| ,\  .\| )\|c
+.br
+.ns
+.TP 5
+<text>
+.br
+.ns
+.TP 5
+.B .
+.br
+The change
+command deletes the addressed lines, then accepts input
+text which replaces these lines.
+`\fB.\fR' is left at the last line input; if there were none,
+it is left at the line preceding the deleted lines.
+.TP 5
+.RB (\| .\| ,\  .\| )\|d
+The delete command deletes the addressed lines from the buffer.
+The line originally after the last line deleted becomes the current line;
+if the lines deleted were originally at the end,
+the new last line becomes the current line.
+.TP 5
+e filename
+The edit
+command causes the entire ct, then any command which takes more than this many cpu seconds
+will cause a line giving user, system, and real times and a utilization
+percentage which is the ratio of user plus system times to real time
+to be printed when it terminates.
+.TP 15
+.B verbose
+\c
+Set by the
+.B \-v
+command line option, causes the words of each command to be printed
+after history substitution.
+.sh "Non-builtin command execution"
+When a command to be executed is found to not be a builtin command
+the shell attempts to execute the command via
+.IR  execve (2).
+Each word in the variable
+.I path
+names a directory from which the shell will attempt to execute the command.
+If it is given neither a
+.B \-c
+nor a
+.B \-t
+option, the shell will hash the names in these directories into an internal
+table so that it will only try an
+.I exec
+in a directory if there is a possibility that the command resides there.
+This greatly speeds command location when a large number of directories
+are present in the search path.
+If this mechanism has been turned off (via
+.IR unhash ),
+or if the shell was given a
+.B \-c
+or
+.B \-t
+argument, and in any case for each directory component of
+.I path
+which does not begin with a `/',
+the shell concatenates with the given command name to form a path name
+of a file which it then attempts to execute.
+.PP
+Parenthesized commands are always executed in a subshell.
+Thus `(cd ; pwd) ; pwd' prints the
+.I home
+directory; leaving you where you were (printing this after the home directory),
+while `cd ; pwd' leaves you in the
+.I home
+directory.
+Parenthesized commands are most often used to prevent
+.I chdir
+from affecting the current shell.
+.PP
+If the file has execute permissions but is not an
+executable binary to the system, then it is assumed to be a
+file containing shell commands and a new shell is spawned to read it.
+.PP
+If there is an
+.I alias
+for
+.I shell
+then the words of the alias will be prepended to the argument list to form
+the shell command.
+The first word of the
+.I alias
+should be the full path name of the shell
+(e.g. `$shell').
+Note that this is a special, late occurring, case of
+.I alias
+substitution,
+and only allows words to be prepended to the argument list without modification.
+.sh "Argument list processing"
+If argument 0 to the shell is `\-' then this
+is a login shell.
+The flag arguments are interpreted as follows:
+.TP 5
+.B  \-b
+\c
+This flag forces a ``break'' from option processing, causing any further
+shell arguments to be treated as non-option arguments.
+The remaining arguments will not be interpreted as shell options.
+This may be used to pass options to a shell script without confusion
+or possible subterfuge.
+The shell will not run a set-user ID script without this option.
+.TP 5
+.B  \-c
+\c
+Commands are read from the (single) following argument which must
+be present.
+Any remaining arguments are placed in
+.I argv.
+.TP 5
+.B  \-e
+\c
+The shell exits if any invoked command terminates abnormally
+or yields a non-zero exit status.
+.TP 5
+.B  \-f
+\c
+The shell will start faster, because it will neither search for nor
+execute commands from the file
+`\&.cshrc' in the invoker's home directory.
+.TP 5
+.B  \-i
+\c
+The shell is interactive and prompts for its top-level input,
+even if it appears to not be a terminal.
+Shells are interactive without this option if their inputs
+and outputs are terminals.
+.TP 5
+.B  \-n
+\c
+Commands are parsed, but not executed.
+This aids in syntactic checking of shell scripts.
+.TP 5
+.B  \-s
+\c
+Command input is taken from the standard input.
+.TP 5
+.B  \-t
+\c
+A single line of input is read and executed.
+A `\e' may be used to escape the newline at the end of this
+line and continue onto another line.
+.TP 5
+.B  \-v
+\c
+Causes the
+.I verbose
+variable to be set, with the effect
+that command input is echoed after history substitution.
+.TP 5
+.B  \-x
+\c
+Causes the 
+.I echo
+variable to be set, so that commands are echoed immediately before execution.
+.TP 5
+.B  \-V
+\c
+Causes the
+.I verbose
+variable to be set even before `\&.cshrc' is executed.
+.TP 5
+.B  \-X
+\c
+Is to
+.B \-x
+as
+.B \-V
+is to
+.B \-v.
+.PP
+After processing of flag arguments, if arguments remain but none of the
+.B \-c,
+.B \-i,
+.B \-s,
+or
+.B \-t
+options was given, the first argument is taken as the name of a file of
+commands to be executed.
+The shell opens this file, and saves its name for possible resubstitution
+by `$0'.
+Since many systems use either the standard version 6 or version 7 shells
+whose shell scripts are not compatible with this shell, the shell will
+execute such a `standard' shell if the first character of a script
+is not a `#', i.e. if the script does not start with a comment.
+Remaining arguments initialize the variable
+.I argv.
+.sh "Signal handling"
+The shell normally ignores
+.I quit
+signals.
+Jobs running detached (either by `&' or the \fIbg\fR or \fB%... &\fR
+commands) are immune to signals generated from the keyboard, including
+hangups.
+Other signals have the values which the shell inherited from its parent.
+The shells handling of interrupts and terminate signals
+in shell scripts can be controlled by
+.I onintr.
+Login shells catch the
+.I terminate
+signal; otherwise this signal is passed on to children from the state in the
+shell's parent.
+In no case are interrupts allowed when a login shell is reading the file
+`\&.logout'.
+.SH AUTHOR
+William Joy.
+Job control and directory stack features first implemented by J.E. Kulp of
+I.I.A.S.A, Laxenburg, Austria,
+with different syntax than that used now.  File name completion
+code written by Ken Greer, HP Labs.
+.SH FILES
+.ta 1.75i
+.nf
+~/.cshrc	Read at beginning of execution by each shell.
+~/.login	Read by login shell, after `.cshrc' at login.
+~/.logout	Read by login shell, at logout.
+/bin/sh	Standard shell, for shell scripts not starting with a `#'.
+/tmp/sh*	Temporary file for `<<'.
+/etc/passwd	Source of home directories for `~name'.
+.fi
+.SH LIMITATIONS
+Words can be no longer than 1024 characters.
+The system limits argument lists to 10240 characters.
+The number of arguments to a command which involves filename expansion
+is limited to 1/6'th the number of characters allowed in an argument list.
+Command substitutions may substitute no more characters than are
+allowed in an argument list.
+To detect looping, the shell restricts the number of
+.I alias
+substitutions on a single line to 20.
+.SH "SEE ALSO"
+sh(1), access(2), execve(2), fork(2), killpg(2), pipe(2), sigvec(2),
+umask(2), setrlimit(2), wait(2), tty(4), a.out(5), environ(7),
+`An introduction to the C shell'
+.SH BUGS
+When a command is restarted from a stop,
+the shell prints the directory it started in if this is different
+from the current directory; this can be misleading (i.e. wrong)
+as the job may have changed directories internally.
+.PP
+Shell builtin functions are not stoppable/restartable.
+Command sequences of the form `a ; b ; c' are also not handled gracefully
+when stopping is attempted.  If you suspend `b', the shell will then
+immediately execute `c'.  This is especially noticeable if this
+expansion results from an
+.I alias.
+It suffices to place the sequence of commands in ()'s to force it to
+a subshell, i.e. `( a ; b ; c )'.
+.PP
+Control over tty output after processes are started is primitive;
+perhaps this will inspire someone to work on a good virtual
+terminal interface.  In a virtual terminal interface much more
+interesting things could be done with output control.
+.PP
+Alias substitution is most often used to clumsily simulate shell procedures;
+shell procedures should be provided rather than aliases.
+.PP
+Commands within loops, prompted for by `?', are not placed in the
+.I history
+list.
+Control structure should be parsed rather than being recognized as built-in
+commands.  This would allow control commands to be placed anywhere,
+to be combined with `|', and to be used with `&' and `;' metasyntax.
+.PP
+It should be possible to use the `:' modifiers on the output of command
+substitutions.
+All and more than one `:' modifier should be allowed on `$' substitutions.
+.PP
+The way the
+.B filec
+facility is implemented is ugly and expensive.
+                                                                                                                                                ontents of the buffer to be deleted,
+and then the named file to be read in.
+`\fB.\fR' is set to the last line of the buffer.
+The number of characters read is typed.
+`filename' is remembered for possible use as a default file name
+in a subsequent
+.I r
+or
+.I w
+command.
+If `filename' is missing, the remembered name is used.
+.TP 5
+E filename
+This command is the same as
+.I e,
+except that no diagnostic results when no
+.I w
+has been given since the last buffer alteration.
+.TP 5
+f filename
+The filename command prints the currently remembered file name.
+If `filename' is given,
+the currently remembered file name is changed to `filename'.
+.TP 5
+(1,$)\|g/regular expression/command list
+In the global
+command, the first step is to mark every line which matches
+the given regular expression.
+Then for every such line, the
+given command list is executed with `\fB.\fR' initially set to that line.
+A single command or the first of multiple commands
+appears on the same line with the global command.
+All lines of a multi-line list except the last line must be ended with `\e'.
+.I A,
+.I i,
+and
+.I c
+commands and associated input are permitted;
+the `\fB.\fR' terminating input mode may be omitted if it would be on the
+last line of the command list.
+The commands
+.I g
+and
+.I v
+are not permitted in the command list.
+.TP 5
+.RB (\| .\| )\|i
+.ns
+.TP 5
+<text>
+.br
+.ns
+.TP 5
+.B .
+.br
+This command inserts the given text before the addressed line.
+`\fB.\fR' is left at the last line input, or, if there were none,
+at the line before the addressed line.
+This command differs from the
+.I a
+command only in the placement of the
+text.
+.TP 5
+.RB (\| .\| ,\  . +1)\|j
+This command joins the addressed lines into a single line;
+intermediate newlines simply disappear.
+`\fB.\fR' is left at the resulting line.
+.TP 5
+( \fB. \fR)\|k\fIx\fR
+The mark command marks the addressed line with
+name
+.I x,
+which must be a lower-case letter.
+The address form `\(fm\fIx\fR' then addresses this line.
+.ne 2.5
+.TP 5
+.RB (\| .\| ,\  .\| )\|l
+The list command
+prints the addressed lines in an unambiguous way:
+non-graphic characters are
+printed in two-digit octal,
+and long lines are folded.
+The
+.I l
+command may be placed on the same line after any non-i/o
+command.
+.TP 5
+.RB (\| .\| ,\  .\| )\|m\fIa
+The move command repositions the addressed lines after the line
+addressed by
+.IR a .
+The last of the moved lines becomes the current line.
+.TP 5
+.RB (\| .\| ,\  .\| )\|p
+The print command prints the addressed lines.
+`\fB.\fR'
+is left at the last line printed.
+The
+.I p
+command
+may
+be placed on the same line after any non-i/o command.
+.TP
+.RB (\| .\| ,\  .\| )\|P
+This command is a synonym for
+.I p.
+.TP 5
+q
+The quit command causes
+.I ed
+to exit.
+No automatic write
+of a file is done.
+.TP 5
+Q
+This command is the same as
+.I q,
+except that no diagnostic results when no
+.I w
+has been given since the last buffer alteration.
+.TP 5
+($)\|r filename
+The read command
+reads in the given file after the addressed line.
+If no file name is given,
+the remembered file name, if any, is used
+(see
+.I e
+and
+.I f
+commands)\|.
+The file name is remembered if there was no
+remembered file name already.
+Address `0' is legal for
+.I r
+and causes the
+file to be read at the beginning of the buffer.
+If the read is successful, the number of characters
+read is typed.
+`\fB.\fR' is left at the last line read in from the file.
+.TP 5
+(\| \fB.\fR\|, \fB.\fR\|)\|s/regular expression/replacement/       or,
+.br
+.ns
+.TP 5
+(\| \fB.\fR\|, \fB.\fR\|)\|s/regular expression/replacement/g
+The substitute command searches each addressed
+line for an occurrence of the specified regular expression.
+On each line in which a match is found,
+all matched strings are replaced by the replacement specified,
+if the global replacement indicator `g' appears after the command.
+If the global indicator does not appear, only the first occurrence
+of the matched string is replaced.
+It is an error for the substitution to fail on all addressed lines.
+Any punctuation character
+may be used instead of `/' to delimit the regular expression
+and the replacement.
+`\fB.\fR' is left at the last line substituted.
+.IP
+An ampersand `&' appearing in the replacement
+is replaced by the string matching the regular expression.
+The special meaning of `&' in this context may be
+suppressed by preceding it by `\e'.
+The characters
+.I `\|\en'
+where
+.I n
+is a digit,
+are replaced by the text matched by the
+.IR n -th
+regular subexpression
+enclosed between `\e(' and `\e)'.
+When
+nested, parenthesized subexpressions
+are present,
+.I n
+is determined by counting occurrences of `\e(' starting from the left.
+.IP
+Lines may be split by substituting new-line characters into them.
+The new-line in the
+replacement string
+must be escaped by preceding it by `\e'.
+.IP
+One or two trailing delimiters may be omitted,
+implying the `p' suffix.
+The special form `s' followed by
+.I no
+delimiters
+repeats the most recent substitute command
+on the addressed lines.
+The `s' may be followed by the letters
+.B r
+(use the most recent regular expression for the
+left hand side, instead of the most recent
+left hand side of a substitute command),
+.B p
+(complement the setting of the
+.I p
+suffix from the previous substitution), or
+.B g
+(complement the setting of the
+.I g
+suffix).
+These letters may be combined in any order.
+.TP 5
+.RB (\| .\| ,\  .\| )\|t\|\fIa
+This command acts just like the
+.I m
+command, except that a copy of the addressed lines is placed
+after address
+.I a
+(which may be 0).
+`\fB.\fR' is left on the last line of the copy.
+.TP 5
+.RB (\| .\| ,\  .\| )\|u
+The undo command restores the buffer to it's state
+before the most recent buffer modifying command.
+The current line is also restored.
+Buffer modifying commands are
+.I a, c, d, g, i, k, m, r, s, t,
+and
+.I v.
+For purposes of undo,
+.I g
+and
+.I v
+are considered to be a single buffer modifying command.
+Undo is its own inverse.
+.IP
+When
+.I ed
+runs out of memory
+(at about 8000 lines on any 16 bit mini-computer
+such as the PDP-11)
+This full undo is not possible, and
+.I u
+can only undo the effect of the most recent
+substitute on the current line.
+This restricted undo also applies to editor scripts
+when
+.I ed
+is invoked with the
+.B -
+option.
+.TP 5
+(1, $)\|v/regular expression/command list
+This command is the same as the global command
+.I g
+except that the command list is executed
+.I g
+with `\fB.\fR' initially set to every line
+.I except
+those
+matching the regular expression.
+.TP 5
+(1, $)\|w filename
+.br
+The write command writes the addressed lines onto
+the given file.
+If the file does not exist,
+it is created.
+The file name is remembered if there was no 
+remembered file name already.
+If no file name is given,
+the remembered file name, if any, is used
+(see
+.I e
+and
+.I f
+commands)\|.
+`\fB.\fR' is unchanged.
+If the command is successful, the number of characters written is
+printed.
+.TP
+(1, $)\|W filename
+This command is the same as
+.I w,
+except that the addressed lines are appended to the file.
+.TP 5
+(1, $)\|wq filename
+This command is the same as
+.I w
+except that afterwards a
+.I q
+command is done,
+exiting the editor
+after the file is written.
+.TP 5
+x
+A key string is demanded from the standard input.
+Later
+.I r, e
+and
+.I w
+commands will encrypt and decrypt the text 
+with this key by the algorithm of 
+.IR crypt (1).
+An explicitly empty key turns off encryption.
+.RB (\| .\| +1)\|z	or,
+.br
+.ns
+.TP 5
+.RB (\| .\| +1)\|z\fIn
+This command scrolls through the buffer starting at the addressed line.
+22 (or
+.I n,
+if given)
+lines are printed.
+The last line printed becomes the current line.
+The value
+.I n
+is sticky, in that it becomes the default for
+future
+.I z
+commands.
+.TP 5
+($)\|=
+The line number of the addressed line is typed.
+`\fB.\fR' is unchanged by this command.
+.TP 5
+!<shell command>
+The remainder of the line after the `!' is sent
+to
+.IR sh (1)
+to be interpreted as a command.
+.RB ` . '
+is unchanged.
+.TP 5
+.RB (\| . +1,\| . +1)\|<newline>
+An address alone on a line causes the addressed line to be printed.
+A blank line alone is equivalent to `.+1p'; it is useful
+for stepping through text.
+If two addresses are present with no
+intervening semicolon,
+.I ed
+prints the range of lines.
+If they are separated by a semi.\"	@(#)eqn.1	6.2 (Berkeley) 5/9/86
+.\"
+.TH EQN 1 "May 9, 1986"
+.AT 3
+.EQ
+delim $$
+.EN
+.SH NAME
+eqn, neqn, checkeq \- typeset mathematics
+.SH SYNOPSIS
+.B eqn
+[
+.BR \-d xy
+] [
+.BR \-p n
+] [
+.BR \-s n
+] [
+.BR \-f n
+] 
+[ file ] ...
+.br
+.B checkeq
+[ file ] ...
+.SH DESCRIPTION
+.I Eqn
+is a
+troff(1)
+preprocessor
+for typesetting mathematics
+on a Graphic Systems phototypesetter,
+.I neqn
+on terminals.
+Usage is almost always
+.PP
+	eqn file ... | troff
+.br
+	neqn file ... | nroff
+.PP
+If no files are specified, 
+these programs
+read from the standard input.
+A line beginning with `.EQ' marks the start of an equation;
+the end of an equation
+is marked by a line beginning with `.EN'.
+Neither of these lines is altered,
+so they may be defined in macro packages
+to get
+centering, numbering, etc.
+It is also possible to set two characters as `delimiters';
+subsequent text between delimiters is also treated as
+.ul
+eqn
+input.
+Delimiters may be set to characters
+.I x
+and
+.I y
+with the command-line argument
+.BI \-d xy
+or (more commonly) with
+`delim
+.IR xy '
+between .EQ and .EN.
+The left and right delimiters may be identical.
+Delimiters are turned off by `delim off'.
+All text that is neither between delimiters nor between .EQ and .EN
+is passed through untouched.
+.PP
+The program
+.I checkeq
+reports missing or unbalanced delimiters and .EQ/.EN pairs.
+.PP
+Tokens within
+.I eqn
+are separated by
+spaces, tabs, newlines, braces, double quotes,
+tildes or circumflexes.
+Braces {} are used for grouping;
+generally speaking,
+anywhere a single character like
+.I x
+could appear, a complicated construction
+enclosed in braces may be used instead.
+Tilde ~ represents a full space in the output,
+circumflex ^ half as much.
+.PP
+.vs 13p
+Subscripts and superscripts are produced with the keywords
+.B sub
+and
+.B sup.
+Thus
+.I "x sub i" 
+makes
+$x sub i$, 
+.I "a sub i sup 2"
+produces
+$a sub i sup 2$,
+and
+.I "e sup {x sup 2 + y sup 2}"
+gives
+$e sup {x sup 2 + y sup 2}$.
+.PP
+Fractions are made with
+.BR over :
+.I "a over b"
+yields $a over b$.
+.PP
+.B sqrt
+makes square roots:
+.I "1 over sqrt {ax sup 2 +bx+c}"
+results in
+$1 over sqrt {ax sup 2 +bx+c}$ .
+.PP
+The keywords
+.B from
+and
+.B to
+introduce lower and upper
+limits on arbitrary things:
+$lim from {n-> inf} sum from 0 to n x sub i$
+is made with
+.I "lim from {n\-> inf } sum from 0 to n x sub i."
+.PP
+Left and right brackets, braces, etc., of the right height are made with
+.B left
+and
+.B right:
+.I "left [ x sup 2 + y sup 2 over alpha right ] ~=~1"
+produces
+$left [ x sup 2 + y sup 2 over alpha right ] ~=~1$.
+The
+.B right
+clause is optional.
+Legal characters after 
+.B left
+and
+.B right
+are braces, brackets, bars,
+.B c
+and
+.B f
+for ceiling and floor,
+and "" for nothing at all (useful for a right-side-only bracket).
+.PP
+Vertical piles of things are made with 
+.BR pile ,
+.BR lpile ,
+.BR cpile ,
+and
+.BR rpile :
+.I "pile {a above b above c}"
+produces
+$pile {a above b above c}$.
+There can be an arbitrary number of elements in a pile.
+.B lpile
+left-justifies,
+.B pile
+and
+.B cpile
+center, with different vertical spacing,
+and 
+.B rpile
+right justifies.
+.PP
+Matrices are made with
+.BR matrix :
+.I "matrix { lcol { x sub i above y sub 2 } ccol { 1 above 2 } }"
+produces
+$matrix { lcol { x sub i above y sub 2 } ccol { 1 above 2 } }$.
+In addition, there is
+.B rcol
+for a right-justified column.
+.PP
+.vs 12p
+Diacritical marks are made with
+.BR dot ,
+.BR dotdot ,
+.BR hat ,
+.BR tilde ,
+.BR bar ,
+.BR vec ,
+.BR dyad ,
+and
+.BR under :
+.I "x dot = f(t) bar"
+is
+$x dot = f(t) bar$,
+.I "y dotdot bar ~=~ n under"
+is
+$y dotdot bar ~=~ n under$,
+and
+.I "x vec ~=~ y dyad"
+is
+$x vec ~=~ y dyad$.
+.PP
+Sizes and font can be changed with
+.B size
+.I n
+or
+.B size
+.BI \(+- n,
+.BR roman ,
+.BR italic ,
+.BR bold ,
+and
+.BR font
+.I n.
+Size and fonts can be changed globally in a document by
+.B gsize
+.I n
+and
+.B gfont
+.IR n ,
+or by the command-line arguments
+.BI \-s n
+and
+.BI \-f n.
+.PP
+Normally subscripts and superscripts are reduced by
+3 point sizes from the previous size;
+this may be changed by the command-line argument
+.BI \-p n.
+.PP
+Successive display arguments can be lined up.
+Place
+.B mark
+before the desired lineup point in the first equation;
+place
+.B lineup
+at the place that is to line up vertically in subsequent equations.
+.PP
+Shorthands may be defined
+or existing keywords redefined with
+.BI define :
+.I "define thing % replacement %"
+defines a new token called
+.I thing
+which will be replaced by
+.I replacement
+whenever it appears thereafter.
+The 
+.I %
+may be any character that does not occur in
+.I replacement.
+.PP
+Keywords like 
+.I sum
+.EQ
+( sum )
+.EN
+.I int
+.EQ
+( int )
+.EN
+.I inf
+.EQ
+( inf )
+.EN
+and shorthands like
+>=
+.EQ
+(>=)
+.EN
+\->
+.EQ
+(->),
+.EN
+and
+!=
+.EQ
+( != )
+.EN
+are recognized.
+Greek letters are spelled out in the desired case, as in
+.I alpha
+or
+.I GAMMA.
+Mathematical words like sin, cos, log are made Roman automatically.
+.IR Troff (1)
+four-character escapes like \e(bs (\(bs)
+can be used anywhere.
+Strings enclosed in double quotes "..."
+are passed through untouched;
+this permits keywords to be entered as text,
+and can be used to communicate
+with 
+.I troff
+when all else fails.
+.SH "SEE ALSO"
+.PP
+troff(1), tbl(1), ms(7), eqnchar(7)
+.br
+B. W. Kernighan and L. L. Cherry,
+.ul
+Typesetting Mathematics\(emUser's Guide
+.br
+J. F. Ossanna,
+.ul
+NROFF/TROFF User's Manual
+.SH BUGS
+.PP
+To embolden digits, parens, etc.,
+it is necessary to quote them,
+as in `bold "12.3"'.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 .so man1/diction.1
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             .\"	@(#)file.1	6.1 (Berkeley) 4/29/85
+.\"
+.TH FILE 1 "April 29, 1985"
+.AT 3
+.SH NAME
+file \- determine file type
+.SH SYNOPSIS
+.B file
+file ...
+.SH DESCRIPTION
+.I File
+performs a series of tests on each argument
+in an attempt to classify it.
+If an argument appears to be ascii,
+.I file
+examines the first 512 bytes
+and tries to guess its language.
+.SH BUGS
+It often makes mistakes.
+In particular it often suggests that
+command files are C programs.
+.PP
+Does not recognize Pascal or LISP.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         .\"	@(#)tar.1	6.5 (Berkeley) 5/12/86
+.\"
+.TH TAR 1 "May 12, 1986"
+.AT 3
+.SH NAME
+tar \- tape archiver
+.SH SYNOPSIS
+.B tar
+[ key ] [ name ... ]
+.SH DESCRIPTION
+.PP
+.I Tar
+saves and restores multiple files on a single file (usually a magnetic
+tape, but it can be any file).  
+.IR Tar 's
+actions are controlled by the
+.I key
+argument.  The
+.I key
+is a string of characters containing at most one function letter and possibly
+one or more function modifiers.  Other arguments to 
+.I tar
+are file or directory names specifying which files to dump or restore.
+In all cases, appearance of a directory name refers to
+the files and (recursively) subdirectories of that directory.
+.PP
+The function portion of the key is specified by one of the following letters:
+.TP 8
+.B r
+The named files are written on the end of the tape.  The
+.B c
+function implies this.
+.TP 8
+.B x
+The named files are extracted from the tape.  If the named file
+matches a directory whose contents had been written onto the tape, this
+directory is (recursively) extracted.  The owner, modification time, and mode
+are restored (if possible).  If no file argument is given, the entire content
+of the tape is extracted.  Note that if multiple entries specifying the same
+file are on the tape, the last one overwrites all earlier.
+.TP 8
+.B t
+The names of the specified files are listed each time they occur on
+the tape.  If no file argument is given, all of the names on the tape
+are listed.
+.TP 8
+.B u
+The named files are added to the tape if either they are not
+already there or have been modified since last put on the tape.
+.TP 8
+.B c
+Create a new tape; writing begins on the beginning of the tape
+instead of after the last file.  This command implies
+.BR r .
+.PP
+The following characters may be used in addition to the letter
+which selects the function desired.
+.TP 10
+.B o
+On output, tar normally places information specifying owner and modes
+of directories in the archive.  Former versions of tar, when encountering
+this information will give error message of the form
+.br
+	"<name>/: cannot create".
+.br
+This modifier will suppress the directory information.
+.TP 10
+.B p
+This modifier says to restore files to their original modes,
+ignoring the present
+.IR umask (2).
+Setuid and sticky information
+will also be restored to the super-user.
+.TP 10
+.B 0, ..., 9
+This modifier selects an alternate drive on which the tape is mounted.
+The default is drive 0 at 1600 bpi, which is normally /dev/rmt8.
+.TP 10
+.B v
+Normally
+.I tar
+does its work silently.  The
+.B v
+(verbose) option makes
+.I tar
+print the name of each file it treats preceded by the function
+letter.  With the
+.B t
+function, the verbose option
+gives more information about the tape entries than just their names.
+.TP 10
+.B w
+.I Tar
+prints the action to be taken followed by file name, then
+wait for user confirmation. If a word beginning with `y'
+is given, the action is done. Any other input means don't do it.
+.TP 10
+.B f
+.I Tar
+uses the next argument as the name of the archive instead of
+/dev/rmt?. If the name of the file is `\-', tar writes to standard output or
+reads from standard input, whichever is appropriate. Thus,
+.I tar
+can be used as the head or tail of a filter chain.
+.I Tar
+can also be used to move hierarchies with the command
+.ce 1
+cd fromdir; tar cf - . | (cd todir; tar xf -)
+.TP 10
+.B b
+.I Tar
+uses the next argument as the blocking factor for tape records. The
+default is 20 (the maximum). This option should only be used with raw magnetic
+tape archives (See 
+.B f
+above).  The block size is determined automatically
+when reading tapes (key letters `x' and `t').
+.TP 10
+.B l
+tells 
+.I tar
+to complain if it cannot resolve all of the links to the
+files dumped.  If this is not specified, no error messages are printed.
+.TP 10
+.B m
+tells 
+.I tar
+not to restore the modification times.  The modification time
+will be the time of extraction.
+.TP 10
+.B h
+Force 
+.I tar
+to follow symbolic links as if they were normal files or
+directories.  Normally, 
+.I tar
+does not follow symbolic links.
+.TP 10
+.B B
+Forces input and output blocking to 20 blocks per record.  This option
+was added so that 
+.I tar
+can work across a communications channel where the blocking may not
+be maintained.
+.TP 10
+.B C
+If a file name is preceded by 
+.BR \-C ,
+then 
+.I tar
+will perform a
+.IR chdir (2)
+to that file name.  This allows multiple directories not
+related by a close common parent to be archived using short
+relative path names.  For example, to archive files from /usr/include
+and from /etc, one might use
+.ti +0.5i
+tar c -C /usr include -C / etc
+.PP
+Previous restrictions dealing with
+.IR tar 's
+inability to properly handle blocked archives have been lifted.
+.PP
+.SH FILES
+/dev/rmt?
+.br
+/tmp/tar*
+.SH "SEE ALSO"
+tar(5)
+.SH DIAGNOSTICS
+Complaints about bad key characters and tape read/write errors.
+.br
+Complaints if enough memory is not available to hold the link tables.
+.SH BUGS
+There is no way to ask for the
+.IR n -th
+occurrence of a file.
+.br
+Tape errors are handled ungracefully.
+.br
+The 
+.B u
+option can be slow.
+.br
+The current limit on file name length is 100 characters.
+.br
+There is no way selectively to follow symbolic links.
+.br
+When extracting tapes created with the
+.B r
+or
+.B u
+options, directory modification times may not be set correctly.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      .\" Copyright (c) 1980 Regents of the University of California.
+.\" All rights reserved.  The Berkeley software License Agreement
+.\" specifies the terms and conditions for redistribution.
+.\"
+.\"	@(#)soelim.1	6.2 (Berkeley) 5/7/86
+.\"
+.TH SOELIM 1 "May 7, 1986"
+.UC
+.SH NAME
+soelim \- eliminate \&.so's from nroff input
+.SH SYNOPSIS
+.B soelim
+[
+file ...
+]
+.SH DESCRIPTION
+.I Soelim
+reads the specified files or the standard input and performs the textual
+inclusion implied by the
+.I nroff
+directives of the form
+.PP
+.DT
+	\&.so somefile
+.PP
+when they appear at the beginning of input lines.
+This is useful since programs such as
+.I tbl
+do not normally do this; it allows the placement of individual tables
+in separate files to be run as a part of a large document.
+.PP
+An argument consisting of a single minus
+.RB ( \- )
+is taken to be
+a file name corresponding to the standard input.
+.PP
+Note that inclusion can be suppressed by using `\'' instead of `\.', i.e.
+.PP
+.DT
+	\'so /usr/lib/tmac.s
+.PP
+A sample usage of
+.I soelim
+would be
+.PP
+	soelim exum?.n | tbl | nroff \-ms | col | lpr
+.SH SEE\ ALSO
+colcrt(1), more(1)
+.SH BUGS
+The format of the source commands must involve no strangeness \-
+exactly one blank must precede and no blanks follow the file name.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     .so man1/sh.1
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  .so man1/sh.1
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  .so man1/sh.1
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  .so man1/sh.1
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  .\" Copyright (c) 1986 Regents of the University of California.
+.\" All rights reserved.  The Berkeley software License Agreement
+.\" specifies the terms and conditions for redistribution.
+.\"
+.\"	@(#)uulog.1c	6.1 (Berkeley) 4/24/86
+.\"
+.TH UULOG 1C "April 24, 1986"
+.UC 6
+.SH NAME
+uulog \- display \s-1UUCP\s0 log files
+.SH SYNOPSIS
+.B uulog
+[
+.B \-s
+.I sys
+] [
+.B \-u
+.I user
+]
+.SH DESCRIPTION
+.I Uulog
+queries a log
+of 
+.IR uucp (1C)
+and
+.IR uux (1C)
+transactions in the file
+.B /usr/spool/uucp/\s-1LOGFILE.\s0
+.PP
+The options command 
+.I uulog
+to print logging information:
+.TP 8
+.BI \-s sys\^
+Print information about work involving system
+.IR sys .
+.TP 8
+.BI \-u user\^
+Print information about work done for the specified
+.IR user .
+.SH FILES
+/usr/spool/uucp/\s-1LOGFILE\s0
+.SH SEE ALSO
+uucp(1C), uux(1C).
+.SH NOTES
+Very early releases of \s-1UUCP\s0 used separate log files
+for each of the \s-1UUCP\s0 utilities;
+.I uulog
+was used to merge the individual logs into a master file.
+This capability has not been necessary for some time and is
+no longer supported.
+.SH BUGS
+\s-1UUCP\s0's recording of which user issued a request is unreliable.
+.PP
+.I Uulog
+is little more than an overspecialized version of
+.IR grep (1).
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         .so man1/xsend.1
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               .\" Copyright (c) 1983 Regents of the University of California.
+.\" All rights reserved.  The Berkeley software License Agreement
+.\" specifies the terms and conditions for redistribution.
+.\"
+.\"	@(#)groups.1	6.1 (Berkeley) 4/29/85
+.\"
+.TH GROUPS 1 "April 29, 1985"
+.UC 5
+.SH NAME
+groups \- show group memberships
+.SH SYNOPSIS
+.B
+groups [user]
+.SH DESCRIPTION
+The
+.I groups
+command shows the groups to which you or the optionally specified
+user belong.
+Each user belongs to a group specified in the password file
+.I /etc/passwd
+and possibly to other groups as specified in the file
+.IR /etc/group .
+If you do not own a file but belong to the group which it is owned
+by then you are granted group access to the file.
+.PP
+When a new file is created it is given
+the group of the containing directory.
+.SH "SEE ALSO"
+setgroups(2)
+.SH FILES
+/etc/passwd, /etc/group
+.SH BUGS
+More groups should be allowed.
+                                                                                                                           .\"	@(#)refer.1	6.2 (Berkeley) 5/12/86
+.\"
+.TH REFER 1 "May 12, 1986"
+.AT 3
+.SH NAME
+refer \- find and insert literature references in documents
+.SH SYNOPSIS
+.B refer
+[
+.B \-a
+] [
+.B \-b
+] [
+.B \-c
+] [
+.B \-e
+] [
+.BI \-f n
+] [
+.BI \-k x
+] [
+.BI \-l m,n
+] [
+.B \-n
+] [
+.B \-p
+bib
+] [
+.BI \-s keys
+] [
+.BI \-B l.m
+] [
+.B \-P
+] [
+.B \-S
+] [ file ... ]
+.SH DESCRIPTION
+.I Refer
+is a preprocessor for
+.I nroff
+or
+.IR troff (1)
+that finds and formats references for footnotes or endnotes.
+It is also the base for a series of programs designed to
+index, search, sort, and print stand-alone bibliographies,
+or other data entered in the appropriate form.
+.PP
+Given an incomplete citation with sufficiently precise keywords,
+.I refer
+will search a bibliographic database for references
+containing these keywords anywhere in the title, author, journal, etc.
+The input file (or standard input)
+is copied to standard output,
+except for lines between .[ and .] delimiters,
+which are assumed to contain keywords,
+and are replaced by information from the bibliographic database.
+The user may also search different databases,
+override particular fields, or add new fields.
+The reference data, from whatever source, are assigned to a set of
+.I troff
+strings.
+Macro packages such as
+.IR ms (7)
+print the finished reference text from these strings.
+By default references are flagged by footnote numbers.
+.PP
+The following options are available:
+.TP 6
+.BI \-a n
+Reverse the first
+.I n
+author names (Jones, J. A. instead of J. A. Jones).
+If
+.I n
+is omitted all author names are reversed.
+.ns
+.TP
+.B \-b
+Bare mode: do not put any flags in text (neither numbers nor labels).
+.ns
+.TP
+.BI \-c keys
+Capitalize (with C\s-2APS\s0 S\s-2MALL\s+2 C\s-2APS\s0)
+the fields whose key-letters are in
+.IR keys .
+.ns
+.TP
+.B \-e
+Instead of leaving the references where encountered,
+accumulate them until a sequence of the form
+.nf
+	.[
+	$LIST$
+	.]
+.fi
+is encountered, and then write out all references collected so far.
+Collapse references to same source.
+.ns
+.TP
+.BI \-f n
+Set the footnote number to
+.I n
+instead of the default of 1 (one).
+With labels rather than numbers,
+this flag is a no-op.
+.ns
+.TP
+.BI \-k x
+Instead of numbering references, use labels as specified in a
+reference data line beginning
+.I %x;
+by default
+.I x
+is
+.B L.
+.ns
+.TP
+.BI \-l m , n
+Instead of numbering references, use labels made from
+the senior author's last name and the year of publication.
+Only the first
+.I m
+letters of the last name
+and the last
+.I n
+digits of the date are used.
+If either
+.I m
+or
+.I n
+is omitted the entire name or date respectively is used.
+.ns
+.TP
+.B \-n
+Do not search the default file /usr/dict/papers/Ind.
+If there is a REFER environment variable,
+the specified file will be searched instead of the default file;
+in this case the
+.B \-n
+flag has no effect.
+.ns
+.TP
+.BI \-p \0bib
+Take the next argument
+.I bib
+as a file of references to be searched.
+The default file is searched last.
+.ns
+.TP
+.BI \-s keys
+Sort references by fields whose key-letters are in the
+.I keys
+string;
+permute reference numbers in text accordingly.
+Implies
+.BR \-e .
+The key-letters in
+.I keys
+may be followed by a number to indicate how many such fields
+are used, with
+.B +
+taken as a very large number.
+The default is
+.B AD
+which sorts on the senior author and then date; to sort, for example,
+on all authors and then title, use
+.BR -sA+T .
+.ns
+.TP
+.BI \-B l.m
+Bibliography mode.
+Take a file composed of records separated by blank lines,
+and turn them into
+.I troff
+input.
+Label
+.I l
+will be turned into the macro
+.I .m
+with
+.I l
+defaulting to
+.B %X
+and
+.I .m
+defaulting to
+.B .AP
+(annotation paragraph).
+.ns
+.TP
+.B \-P
+Place punctuation marks .,:;?! after the reference signal,
+rather than before.
+(Periods and commas used to be done with strings.)
+.ns
+.TP
+.B \-S
+Produce references in the Natural or Social Science format.
+.PP
+To use your own references,
+put them in the format described below.
+They can be searched more rapidly by running
+.IR indxbib (1)
+on them before using
+.I refer;
+failure to index results in a linear search.
+When
+.I refer
+is used with the
+.I eqn,
+.I neqn
+or
+.I tbl
+preprocessors
+.I refer
+should be first, to minimize the volume
+of data passed through pipes.
+.PP
+The
+.I refer
+preprocessor and associated programs
+expect input from a file of references
+composed of records separated by blank lines.
+A record is a set of lines (fields),
+each containing one kind of information.
+Fields start on a line beginning with a ``%'',
+followed by a key-letter, then a blank,
+and finally the contents of the field,
+and continue until the next line starting with ``%''.
+The output ordering and formatting of fields
+is controlled by the macros specified for
+.I nroff/troff
+(for footnotes and endnotes) or
+.I roffbib
+(for stand-alone bibliographies).
+For a list of the most common key-letters
+and their corresponding fields, see
+.IR addbib (1).
+An example of a
+.I refer
+entry is given below.
+.SH EXAMPLE
+.PP
+.nf
+%A	M. E. Lesk
+%T	Some Applications of Inverted Indexes on the \s-1UNIX\s0 System
+%B	\s-1UNIX\s0 Programmer's Manual
+%V	2b
+%I	Bell Laboratories
+%C	Murray Hill, NJ
+%D	1978
+.fi
+.SH FILES
+.ta \w'/usr/dict/papers\0\0'u
+/usr/dict/papers	directory of default publication lists
+.br
+/usr/lib/refer  	directory of companion programs
+.SH SEE ALSO
+addbib(1), sortbib(1), roffbib(1), indxbib(1), lookbib(1)
+.SH AUTHOR
+Mike Lesk
+.SH BUGS
+Blank spaces at the end of lines in bibliography fields
+will cause the records to sort and reverse incorrectly.
+Sorting large numbers of references causes a core dump.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            .so man1/diff.1
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                .so man1/ex.1
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  .\" Copyright (c) 1983 Regents of the University of California.
+.\" All rights reserved.  The Berkeley software License Agreement
+.\" specifies the terms and conditions for redistribution.
+.\"
+.\"	@(#)rcp.1c	6.4 (Berkeley) 5/12/86
+.\"
+.TH RCP 1C "May 12, 1986"
+.UC 5
+.SH NAME
+rcp \- remote file copy
+.SH SYNOPSIS
+.B rcp
+[
+.B \-p
+] file1 file2
+.br
+.B rcp
+[
+.B \-p
+] [
+.B \-r
+] file ... directory
+.SH DESCRIPTION
+.I Rcp
+copies files between machines.  Each
+.I file
+or
+.I directory
+argument is either a remote file name of the
+form ``rhost:path'', or a local file name (containing no `:' characters,
+or a `/' before any `:'s).
+.PP
+If the
+.B \-r
+option
+is specified and any of the source files are directories,
+.I rcp
+copies each subtree rooted at that name; in this case
+the destination must be a directory.
+.PP
+By default, the mode and owner of
+.I file2
+are preserved if it already existed; otherwise the mode of the source file
+modified by the
+.IR umask (2)
+on the destination host is used.
+The
+.B \-p
+option causes
+.I rcp
+to attempt to preserve (duplicate) in its copies the modification
+times and modes of the source files, ignoring the
+.IR umask .
+.PP
+If
+.I path
+is not a full path name, it is interpreted relative to
+your login directory on 
+.IR rhost .
+A 
+.I path
+on a remote host may be quoted (using \e, ", or \(aa)
+so that the metacharacters are interpreted remotely.
+.PP
+.I Rcp
+does not prompt for passwords; your current local user name
+must exist on
+.I rhost
+and allow remote command execution via
+.IR rsh (1C).
+.PP
+.I Rcp
+handles third party copies, where neither source nor target files
+are on the current machine.
+Hostnames may also take the form ``rname@rhost'' to use
+.I rname
+rather than the current user name on the remote host.
+The destination hostname may also take the form ``rhost.rname'' to
+support destination machines that are running 4.2BSD
+versions of
+.I rcp.
+.SH SEE ALSO
+cp(1), ftp(1C), rsh(1C), rlogin(1C)
+.SH BUGS
+Doesn't detect all cases where the target of a copy might
+be a file in cases where only a directory should be legal.
+.br
+Is confused by any output generated by commands in a
+\&.login, \&.profile, or \&.cshrc file on the remote host.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               d([window], [flag])
+Move \fIwindow\fP in or out of foreground.  \fIFlag\fP
+can be one of \fIon\fP, \fIoff\fP,
+\fIyes\fP, \fIno\fP, \fItrue\fP, or \fIfalse\fP, with obvious
+meanings, or it can be a numeric expression, in which case
+a non-zero value is true.  Returns the old foreground flag
+as a number.  Default for \fIwindow\fP is the current window,
+default for \fIflag\fP is no change.
+.TP
+.B label([window], [label])
+Set the label of \fIwindow\fP to \fIlabel\fP.  Returns the old
+label as a string.  Default for \fIwindow\fP is the current
+window, default for \fIlabel\fP is no change.  To turn
+off a label, set it to an empty string ("").
+.TP
+.B list()
+No arguments.  List the identifiers and labels of all windows.  No
+value is returned.
+.TP
+.B nline([nline])
+Set the default buffer size to \fInline\fP.  Initially, it is
+48 lines.  Returns the old default buffer size.  Default is
+no change.  Using a very large buffer can slow the program down
+considerably.
+.TP
+.B select([window])
+Make \fIwindow\fP the current window.  The previous current window
+is returned.  Default is no change.
+.TP
+.B shell([<string-list>])
+Set the default window shell program to \fI<string-list>\fP.  Returns
+the first string in the old shell setting.  Default is no change.  Initially,
+the default shell is taken from the environment variable \fISHELL\fP.
+.TP
+.B source(filename)
+Read and execute the long commands in \fIfilename\fP.  Returns
+-1 if the file cannot be read, 0 otherwise.
+.TP
+.B terse([flag])
+Set terse mode to \fIflag\fP.  In terse mode, the command window
+stays hidden even in command mode, and errors are reported by
+sounding the terminal's bell.  \fIFlag\fP can take on the same
+values as in \fIforeground\fP above.  Returns the old terse flag.
+Default is no change.
+.TP
+.B unalias(alias)
+Undefine \fIalias\fP.  Returns -1 if \fIalias\fP does not exist,
+0 otherwise.
+.TP
+.B unset(variable)
+Undefine \fIvariable\fP.  Returns -1 if \fIvariable\fP does not exist,
+0 otherwise.
+.TP
+.B variables()
+No arguments.  List all variables.  No value is returned.
+.TP
+.B window([row], [column], [nrow], [ncol], [nline], [frame],
+.B [pty], [mapnl], [shell])
+.br
+Open a window with upper left corner at \fIrow\fP, \fIcolumn\fP
+and size \fInrow\fP, \fIncol\fP.  If \fInline\fP is specified,
+then that many lines are allocated for the text buffer.  Otherwise,
+the default buffer size is used.  Default values for
+\fIrow\fP, \fIcolumn\fP, \fInrow\fP, and \fIncol\fP are, respectively,
+the upper, left-most, lower, or right-most extremes of the
+screen.  \fIFrame\fP, \fIpty\fP, and \fImapnl\fP are flag values
+interpreted in the same way as the argument to \fIforeground\fP (see above);
+they mean, respectively, put a frame around this window (default true),
+allocate pseudo-terminal for this window rather than socketpair (default
+true), and map new line characters in this window to carriage return
+and line feed (default true if socketpair is used, false otherwise).
+\fIShell\fP is a list of strings that will be used as the shell
+program to place in the window (default is the program specified
+by \fIshell\fP, see below).  The created window's identifier
+is returned as a number.
+.TP
+.B write([window], [<string-list>])
+Send the list of strings, \fI<string-list>\fP, to \fIwindow\fP, separated
+by spaces but not terminated with a new line.  The strings are actually
+given to the window as input.  No value is returned.  Default
+is the current window.
+.SH "PREDEFINED VARIABLES"
+These variables are for information only.  Redefining them does
+not affect the internal operation of \fIwindow\fP.
+.TP
+.B baud
+The baud rate as a number between 50 and 38400.
+.TP
+.B modes
+The display modes (reverse video, underline, blinking, graphics)
+supported by the physical terminal.  The value of \fImodes\fP is
+the bitwise or of some of the one bit values, \fIm_blk\fP, \fIm_grp\fP,
+\fIm_rev\fP, and \fIm_ul\fP (see below).  These values are useful
+in setting the window cursors' modes (see \fIcursormodes\fP above).
+.TP
+.B m_blk
+The blinking mode bit.
+.TP
+.B m_grp
+The graphics mode bit (not very useful).
+.TP
+.B m_rev
+T

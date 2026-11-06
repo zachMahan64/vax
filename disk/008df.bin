@@ -1,0 +1,2088 @@
+ite new base notes by hitting ``w'' while reading the index page.
+The notesfile system will then invoke an editor
+(
+``ed'' by default; use either of the shell variables NFED or EDITOR to change it).
+After the prompt,
+compose the text you wish to enter, then
+write the text to the disk and leave the editor.  The system will prompt
+you for various options if they are available:  anonymity, director
+message status, and the note's title.
+
+	To write a response to a note type ``w'' while that note or any of
+its responses is displayed. 
+The same steps used to write a base note
+should then be followed.
+
+.ss "Mailing Notesfile Text"
+
+	Both notes and responses can be mailed to other users (with
+optional appended text).
+The capital ``M'' (``mail'') command gives you the opportunity to edit the text then send
+it to anyone.  Its inferior counterpart, ``m'', allows you to mail a message to
+anyone.
+To mail to the author of the text,
+use capital ``P'' (``Personal comment'') to send the text
+and your comments; use ``p'' for a ran arrays begin at 1 by default.
+Fortran arrays are stored in column-major order in contiguous storage,
+C arrays are stored in row-major order.
+Many mathematical libraries have subroutines which transpose a two dimensional
+matrix, e.g. \fBf01crf\fP in the \fB\s-1NAG\s0\fP library and
+\fBvtran\fP in the \fB\s-1IMSL\s0\fP library.
+These may be used to transpose a two-dimensional array stored in C in row-major
+order to Fortran column-major order or vice-versa.
+.Nh 2 Return\ Values
+A function of type
+.B integer,
+.B logical,
+.B real,
+or
+.B "double precision"
+declared as a C function returns the corresponding type.
+A
+.B complex
+or
+.B "double complex"
+function is equivalent to a C routine
+with an additional
+initial argument that points to the place where the return value is to be stored.
+Thus,
+.DS
+complex function f( . . . )
+.DE
+is equivalent to
+.DS
+f_(temp, . . .)
+struct { float r, i; } \(**temp;
+ . . .
+.DE
+A character-valued function is equivalent to a C routine with
+two extra initial arguments:  a data address and a length.
+Thus,
+.DS
+character\(**15 function g( . . . )
+.DE
+is equivalent to
+.DS
+g_(result, length, . . .)
+char result[ ];
+long int length;
+ . . .
+.DE
+and could be invoked in C by
+.DS
+char chars[15];
+ . . .
+g_(chars, 15L, . . . );
+.DE
+Subroutines are invoked as if they were \fBinteger\fR-valued functions
+whose value specifies which alternate return to use.
+Alternate return arguments (statement labels) are not passed to the function,
+but are used to do an indexed branch in the calling procedure.
+(If the subroutine has no entry points with alternate return arguments,
+the returned value is undefined.)
+The statement
+.DS
+call nret(\(**1, \(**2, \(**3)
+.DE
+is treated exactly as if it were the computed
+.B goto
+.DS
+goto (1, 2, 3),  nret( )
+.DE
+.Nh 2 Argument\ Lists
+All Fortran arguments are passed by address.
+In addition,
+for every argument that is of type character or
+that is a dummy procedure,
+an argument giving the length of the value is passed.
+(The string lengths are
+.B "long int"
+quantities passed by value.)
+The order of arguments is then:
+.DS
+Extra arguments for complex and character functions
+Address for each datum or function
+A \fBlong int\fR for each character or procedure argument
+.DE
+Thus, the call in
+.DS
+external f
+character\(**7 s
+integer b(3)
+ . . .
+call sam(f, b(2), s)
+.DE
+is equivalent to that in
+.DS
+int f();
+char s[7];
+long int b[3];
+ . . .
+sam_(f, &b[1], s, 0L, 7L);
+.DE
+.Nh 2 System\ Interface
+To run a Fortran program, the system invokes a small C program which
+first initializes signal handling, then calls \fBf_init\fP to initialize
+the Fortran \s-1I/O\s0 library, then calls your Fortran main program,
+and then calls \fBf_exit\fP to close any Fortran files opened.
+.IP
+\fBf_init\fP initializes Fortran units 0, 5, and 6 to standard error,
+standard input, and standard output respectively.
+It also calls \fBsetlinebuf\fP to initiate line buffering 
+of standard error.
+If you are using Fortran subroutines which may do \s-1I/O\s0
+and you have a C main program,
+call \fBf_init\fP before calling the Fortran subroutines.
+Otherwise, Fortran units 0, 5, and 6 will be connected to files
+\fBfort.0\fP, \fBfort.5\fP, and \fBfort.6\fP,
+and error messages from the \fBf77\fP libraries will be written
+to \fBfort.0\fP instead of to standard error.
+If your C program terminates by calling the C function \fBexit\fP,
+all files are automatically closed.
+If there are Fortran scratch files to be deleted, first call \fBf_exit\fP.
+\fBF_init\fP and \fBf_exit\fP do not have any arguments.
+.IP
+The \fB\(mid\fP flag will show what libraries are used in loading Fortran
+programs.
+.NH 1
+FILE FORMATS
+.XS
+\*(SN File Formats
+.XE
+.Nh 2 Structure\ of\ Fortran\ Files
+Fortran requires four kinds of external files:
+sequential formatted and unformatted,
+and direct formatted and unformatted.
+On
+\s-1UNIX\s0
+systems,
+these are all implemented as ordinary files
+which are assumed to have the proper
+internal structure.
+.IP
+Fortran \s-1I/O\s0 is based on \f2records\f1.
+When a direct file is opened in a Fortran program,
+the record length of the records must be given,
+and this is used by the Fortran \s-1I/O\s0 system to
+make the file look as if it is made up of records
+of the given length.
+In the special case that the record length is given
+as 1,
+the files are not considered to be divided into records,
+but are treated as byte-addressable byte strings;
+that is,
+as ordinary
+\s-1UNIX\s0
+file system files.
+(A read or write request on such a file keeps consuming bytes until
+satisfied, rather than being restricted to a single record.)
+.IP
+The peculiar requirements on sequential unformatted files
+make it unlikely that they will ever be read or written by any means except Fortran \s-1I/O\s0 statements.
+Each record is preceded and followed by
+an integer containing the record's length in bytes.
+.IP
+The Fortran \s-1I/O\s0 system breaks sequential formatted files
+into records while reading by using each newline
+as a record separator.
+The result of reading off the end of a record is undefined according to the Standard.
+The \s-1I/O\s0 system is permissive and
+treats the record as being extended by blanks.
+On output,
+the \s-1I/O\s0 system will write a newline at the end of each
+record.
+It is also possible for programs to write newlines
+for themselves.
+This is an error,
+but the only effect will be that the single record
+the user thought he wrote will be treated as
+more than one record when being read or
+backspaced over.
+.Nh 2 Portability\ Considerations
+The Fortran \s-1I/O\s0 system uses only the facilities of the
+standard C \s-1I/O\s0 library,
+a widely available and fairly portable package,
+with the following two nonstandard features:
+the \s-1I/O\s0 system needs to know whether a file
+can be used for direct \s-1I/O\s0,
+and whether or not it is possible to backspace.
+Both of these facilities are implemented
+using the
+.B fseek
+routine,
+so there is a routine
+.B canseek
+which determines if
+.B fseek
+will have the desired effect.
+Also, the
+.B inquire
+statement provides the user
+with the ability to find out if two files are the
+same,
+and to get the name of an already opened file
+in a form which would enable the program to reopen
+it.
+Therefore there are two routines which
+depend on facilities of the operating system
+to provide these two services.
+In any case,
+the \s-1I/O\s0 system
+runs on the \s-1PDP-11\s0, \s-1VAX-11/780\s0, and Interdata 8/32
+\s-1UNIX\s0
+systems.
+.Nh 2 Logical\ Units\ and\ Files
+Fortran logical unit numbers may be any integer between 0 and 99.
+The number of simultaneously open files is currently limited to 48.
+.IP
+Units 5, 6, and 0 are connected before the program begins to
+standard input, standard output, and standard error respectively.
+.IP
+If an unit is opened explicitly by an \fBopen\fP statement with
+a \fBfile=\fP keyword, then the file name is the name from
+the \fBopen\fP statement.
+Otherwise, the default file name corresponding to unit \fIn\fP is
+\fBfort.\fP\fIn\fP.
+If there is an environment variable whose name is the same as
+the tail of the file name after periods are deleted,
+then the contents of that environment variable
+are used as the name of the file.
+See [9] for details.
+.IP
+The default connection for all units is for sequential formatted \s-1I/O\s0.
+The Standard does not specify where a file which has been explicitly
+\fBopen\fRed
+for sequential \s-1I/O\s0 is initially positioned.
+The \s-1I/O\s0 system will position the file at the beginning.
+Therefore a
+.B write
+will destroy any data already in the file, but a
+.B read
+will work reasonably.
+To position a file to its end,
+use a \fBread\fP loop, or the system dependent function \fBfseek\fP.
+The preconnected units
+0, 5, and 6 are positioned as they come
+from the program's parent process.
+.bp
+.SH
+APPENDIX A:  Differences Between Fortran 66 and Fortran 77
+.XS
+Appendix A.  Differences Between Fortran 66 and Fortran 77
+.XE
+.LP
+The following is a very brief description of the differences
+between the 1966 [2] and the 1977 [1] Standard languages.
+We assume that the reader is familiar with Fortran 66.
+We do not pretend to be complete, precise,
+or unbiased,
+but plan to describe what we feel are the most important aspects of the.\"	@(#)2.2	6.1 (Berkeley) 5/26/86
+.\"
+.ls 1
+.se "Other Commands"
+
+.ss "Returning to the Index Page"
+
+	Type ``i'' (``index'') while reading notes or responses
+to return to the index page.
+
+.ss "Searching Titles for Keywords"
+
+	While reading, you can search backwards for keywords appearing in note titles.
+Typing ``x'' (``x is the unknown title'') prompts for the substring to be found.
+Searching begins
+at the current note (or from the last note shown on the index page)
+and proceeds towards note 1.
+The search is insensitive to upper/lowercase distinctions.
+Use upper case ``X'' to continue the search.
+The search can be aborted by hitting the RUBOUT (or DELETE) key.
+
+.ss "Searching for Authors"
+
+	The ``a'' command searches backwards for notes or responses written by
+a specific author.
+Notesfiles prompts for the author's name. 
+The ``A'' command continues the search  backwards.
+The author name may be preceded by an optional `system!'.
+Abort the search by hitting the RUBOUT (or DELETE) key.
+
+	The entire name need not be specified when searching
+for articles by a particular author.
+Author searching uses substring searching.
+Searching for the author ``john'' will yield articles written
+by a local user ``john'', 
+a remote user ``somewhere!johnston'',
+and any articles from the ``uiucjohnny'' machine.
+Author searching is case sensitive.
+
+.ss "Stacking Notesfiles"
+
+	Sometimes it is useful to be able to 
+glance at another notesfile while reading notes.
+Using ``n'', the user can save (stack) his current place and peruse
+another notesfile.
+
+	When on the index page or while reading notes/responses,
+type ``n'' (``nest'')
+to read another notesfile.
+Notesfiles prompts for the notesfile to read.
+If the notesfile exists, the place is marked in the old notesfile
+and the new one's index is displayed.
+
+	Type any of the standard keys to leave the nested notesfile.
+Both ``q'' and ``Q'' leave the nested notesfile
+and return to the previously stacked notesfile.
+Control-d (``signoff'') causes the notesfile program to exit regardless
+of the depth of nesting.
+
+	Sequencing is turned off in the new notesfile
+regardless of its state in the old notesfile.
+The depth of the stack of notesfiles is limited only by the 
+amount of memory available to the user.
+
+.ss "Accessing Archives"
+
+	As notesfiles grow, it becomes impractical to keep every discussion.
+In some cases, the old discussions are deleted;
+other cases require these old discussions to be saved somewhere.
+Each active notesfile can have an archive notesfile.
+An archive notesfile contains the old discussions from the
+active notesfile.
+
+	The archive of an active notesfile is accessed by explicitly
+naming the notesfile (/usr/spool/oldnotes/micronotes for example)
+or through the ``N'' command from the active notesfile.
+
+.ss "Policy Note"
+
+	A notesfile director can write an optional policy note to describe
+the purpose of a notesfile.
+Read the policy note by typing ``p'' (``policy'') from the index page.
+
+.se "The Sequencer"
+
+	Most users prefer to scan notesfiles and see only those notes written
+since their last reading.
+The notesfile ``sequencer'' provides this capability.
+It is activated by the ``-s'' option (``sequencer'') on the
+command line.
+When the sequencer is activated, the notesfile system automatically remembers
+the last time the user read notes in each notesfile.
+Subsequent entries to the
+notesfile can use the ``last time'' information to show only new notes and
+responses.
+If there is nothing new in a notesfile, 
+the sequencer proceeds to the next notesfile specified in the command line.
+
+	The normal sequencer does not give the user a chance to read
+the notesfile if there are no new notes or responses;
+sometimes it is desirable to be able to do so.
+Use the ``-x'' option
+to enable the sequencer and enter the  notesfile 
+even if there are no new notes.
+
+	No keys need be pressed if there are no new notes in the entire list
+and the normal (``-s'') sequencer mode is selected.
+With the extended (``-x'') sequencer,
+the user must type ``q'', ``Q'', or control-d
+for each notesfile regardless of whether
+there are new notes.
+
+	The ``-i'' mode of sequencing is similar to the ``-s'' mode. 
+Using the ``-i'' mode, notesfiles without new entries are passed over.
+The user starts reading
+on the index page of notesfiles which contain new notes.
+
+.ss "Seeing New Notes and Responses"
+
+	The sequencer always shows the base note of a
+modified note string,
+whether or not is has been shown before,
+in order to establish the context of the new response(s).
+The ``j'' command skips to the next modified text (note or response).
+
+	If the rest of a particular note string seems uninteresting,
+skip to the next modified note string with the ``J'' (``big Jump'')
+command.
+This skips any new responses on the current note string.
+It is common to follow closely only a few note strings,
+skipping others using the ``J'' command.
+
+	The ``last time'' information is kept in a special file for
+each user.
+When the sequencer is enabled, the time for the notesfile
+is loaded into
+a variable and used to specify which notes and responses are new.
+If the sequencer is not enabled, this variable is initialized to
+January 1, 1970.
+The ``j'' and ``J'' keys use this variable to determine which
+notes and responses are ``new''.
+
+	If the sequencer is enabled,
+after exiting a notesfile
+the ``last time'' information 
+is updated to the time that the user entered this notesfile. The
+entry time is used rather than the exit time to ensure that all
+notes are seen, including ones written during the just completed
+session.
+If the sequencer is disabled, the ``last time'' information is
+not modified.
+The ``last time'' information for a particular notesfile is updated
+as that notesfile is exited;
+using ``Q'' or control-D later will have no effect on the sequencer
+information for notesfiles already read.
+
+	The ``o'' and ``O'' commands allow the user to modify the
+variable used to determine whether notes and responses are ``new''.
+The ``o'' command allows the user to set this variable to any 
+date he wishes.
+Use the ``O'' command to set this variable to show
+only notes and responses written that day.
+The ``last time'' file kept for each user is never modified by
+the ``o'' and ``O'' commands.
+
+	When no more new notes or responses exist, both the 
+``j'' and ``J'' commands will take the user to the index page.
+To exit the notesfile, use the ``q'' command.
+Exiting with ``q'' will update the user's
+``last entry'' time.
+Exiting with capital ``Q'' will NOT modify the 
+``last entry'' time for that notesfile
+(neither will control-D).
+
+	The ``l'' and ``L'' command behave similarly to ``j'' and
+``J''.
+The difference is that while ``j'' and ''J' take the user to
+the last index page when no more new notes or responses
+exist, the ``l'' and ``L'' commands will leave the notesfile
+as if a ``q'' had been typed.
+Thus when no more new notes exist, the ``l'' command is
+like typing ``jq''.
+
+.ss "Alternate Sequencers"
+
+	If several people share a login account,
+it is convenient for each to have a set of sequencing
+timestamps.
+This is accomplished through the use of the 
+subsequencer option of notesfiles.
+
+	Specifying the -a option and a subsequencer name
+causes notes to use a different sequencing timestamp file.
+Many different subsequencer names can be used with
+each login account.
+
+	The main sequencer file for a given account is distinct from
+each of its subsequencer files.
+Each of the subsequencer files is normally distinct.
+If the subsequencer names are not unique in their
+first 6 characters, subsequencer files may collide.
+
+.ss "Automatic Sequencing"
+
+	An alternate entry to the notes program
+allows the user to invoke notes with the sequencer enabled and a list
+of notesfiles to be scanned with a single,
+simple
+command.
+The ``autoseq'' command is invoked by typing
+
+	autoseq
+
+and reads the environment variable ``NFSEQ'' to find the names of all 
+notesfiles to be scanned.
+On some systems, the ``autoseq'' command
+may be known as ``readnotes'', ``autonotes'' or some similar
+variant;
+substitute the appropriate name in the following paragraphs.
+The ``NFSEQ'' variable should be defined in .profile for
+Bourne shell  new language.
+The best current information on the 1977 Standard is in publications of the
+\s-1X3J3\s0 Subcommittee of the
+American National Standards Institute, and
+the \s-1ANSI\s0 X3.9-1978 document, the official description of the language.
+The Standard is written in English rather than a meta-language,
+but it is forbidding and legalistic.
+A number of tutorials and textbooks
+are available
+(see Appendix B).
+.NH 0
+Features Deleted from Fortran 66
+.XS
+\*(SN Features Deleted from Fortran 66
+.XE
+.Nh 2 Hollerith
+All notions of ``Hollerith''
+(\fIn\fP\|\fBh\fR)
+as data
+have been officially removed, although our compiler, like almost all in the foreseeable future,
+will continue to support this archaism.
+.Nh 2 Extended\ Range\ of\ DO
+.IP
+In Fortran 66, under a set of very restrictive and rarely-understood conditions, it is permissible
+to jump out of the range of a
+.B do
+loop, then jump back into it.
+Extended range has been removed in the Fortran 77 language.
+The restrictions are so special, and the implementation of extended range is so unreliable in many compilers,
+that this change really counts as no loss.
+.NH 1
+Program Form
+.XS
+\*(SN Program Form
+.XE
+.Nh 2 Blank\ Lines
+Completely blank lines are now legal comment lines.
+.Nh 2 Program\ and\ Block\ Data\ Statements
+A main program may now begin with a statement that gives that program an external name:
+.DS
+program work
+.DE
+Block data procedures may also have names.
+.DS
+block data stuff
+.DE
+There is now a rule that only
+.I one
+unnamed
+block data procedure may appear in a program.
+(This rule is not enforced by our system.)
+The Standard does not specify the effect of the program and block data names,
+but they are clearly intended to aid conventional loaders.
+.Nh 2 ENTRY\ Statement
+Multiple entry points are now legal.
+Subroutine and function subprograms may have additional entry points,
+declared by an
+.B entry
+statement with an optional argument list.
+.DS
+entry extra(a, b, c)
+.DE
+Execution begins at the first statement following the
+.B entry
+line.
+All variable declarations must precede all executable statements in the procedure.
+If the procedure begins with a
+.B subroutine
+statement,
+all entry points are subroutine names.
+If it begins with a
+.B function
+statement, each entry is a function entry point,
+with type determined by the type declared for the entry name.
+If any entry is a character-valued function,
+then all entries must be.
+In a function, an entry name of the same type as that where control entered
+must be assigned a value.
+Arguments do not retain their values between calls.
+(The ancient trick of calling one entry point with a large number of arguments
+to cause the procedure to ``remember'' the locations of those arguments,
+then invoking an entry with just a few arguments for later calculation,
+is still illegal.
+Furthermore, the trick doesn't work in our implementation,
+since arguments are not kept in static storage.)
+.Nh 2 \s-1DO\s0\ Loops
+.B do
+variables and range parameters may now be of integer, real, or double precision types.
+(The use of floating point
+.B do
+variables is very dangerous
+because of the possibility of unexpected roundoff,
+and we strongly recommend against their use.)
+The action of the
+.B do
+statement is now defined for all values of the
+.B do
+parameters.
+The statement
+.DS
+do 10 i = l, u, d
+.DE
+performs
+$ max (0^,^ left floor ( u - l + d ) / d^ right floor )$
+iterations.
+The
+.B do
+variable has a predictable value when exiting a loop:
+the value at the time a
+.B goto
+or
+.B return
+terminates the loop;
+otherwise
+the value that failed the limit test.
+.Nh 2 Alternate\ Returns
+In a
+.B subroutine
+or subroutine
+.B entry
+statement,
+some of the arguments may be noted by an asterisk, as in
+.DS
+subroutine s(a, \(**, b, \(**)
+.DE
+The meaning of the ``alternate returns'' is described
+in section 5.2 of Appendix A.
+.NH 1
+Declarations
+.XS
+\*(SN Declarations
+.XE
+.Nh 2 CHARACTER\ Data\ Type
+One of the biggest improvements to the language is the addition of a character-string data type.
+Local and
+common character variables must have a length denoted by a constant expression:
+.DS
+character\(**17 a, b(3,4)
+character\(**(6+3) c
+.DE
+If the length is omitted entirely, it is assumed equal to 1.
+A character string argument may have a constant length,
+or the length may be declared to be the same as that of the corresponding actual argument at run time
+by a statement like
+.DS
+character\(**(\(**) a
+.DE
+(There is an intrinsic function
+.B len
+that returns the actual length of a character string.)
+Character arrays and common blocks containing character variables must be packed:
+in an array of character variables, the first character of one element must follow the last character of
+the preceding element, without holes.
+.Nh 2 IMPLICIT\ Statement
+The traditional implied declaration rules still hold:
+a variable whose name begins with
+\fBi, j, k, l, m,\fR or \fBn\fR is of type
+\f3integer\f1;
+other variables are of type
+.B real,
+unless otherwise declared.
+This general rule may be overridden with an
+.B implicit
+statement:
+.DS
+implicit real(a-c,g), complex(w-z), character\(**(17) (s)
+.DE
+declares that variables whose name begins with an
+\fBa ,b, c,\fR
+or
+\fBg\fR
+are
+.B real,
+those beginning with
+\fBw, x, y,\fR
+or
+\fBz\fR
+are assumed
+.B complex,
+and so on.
+It is still poor practice to depend on implicit typing, but this statement is an industry standard.
+.Nh 2 PARAMETER\ Statement
+It is now possible to give a constant a symbolic name, as in
+.DS
+character str\(**(\(**)
+parameter (x=17, y=x/3, pi=3.14159d0, str=\(fmhello\(fm)
+.DE
+The type of each parameter name is governed
+by the same implicit and explicit rules as for a variable.
+Symbolic names for \fBcharacter\fP constants may be declared with
+an implied length ``(\(**)''.
+The right side of each equal sign must be a constant expression
+(an expression made up of constants, operators, and already defined parameters).
+.Nh 2 Array\ Declarations
+Arrays may now have as many as seven dimensions.
+(Only three were permitted in 1966.)
+The lower bound of each dimension may be declared
+to be other than 1 by
+using a colon.
+Furthermore, an adjustable array bound may be an integer expression involving constants,
+arguments, and variables in
+.B common.
+.DS
+real a(\(mi5:3, 7, m:n), b(n+1:2\(**n)
+.DE
+The upper bound on the last dimension of an array argument may be denoted by an asterisk
+to indicate that the upper bound is not specified:
+.DS
+integer a(5, \(**),  b(\(**), c(0:1, \(mi2:\(**)
+.DE
+.Nh 2 SAVE\ Statement
+A little known rule of Fortran 66 is that variables in a procedure do
+not necessarily retain their values between invocations of that procedure.
+This rule permits overlay and stack implementations for the affected variables.
+In Fortran 77, three types of variables automatically keep there values:
+variables in blank common,
+variables defined in \fBdata\fP statements and never changed, and 
+variables in named common blocks which have not become undefined.
+At any instant in the execution of a program,
+if a named common block is declared neither in the currently executing procedure
+nor in any of the procedures in the chain of callers,
+all of the variables in that common block become undefined.
+Fortran 77 permits one to specify that certain variables and common blocks are
+to retain their values between invocations.
+The declaration
+.DS
+save a, /b/, c
+.DE
+leaves the values of the variables
+.B a
+and
+.B c
+and all of the contents of common block
+.B b
+unaffected by an exit from the procedure.
+The simple declaration
+.DS
+save
+.DE
+has this effect on all variables and common blocks in the procedure.
+A common block must be \fBsave\fRd in every procedure in which it is declared
+if the desired effect is to occur.
+.Nh 2 INTRINSIC\ Statement
+All of the functions specified in the Standard are in a single category,
+``intrinsic functions'', rather than being divided into ``intrinsic'' and ``basic external'' functions.
+If an intrinsic function is to be passed to another procedure, it must be declared
+.B intrinsic.
+Declaring it
+.B external
+(as in Fortran 66) causes a function other than the built-in one to be passed.
+.NH 1
+Expressions
+.XS
+\*(SN Expressions
+.XE
+.Nh 2 Character\ Constants
+Characteusers as follows:
+
+.nf
+.ls 1
+	NFSEQ=``pbnotes,micronotes,helpnotes,works''
+	export NFSEQ
+.ls
+.fi
+
+For users of the C shell, the following line should be
+added to the .login file:
+
+.nf
+	setenv  NFSEQ   ``pbnotes,micronotes,helpnotes,works''
+.fi
+
+	With NFSEQ assigned this value,
+a call to autoseq will process the notesfiles 
+``pbnotes'',
+``micronotes'',
+``helpnotes'',
+and
+``works''
+with the sequencer turned on.
+
+	The full naming conventions,
+pattern matching capabilities,
+and `!' exclusion 
+described in section 2.2
+(``Notesfile Names and Wildcards'') are available in autoseq.
+To read all notesfiles with ``unix'' in their names, and the
+four test notesfiles (``test1'' though ``test4''), the NFSEQ 
+variable might be defined as:
+
+	NFSEQ=``*unix*,test[1234]''
+
+	If the first character of an entry in the NFSEQ list is ``:'',
+the notesfile system reads the file name following for a list of
+notesfiles. 
+To have the automatic sequencer read the file ``/usr/essick/.nfseq''
+for a list of notesfiles to scan, define NFSEQ as:
+
+	NFSEQ=``:/usr/essick/.nfseq''
+
+	For this feature to work, the  file must have group read
+privileges.
+The notesfile program runs ``set-uid'' and 
+can not read files which are readable only by the owner.
+
+	The following definitions are also valid.
+The first one reads the notesfiles specified in the file ``/usr/essick/.nfseq''
+and then reads the notesfiles pbnotes and micronotes.
+The second definition will read the notesfile pbnotes, those specified in
+``/usr/essick/.nfseq'', micronotes and the ones specified in
+``/usr/essick/.other''.
+If the notesfile program is unable to read the file specified, it
+skips to the next entry.
+For a description of the format of these files, see the section 2.3,
+``The -f Option''.
+
+	NFSEQ=``:/usr/essick/.nfseq,pbnotes,micronotes''
+
+	NFSEQ=``pbnotes,:/usr/essick/.nfseq,micronotes,:/usr/essick/.other''
+
+
+	The automatic sequencer uses the ``-s'' mode of sequencing.
+The user does not enter notesfiles which have no new text.
+By specifying ``-x'' or ``-i'' on the command line, the user can
+use the appropriate sequencer mode.
+
+	The subsequencer option of notes is available from the
+autoseq program by specifying ``-a name'' on the command line, and has
+identical semantics with use of this option when invoking notes.
+
+.se "Environment Variables"
+
+	The notesfile program reads several environment variables to
+tailor the system to the user's preferences.
+Below is a list of the variables,
+their purpose,
+and
+their default values.
+These defaults are for UNIX 4.xBSD and may be slightly different 
+for other versions of UNIX.
+
+.bx
+.ix
+``NFED'' specifies which editor will be invoked when the user writes a
+note or response. 
+If this variable is not specified, the notesfile system looks for
+the environment variable ``EDITOR'' (which many other programs use).
+If neither ``NFED'' nor ``EDITOR'' are defined, a default editor is
+used (/bin/ed).
+.ix 
+``NFSEQ'' is a list of notesfiles that the user wishes to scan using the
+automatic sequencing entry to notesfiles.
+The use of this variable is described in the section on sequencing.
+If unspecified, the system uses a standard set which usually includes
+``general'' and ``net.general''.
+.ix
+``PAGER'' is the paging program (``more'', ``pg'') which is used for scrolling
+the help files.
+The default paging program is /usr/ucb/more.
+.ix
+``MAILER'' determines the mail program to use. This defaults to /usr/ucb/mail.
+.ix
+``WRITE'' is used to specify the program for communication between users.
+If undefined, the Unix program ``write'' is used.
+.ix
+``TERM'' determines the type of terminal in use. This must be set
+for notes to know what screen handling conventions to use. In most
+cases the value will be correctly initialized by the system at login
+time.
+.ix 
+``SHELL'' specifies which shell the user is running.
+This will almost always be set by the operating system.
+.ex
+                                                                                                                                                                                                                   hs have 30 days and all years have 12 months.
+The format of the nfarchive command line is:
+
+	nfarchive [-d] [-m+ or -m-] [-#] [-w#] [-f file] topic
+
+	The -d option specifies that no archiving is to take place;
+the notes eligible are to be deleted.
+
+	The -m option specifies whether to check the director message
+status before archiving notes.
+Use ``-m+'' to archive notes which meet the age requirement and have
+the director message on.
+The ``-m-'' option archives notes of sufficient age with the director
+message turned off.
+If this option is omitted, notes are archived on the basis of age only.
+
+	The -# option specifies the age of eligible notes. The
+increment is days.
+The default is determined by the value of ARCHTIME in `parms.h' and 
+is distributed as fourteen days.
+Each notesfile can specify a (possibly) different expiration
+threshold.
+Normally the notesfile will specify `default' and nfarchive
+uses the time specified on its command line.
+Ages specified in a notesfile override the times given on the
+nfarchive command line.
+
+	The -w# parameter specifies the working set size to
+use for notesfiles which do not specify a working set size.
+This determines a minimum number of notes to remain in a notesfile.
+If unspecified, the default working set size is 0.
+This value can be changed through the WORKSETSIZE variable
+in ``parms.h''.
+
+	Working sets and expiration thresholds work together 
+in the following manner.
+Nfarchive first determines a maximum number of notes to delete.
+This is calculated from the number of notes in the notesfile
+(total notes minus ``holes'' caused by deletions)
+and the working set size.
+The archival program proceeds through the notesfile deleting
+notes older than the expiration threshold until it runs
+out of notes or the maximum number of notes has been deleted.
+
+	The -f option specifies a file containing a list of notesfiles
+to be archived.
+Multiple -f parameters are permitted and can be intermixed with
+`topic' parameters.
+Notesfile name pattern matching is performed on both `topic' parameters
+and the entries in a file specified by the -f option.
+
+	Mapping between an active notesfile and its archive is
+listed in the file ``.utilities/net.aliases/Archive-into''.
+This file contains pairs of ABSOLUTE notesfile names
+(``/usr/spool/notes/mynotes'' instead of ``mynotes'').
+The first entry specifies the active notesfile;
+the second entry specifies the archive notesfile.
+Notesfiles not appearing in the archive mapping file will
+be placed in ``/usr/spool/oldnotes'' with the same
+final component as the active notesfile.
+Conflicts are possible.
+If unmapped, the notesfiles ``/usr/spool/notes/mynotes'' and
+``/some/other/place/mynotes'' will be archived into
+the same archive ``/usr/spool/oldnotes/mynotes''.
+
+.ss "Cleaning Sequencer Files"
+
+	A tool to remove sequencer entries for deleted users will be 
+included in future releases of the notesfile package. 
+This tool will traverse the sequencer directory removing files
+belonging to users whose signons no longer exist.
+The process can be made automatic by including an entry in the cron table.
+
+	A second sequencer related utility will traverse
+the sequencer directory
+and remove entries for deleted notesfiles.
+A similar user program will be provided to permit users to remove
+their sequencer entries for notesfiles that they no longer peruse.
+
+.ss "Additions to System Boot"
+
+	Since the notesfile system maintains several lock files to 
+ensure mutual exclusion of each notesfile, a line similar to the following
+should be added to the /etc/rc or /etc/rc.local file:
+
+	rm -f /usr/spool/notes/.locks/*
+
+	Make sure `/usr/spool/notes' matches the MSTDIR parameter in the
+Makefile. 
+This line will remove any locks left if the system has
+crashed.
+                                                                                                                                                                                                                                                                                                                                                           r string constants are marked by strings surrounded by apostrophes.
+If an apostrophe is to be included in a constant, it is repeated:
+.DS
+ \(fmabc\(fm
+ \(fmain\(fm\(fmt\(fm
+.DE
+Although null (zero-length) character strings are not allowed in the
+standard Fortran, they may be used with \fBf77\fP.
+Our compiler has two different quotation marks, `` \(fm '' and `` " ''.
+(See section 2.9 in the main text.)
+.Nh 2 Concatenation
+One new operator has been added,
+character string concatenation, marked by a double slash
+``//''.
+The result of a concatenation
+is the string containing the characters
+of the left operand followed by the characters of
+the right operand.
+The character expressions
+.DS
+ \(fmab\(fm // \(fmcd\(fm
+ \(fmabcd\(fm
+.DE
+are equal.
+.IP
+Dummy arguments of type character may be declared with implied
+lengths:
+.DS
+subroutine s ( a, b )
+character a\(**(\(**), b\(**(\(**)
+.DE
+Such dummy arguments may be used in concatenations in assign statements:
+.DS
+s = a // b
+.DE
+but not in other contexts.  For example:
+.DS
+if( a // b .eq. \(fmabc\(fm ) key = 1
+call sub( a // b )
+.DE
+are legal statements if ``a'' and ``b'' are dummy arguments
+declared with explicit lengths, or if they are not arguments.
+These are illegal if they are declared with implied lengths.
+.Nh 2 Character\ String\ Assignment
+The left and right sides of a character assignment may not share storage.
+(The assumed implementation of character assignment is to copy characters from the right to the left side.)
+If the left side is longer than the right, it is padded with blanks.
+If the left side is shorter than the right, trailing characters are discarded.
+Since the two sides of a character assignment must be disjoint, the
+following are illegal:
+.DS
+str = \(fm\ \(fm // str
+str = str(2:)
+.DE
+These are not flagged as errors during compilation or execution,
+however the result is undefined.
+.Nh 2 Substrings
+It is possible to extract a substring of a character variable or character
+array element, using the colon notation:
+.DS
+a(i,\|j) (m:n)
+.DE
+is the string of $(n-m+1)$ characters beginning at the
+$m sup th$ character of the character array element $a sub ij$.
+Results are undefined unless $m<=n$.
+Substrings may be used on the left sides of assignments and as procedure actual arguments.
+.Nh 2 Exponentiation
+It is now permissible to raise real quantities to complex powers,
+or complex quantities to real or complex powers.
+(The principal part of the logarithm is used.)
+Also, multiple exponentiation is now defined:
+.DS
+a\(**\(**b\(**\(**c is equivalent to a \(**\(** (b\(**\(**c)
+.DE
+.Nh 2 Relaxation\ of\ Restrictions
+Mixed mode expressions are now permitted.
+(For instance,
+it is permissible to combine integer and complex quantities in an expression.)
+.IP
+Constant expressions are permitted where a constant is allowed,
+except in
+.B data
+statements
+and
+.B format
+statements.
+(A constant expression is made up of explicit constants and
+\fBparameter\fRs
+and the Fortran operators,
+except for exponentiation to a floating-point power.)
+An adjustable dimension may now be an integer expression involving constants,
+arguments, and variables in
+.B common.
+.IP
+Subscripts may now be general integer expressions;
+the old
+$c v +- c'$
+rules have been removed.
+.B do
+loop bounds may be general integer, real, or double precision expressions.
+Computed
+.B goto
+expressions and \s-1I/O\s0 unit numbers may be general integer expressions.
+.NH 1
+Executable Statements
+.XS
+\*(SN Executable Statements
+.XE
+.Nh 2 IF-THEN-ELSE
+At last, the
+if-then-else
+branching structure has been added to Fortran.
+It is called a ``Block If\|''.
+A Block If begins with a statement of the form
+.DS
+if ( . . . ) then
+.DE
+and ends with an
+.DS
+end if
+.DE
+statement.
+Two other new statements may appear in a Block If.
+There may be several
+.DS
+else if (. . .) then
+.DE
+statements,
+followed by at most one
+.DS
+else
+.DE
+statement.
+If the logical expression in the Block If statement is true,
+the statements following it up to the next
+.B "else if",
+.B else,
+or
+.B "end if"
+are executed.
+Otherwise, the next
+.B "else if"
+statement in the group is executed.
+If none of the
+.B "else if"
+conditions are true, control passes to the statements following the
+.B else
+statement, if any.
+(The
+.B else
+block must follow all
+.B "else if"
+blocks in a Block If.
+Of course, there may be Block Ifs embedded inside of other Block If structures.)
+A case construct may be rendered:
+.DS
+if (s .eq. \(fmab\(fm) then
+ . . .
+else if (s .eq. \(fmcd\(fm) then
+ . . .
+else
+ . . .
+end if
+.DE
+.Nh 2 Alternate\ Returns
+Some of the arguments of a subroutine call may be statement labels preceded by an asterisk, as in:
+.DS
+call joe(j, \(**10, m, \(**2)
+.DE
+A
+.B return
+statement may have an integer expression, such as:
+.DS
+return k
+.DE
+If the entry point has
+$n$
+alternate return (asterisk) arguments
+and if $1<=k<=n$, the return is followed by a branch to the corresponding statement label;
+otherwise the usual return to the statement following the
+.B call
+is executed.
+.NH 1
+Input/Output
+.XS
+\*(SN Input/Output
+.XE
+.Nh 2 Format\ Variables
+A format may be the value of a character expression (constant or otherwise),
+or be stored in a character array, as in:
+.DS
+write(6, \(fm(i5)\(fm) x
+.DE
+.Nh 2 END=,\ ERR=,\ and\ IOSTAT=\ Clauses
+A
+.B read
+or
+.B write
+statement may contain
+.B end=,
+.B err=,
+and
+.B iostat=
+clauses, as in:
+.DS
+write(6, 101, err=20, iostat=a(4))
+read(5, 101, err=20, end=30, iostat=x)
+.DE
+Here 5 and 6 are the
+.I units
+on which the \s-1I/O\s0 is done,
+101 is the statement number of the associated format,
+20 and 30 are statement numbers,
+and
+.B a
+and
+.B x
+are integer variables.
+If an error occurs during \s-1I/O\s0,
+control returns to the program at statement 20.
+If the end of the file is reached,
+control returns to the program at statement 30.
+In any case, the variable referred to in
+the
+.B iostat=
+clause is given a value when
+the \s-1I/O\s0 statement finishes.
+(Yes, the value is assigned to the name on the right side of the equal sign.)
+This value is zero if all went well,
+negative for end of file,
+and some positive value for errors.
+.Nh 2 Formatted\ \s-1I/O\s0
+.NH 3
+Character Constants
+.IP
+Character constants in formats are copied literally to the output.
+.IP
+A format may be specified as a character constant within the
+.B read
+or
+.B write
+statement.
+.DS
+write(6,\|\(fm(i2,\|\(fm\|\(fm isn\|\(fm\|\(fm\|\(fm\|\(fm\|t \|\(fm\|\(fm,i1)\|\(fm) 7, 4
+.DE
+produces
+.DS
+ 7 isn\|\(fm\|t 4
+.DE
+In the example above, the format is the character constant
+.DS
+(i2,\|\(fm isn\|\(fm\|\(fmt \|\(fm,i1)
+.DE
+and the embedded character constant
+.DS
+ isn\|\(fmt
+.DE
+is copied into the output.
+.IP
+The example could have been written more legibly by taking advantage
+of the two types of quote marks.
+.DS
+write(6,\|\(fm(i2," isn\|\(fm\|\|\(fm\|t ",i1)\|\(fm) 7, 4
+.DE
+However, the double quote is not standard Fortran 77.
+.IP
+The standard does not allow reading into character constants or
+Hollerith fields.
+In order to facilitate running older programs, the Fortran \s-1I/O\s0 library
+allows reading into Hollerith fields; however this is a practice to be
+avoided.
+.NH 3
+Positional Editing Codes
+.IP
+.B t,
+.B tl,
+.B tr,
+and
+.B x
+codes
+control where the
+next character is in the record.
+\fBtr\fIn\fR
+or
+\fIn\fBx\fR
+specifies that the next character is
+$n$ to the right of the current position.
+\fBtl\fIn\fR
+specifies that the next character is
+$n$ to the left of the current position,
+allowing parts of the record to be reconsidered.
+\fBt\fIn\fR
+says that the next character is to be character
+number $n$ in the record.
+(See section 3.3 in the main text.)
+.NH 3
+Colon
+.IP
+A colon in the format terminates the \s-1I/O\s0 operation
+if there are no more data items in the \s-1I/O\s0 list,
+otherwise it has no effect.
+In the fragment
+.DS
+x=\(fm("hello", :, " there", i4)\(fm
+write(6, x) 12
+write(6, x)
+.DE
+the first
+.B write
+statement prints
+.DS
+hello there 12
+.DE
+while the second only prints
+.DS
+hello
+.DE
+.NH 3
+Optional Plus Signs
+.IP
+According to the Standard,
+each implementation has the option of putting
+plus signs in front of non-negative
+numeric output.
+The
+.B sp
+format code may be used to make the optional plus
+signs actually appear for all subseque.\"	@(#)3.1	6.1 (Berkeley) 5/26/86
+.\"
+.ls 1
+.ch "Managing Notesfiles"
+
+	The notesfile system is installed by a user who is known as the
+``owner'' of the notesfiles (UIUCDCS uses user ``notes'').
+This user can create, delete, rename, and initiate networking of notesfiles.
+Each notesfile is assigned a set of ``directors'' (who may or may not be
+associated with owner of notesfiles).  The directors have special privileges
+for managing the notesfile (see below).
+The ``owner'' rarely manages the day to day aspects of a notesfile,
+although he has director, read, write and response privileges to
+all notesfiles for
+handling emergencies and failures.
+
+.se "Director Options"
+
+	The director can:
+
+.bx
+.ix
+Change the access permissions.
+.ix
+Write the policy note.
+.ix
+Change the notesfile title and director message.
+.ix
+Open or close the notesfile.
+.ix
+Allow the notesfile to be networked.
+.ix
+Permit or restrict anonymous notes.
+.ix
+Compress the notesfile.
+.ix
+Change the notesfile's archival parameters.
+.ix
+Delete notes and responses.
+.ix
+Toggle director message on any note or response.
+.ex
+
+	The director can delete notes or toggle the director message
+above them while reading the notes.
+Access other options
+by typing ``d'' on the index page.  A display like this results:
+.KS
+.nf
+
+.ce 99
+Workstation Discussion
+*** Your Director Message Here ***
+
+.ce 0
+.ta 3i
+(a) Anonymous:   ON	Policy Note Exists: YES
+(o) Notesfile:   OPEN	Next note in slot: 1
+(n) Networked:   YES	Deleted Notes (holes): 0  
+(A) Is Archive:  NO	Deleted Responses (holes): 0  
+(e) Expiration Threshold: Default
+(E) Expiration Action:    ARCHIVE
+(D) Archive with Dirmsg:  NOCARE   
+(W) Working Set Size:     Default
+(l) Maximum Text/Article: 65000 bytes
+.TA
+
+
+
+
+
+
+Option:
+
+.ce 99
+= = = = = = = = = = = = = = = = = =
+.ce 0
+.fi
+.KE
+
+	Options available on this page include:  access lists, policy
+note writing, title and director messages, open/close notesfile,
+network enabling, anonymous notes, notesfile compress, and delete
+a list of notes.
+
+.ss "Access Lists"
+
+	The notesfile system allows directors to allow or restrict access
+to each notesfile.
+The access list can allow or deny read, write, respond, and director
+options to any user, group, or system.
+Type ``p'' (``permissions'') on the director options page
+to enter the access list editor.
+The system prompts for an option:
+``m'' to modify an extant entry, ``d'' to delete
+an entry, ``i'' to insert a new entry, ``r'' to replot the list,
+``q'' to quit editing the access list, and
+capital ``Q'' to quit editing the access list and IGNORE ANY CHANGES MADE.
+Delete or modify entries by entry number.  Scroll the entries using ``+'' and
+``-''.
+
+	After typing ``i'' to insert a new entry,
+the system prompts for a user type
+(``u'' for user, ``g'' for group, ``s'' for system).
+The system then prompts for the name of the user, group, or system.
+(Users and groups must be valid names)
+The default access options
+are then displayed: read, write, answer (for responses).  Use the keys
+``r'', ``w'', ``a'', and ``d'' to toggle the read, write, answer, and director
+privileges respectively.  Some options automatically
+enable others (e.g., ``w'' for writing automatically enables ``a'' for answering).
+It is not possible to remove answer access while write access is enabled.
+The ``n'' key will remove all privileges (``no access'').
+Type return (or ``q'') when the correct options have been entered.
+The system prompts for another user.  Press return at the prompt to exercise
+other access list options.
+
+	The access machinery checks user names before checking
+group names.
+If user ``john'' explicitly has no
+access but his group does, he will nevertheless be denied access to the file.
+If there is no explicit entry for user ``john'', a check is made for
+permissions granted to his group(s).
+(n.b.: an entry for user ``Other'' will match all users, 
+circumventing group permissions.
+The behavior typically desired can be achieved with a 
+group ``Other'' just as well.)
+
+	If no explicit user entry exists, a search for group permissions
+is initiated.
+Users can belong to more than one group
+(although kernels such as Version 7 only allow one at a time)
+and the notesfile code checks each of the user's groups.
+If permissions for several of these groups exist,
+the user is given the inclusive OR of the several permissions.
+If none of the user's groups are given permission, a
+default permission specified by group ``Other'' is usually
+assigned.
+The ``Other'' entry matches when none of the other group entries
+have matched.
+This entry can be deleted, in which case no access is granted.
+
+	The current implementation of system access
+enforcement is naive.
+The network software will send to a system only if it has read permission.
+Reception allows intermediaries
+to pass on notes even if they are not allowed write access to the notesfile;
+the access permission is determined from the originating system of each note
+or response
+instead of the site actually delivering the article.
+The name ``Other'' (capital ``O'') matches any system name not
+mentioned explicitly.
+
+	Many notesfiles allow several users and groups to have
+read/write access,
+a single user to have director access
+(in addition to the notesfile ``owner''),
+and all other users no access.
+
+	When a notesfile is first created, a default access 
+list is created.
+The notesfile ``owner'' is made director, group ``Other''
+and system ``Other'' are both given read/write access
+to the notesfile.
+If the file ``/usr/spool/notes/.utilities/access-template''
+exists, it contains a list of access-rights to add to
+the new notesfile's access list.
+The file contains lines of access-rights in the format used
+by the nfaccess program.
+Access-rights look like ``user:essick=drwa'';
+for more information on the format of these entries,
+see the man(I) page for nfaccess.
+
+.ss "Policy Note"
+
+	Type ``w'' (``write policy'') on the director option page to write a policy
+note (just like writing any other note).
+
+.ss "Title & Director Messages"
+
+	Change the notesfile title with ``t'', the director message with ``m''.
+The
+system prompts for a new message.
+Typing only a carriage return will not change the old message.
+
+.ss "Open/Close"
+
+	Type ``o'' (``open'') to toggle the availability of the notesfile (subject to
+the access list).
+Closed notesfiles are unavailable to non-directors.
+
+.ss "Network Options"
+
+	Type ``n'' (``network'') to toggle the availability of the notesfile
+for networking.
+Arrangements must be made with the notesfile system ``owner'' to do the network
+transfers.
+
+.ss "Anonymous Notes"
+
+	Type ``a'' (``anonymous'') to toggle the availability of
+anonymous notes in the notesfile.
+The availability of the anonymous option may provoke slanderous
+attacks from users
+(whose anonymity is completely protected).
+
+.ss "Compression"
+
+	Type ``c'' (``compress'') to compress the notesfile.  As notes
+are deleted, their text and index space is not reclaimed.  This command
+reclaims the space.  The notesfile must be closed.  On a VAX 11/780,
+20 seconds of real time (on a slightly loaded system) is required to
+reclaim the space of a notesfile with 50 remaining notes
+(compression time is dependent on remaining notes).
+Notesfiles should be compressed whenever many of their notes have been
+deleted.
+The notesfile archiver ``nfarchive'' and cron(8) can be used to automate this
+process.
+
+	The director's option page displays a count of ``holes''
+left by deleted notes and responses.
+This can be used as an indication of how much wasted space is within
+the notesfile.
+
+.ss "Expiration Threshold"
+
+	The `e' command allows a notesfile director to
+modify the notesfile's expiration threshold.
+Possible values include specific numbers of days, `default'
+and `never'.
+The value can be left unchanged by not specifying a 
+new value.
+The `default' value is assigned to new notesfiles;
+directors can change it as needed.
+
+	The notesfile archiving program (nfarchive) examines the
+expiration threshold of each notesfile it processes.
+This threshold determines how long a note string must be inactive
+before it is eligible for archival.
+The `Default' expiration threshold uses the expiration time
+specified on the `nfarnt items
+while the format is active.
+The
+.B ss
+format code guarantees that the \s-1I/O\s0 system will not
+insert the optional plus signs,
+and the
+.B s
+format code restores the default behavior of
+the \s-1I/O\s0 system.
+(Since we never put out optional plus signs,
+.B ss
+and
+.B s
+codes have the same effect in our implementation.)
+.NH 3
+Blanks on Input
+.IP
+Blanks in numeric input fields,
+other than leading blanks,
+will be ignored following a
+.B bn
+code in a format
+statement,
+and will be treated as zeros following a
+.B bz
+code in a format statement.
+The default for a unit may be changed by using
+the
+.B open
+statement.
+(Blanks are ignored by default.)
+.NH 3
+Unrepresentable Values
+.IP
+The Standard requires that if a numeric item
+cannot be represented in the form required by a format code,
+the output field must be filled with asterisks.
+(We think this should have been an option.)
+.NH 3
+Iw.m
+.IP
+There is a new integer output code,
+\fBi\fIw.m.\fR
+It is the same as
+\fBi\fIw\fR,
+except that there will be at least $m$
+digits in the output field,
+including,
+if necessary,
+leading zeros.
+The case \fBi\fR$w.0$ is special,
+in that if the value being printed is 0,
+the output field is
+entirely blank.
+\fBi\fIw\fB.1\fR
+is the same as
+\fBi\fIw\fR.
+.NH 3
+Floating Point
+.IP
+On input, exponents may start with the letter
+\fBE, D, e, \fRor \fBd.\fR
+All have the same meaning.
+On output we always use \fBe\fR or \fBd\fR.
+The
+.B e
+and
+.B d
+format codes also have identical meanings.
+A leading zero before the decimal point in
+.B e
+output
+without a scale factor is optional with the
+implementation.
+There is a
+\fBg\fIw.d\fR
+format code which is the same as
+\fBe\fIw.d\fR
+and
+\fBf\fIw.d\fR
+on input,
+but which chooses
+.B f
+or
+.B e
+formats for output depending
+on the size of the number and of $d$.
+.NH 3
+``A'' Format Code
+.IP
+The
+.B a
+code is used for character data.
+\fBa\fIw\fR
+uses a field width of $w$,
+while a plain
+.B a
+uses the length of the internal character item.
+.Nh 2 Standard\ Units
+There are default formatted input and output units.
+The statement
+.DS
+read 10, a, b
+.DE
+reads from the standard unit using format statement 10.
+The default unit may be explicitly specified by an asterisk, as in
+.DS
+read(\(**, 10) a, b
+.DE
+Similarly, the standard output unit is specified by a
+.B print
+statement or an asterisk unit:
+.DS
+print 10
+write(\(**, 10)
+.DE
+.Nh 2 List-Directed\ \s-1I/O\s0
+List-directed \s-1I/O\s0 is a
+kind of free form input for sequential \s-1I/O\s0.
+It is invoked by using an asterisk as the
+format identifier, as in
+.DS
+read(6, \(**) a,b,c
+.DE
+.IP
+On input,
+values are separated by strings of blanks
+and possibly a comma.
+On \s-1UNIX\s0, tabs may be used
+interchangeably with blanks as separators.
+Values,
+except for character strings,
+cannot contain blanks.
+End of record counts as a blank,
+except in character strings,
+where it is ignored.
+Complex constants are given as two real constants
+separated by a comma and enclosed in parentheses.
+A null input field,
+such as between two consecutive commas,
+means the corresponding variable in the
+\s-1I/O\s0 list is not changed.
+Values may be preceded by repetition counts,
+as in
+.DS
+4\(**(3.,2.)  2\(**, 4\(**\|\(fm\|hello\|\(fm
+.DE
+which stands for 4 complex constants, 2 null values,
+and 4 string constants.
+.IP
+The Fortran standard requires data being read into \fBcharacter\fP variables
+by a list-directed read to be enclosed in quotes.
+In our system, the quotes are optional for strings which do not start with
+a digit or quote and do not contain separators.
+.IP
+For output, suitable formats are chosen for
+each item.
+The values of character strings are printed;
+they are not enclosed in quotes.
+According to the standard,
+they could not be read back
+using list-directed input.
+However much of this data could be read back in with list-directed
+\s-1I/O\s0 on our system.
+.Nh 2 Direct\ \s-1I/O\s0
+A file connected for direct access consists of
+a set of equal-sized records each of which is
+uniquely identified by a positive integer.
+The records may be written or read in any order,
+using direct access \s-1I/O\s0 statements.
+.IP
+Direct access
+.B read
+and
+.B write
+statements
+have an extra argument,
+.B rec=,
+which gives the record number to be read or written.
+.DS
+read(2, rec=13, err=20) (a(i), i=1, 203)
+.DE
+reads the thirteenth record into the array
+.B a.
+.IP
+The size of the records must be given by an
+.B open
+statement
+(see below).
+Direct access files may be connected for either formatted
+or unformatted \s-1I/O\s0.
+.Nh 2 Internal\ Files
+Internal files are character string objects,
+such as variables or substrings,
+or arrays of type character.
+In the former cases there is only a single record
+in the file;
+in the latter case each array element is a record.
+The Standard includes only sequential
+formatted \s-1I/O\s0 on internal files.
+(\s-1I/O\s0 is not a very precise term to use here,
+but internal files are dealt with using
+.B read
+and
+.B write.)
+Internal files are used by giving the name of the
+character object in place of the unit number, as in
+.DS
+character\(**80 x
+read(5,\(fm(a)\(fm) x
+read(x,\(fm(i3,i4)\(fm) n1,n2
+.DE
+which reads a character string into
+.B x
+and then reads
+two integers from the front of it.
+A sequential
+.B read
+or
+.B write
+always starts at the beginning
+of an internal file.
+.IP
+We also support two extensions of the standard.  The first is
+direct \s-1I/O\s0 on internal files.
+This is like direct \s-1I/O\s0 on external files,
+except that the number of records in the file cannot be
+changed.
+In this case a record is a single element of an array of character strings.
+The second extension is list-directed \s-1I/O\s0 on internal files.
+.Nh 2 OPEN,\ CLOSE,\ and\ INQUIRE\ Statements
+These statements are used to connect and disconnect
+units and files,
+and to gather information about units and files.
+.NH 3
+OPEN
+.IP
+The
+.B open
+statement is used to connect a file with a
+unit,
+or to alter some properties of the connection.
+The following is a minimal example.
+.DS
+open(1, file=\(fmfort.junk\(fm)
+.DE
+.B open
+takes a variety of arguments with meanings described below.
+.EQ
+delim off
+.EN
+.	\" macros here
+.de HP
+.RT
+.if !\\(IP .nr IP +1
+.sp \\n(PDu
+.ne 3v
+.in +\\n(PIu
+.ti -\\n(PIu
+\fB\\$1\fR\ \c
+..
+.de P1
+.KS
+.nf
+.in +.3i
+.ta .3i .6i .9i 1.2i 1.5i 1.8i
+.sp
+..
+.de P2
+.fi
+.in -.3i
+.sp
+.KE
+..
+.de TH
+.RT
+.sp \\n(PDu
+.ne 3v
+\fB\\$1\\$2\\$3\\$4\\$5\\$6\fR\ \c
+..
+.	\" end of macros
+.RS
+.HP unit=
+an integer between 0 and 99 inclusive which is the unit to
+which the file is to be connected (see section 5.3 in the text).
+If this parameter is the first one in the
+.B open
+statement,
+the
+.B unit=
+can be omitted.
+.HP iostat=
+is the same as in
+.B read
+or
+.B write.
+.HP err=
+is the same as in
+.B read
+or
+.B write.
+.HP file=
+a character expression,
+which when stripped of trailing blanks,
+is the name of the file to be connected to the unit.
+The file name should not be given if the
+.B status=\(fmscratch\(fm.
+.HP status=
+one of
+.B \(fmold\(fm,
+.B \(fmnew\(fm,
+.B \(fmscratch\(fm,
+or
+.B \(fmunknown\(fm.
+If this parameter is not given,\p
+.B \(fmunknown\(fm
+is assumed.
+The meaning of
+.B \(fmunknown\(fm
+is processor dependent;
+our system will create the file if it doesn't exist.
+If
+.B \(fmscratch\(fm
+is given,
+a temporary file will be created.
+Temporary files are destroyed at the end of execution.
+If
+.B \(fmnew\(fm
+is given, the file must not exist.
+It will be created for both reading and writing.
+If
+.B \(fmold\(fm
+is given, it is an error for the file not to exist.
+.HP access=
+.B \(fmsequential\(fm
+or
+.B \(fmdirect\(fm,
+depending on whether the file is
+to be opened for sequential or direct \s-1I/O\s0.
+.HP form=
+.B \(fmformatted\(fm
+or
+.B \(fmunformatted\(fm.
+On
+\s-1UNIX\s0
+systems,
+.B form=\(fmprint\(fm
+implies
+.B \(fmformatted\(fm
+with vertical format control.
+(See section 3.4 of the text).
+.HP recl=
+a positive integer specifying the record length of
+the direct access file being opened.
+We measure all record lengths in bytes.
+On
+\s-1UNIX\s0
+systems a record length of 1 has the special meaning explained
+in section 5.1 of the text.
+.HP blank=
+.B \(fmnull\(fm
+or
+.B \(fmzero\(fm.
+This parameter has meaning only for formatted \s-1I/O\s0.
+The default value is
+.B \(fmnull\(fm.
+.Bchive' command line; 
+this is usually 2 weeks.
+Specific ages can be specified.
+The age specified in the notesfile overrides the value 
+on the `nfarchive' command line.
+The `Never' threshold tells `nfarchive' that this notesfile is
+not to be archived.
+
+.ss "Working Set Size"
+
+	Each notesfile contains a working set of notes.
+The working set is the number of notes left in the notesfile
+by the nfarchive program.
+When nfarchive runs, it determines a maximum number of notes
+to delete.
+This number is the number of notes written in the notesfile
+minus the number of ``holes'' caused by deletions minus
+the working set size.
+Nfarchive will leave a ``working set size'' of notes in
+the notesfile;
+if fewer notes existed in the notesfile, no notes are
+archived.
+
+	The working set size can be changed by the `s' command
+from the director page.
+Possible values include ``default'' and specific numbers.
+``Default'' specifies that the value supplied during
+the nfarchive run is to be used;
+explicit values in the notesfile always override values
+specified on the nfarchive command line.
+
+.ss "Expiration Action"
+
+	Each notesfile can decide on the destination of expired 
+notestrings.
+The expiration action field takes one of the values
+``Default'', ``Archive'' or ``Delete''.
+Archive and delete specify that expired notes are to be
+archived and deleted respectively.
+The default entry specifies that the expiration action should
+follow that specified on the nfarchive command line.
+
+.ss "Expire With Director Message"
+
+	Notesfiles can decide how to expire based on director
+message status individually.
+This option can assume four values:
+``Default'',
+``Nocare'',
+``On'',
+and 
+``Off''.
+The on and off values specify that only notes with the
+director message on or off respectively are eligible for
+expiration.
+The nocare value specifies that the director message status
+is not checked; both director and non-director marked notes
+are eligible for expiration.
+Select the default entry to use the value of this parameter
+as specified on the nfarchive command line.
+
+.ss "Maximum Text per Article"
+
+	The notesfile system imposes limits on the size of
+each article.  Earlier versions restricted articles to 64 kbytes;
+the current version provides for articles up to 4 Gigabytes.
+A constant is used to determine
+the actual maximum allowed per article.
+
+	Each notesfile can select a maximum text length per
+article.
+This limit is not allowed to exceed the hard-coded limit
+(currently 3 Mbytes).
+Articles exceeding this limit are truncated and a message
+detailing the count of excess bytes and the system responsible
+for truncating the text is appended.
+
+	Initially the maximum text length is set to the 
+highest permissible value.
+One reason for lowering the limit is to meet restrictions
+on the size of network transfers.
+
+.ss "Deleting and Un-Deleting Many Articles"
+
+	Type ``z'' (``zap'') to delete many notes (and their
+responses) quickly.
+Enter a list of note numbers or note ranges (aa-bb) separated by spaces.
+Confirm the command with ``y''; other responses will abort the command.
+It is economical and prudent to compress the notesfile
+shortly thereafter.
+Note that deleting notes in a networked notesfile makes those notes
+unavailable to those who poll your system for new notes and responses.
+
+	The ``u'' (undelete) command performs the opposite function
+of the ``z'' command. 
+This command allows you to specify a list of note strings to
+be un-deleted.
+When prompted, the director shoul supply the note numbers he wishes
+to re-activate.
+The specified notes are re-activated and can be viewed as before.
+This command is only effective until a compression of the notesfile;
+after that time the notes are no longer present in the notesfile.
+
+.ss "Director Options for Notes"
+
+	Directors may put a ``director message'' above any note they write.
+There is one single line director message for each notesfile.  Typical
+director messages
+are: ``New Policy'', ``*** This problem fixed or ignored ***'',
+or ``-- Eat Flaming Death Fascist Pigs --''.
+Directors can also toggle the director message on
+a note being
+read (``d'' for ``director message'').
+A director can delete a note (and all its
+responses) or any response while reading the text of the note or response
+by typing ``Z'' (``zap this one'') and confirming with ``y''.
+
+.ss "Default Sequencer Lists"
+
+	Some users never set up an ``NFSEQ'' environment variable 
+specifying the notesfile they wish to see.
+The file ``/usr/spool/notes/.utilities/Dflt-Seq'' contains a 
+default list of notesfiles.
+Users without an ``NFSEQ'' variable receive the notesfiles listed
+in this file.
+The file can be changed at anytime and will take effect with
+the next ``autoseq'' by a user.
+
+.se "Creation & Deletion of Notesfiles"
+
+	Only the ``owner'' of the notesfile system can create notesfiles.
+Create notesfiles with the mknf command:
+
+	mknf [ -aon ] topic1 [ ... ]
+
+	The created notesfiles have default status of
+closed, non-networked, and
+no anonymous notes permitted.
+Specify -a to permit anonymous notes in the new notesfiles.
+Use -o to have the notesfiles marked open for general use and
+the -n option to enable the notesfiles' network availability.
+These status flags can all be modified from the directors page at later
+times.
+
+	Delete notesfiles with rmnf:
+
+	rmnf [ -f ] topic1 [ ... ]
+
+Each notesfile to be removed must be verified with ``y'' after a
+prompt -- anything else will leave that notesfile intact.
+Use the -f option to blindly remove notesfiles;
+the verification step is bypassed when ``rmnf'' is invoked
+with the -f option.
+
+	The file /usr/spool/notes/.utilities/avail.notes contains
+a list of the public notesfiles.
+The notesfile owner should update this file when he creates
+new notesfiles;
+this file is not automatically updated by ``mknf'' and ``rmnf''.
+The contents and format of the file are at the discretion of the
+notesfile system owner.
+
+.se "Intersystem Notesfiles"
+
+	The notesfile system provides for intersystem notesfiles
+in an arbitrary connected network.
+Copies of a shared notesfile must exist on each
+of the systems wishing to read notes for that notesfile.
+The contents are kept in synchrony through occasional exchanges
+over a network (UIUCDCS uses both uucp and TCP/IP).
+Notesfiles to be shared must have their ``network status'' enabled (see
+director options).
+
+	Duplication of notes and responses is prevented by the use of
+unique identifiers.
+Each note and response in a notesfile is assigned a unique number.
+The networking software checks each note as it arrives to
+see if a copy already exists.
+In the event of duplication, the extra copy is discarded and
+the fact is logged in the statistics and the network log.
+
+	In the (hopefully rare) event that a response arrives at a 
+system before the base note does, the network reception program will
+generate a ``foster parent'' for the orphaned response.
+When the true parent arrives,
+the foster parent will be overwritten.
+A count of orphaned responses received is kept and available 
+through use of the nfstats program (see section 4.4).
+
+.ss "Transmitting Notesfile Updates"
+
+	The nfxmit program gathers the new notes and responses in specif

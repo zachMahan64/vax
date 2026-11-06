@@ -1,0 +1,2927 @@
+ing
+true-spirited
+true-spoken
+true-stamped
+true-strung
+true-sublime
+true-sweet
+true-thought
+true-toned
+true-tongued
+trump card
+trumped-up
+trumpet animalcule
+trumpet arch
+trumpet ash
+trumpet-blowing
+trumpet call
+trumpet conch
+trumpet creeper
+trumpet-creeper family
+trumpet daffodil
+trumpeter fish
+trumpeter muscle
+trumpeter perch
+trumpeter swan
+trumpeter whiting
+trumpet fish
+trumpet flower
+trumpet fly
+trumpet honeysuckle
+trumpet-hung
+trumpet hypha
+trumpet-leaf
+trumpet lily
+trumpet-loud
+trumpet major
+trumpet marine
+trumpet milkweed
+trumpet narcissus
+trumpet plant
+trumpet reed
+trumpet seaweed
+trumpet-shaped
+trumpet shell
+trumpet-toned
+trumpet-tongued
+trumpet tree
+trumpet vine
+trumpet-voiced
+trump-poor
+trump signal
+trundle bed
+trunk breeches
+trunk cabin
+trunk deck
+trunk dial
+trunk engine
+trunk hatch
+trunk hatchway
+trunk hose
+trunk line
+trunk piston
+trunk room
+trunk scald
+trunk steamer
+trunk turtle
+trunk whale
+trunnion band
+trunnion carriage
+trunnion chain
+trunnion cradle
+trunnion hoop
+trunnion jig
+trunnion plate
+trs of object modules were used to" "construct a file." "what:" what(1)
+.xx "" "mkfs:" "construct a file system." "" mkfs(8)
+.xx "" "newfs:" "construct a new file system." "" newfs(8)
+.xx "" "mkproto:" "construct a prototype file system." "" mkproto(8)
+.xx "" "deroff: remove nroff, troff, tbl and eqn" "constructs." "" deroff(1)
+.xx "" "setrlimit: control maximum system resource" "consumption." "getrlimit," getrlimit(2)
+.xx "" "vlimit: control maximum system resource" "consumption." "" vlimit(3C)
+.xx "" "/openpl, erase, label, line, circle, arc, move," "cont, point, linemod, space, closepl: graphics/" "" plot(3X)
+.xx "" "badsect: create files to" "contain bad sectors." "" badsect(8)
+.xx "" "ls: list" "contents of directory." "" ls(1)
+.xx "" "sigstack: set and/or get signal stack" "context." "" sigstack(2)
+.xx "" "sh, for, case, if, while, \fB:\fP, \fB.\fP, break," "continue, cd, eval, exec, exit, export, login,/" "" sh(1)
+.xx "" "" "continue: cycle in loop." "" csh(1)
+.xx "" "arp: address resolution display and" "control." "" arp(8C)
+.xx "" "fcntl: file" "control." "" fcntl(2)
+.xx "" "ioctl:" "control device." "" ioctl(2)
+.xx "" "init: process" "control initialization." "" init(8)
+.xx "" "getrlimit, setrlimit:" "control maximum system resource consumption." "" getrlimit(2)
+.xx "" "vlimit:" "control maximum system resource consumption." "" vlimit(3C)
+.xx "" "icmp: Internet" "Control Message Protocol." "" icmp(4P)
+.xx "" "lpc: line printer" "control program." "" lpc(8)
+.xx "" "timedc: timed" "control program." "" timedc(8)
+.xx "" "tcp: Internet Transmission" "Control Protocol." "" tcp(4P)
+.xx "" "syslog, openlog, closelog, setlogmask:" "control system log." "" syslog(3)
+.xx "" "vhangup: virtually ``hangup'' the current" "control terminal." "" vhangup(2)
+.xx "" "uda: UDA-50 disk" "controller interface." "" uda(4)
+.xx "" "up: unibus storage module" "controller/drives." "" up(4)
+.xx "" "term:" "conventional names for terminals." "" term(7)
+.xx "" "ecvt, fcvt, gcvt: output" "conversion." "" ecvt(3)
+.xx "" "long, short: integer object" "conversion." "" long(3F)
+.xx "" "printf, fprintf, sprintf: formatted output" "conversion." "" printf(3S)
+.xx "" "scanf, fscanf, sscanf: formatted input" "conversion." "" scanf(3S)
+.xx "" "units:" "conversion program." "" units(1)
+.xx "" "ns_addr, ns_ntoa: Xerox NS(tm)  address" "conversion routines." "" ns(3N)
+.xx "" "dd:" "convert and copy a file." "" dd(1)
+.xx "" "number:" "convert Arabic numerals to English." "" number(6)
+.xx "" "ranlib:" "convert archives to random libraries." "" ranlib(1)
+.xx "" "atof, atoi, atol:" "convert ASCII to numbers." "" atof(3)
+.xx "" "ctime, localtime, gmtime, asctime, timezone:" "convert date and time to ASCII." "" ctime(3)
+.xx "" "htable:" "convert NIC standard format host tables." "" htable(8)
+.xx "" "bcd:" "convert to antique media." "" bcd(6)
+.xx "" "htonl, htons, ntohl, ntohs:" "convert values between host and network byte order." "" byteorder(3N)
+.xx "" "ad: Data Translation A/D" "converter." "" ad(4)
+.xx "" "ching: the book of changes and other" "cookies." "" ching(6)
+.xx "" "arff, flcopy: archiver and" "copier for floppy." "" arff(8V)
+.xx "" "cp:" "copy." "" cp(1)
+.xx "" "rcp: remote file" "copy." "" rcp(1C)
+.xx "" "uucp: unix to unix" "copy." "" uucp(1C)
+.xx "" "dd: convert and" "copy a file." "" dd(1)
+.xx "" "tcopy:" "copy a mag tape." "" tcopy(1)
+.xx "" "fork: create a" "copy of this process." "" fork(3F)
+.xx "remainder, exponent manipulations." "" "copysign, drem, finite, logb, scalb: copysign," "" ieee(3M)
+.xx "" "copysign, drem, finite, logb, scalb:" "copysign, remainder, exponent manipulations." "" ieee(3M)
+.xx "" "savecore: save a" "core dump of the operating system." "" savecore(8)
+.xx "" "" "core: format of memory image file." "" core(5)
+.xx "" "gcore: get" "core images of running processes." "" gcore(1)
+.xx "system clock." "adjtime:" "correct the time to allow synchronization of the" "" adjtime(2)
+.xx "functions and their inverses." "sin," "cos, tan, asin, acos, atan, atan2: trigonometric" "" sin(3M)
+.xx "" "sinh," "cosh, tanh: hyperbolic functions." "" sinh(3M)
+.xx "" "wc: word" "count." "" wc(1)
+.xx "" "sum: sum and" "count blocks in a file." "" sum(1)
+.xx "" "" "cp: copy." "" cp(1)
+.xx "" "" "crash: what happens when the system crashes." "" crash(8V)
+.xx "" "crash: what happens when the system" "crashes." "" crash(8V)
+.xx "" "" "creat: create a new file." "" creat(2)
+.xx "" "fork:" "create a copy of this process." "" fork(3F)
+.xx "" "creat:" "create a new file." "" creat(2)
+.xx "" "open: open a file for reading or writing, or" "create a new file." "" open(2)
+.xx "" "fork:" "create a new process." "" fork(2)
+.xx "" "socketpair:" "create a pair of connected sockets." "" socketpair(2)
+.xx "" "ctags:" "create a tags file." "" ctags(1)
+.xx "" "socket:" "create an endpoint for communication." "" socket(2)
+.xx "" "mkstr:" "create an error message file by massaging C source." "" mkstr(1)
+.xx "" "pipe:" "create an interprocess communication channel." "" pipe(2)
+.xx "" "badsect:" "create files to contain bad sectors." "" badsect(8)
+.xx "" "addbib:" "create or extend bibliographic database." "" addbib(1)
+.xx "" "catman:" "create the cat files for the manual." "" catman(8)
+.xx "" "umask: change or display file" "creation mask." "" csh(1)
+.xx "" "umask: set file" "creation mode mask." "" umask(2)
+.xx "" "cribbage: the card game" "cribbage." "" cribbage(6)
+.xx "" "" "cribbage: the card game cribbage." "" cribbage(6)
+.xx "" "" "crl: VAX 8600 console RL02 interface." "" crl(4)
+.xx "" "" "cron: clock daemon." "" cron(8)
+.xx "" "lxref: lisp" "cross reference program." "" lxref(1)
+.xx "" "pxref: Pascal" "cross-reference program." "" pxref(1)
+.xx "" "systat: display system statistics on a" "crt." "" systat(1)
+.xx "" "colcrt: filter nroff output for" "CRT previewing." "" colcrt(1)
+.xx "" "more, page: file perusal filter for" "crt viewing." "" more(1)
+.xx "" "" "crypt: encode/decode." "" crypt(1)
+.xx "" "" "crypt, setkey, encrypt: DES encryption." "" crypt(3)
+.xx "syntax." "" "csh: a shell (command interpreter) with C-like" "" csh(1)
+.xx "" "" "css: DEC IMP-11A LH/DH IMP interface." "" css(4)
+.xx "" "pcl: DEC" "CSS PCL-11 B Network Interface." "" pcl(4)
+.xx "" "" "ct: phototypesetter interface." "" ct(4)
+.xx "" "" "ctags: create a tags file." "" ctags(1)
+.xx "convert date and time to ASCII." "" "ctime, localtime, gmtime, asctime, timezone:" "" ctime(3)
+.xx "" "time," "ctime, ltime, gmtime: return system time." "" time(3F)
+.xx "" "tip," "cu: connect to a remote system." "" tip(1C)
+.xx "" "cbrt, sqrt:" "cube root, square root." "" sqrt(3M)
+.xx "" "vhangup: virtually ``hangup'' the" "current control terminal." "" vhangup(2)
+.xx "" "gethostid, sethostid: get/set unique identifier of" "current host." "" gethostid(2)
+.xx "" "gethostname, sethostname: get/set name of" "current host." "" gethostname(2)
+.xx "" "hostnm: get name of" "current host." "" hostnm(3F)
+.xx "" "hostid: set or print identifier of" "current host system." "" hostid(1)
+.xx "" "hostname: set or print name of" "current host system." "" hostname(1)
+.xx "" "jobs: print" "current job list." "" csh(1)
+.xx "" "sigsetmask: set" "current signal mask." "" sigsetmask(2)
+.xx "" "whoami: print effective" "current user id." "" whoami(1)
+.xx "" "chdir: change" "current working directory." "" chdir(2)
+.xx "" "getcwd: get pathname of" "current working directory." "" getcwd(3F)
+.xx "" "getwd: get" "current working directory pathname." "" getwd(3)
+.xx "motion." "" "curses: screen functions with ``optimal'' cursor" "" curses(3X)
+.xx "" "curses: screen functions with ``optimal''" "cursor motion." "" curses(3X)
+.xx "" "spline: interpolate smooth" "curve." "" spline(1G)
+.xx "" "continue:" "cycle in loop." "" csh(1)
+.xx "" "cron: clock" "daemon." "" cron(8)
+.xx "" "lpd: line printer" "daemon." "" lpd(8)
+.xx "" "routed: network routing" "daemon." "" routed(8C)
+.xx "" "timed: time server" "daemon." "" timed(8)
+.xx "" "XNSrouted: NS Routing Information Protocol" "daemon." "" XNSrouted(8C)
+.xx "" "rc: command script for auto-reboot and" "daemons." "" rc(8)
+.xx "" "ftpd:" "DARPA Internet File Transfer Protocol server." "" ftpd(8C)
+.xx "" "whois:" "uss beam
+truss-bound
+truss bow
+truss bridge
+truss-galled
+truss hoop
+trussing bed
+trussing machine
+truss rod
+trust agreement
+trust beneficiary
+trust-bolstering
+trust-breaking
+trust buster
+trust busting
+trust certificate
+trust company
+trust-controlled
+trust-controlling
+trust deed
+trustee bank
+trustee process
+trustee savings bank
+trustee security
+trustee stock
+trust fund
+trust institution
+trust maker
+trust mortgage
+trust officer
+trust receipt
+trust-regulating
+trust-ridden
+trust territory
+trust-winning
+truth-armed
+truth-bearing
+truth-cloaking
+truth-cowed
+truth-declaring
+truth-denying
+truth-desiring
+truth-destroying
+truth-dictated
+truth-filled
+truth-guarding
+truth-instructed
+truth-led
+truth lover
+truth-loving
+truth-mocking
+truth-passing
+truth-perplexing
+truth-revealing
+truth seeker
+truth-seeking
+truth serum
+truth-shod
+truth speaker
+truth-speaking
+truth-tried
+truth-writ
+try cock
+tryer-out
+try gun
+trying plane
+try-on
+trypan blue
+trypan red
+try plane
+try-pot
+try square
+trysting day
+trysting place
+T scale
+T score
+tsetse fly disease
+T slot
+T-slot cutter
+T square
+T steak
+Tsung-li yamen
+tsutsugamushi disease
+tsutsugamushi mite
+tuan muda
+tubal pregnancy
+tub-brained
+tub butter
+tub-coopering
+tub desk
+tub drubber
+tube-bearing
+tube brazer
+tube casts
+tube coral
+tube culture
+tube-curing
+tube door
+tube drawer
+tube-drawing
+tube-drilling
+tube-eyed
+tube-fed
+tube-filling
+tube foot
+tube generator
+tube mill
+tube-nosed
+tube plate
+tube railway
+tuber aster
+tubercle bacillus
+tuber fern
+tuber indexing
+tuber moth
+tube-rolling
+tuberous root
+tuberous-rooted
+tuber root
+tube saw
+tube-scraping
+tube set
+tube-shaped
+tube sheet
+tube shutter
+tube spinner
+tube-straightening
+tube transmitter
+tube weaver
+tube-weaving
+tube well
+tube worm
+tube wrench
+tub-fast
+tub front
+tub-keeping
+tubo-uterine
+tub-preach
+tub preacher
+tub preaching
+tub-shaped
+tub-size
+tub-sized
+tub-thump
+tub thumper
+tub thumping
+tubular-flowered
+tubular girder
+tubular goods
+Tubus astronomicus
+tub wheel
+tu-chung
+tu-chung bark
+tuck box
+tucker bag
+tucker-in
+tuck-in
+tuck net
+tuck-out
+tuck plate
+tuck-pointed
+tuck pointer
+tuck pointing
+tuck seine
+tucky lily
+tuco tuco
+tucu tucu
+tufted-eared
+tufted-necked
+tuft tree
+tug chain
+tug iron
+tug of war
+tug-of-warring
+tula metal
+tule chicken
+tule goose
+tule hen
+tulema arrow-root
+tule mint
+tule potato
+tule root
+tule wren
+tulip bed
+tulip blight
+tulip ear
+tulip-eared
+tulip fancier
+tulip-fancying
+tulip fire
+tulip-grass
+tulip grower
+tulip-growing
+tulip mold
+tulip orchid
+tulip poplar
+tulip poppy
+tulip root
+tulip-shaped
+tulip shell
+tulip tree
+tumble car
+tumble cart
+tumble-down
+tumble grass
+tumble home
+tumble mustard
+tumbler bearing
+tumbler cart
+tumbler cup
+tumbler gear
+tumbler gearing
+tumbler pigeon
+tumbler-shaped
+tumbler switch
+tumbling barrel
+tumbling bay
+tumbling box
+tumbling rod
+tumbling shaft
+tumbu fly
+tum-ti-tum
+tum-tum
+tumulus scab
+tuna cheese
+tuna fish
+tuna oil
+tune-skilled
+Tung-hu
+tung oil
+tungsten lamp
+tungsten ocher
+tungsten steel
+tungsten trioxide
+tung tree
+tunica palmata
+tuning bar
+tuning coil
+tuning cone
+tuning fork
+tuning hammer
+tuning hole
+tuning horn
+tuning key
+tuning lever
+tuning pin
+tuning pipe
+tuning slide
+tuning wrench
+tunking fit
+tunna smjors
+tunnel anemia
+tunnel-boring
+tunnel disease
+tunnel head
+tunnel kiln
+tunnel miner
+tunnel net
+tunnel pit
+tunnel right
+tunnel shaft
+tunnel-shaped
+tunnel sickness
+tunnel stern
+tunnel vault
+tunnel weaver
+tunnel worm
+tunny oil
+tuno gum
+tun pail
+tun shell
+tupelo gum
+tup-headed
+Tupi-guarani
+Tupi-guaranian
+tup lamb
+tuppenny-hapenny
+turban buttercup
+turban-crested
+turban-crowned
+turban lily
+turban-shaped
+turban sheep
+turban squash
+turban stone
+turban toque
+turbary hog
+turbine-driven
+turbine-engined
+turbine interrupter
+turbine-propelled
+turbojet engine
+turbo-propeller engine
+turboprop engine
+turboprop-jet engine
+turbo-ram-jet engine
+turf accountant
+turf ant
+turf-boring
+turf-bound
+turf-built
+turf cake
+turf-clad
+turf-covered
+turf-cutting
+turf-digging
+turf-forming
+turf-grown
+turf hog
+turf-laid
+turf moss
+turf-roofed
+turf-spread
+turf-walled
+turf webworm
+turgor pressure
+turkey beard
+turkey bird
+turkey blossom
+turkey bur
+turkey buzzard
+turkey call
+Turkey carpet
+Turkey-carpeted
+turkey claw
+turkey cock
+turkey corn
+turkey-feather
+turkey-feather fucus
+turkey fig
+turkey-foot
+turkey gnat
+turkey gobbler
+turkey grape
+turkey grass
+turkey hen
+turkey louse
+turkey mullein
+turkey oak
+turkey pea
+turkey pod
+Turkey red
+turkey-trot
+Turkey umber
+turkey vulture
+turkey-worked
+Turkish-blue
+Turko-albanian
+Turko-bulgar
+Turko-bulgarian
+Turko-byzantine
+Turko-cretan
+Turko-egyptian
+Turko-german
+Turko-greek
+Turko-imamic
+Turko-iranian
+Turko-italian
+Turko-mongol
+Turko-persian
+Turko-popish
+Turko-tatar
+Turko-tataric
+Turko-teutonic
+Turko-ugrian
+Turko-venetian
+turmeric root
+turmeric tree
+turn bench
+turn bolt
+turn bridge
+turn-crowned
+turned-back
+turned-down
+turned-in
+turned-on
+turned-out
+turned-over
+turned-up
+turner hall
+turner harp
+turner hood
+turner-off
+turn file
+turn-furrow
+turn-hall
+turn-in
+turn indicator
+turning arbor
+turning basin
+turning chisel
+turning engine
+turning gouge
+turning movement
+turning pendant
+turning piece
+turning plow
+turning point
+turning rest
+turning saw
+turning spur
+turning square
+turning value
+turnip aphid
+turnip bean
+turnip-bearing
+turnip cabbage
+turnip-eating
+turnip-fed
+turnip flea
+turnip flea beetle
+turnip fly
+turnip foot
+turnip grass
+turnip-growing
+turnip-headed
+turnip jack
+turnip leaf miner
+turnip-leaved
+turnip louse
+turnip maggot
+turnip nigger
+turnip parsnip
+turnip-pate
+turnip-pointed
+turnip radish
+turnip-rooted
+turnip sawfly
+turnip-shaped
+turnip shell
+turnip-sick
+turnip-stemmed
+turnip-tailed
+turnip tops
+turnip-yielding
+turn-key
+turn-key job
+turn meter
+turnover door
+turnover hinge
+turnover tax
+turn-penny
+turnpike geranium
+turnpike man
+turnpike road
+turn-round
+turn-server
+turn-serving
+turn-sick
+turn-sickness
+turn sign
+turn stitch
+turn-to
+turn-tree
+turn-under
+turnup bed
+turnup card
+Turnus butterfly
+turpentine beetle
+turpentine camphor
+turpentine gum
+turpentine moth
+turpentine oil
+turpentine orchard
+turpentine pine
+turpentine plant
+turpentine shrub
+turpentine substitute
+turpentine sunflower
+turpentine tree
+turpeth mineral
+turquoise blue
+turquoise-colored
+turquoise-encrusted
+turquoise green
+turquoise-hued
+turquoise-studded
+turquoise-tinted
+turret angle-rack tool
+turret captain
+turret clock
+turret crew
+turret cutter
+turret deck
+turret drier
+turret drill
+turret gun
+turret lathe
+turret-shaped
+turret ship
+turret slide tool
+turret spider
+turret steamer
+turret taper tool
+turret-topped
+turret-turning
+turtle-back
+turtleback scale
+turtle-back shooting
+turtle-billing
+turtle cowrie
+turtle crawl
+turtle deck
+turtle-footed
+turtle grass
+turtle green
+turtle-haunted
+turtle-mouthed
+turtle-neck
+turtle peg
+turtle pegger
+turtle pegging
+turtle plate
+turtle shell
+turtle stone
+turtle-winged
+Tuscan-colored
+Tuscan school
+Tuscarora rice
+tusk shell
+tusk tenon
+tussah silk
+tussock grass
+tussock moth
+tussock sedge
+tut money
+tut-mouthed
+tutor-sick
+tutti-frutti
+tut-tut
+tu-whit
+tu-whoo
+tuxedo coat
+tuxedo jacket
+tuyere arch
+tuyere box
+tuyere notch
+twae-three
+twain cloud
+twaite shad
+twattle-basket
+tweed-clad
+tweed-covered
+tweed-suited
+tween-brain
+tween-deck
+tween-watch
+tweet-tweet
+twelfhynde man
+twelfth-cake
+Twelfth-day
+Twelfth-night
+twelfth-second
+twelve-acre
+twelve-armed
+twelve-banded
+twelve-bore
+twelve-button
+twelve-candle
+twelve-carat
+twelve-cut
+twelve-day
+twelve-dram
+twelve-feet
+twelve-foot
+twelve-footed
+twelve-fruited
+twelve-gated
+twelve-gauge
+twelve-gemmed
+twelve-handed
+twelve-hole
+twelve-horsepower
+twelve-hour
+twelvehynde man
+twelve-inch
+twelve-labor
+twelve-legged
+twelve-line
+twelve-mile
+twelve-minute
+twelve-monthly
+twelve-oared
+twelve-ounce
+twelve-part
+twelve-pint
+twelve-point
+twelve-point sphere
+twelve-pound
+twelve-pounder
+twelve-rayed
+twelve-seated
+twelve-shilling
+twelve-sided
+twelve-spoke
+twelve-spotted
+twelve-starred
+twelve-stone
+twelve-stranded
+twelve-thread
+twelve-tone
+twelve-towered
+twelve-verse
+twelve-wired
+twelve-word
+twelve-year
+twelve-year-old
+twentieth-century
+twenty-acre
+twenty-carat
+twenty-centimeter
+twenty-cubit
+twenty-day
+twenty-dollar
+twenty-eight
+twenty-eighth
+twenty-fifth
+twenty-first
+twenty-five
+twenty-foot
+twenty-four
+twenty-fourmo
+twenty-fourth
+twenty-gauge
+tweDARPA Internet user name directory service." "" whois(1)
+.xx "" "telnetd:" "DARPA TELNET protocol server." "" telnetd(8C)
+.xx "" "tftpd:" "DARPA Trivial File Transfer Protocol server." "" tftpd(8C)
+.xx "" "compress, uncompress, zcat: compress and expand" "data." "" compress(1)
+.xx "" "eval: re-evaluate shell" "data." "" csh(1)
+.xx "" "gprof: display call graph profile" "data." "" gprof(1)
+.xx "" "prof: display profile" "data." "" prof(1)
+.xx "" "ttys: terminal initialization" "data." "" ttys(5)
+.xx "" "gettytab: terminal configuration" "data base." "" gettytab(5)
+.xx "" "hosts: host name" "data base." "" hosts(5)
+.xx "" "networks: network name" "data base." "" networks(5)
+.xx "" "phones: remote host phone number" "data base." "" phones(5)
+.xx "" "printcap: printer capability" "data base." "" printcap(5)
+.xx "" "protocols: protocol name" "data base." "" protocols(5)
+.xx "" "services: service name" "data base." "" services(5)
+.xx "" "termcap: terminal capability" "data base." "" termcap(5)
+.xx "" "vgrindefs: vgrind's language definition" "data base." "" vgrindefs(5)
+.xx "" "newaliases: rebuild the" "data base for the mail aliases file." "" newaliases(1)
+.xx "" "dbminit, fetch, store, delete, firstkey, nextkey:" "data base subroutines." "" dbm(3X)
+.xx "" "dbm_firstkey, dbm_nextkey, dbm_error, dbm_clearerr:" "data base subroutines." "/dbm_store, dbm_delete," ndbm(3)
+.xx "" "brk, sbrk: change" "data segment size." "" brk(2)
+.xx "" "null:" "data sink." "" null(4)
+.xx "" "ad:" "Data Translation A/D converter." "" ad(4)
+.xx "" "types: primitive system" "data types." "" types(5)
+.xx "" "addbib: create or extend bibliographic" "database." "" addbib(1)
+.xx "" "roffbib: run off bibliographic" "database." "" roffbib(1)
+.xx "" "sortbib: sort bibliographic" "database." "" sortbib(1)
+.xx "keys." "map3270:" "database for mapping ascii keystrokes into IBM 3270" "" map3270(5)
+.xx "" "join: relational" "database operator." "" join(1)
+.xx "" "idp: Xerox Internet" "Datagram Protocol." "" idp(4P)
+.xx "" "udp: Internet User" "Datagram Protocol." "" udp(4P)
+.xx "" "date: print and set the" "date." "" date(1)
+.xx "" "gettimeofday, settimeofday: get/set" "date and time." "" gettimeofday(2)
+.xx "" "time, ftime: get" "date and time." "" time(3C)
+.xx "" "fdate: return" "date and time in an ASCII string." "" fdate(3F)
+.xx "" "localtime, gmtime, asctime, timezone: convert" "date and time to ASCII." "ctime," ctime(3)
+.xx "" "touch: update" "date last modified of a file." "" touch(1)
+.xx "" "idate, itime: return" "date or time in numerical form." "" idate(3F)
+.xx "" "" "date: print and set the date." "" date(1)
+.xx "" "dbm_delete, dbm_firstkey, dbm_nextkey, dbm_error," "dbm_clearerr: data base subroutines." "/dbm_store," ndbm(3)
+.xx "dbm_firstkey, dbm_nextkey, dbm_error,/" "dbm_open," "dbm_close, dbm_fetch, dbm_store, dbm_delete," "" ndbm(3)
+.xx "" "dbm_open, dbm_close, dbm_fetch, dbm_store," "dbm_delete, dbm_firstkey, dbm_nextkey, dbm_error,/" "" ndbm(3)
+.xx "" "/dbm_store, dbm_delete, dbm_firstkey, dbm_nextkey," "dbm_error, dbm_clearerr: data base subroutines." "" ndbm(3)
+.xx "dbm_nextkey, dbm_error,/" "dbm_open, dbm_close," "dbm_fetch, dbm_store, dbm_delete, dbm_firstkey," "" ndbm(3)
+.xx "data/" "/dbm_close, dbm_fetch, dbm_store, dbm_delete," "dbm_firstkey, dbm_nextkey, dbm_error, dbm_clearerr:" "" ndbm(3)
+.xx "data base subroutines." "" "dbminit, fetch, store, delete, firstkey, nextkey:" "" dbm(3X)
+.xx "" "/dbm_fetch, dbm_store, dbm_delete, dbm_firstkey," "dbm_nextkey, dbm_error, dbm_clearerr: data base/" "" ndbm(3)
+.xx "dbm_delete, dbm_firstkey, dbm_nextkey, dbm_error,/" "" "dbm_open, dbm_close, dbm_fetch, dbm_store," "" ndbm(3)
+.xx "dbm_error,/" "dbm_open, dbm_close, dbm_fetch," "dbm_store, dbm_delete, dbm_firstkey, dbm_nextkey," "" ndbm(3)
+.xx "" "" "dbx: dbx symbol table information." "" dbx(5)
+.xx "" "" "dbx: debugger." "" dbx(1)
+.xx "" "dbx:" "dbx symbol table information." "" dbx(5)
+.xx "" "" "dc: desk calculator." "" dc(1)
+.xx "" "" "dcheck: file system directory consistency check." "" dcheck(8)
+.xx "" "" "dd: convert and copy a file." "" dd(1)
+.xx "" "" "ddn: DDN Standard Mode X.25 IMP interface." "" ddn(4)
+.xx "" "ddn:" "DDN Standard Mode X.25 IMP interface." "" ddn(4)
+.xx "" "" "de: DEC DEUNA 10 Mb/s Ethernet interface." "" de(4)
+.xx "" "adb:" "debugger." "" adb(1)
+.xx "" "dbx:" "debugger." "" dbx(1)
+.xx "" "pdx: pascal" "debugger." "" pdx(1)
+.xx "" "pcl:" "DEC CSS PCL-11 B Network Interface." "" pcl(4)
+.xx "" "qe:" "DEC DEQNA Q-bus 10 Mb/s Ethernet interface." "" qe(4)
+.xx "" "de:" "DEC DEUNA 10 Mb/s Ethernet interface." "" de(4)
+.xx "device." "dmc:" "DEC DMC-11/DMR-11 point-to-point communications" "" dmc(4)
+.xx "" "css:" "DEC IMP-11A LH/DH IMP interface." "" css(4)
+.xx "" "rx:" "DEC RX02 floppy disk interface." "" rx(4)
+.xx "" "bad144: read/write" "dec standard 144 bad sector information." "" bad144(8)
+.xx "" "tmscp:" "DEC TMSCP magtape interface." "" tmscp(4)
+.xx "" "od: octal," "decimal, hex, ascii dump." "" od(1)
+.xx "" "tp:" "DEC/mag tape formats." "" tp(5)
+.xx "" "" "default: catchall clause in switch." "" csh(1)
+.xx "" "chdir: change" "default directory." "" chdir(3F)
+.xx "" "diskpart: calculate" "default disk partition sizes." "" diskpart(8)
+.xx "" "vgrindefs: vgrind's language" "definition data base." "" vgrindefs(5)
+.xx "" "eqnchar: special character" "definitions for eqn." "" eqnchar(7)
+.xx "" "stty, gtty: set and get terminal state" "(defunct)." "" stty(3C)
+.xx "" "close:" "delete a descriptor." "" close(2)
+.xx "" "dbminit, fetch, store," "delete, firstkey, nextkey: data base subroutines." "" dbm(3X)
+.xx "" "tail:" "deliver the last part of a file." "" tail(1)
+.xx "" "mesg: permit or" "deny messages." "" mesg(1)
+.xx "" "tset: terminal" "dependent initialization." "" tset(1)
+.xx "" "qe: DEC" "DEQNA Q-bus 10 Mb/s Ethernet interface." "" qe(4)
+.xx "constructs." "" "deroff: remove nroff, troff, tbl and eqn" "" deroff(1)
+.xx "" "crypt, setkey, encrypt:" "DES encryption." "" crypt(3)
+.xx "" "whatis:" "describe what a command is." "" whatis(1)
+.xx "" "mailaddr: mail addressing" "description." "" mailaddr(7)
+.xx "" "getdiskbyname: get disk" "description by its name." "" getdisk(3)
+.xx "" "disktab: disk" "description file." "" disktab(5)
+.xx "" "L-devices: UUCP device" "description file." "" L-devices(5)
+.xx "" "L.sys: UUCP remote host" "description file." "" L.sys(5)
+.xx "" "remote: remote host" "description file." "" remote(5)
+.xx "" "close: delete a" "descriptor." "" close(2)
+.xx "" "dup, dup2: duplicate a" "descriptor." "" dup(2)
+.xx "" "getfstype, setfsent, endfsent: get file system" "descriptor file entry." "/getfsspec, getfsfile," getfsent(3)
+.xx "" "getdtablesize: get" "descriptor table size." "" getdtablesize(2)
+.xx "" "dc:" "desk calculator." "" dc(1)
+.xx "" "access:" "determine accessability of a file." "" access(3F)
+.xx "" "access:" "determine accessibility of file." "" access(2)
+.xx "" "file:" "determine file type." "" file(1)
+.xx "" "de: DEC" "DEUNA 10 Mb/s Ethernet interface." "" de(4)
+.xx "" "DEC DMC-11/DMR-11 point-to-point communications" "device." "dmc:" dmc(4)
+.xx "" "drum: paging" "device." "" drum(4)
+.xx "" "fold: fold long lines for finite width output" "device." "" fold(1)
+.xx "" "ioctl: control" "device." "" ioctl(2)
+.xx "" "L-devices: UUCP" "device description file." "" L-devices(5)
+.xx "" "swapon: add a swap" "device for interleaved paging/swapping." "" swapon(2)
+.xx "" "swapon: specify additional" "device for paging and swapping." "" swapon(8)
+.xx "" "ik: Ikonas frame buffer, graphics" "device interface." "" ik(4)
+.xx "" "ps: Evans and Sutherland Picture System 2 graphics" "device interface." "" ps(4)
+.xx "" "tb: line discipline for digitizing" "devices." "" tb(4)
+.xx "" "" "df: disk free." "" df(1)
+.xx "" "flmin, flmax, ffrac, dflmin, dflmax," "dffrac, inmax: return extreme values." "" flmin(3F)
+.xx "" "flmin, flmax, ffrac, dflmin," "dflmax, dffrac, inmax: return extreme values." "" flmin(3F)
+.xx "values." "flmin, flmax, ffrac," "dflmin, dflmax, dffrac, inmax: return extreme" "" flmin(3F)
+.xx "" "" "dh: DH-11/DM-11 communications multiplexer." "" dh(4)
+.xx "" "dh:" "DH-11/DM-11 communications multiplexer." "" dh(4)
+.xx ""nty-grain
+twenty-gun
+twenty-hour
+twenty-inch
+twenty-knot
+twenty-line
+twenty-man
+twenty-mark
+twenty-mesh
+twenty-meter
+twenty-mile
+twenty-minute
+twenty-nigger
+twenty-nine
+twenty-ninth
+twenty-one
+twenty-one point cassino
+twenty-ounce
+Twenty-ounce
+twenty-payment
+twenty-penny
+twenty-plume
+twenty-pound
+twenty questions
+twenty-round
+twenty-second
+twenty-seven
+twenty-seventh
+twenty-shilling
+twenty-six
+twenty-sixth
+twenty-third
+twenty-thread
+twenty-three
+twenty-ton
+twenty-twenty
+twenty-two
+twenty-wood
+twenty-word
+twenty-yard
+twenty-year
+twi-banked
+twice-abandoned
+twice-abolished
+twice-absent
+twice-accented
+twice-accepted
+twice-accomplished
+twice-accorded
+twice-accused
+twice-achieved
+twice-acknowledged
+twice-acquired
+twice-acted
+twice-adapted
+twice-adjourned
+twice-adjusted
+twice-admitted
+twice-adopted
+twice-affirmed
+twice-agreed
+twice-alarmed
+twice-alleged
+twice-allied
+twice-altered
+twice-amended
+twice-angered
+twice-announced
+twice-answered
+twice-anticipated
+twice-appealed
+twice-appointed
+twice-appropriated
+twice-approved
+twice-arbitrated
+twice-arranged
+twice-assaulted
+twice-asserted
+twice-assessed
+twice-assigned
+twice-associated
+twice-assured
+twice-attained
+twice-attempted
+twice-attested
+twice-audited
+twice-authorized
+twice-avoided
+twice-baked
+twice-balanced
+twice-bankrupt
+twice-baptized
+twice-barred
+twice-bearing
+twice-beaten
+twice-begged
+twice-begun
+twice-beheld
+twice-beloved
+twice-bent
+twice-bereaved
+twice-bereft
+twice-bested
+twice-bestowed
+twice-betrayed
+twice-bid
+twice-bit
+twice-blamed
+twice-blessed
+twice-blooming
+twice-blowing
+twice-boiled
+twice-born
+twice-borrowed
+twice-bought
+twice-branded
+twice-broken
+twice-brought
+twice-buried
+twice-called
+twice-canceled
+twice-canvassed
+twice-captured
+twice-carried
+twice-caught
+twice-censured
+twice-challenged
+twice-changed
+twice-charged
+twice-cheated
+twice-chosen
+twice-cited
+twice-claimed
+twice-collected
+twice-commenced
+twice-commended
+twice-committed
+twice-competing
+twice-completed
+twice-compromised
+twice-concealed
+twice-conceded
+twice-condemned
+twice-conferred
+twice-confessed
+twice-confirmed
+twice-conquered
+twice-consenting
+twice-considered
+twice-consulted
+twice-contested
+twice-continued
+twice-converted
+twice-convicted
+twice-copyrighted
+twice-corrected
+twice-counted
+twice-cowed
+twice-created
+twice-crowned
+twice-cured
+twice-damaged
+twice-dared
+twice-darned
+twice-dead
+twice-dealt
+twice-debated
+twice-deceived
+twice-declined
+twice-decorated
+twice-decreed
+twice-deducted
+twice-defaulting
+twice-defeated
+twice-deferred
+twice-defied
+twice-delayed
+twice-delivered
+twice-demanded
+twice-denied
+twice-depleted
+twice-deserted
+twice-deserved
+twice-destroyed
+twice-detained
+twice-diminished
+twice-dipped
+twice-directed
+twice-disabled
+twice-disappointed
+twice-discarded
+twice-discharged
+twice-discontinued
+twice-discounted
+twice-discovered
+twice-disgraced
+twice-dismissed
+twice-dispatched
+twice-divided
+twice-divorced
+twice-doubled
+twice-doubted
+twice-drafted
+twice-drugged
+twice-dyed
+twice-earned
+twice-effected
+twice-elected
+twice-enacted
+twice-encountered
+twice-endorsed
+twice-engaged
+twice-enlarged
+twice-ennobled
+twice-essayed
+twice-evaded
+twice-examined
+twice-excelled
+twice-excused
+twice-exempted
+twice-exiled
+twice-exposed
+twice-expressed
+twice-extended
+twice-fallen
+twice-false
+twice-favored
+twice-felt
+twice-filmed
+twice-fined
+twice-folded
+twice-fooled
+twice-forgiven
+twice-forgotten
+twice-forsaken
+twice-fought
+twice-foul
+twice-fulfilled
+twice-gained
+twice-garbed
+twice-given
+twice-granted
+twice-grieved
+twice-guilty
+twice-handicapped
+twice-hazarded
+twice-healed
+twice-heard
+twice-helped
+twice-hidden
+twice-hinted
+twice-hit
+twice-honored
+twice-humbled
+twice-hurt
+twice-identified
+twice-ignored
+twice-imposed
+twice-improved
+twice-incensed
+twice-increased
+twice-indulged
+twice-infected
+twice-injured
+twice-insulted
+twice-insured
+twice-invented
+twice-invited
+twice-issued
+twice-jailed
+twice-judged
+twice-kidnaped
+twice-knighted
+twice-laid
+twice-lamented
+twice-leagued
+twice-learned
+twice-left
+twice-lengthened
+twice-levied
+twice-liable
+twice-listed
+twice-loaned
+twice-lost
+twice-mad
+twice-maintained
+twice-marketed
+twice-married
+twice-mastered
+twice-mated
+twice-measured
+twice-menaced
+twice-mended
+twice-mentioned
+twice-merited
+twice-met
+twice-missed
+twice-mistaken
+twice-modified
+twice-mortal
+twice-mourned
+twice-named
+twice-necessitated
+twice-needed
+twice-negligent
+twice-negotiated
+twice-nominated
+twice-noted
+twice-notified
+twice-numbered
+twice-objected
+twice-obligated
+twice-occasioned
+twice-occupied
+twice-offended
+twice-offered
+twice-offset
+twice-omitted
+twice-opened
+twice-opposed
+twice-ordered
+twice-originated
+twice-orphaned
+twice-overdue
+twice-overtaken
+twice-overthrown
+twice-owned
+twice-paid
+twice-painted
+twice-pardoned
+twice-parted
+twice-partitioned
+twice-patched
+twice-pensioned
+twice-permitted
+twice-persuaded
+twice-perused
+twice-petitioned
+twice-pinnate
+twice-placed
+twice-planned
+twice-pleased
+twice-pledged
+twice-poisoned
+twice-pondered
+twice-posed
+twice-postponed
+twice-praised
+twice-predicted
+twice-preferred
+twice-prepaid
+twice-prepared
+twice-prescribed
+twice-presented
+twice-preserved
+twice-pretended
+twice-prevailing
+twice-prevented
+twice-printed
+twice-procured
+twice-professed
+twice-prohibited
+twice-promised
+twice-promoted
+twice-proposed
+twice-prosecuted
+twice-protected
+twice-proven
+twice-provided
+twice-provoked
+twice-published
+twice-punished
+twice-pursued
+twice-qualified
+twice-questioned
+twice-quoted
+twice-raided
+twice-read
+twice-realized
+twice-rebuilt
+twice-recognized
+twice-reconciled
+twice-reconsidered
+twice-recovered
+twice-redeemed
+twice-re-elected
+twice-refined
+twice-reformed
+twice-refused
+twice-regained
+twice-regretted
+twice-rehearsed
+twice-reimbursed
+twice-reinstated
+twice-rejected
+twice-released
+twice-relieved
+twice-remedied
+twice-remembered
+twice-remitted
+twice-removed
+twice-rendered
+twice-rented
+twice-repaired
+twice-repeated
+twice-replaced
+twice-reported
+twice-reprinted
+twice-requested
+twice-required
+twice-reread
+twice-resented
+twice-resisted
+twice-restored
+twice-restrained
+twice-resumed
+twice-revenged
+twice-reversed
+twice-revised
+twice-revived
+twice-revolted
+twice-rewritten
+twice-rich
+twice-right
+twice-risen
+twice-roasted
+twice-robbed
+twice-roused
+twice-ruined
+twice-sacked
+twice-sacrificed
+twice-said
+twice-salvaged
+twice-sampled
+twice-sanctioned
+twice-saved
+twice-scared
+twice-scattered
+twice-scolded
+twice-scorned
+twice-sealed
+twice-searched
+twice-secreted
+twice-secured
+twice-seen
+twice-seized
+twice-selected
+twice-sensed
+twice-sent
+twice-sentenced
+twice-separated
+twice-served
+twice-set
+twice-settled
+twice-severed
+twice-shamed
+twice-shared
+twice-shelled
+twice-shelved
+twice-shielded
+twice-shot
+twice-shown
+twice-sick
+twice-silenced
+twice-sketched
+twice-soiled
+twice-sold
+twice-soled
+twice-solicited
+twice-solved
+twice-sought
+twice-sounded
+twice-spared
+twice-specified
+twice-spent
+twice-sprung
+twice-stabbed
+twice-staged
+twice-stated
+twice-stolen
+twice-stopped
+twice-straightened
+twice-stress
+twice-stretched
+twice-stricken
+twice-struck
+twice-subdued
+twice-subjected
+twice-subscribed
+twice-substituted
+twice-sued
+twice-suffered
+twice-sufficient
+twice-suggested
+twice-summoned
+twice-suppressed
+twice-surprised
+twice-surrendered
+twice-suspected
+twice-suspended
+twice-sustained
+twice-sworn
+twice-tabled
+twice-taken
+twice-tamed
+twice-taped
+twice-tardy
+twice-taught
+twice-tempted
+twice-tendered
+twice-terminated
+twice-tested
+twice-thanked
+twice-thought
+twice-threatened
+twice-thrown
+twice-tied
+twice-told
+twice-torn
+twice-touched
+twice-trained
+twice-transferred
+twice-translated
+twice-transported
+twice-treated
+twice-tricked
+twice-tried
+twice-trusted
+twice-turned
+twice-undertaken
+twice-undone
+twice-united
+twice-unpaid
+twice-upset
+twice-used
+twice-uttered
+twice-vacant
+twice-vamped
+twice-varnished
+twice-ventured
+twice-verified
+twice-vetoed
+twice-victimized
+twice-violated
+twice-visited
+twice-voted
+twice-waged
+twice-waived
+twice-wanted
+twice-warned
+twice-wasted
+twice-weaned
+twice-welcomed
+twice-whipped
+twice-widowed
+twice-wished
+twice-withdrawn
+twice-witnessed
+twice-won
+twice-worn
+twice-wounded
+twice-yielded
+twi-circle
+twi-colored
+twiddle-twaddle
+twiddling line
+twi-form
+twi-formed
+twig beetle
+twig blight
+twig borer
+twig caterpillar
+twig drop
+twig-formed
+tw "" "dhu: DHU-11 communications multiplexer." "" dhu(4)
+.xx "" "dhu:" "DHU-11 communications multiplexer." "" dhu(4)
+.xx "" "dmesg: collect system" "diagnostic messages to form error log." "" dmesg(8)
+.xx "" "autoconf:" "diagnostics from the autoconfiguration code." "" autoconf(4)
+.xx "" "explain: print wordy sentences; thesaurus for" "diction." "diction," diction(1)
+.xx "for diction." "" "diction, explain: print wordy sentences; thesaurus" "" diction(1)
+.xx "" "" "diff: differential file and directory comparator." "" diff(1)
+.xx "" "patch: a program for applying a" "diff file to an original." "" patch(1)
+.xx "" "" "diff3: 3-way differential file comparison." "" diff3(1)
+.xx "" "diff:" "differential file and directory comparator." "" diff(1)
+.xx "" "diff3: 3-way" "differential file comparison." "" diff3(1)
+.xx "" "tb: line discipline for" "digitizing devices." "" tb(4)
+.xx "" "" "dir: format of directories." "" dir(5)
+.xx "" "dir: format of" "directories." "" dir(5)
+.xx "" "rm, rmdir: remove (unlink) files or" "directories." "" rm(1)
+.xx "" "sticky: persistent text and append-only" "directories." "" sticky(8)
+.xx "" "rmdir, rm: remove (unlink)" "directories or files." "" rmdir(1)
+.xx "" "cd: change working" "directory." "" cd(1)
+.xx "" "chdir: change current working" "directory." "" chdir(2)
+.xx "" "chdir: change default" "directory." "" chdir(3F)
+.xx "" "chroot: change root" "directory." "" chroot(2)
+.xx "" "cd: change" "directory." "" csh(1)
+.xx "" "chdir: change" "directory." "" csh(1)
+.xx "" "getcwd: get pathname of current working" "directory." "" getcwd(3F)
+.xx "" "ls: list contents of" "directory." "" ls(1)
+.xx "" "mkdir: make a" "directory." "" mkdir(1)
+.xx "" "scandir, alphasort: scan a" "directory." "" scandir(3)
+.xx "" "uuclean: uucp spool" "directory clean-up." "" uuclean(8C)
+.xx "" "diff: differential file and" "directory comparator." "" diff(1)
+.xx "" "dcheck: file system" "directory consistency check." "" dcheck(8)
+.xx "" "unlink: remove" "directory entry." "" unlink(2)
+.xx "" "unlink: remove a" "directory entry." "" unlink(3F)
+.xx "" "mkdir: make a" "directory file." "" mkdir(2)
+.xx "" "rmdir: remove a" "directory file." "" rmdir(2)
+.xx "" "mklost+found: make a lost+found" "directory for fsck." "" mklost+found(8)
+.xx "" "pwd: working" "directory name." "" pwd(1)
+.xx "" "readdir, telldir, seekdir, rewinddir, closedir:" "directory operations." "opendir," directory(3)
+.xx "" "getwd: get current working" "directory pathname." "" getwd(3)
+.xx "" "whois: DARPA Internet user name" "directory service." "" whois(1)
+.xx "" "popd: pop shell" "directory stack." "" csh(1)
+.xx "" "pushd: push shell" "directory stack." "" csh(1)
+.xx "" "quota: display" "disc usage and limits." "" quota(1)
+.xx "" "unhash:" "discard command hash table." "" csh(1)
+.xx "" "unset:" "discard shell variables." "" csh(1)
+.xx "" "tb: line" "discipline for digitizing devices." "" tb(4)
+.xx "(obsolete)." "bk: line" "discipline for machine-machine communication" "" bk(4)
+.xx "" "synchronize a file's in-core state with that on" "disk." "fsync:" fsync(2)
+.xx "" "hk: RK6-11/RK06 and RK07 moving head" "disk." "" hk(4)
+.xx "" "uda: UDA-50" "disk controller interface." "" uda(4)
+.xx "" "getdiskbyname: get" "disk description by its name." "" getdisk(3)
+.xx "" "disktab:" "disk description file." "" disktab(5)
+.xx "" "df:" "disk free." "" df(1)
+.xx "" "hp: MASSBUS" "disk interface." "" hp(4)
+.xx "" "rx: DEC RX02 floppy" "disk interface." "" rx(4)
+.xx "" "format: how to format" "disk packs." "" format(8V)
+.xx "" "diskpart: calculate default" "disk partition sizes." "" diskpart(8)
+.xx "" "quota: manipulate" "disk quotas." "" quota(2)
+.xx "" "drtest: standalone" "disk test program." "" drtest(8)
+.xx "" "du: summarize" "disk usage." "" du(1)
+.xx "" "" "diskpart: calculate default disk partition sizes." "" diskpart(8)
+.xx "" "reboot/halt the system without checking the" "disks." "fastboot, fasthalt:" fastboot(8)
+.xx "" "rxformat: format floppy" "disks." "" rxformat(8V)
+.xx "" "" "disktab: disk description file." "" disktab(5)
+.xx "" "mount, umount: mount and" "dismount file system." "" mount(8)
+.xx "" "error: analyze and" "disperse compiler error messages." "" error(1)
+.xx "" "rain: animated raindrops" "display." "" rain(6)
+.xx "" "arp: address resolution" "display and control." "" arp(8C)
+.xx "" "gprof:" "display call graph profile data." "" gprof(1)
+.xx "" "snake, snscore:" "display chase game." "" snake(6)
+.xx "" "quota:" "display disc usage and limits." "" quota(1)
+.xx "" "vi: screen oriented (visual)" "display editor based on ex." "" vi(1)
+.xx "" "umask: change or" "display file creation mask." "" csh(1)
+.xx "" "prof:" "display profile data." "" prof(1)
+.xx "" "systat:" "display system statistics on a crt." "" systat(1)
+.xx "" "sysline:" "display system status on status line of a terminal." "" sysline(1)
+.xx "" "worms: animate worms on a" "display terminal." "" worms(6)
+.xx "" "uulog:" "display UUCP log files." "" uulog(1C)
+.xx "" "jove: an interactive" "display-oriented text editor." "" jove(1)
+.xx "" "hypot, cabs: Euclidean" "distance, complex absolute value." "" hypot(3M)
+.xx "" "rdist: remote file" "distribution program." "" rdist(1)
+.xx "communications device." "" "dmc: DEC DMC-11/DMR-11 point-to-point" "" dmc(4)
+.xx "" "dmc: DEC" "DMC-11/DMR-11 point-to-point communications device." "" dmc(4)
+.xx "error log." "" "dmesg: collect system diagnostic messages to form" "" dmesg(8)
+.xx "" "" "dmf: DMF-32, terminal multiplexor." "" dmf(4)
+.xx "" "dmf:" "DMF-32, terminal multiplexor." "" dmf(4)
+.xx "" "" "dmz: DMZ-32 terminal multiplexor." "" dmz(4)
+.xx "" "dmz:" "DMZ-32 terminal multiplexor." "" dmz(4)
+.xx "" "" "dn: DN-11 autocall unit interface." "" dn(4)
+.xx "" "dn:" "DN-11 autocall unit interface." "" dn(4)
+.xx "" "res_mkquery, res_send, res_init," "dn_comp, dn_expand: resolver routines." "" resolver(3)
+.xx "" "res_mkquery, res_send, res_init, dn_comp," "dn_expand: resolver routines." "" resolver(3)
+.xx "" "" "doctor: interact with a psychoanalyst." "" doctor(6)
+.xx "" "style: analyze surface characteristics of a" "document." "" style(1)
+.xx "" "refer: find and insert literature references in" "documents." "" refer(1)
+.xx "" "w: who is on and what they are" "doing." "" w(1)
+.xx "" "named: Internet" "domain name server." "" named(8)
+.xx "" "rogue: Exploring The Dungeons of" "Doom." "" rogue(6)
+.xx "" "shutdown: shut" "down part of a full-duplex connection." "" shutdown(2)
+.xx "" "shutdown: close" "down the system at a given time." "" shutdown(8)
+.xx "" "rand," "drand, irand: return random values." "" rand(3F)
+.xx "" "random," "drandm, irandm: better random number generator." "" random(3F)
+.xx "" "graph:" "draw a graph." "" graph(1G)
+.xx "exponent manipulations." "copysign," "drem, finite, logb, scalb: copysign, remainder," "" ieee(3M)
+.xx "" "arithmetic: provide" "drill in number facts." "" arithmetic(6)
+.xx "" "ut: UNIBUS TU45 tri-density tape" "drive interface." "" ut(4)
+.xx "" "pty: pseudo terminal" "driver." "" pty(4)
+.xx "" "" "drtest: standalone disk test program." "" drtest(8)
+.xx "" "" "drum: paging device." "" drum(4)
+.xx "" "etime," "dtime: return elapsed execution time." "" etime(3F)
+.xx "" "" "du: summarize disk usage." "" du(1)
+.xx "" "dump: incremental file system" "dump." "" dump(8)
+.xx "" "od: octal, decimal, hex, ascii" "dump." "" od(1)
+.xx "" "rdump: file system" "dump across the network." "" rdump(8C)
+.xx "" "rrestore: restore a file system" "dump across the network." "" rrestore(8C)
+.xx "" "" "dump, dumpdates: incremental dump format." "" dump(5)
+.xx "" "dumpfs:" "dump file system information." "" dumpfs(8)
+.xx "" "dump, dumpdates: incremental" "dump format." "" dump(5)
+.xx "" "" "dump: incremental file system dump." "" dump(8)
+.xx "" "savecore: save a core" "dump of the operating system." "" savecore(8)
+.xx "" "kgmon: generate a" "dump of the operating system's profile buffers." "" kgmon(8)
+.xx "" "dump," "dumpdates: incremental dump format." "" dump(5)
+.xx "" "" "dumpfs: dump file system information." "" dumpfs(8)
+.xx "" "zork: the game of" "dungeon." "" zork(6)
+.xx "" "rogue: Exploring The" "Dungeons of Doom." "" rogue(6)
+.xx "" "" "dup, dup2: dupliig gall
+twig girdler
+twig-green
+twig insect
+twig-lined
+twig pruner
+twig rush
+twig-strewn
+twig-suspended
+twig-wrought
+twilight arch
+twilight blue
+twilight-enfolded
+twilight-hidden
+twilight home
+twilight-hushed
+twilight-loving
+twilight parallel
+twilight-seeming
+twilight sleep
+twilight state
+twilight-tinctured
+twilight vision
+twilight zone
+t will
+twill-woven
+twi-minded
+twin-balled
+twin band mill
+twin-bearing
+twin-begot
+twin-blossomed
+twin boat
+twin-cylinder
+T winding
+twine binder
+twine-binding
+twine-bound
+twine braider
+twine-colored
+twine cutter
+twine holder
+twin-engined
+twine polisher
+twin equatorial
+twine reeler
+twine spinner
+twine-spinning
+twine-toned
+twine-twisting
+twin-existent
+twin-float
+twin-forked
+twingle-twangle
+twin-gun
+twin-headed
+twin-hued
+twin-leaved
+twin-lens
+twin-lens camera
+twin-light
+twin mill
+twin-motor
+twin-motored
+twin-named
+twinning axis
+twinning law
+twinning machine
+twin-peaked
+twin-power
+twin-roller
+twin-screw
+twin ship
+twin sister
+twin sisterhood
+twin-six
+twin-spiked
+twin-spired
+twin-spot
+twin stock
+twin-striped
+twin tap
+twin telescope
+twin-towered
+twin-towned
+twin-tractor
+twin valve
+twin-wheeled
+twin-wire
+twist belting
+twist bit
+twist drill
+twisted-horn
+twisted-stalk
+twisting machine
+twisting pair
+twist stitch
+twisty-wisty
+twitch grass
+twitch road
+twite finch
+twitter-twatter
+twittle-twattle
+twit-twat
+twizzle-twig
+two-along
+two-and-a-half stripes
+two-and-one-half striper
+two-angle
+two-arched
+two-armed
+two-aspect
+two-barred
+two-barreled
+two-base
+two-beat
+two-bedded
+two-bid
+two-bill
+two-bit
+two-blade
+two-bladed
+two-block
+two-blocks
+two-bodied
+two-bodies
+two-bodies problem
+two-bond
+two-bottle
+two-branched
+two-bristled
+two-bushel
+two-capsuled
+two-celled
+two-cent
+two-centered
+two-chamber
+two-chambered
+two-charge
+two-charge rate
+two-circle
+two-circuit
+two-circuit switch
+two-cleft
+two-coat
+two-color
+two-colored
+two-component
+two-course system
+two-cycle
+two-cylinder
+two-day
+two-deck
+two-deck vessel
+two-dimensional
+two-dimensioned
+two-dollar
+two-eared
+two-edged
+two-em
+two-em dash
+two-ended
+two estates
+two-eye
+two-eyed
+two-eyes
+two-faced
+two-facedly
+two-facedness
+two-factor
+two-family
+two-feeder
+two-field system
+two fifths
+two-figure
+two-fingered
+two-fisted
+two-floor
+two-flowered
+two-fluid
+two-foot
+two-footed
+two-foot octave
+two-forked
+two-formed
+two-gallon
+two-grained
+two-groove
+two-grooved
+two-guinea
+two-gun
+two-hand
+two-handed
+two-handedly
+two-handedness
+two-handled
+two-headed
+two-high
+two-hinged
+two-horned
+two-horse
+two-horsepower
+two-hour
+two-humped
+two-inch
+Two-kettle
+two-leaf
+two-leaved
+two leg
+two-legged
+two-life
+two-light
+two-line
+two-lined
+two-line octave
+two-lipped
+two-lobed
+two-lunged
+two-man
+two-mast
+two-masted
+two-master
+two-membered
+two-mile
+two-minded
+two-minute
+two-monthly
+two-name
+two-named
+two-necked
+two-needle
+two-nerved
+two-oar
+two-oared
+two old cat
+two-ounce
+two-pair
+two-part
+two-parted
+two-party
+two-pass
+two-peaked
+twopenny grass
+twopenny-halfpenny
+two-petaled
+two-phase
+two-phaser
+two-piece
+two-piece bow
+two-pile
+two-piled
+two-pin escapement
+two-pipe
+two-place
+two-platoon
+two-platoon system
+two-plowed
+two-ply
+two-point
+two-pointic
+two-pole
+two-position
+two-pound
+two-principle
+two-pronged
+two-quart
+two-rail
+two-ranked
+two-rate
+two-rayed
+two-revolution
+two-roomed
+two-row
+two-rowed
+two-seated
+two-seater
+two-seeded
+two-shafted
+two-shanked
+two-shaped
+two-sheave
+two-shilling
+two-shillingly
+two-shillingness
+two-sided
+two-sidedness
+two-soused
+two-speed
+two-spined
+two-spored
+two-spot
+two-spotted
+two-stall
+two-stalled
+two-step
+two-storied
+two-story
+two-stream
+two-stringed
+two-striped
+two-striper
+two-stroke
+two-stroke-cycle
+two-suit
+two-suiter
+two-syllable
+two-teeth
+two-thirder
+two-thirds
+two-three
+two-throw
+two-time
+two-tined
+two-toed
+two-tongued
+two-toothed
+two-topped
+two-track
+two-tusked
+two-twisted
+two-unit
+two-up
+two-valved
+two-volume
+two-way
+two-wheel
+two-wheeled
+two-wheeler
+two-wicked
+two-winged
+two-woods
+two-word
+two-year
+two-year-old
+twyhynde man
+Tyburn tree
+tye block
+tympan frame
+Tympano-eustachian
+tympan sheet
+tymp stick
+type bar
+type-blackened
+type block
+type cabinet
+type case
+type caster
+type-casting
+type characteristic
+type class
+type cutter
+type cutting
+type-distributing
+type-dressing
+type face
+type founder
+type founding
+type foundry
+type gauge
+type genus
+type-high
+type locality
+type matter
+type measure
+type metal
+type object
+type page
+type plate
+type rack
+typesetting machine
+type slug
+type species
+type specimen
+type station
+type theory
+type wash
+type wheel
+typewriter brush
+typewriter cabinet
+typewriter case
+typewriter cover
+typewriter desk
+typewriter eraser
+typewriter holder
+typewriter key
+typewriter mat
+typewriter oil
+typewriter pad
+typewriter paper
+typewriter ribbon
+typewriter roller
+typewriter stand
+typewriter table
+typewriter type
+typewriting telegraph
+typh fever
+typhlo-ureterostomy
+typhoid bacillus
+typhoid carrier
+typhoid spine
+tyrant bird
+tyrant-bought
+tyrant flycatcher
+tyrant-hating
+tyrant-quelling
+tyrant-ridden
+tyrant-scourging
+tyrant wren
+Tyrian purple
+tyrolite green
+Tzu-chou
+U-boat
+ubussu palm
+U-cut
+ugly-clouded
+ugly-conditioned
+ugly-eyed
+ugly-faced
+ugly-headed
+ugly-looking
+ugly-omened
+ugly-tempered
+ugly-visaged
+Ugro-altaic
+Ugro-aryan
+Ugro-finn
+Ugro-finnic
+Ugro-finnish
+Ugro-slavonic
+Ugro-tatarian
+uh-huh
+Uhro-rusinian
+uji fly
+ule tree
+ulla grass
+ulnocondylar foramen
+ultima ratio
+ultra-abolitionism
+ultra-abstract
+ultra-academic
+ultra-affected
+ultra-aggressive
+ultra-ambitious
+ultra-angelic
+Ultra-anglican
+ultra-apologetic
+ultra-arbitrary
+ultra-argumentative
+ultra-atomic
+ultra-auspicious
+Ultra-byronic
+Ultra-byronism
+Ultra-calvinist
+Ultra-christian
+Ultra-english
+Ultra-french
+Ultra-gallican
+Ultra-gangetic
+Ultra-german
+ultrahigh-frequency
+Ultra-julian
+Ultra-lutheran
+Ultra-lutheranism
+Ultra-martian
+Ultra-neptunian
+Ultra-pauline
+Ultra-pecksniffian
+Ultra-pluralism
+Ultra-pluralist
+Ultra-presbyterian
+Ultra-protestantism
+Ultra-puritan
+Ultra-puritanical
+Ultra-romanist
+Ultra-tory
+Ultra-toryism
+Ultra-whig
+Ulu-juz
+U magnet
+umber bird
+umber-black
+umber-brown
+umber-colored
+umber-rufous
+umble pie
+umbra tree
+umbrella ant
+umbrella bird
+umbrella bush
+umbrella catalpa
+umbrella fern
+umbrella fir
+umbrella grass
+umbrella leaf
+umbrella maker
+umbrella making
+umbrella man
+umbrella palm
+umbrella pine
+umbrella plant
+umbrella pulley
+umbrella sedge
+umbrella-shaped
+umbrella shell
+umbrella stand
+umbrella-topped
+umbrella tree
+Umbrian school
+Umbro-etruscan
+Umbro-florentine
+Umbro-latin
+Umbro-oscan
+Umbro-roman
+Umbro-sabellian
+Umbro-samnite
+Umbro-sienese
+umbu-rana
+um-hum
+umpire assay
+um suff
+um-yum
+Una boat
+unaccounted-for
+Un-african
+Un-american
+Un-americanism
+Un-americanization
+Un-americanize
+Un-anacreontic
+Un-anglican
+Un-anglicized
+Un-asiatic
+Un-athenian
+Un-attic
+Un-augean
+Un-australian
+Un-babylonian
+Un-biblical
+Un-biblically
+unbloody sacrifice
+Un-bostonian
+Un-brahminic
+Un-brazilian
+Un-british
+Un-buddhist
+uncalled-for
+uncared-for
+uncertainty principle
+uncertainty relation
+Un-chinese
+Un-christlike
+Un-christlikeness
+Un-christliness
+Un-christly
+Un-christmaslike
+unco guid
+un-come-at-able
+un-come-at-ableness
+un-come-at-ably
+un-co-operating
+un-co-operative
+un-co-ordinate
+un-co-ordinated
+unda maris
+under bevel
+undercurrent relay
+under damping
+underdeck tonnage
+under dominant
+underfrequency relay
+underhand bundler
+underhand stope
+underheat brooder
+underload starter
+underload switch
+under mediant
+under-mentioned
+under part
+underpower relay
+under-round
+under sail
+under secretary
+under-surface
+under way
+Un-dominican
+Un-doric
+Un-egyptian
+Un-elizabethan
+unemployment benefit
+unemployment insurance
+Un-english
+Un-englished
+Un-englishmanlike
+unequal-lengthed
+unequal-limbed
+unequal-lobed
+unequal-sided
+unequal-tempered
+unequal-valved
+Un-etruscan
+Un-european
+uneven-aged
+uneven-carriaged
+uneven-handed
+uneven-numbered
+uneven-priced
+uneven-roofed
+unfair list
+Un-fenian
+Un-finnish
+un-first-class
+Un-flemish
+Un-florentine
+Un-franciscan
+un-free-trade
+Un-french
+un-frenchify
+Un-georgian
+Un-german
+Un-germanic
+Un-germanize
+un-get-at-able
+un-get-at-ableness
+ungka puti
+Un-grandisonian
+Un-grecian
+Un-greek
+ungreenable black
+Un-gregorian
+Un-hamitic
+unhappy-eyed
+unhappy-faced
+unhappy-happy
+unhappy-looking
+unhappy-seeming
+unhappy-witted
+Un-hebraic
+Un-hebrew
+Un-hellecate a descriptor." "" dup(2)
+.xx "" "dup," "dup2: duplicate a descriptor." "" dup(2)
+.xx "" "dup, dup2:" "duplicate a descriptor." "" dup(2)
+.xx "" "" "dz: DZ-11 communications multiplexer." "" dz(4)
+.xx "" "dz:" "DZ-11 communications multiplexer." "" dz(4)
+.xx "" "" "ec: 3Com 10 Mb/s Ethernet interface." "" ec(4)
+.xx "" "echo:" "echo arguments." "" csh(1)
+.xx "" "echo:" "echo arguments." "" echo(1)
+.xx "" "" "echo: echo arguments." "" csh(1)
+.xx "" "" "echo: echo arguments." "" echo(1)
+.xx "" "ping: send ICMP" "ECHO_REQUEST packets to network hosts." "" ping(8)
+.xx "" "" "ecvt, fcvt, gcvt: output conversion." "" ecvt(3)
+.xx "" "" "ed: text editor." "" ed(1)
+.xx "" "end, etext," "edata: last locations in program." "" end(3)
+.xx "" "ex," "edit: text editor." "" ex(1)
+.xx "" "vipw:" "edit the password file." "" vipw(8)
+.xx "" "edquota:" "edit user quotas." "" edquota(8)
+.xx "" "ed: text" "editor." "" ed(1)
+.xx "" "ex, edit: text" "editor." "" ex(1)
+.xx "" "jove: an interactive display-oriented text" "editor." "" jove(1)
+.xx "" "ld: link" "editor." "" ld(1)
+.xx "" "sed: stream" "editor." "" sed(1)
+.xx "" "vi: screen oriented (visual) display" "editor based on ex." "" vi(1)
+.xx "" "a.out: assembler and link" "editor output." "" a.out(5)
+.xx "" "" "edquota: edit user quotas." "" edquota(8)
+.xx "" "whoami: print" "effective current user id." "" whoami(1)
+.xx "" "setregid: set real and" "effective group ID." "" setregid(2)
+.xx "" "setreuid: set real and" "effective user ID's." "" setreuid(2)
+.xx "" "vfork: spawn new process in a virtual memory" "efficient way." "" vfork(2)
+.xx "" "" "efl: Extended Fortran Language." "" efl(1)
+.xx "" "grep," "egrep, fgrep: search a file for a pattern." "" grep(1)
+.xx "" "etime, dtime: return" "elapsed execution time." "" etime(3F)
+.xx "" "insque, remque: insert/remove" "element from a queue." "" insque(3)
+.xx "" "soelim:" "eliminate \&.so's from nroff input." "" soelim(1)
+.xx "" "" "else: alternative commands." "" csh(1)
+.xx "" "" "en: Xerox 3 Mb/s Ethernet interface." "" en(4)
+.xx "" "setquota:" "enable/disable quotas on a file system." "" setquota(2)
+.xx "" "nsip: software network interface" "encapsulating ns packets in ip packets.." "" nsip(4)
+.xx "" "uuencode: format of an" "encoded uuencode file." "" uuencode(5)
+.xx "" "crypt:" "encode/decode." "" crypt(1)
+.xx "mail." "uuencode, uudecode:" "encode/decode a binary file for transmission via" "" uuencode(1C)
+.xx "" "crypt, setkey," "encrypt: DES encryption." "" crypt(3)
+.xx "" "crypt, setkey, encrypt: DES" "encryption." "" crypt(3)
+.xx "" "makekey: generate" "encryption key." "" makekey(8)
+.xx "" "" "end, etext, edata: last locations in program." "" end(3)
+.xx "" "sccs: front" "end for the SCCS subsystem." "" sccs(1)
+.xx "" "logout:" "end session." "" csh(1)
+.xx "" "" "end: terminate loop." "" csh(1)
+.xx "" "/getfsspec, getfsfile, getfstype, setfsent," "endfsent: get file system descriptor file entry." "" getfsent(3)
+.xx "" "getgrent, getgrgid, getgrnam, setgrent," "endgrent: get group file entry." "" getgrent(3)
+.xx "" "gethostbyaddr, gethostent, sethostent," "endhostent: get network host entry." "gethostbyname," gethostbyname(3N)
+.xx "" "" "endif: terminate conditional." "" csh(1)
+.xx "" "getnetent, getnetbyaddr, getnetbyname, setnetent," "endnetent: get network entry." "" getnetent(3N)
+.xx "" "socket: create an" "endpoint for communication." "" socket(2)
+.xx "" "getprotobynumber, getprotobyname, setprotoent," "endprotoent: get protocol entry." "getprotoent," getprotoent(3N)
+.xx "" "getpwent, getpwuid, getpwnam, setpwent," "endpwent, setpwfile: get password file entry." "" getpwent(3)
+.xx "" "getservbyport, getservbyname, setservent," "endservent: get service entry." "getservent," getservent(3N)
+.xx "" "" "endsw: terminate switch." "" csh(1)
+.xx "" "getttyent, getttynam, setttyent," "endttyent: get ttys file entry." "" getttyent(3)
+.xx "" "getusershell, setusershell," "endusershell: get legal user shells." "" getusershell(3)
+.xx "" "number: convert Arabic numerals to" "English." "" number(6)
+.xx "" "xsend, xget," "enroll: secret mail." "" xsend(1)
+.xx "" "nlist: get" "entries from name list." "" nlist(3)
+.xx "" "logger: make" "entries in the system log." "" logger(1)
+.xx "" "setfsent, endfsent: get file system descriptor file" "entry." "getfsent, getfsspec, getfsfile, getfstype," getfsent(3)
+.xx "" "getgrnam, setgrent, endgrent: get group file" "entry." "getgrent, getgrgid," getgrent(3)
+.xx "" "sethostent, endhostent: get network host" "entry." "gethostbyname, gethostbyaddr, gethostent," gethostbyname(3N)
+.xx "" "getnetbyname, setnetent, endnetent: get network" "entry." "getnetent, getnetbyaddr," getnetent(3N)
+.xx "" "setprotoent, endprotoent: get protocol" "entry." "/getprotobynumber, getprotobyname," getprotoent(3N)
+.xx "" "setpwent, endpwent, setpwfile: get password file" "entry." "getpwent, getpwuid, getpwnam," getpwent(3)
+.xx "" "getservbyname, setservent, endservent: get service" "entry." "getservent, getservbyport," getservent(3N)
+.xx "" "getttynam, setttyent, endttyent: get ttys file" "entry." "getttyent," getttyent(3)
+.xx "" "unlink: remove directory" "entry." "" unlink(2)
+.xx "" "unlink: remove a directory" "entry." "" unlink(3F)
+.xx "" "execv, execle, execlp, execvp, exec, execve, exect," "environ: execute a file." "execl," execl(3)
+.xx "" "" "environ: user environment." "" environ(7)
+.xx "" "setenv: set variable in" "environment." "" csh(1)
+.xx "" "environ: user" "environment." "" environ(7)
+.xx "" "printenv: print out the" "environment." "" printenv(1)
+.xx "" "window: window" "environment." "" window(1)
+.xx "" "getenv: value for" "environment name." "" getenv(3)
+.xx "" "unsetenv: remove" "environment variables." "" csh(1)
+.xx "" "getenv: get value of" "environment variables." "" getenv(3F)
+.xx "" "eqnchar: special character definitions for" "eqn." "" eqnchar(7)
+.xx "" "deroff: remove nroff, troff, tbl and" "eqn constructs." "" deroff(1)
+.xx "" "" "eqn, neqn, checkeq: typeset mathematics." "" eqn(1)
+.xx "" "" "eqnchar: special character definitions for eqn." "" eqnchar(7)
+.xx "linemod, space, closepl: graphics/" "plot: openpl," "erase, label, line, circle, arc, move, cont, point," "" plot(3X)
+.xx "" "" "erf, erfc: error functions." "" erf(3M)
+.xx "" "erf," "erfc: error functions." "" erf(3M)
+.xx "messages." "" "error: analyze and disperse compiler error" "" error(1)
+.xx "" "erf, erfc:" "error functions." "" erf(3M)
+.xx "" "dmesg: collect system diagnostic messages to form" "error log." "" dmesg(8)
+.xx "" "mkstr: create an" "error message file by massaging C source." "" mkstr(1)
+.xx "" "error: analyze and disperse compiler" "error messages." "" error(1)
+.xx "" "perror, sys_errlist, sys_nerr: system" "error messages." "" perror(3)
+.xx "" "perror, gerror, ierrno: get system" "error messages." "" perror(3F)
+.xx "" "intro: introduction to system calls and" "error numbers." "" intro(2)
+.xx "" "spell, spellin, spellout: find spelling" "errors." "" spell(1)
+.xx "" "traper: trap arithmetic" "errors." "" traper(3F)
+.xx "" "end," "etext, edata: last locations in program." "" end(3)
+.xx "" "de: DEC DEUNA 10 Mb/s" "Ethernet interface." "" de(4)
+.xx "" "ec: 3Com 10 Mb/s" "Ethernet interface." "" ec(4)
+.xx "" "en: Xerox 3 Mb/s" "Ethernet interface." "" en(4)
+.xx "" "ex: Excelan 10 Mb/s" "Ethernet interface." "" ex(4)
+.xx "" "il: Interlan NI1010 10 Mb/s" "Ethernet interface." "" il(4)
+.xx "" "ix: Interlan Np100 10 Mb/s" "Ethernet interface." "" ix(4)
+.xx "" "np: Interlan Np100 10 Mb/s" "Ethernet interface." "" np(4)
+.xx "" "qe: DEC DEQNA Q-bus 10 Mb/s" "Ethernet interface." "" qe(4)
+.xx "" "" "etime, dtime: return elapsed execution time." "" etime(3F)
+.xx "" "hypot, cabs:" "Euclidean distance, complex absolute value." "" hypot(3M)
+.xx "" "/if, while, \fB:\fP, \fB.\fP, break, continue, cd," "eval, exec, exit, export, login, read, readonly,/" "" sh(1)
+.xx "" "" "eval: re-evaluate shell data." "" csh(1)
+.xx "" "expr:" "evaluate arguments as an expression." "" expr(1)
+.xx "device interface." "ps:" "Evans and Sutherland Picture System 2 graphics" "" ps(4)
+.xx "" "history: print history" "event list." "" csh(1)
+.xx "" "screen oriented (visual) display editor based onic
+Un-hibernically
+Un-hindu
+Un-homeric
+unhoped-for
+Un-horatian
+un-hunh
+Un-iberian
+Un-icelandic
+unicorn antelope
+unicorn beetle
+unicorn bird
+unicorn fish
+unicorn hawk moth
+unicorn moth
+unicorn plant
+unicorn-plant family
+unicorn ram
+unicorn root
+unicorn shell
+unicorn whale
+uniform-proof
+uniform velocity
+Un-indian
+Un-indianlike
+union black
+union blue
+union bow
+union card
+union catalogue
+union color
+union cord
+union district
+union down
+union dye
+union elbow
+union flag
+union grass
+union house
+Un-ionic
+union jack
+union jet burner
+union joint
+union label
+union-made
+union nut
+union orange
+union school
+union shop
+union station
+union suit
+union tannage
+union tee
+uniqueness theorem
+Un-iranian
+Un-irish
+Un-irishly
+unison interval
+Un-italian
+Un-italianate
+unit banking
+unit character
+unit cost
+United states
+United-statesian
+United-states-man
+unit factor
+unit fraction
+unitive life
+unit line
+unit lock
+unit matrix
+unit operation
+unit organ
+unit plane
+unit point
+unit price
+unit prism
+unit process
+unit pyramid
+unit rule
+unit-set
+unit stress
+unit switch
+unit tare
+unit vector
+unit watermark
+unity stress
+uni-univalent
+universe vine
+university-bred
+university-conferred
+university extension
+university-going
+university settlement
+university-sponsored
+university-taught
+university-trained
+Un-jacobean
+Un-japanese
+Un-jeffersonian
+Un-johnsonian
+Un-judaize
+Un-kantian
+Un-korean
+Un-lacedaemonian
+Un-latin
+unlonged-for
+unlooked-for
+Un-lutheran
+Un-machiavellian
+unmade-up
+Un-magyar
+Un-malay
+Un-maltese
+Un-manichaeanize
+Un-mediterranean
+Un-methodize
+Un-mexican
+Un-miltonic
+Un-mohammedan
+Un-mongolian
+Un-moorish
+Un-mormon
+Un-mosaic
+Un-moslem
+Un-moslemlike
+unmoth-eaten
+Un-neapolitan
+Un-norman
+Un-norwegian
+un-numbed
+Un-olympian
+Un-ovidian
+unpaid-letter
+unpaid-letter stamp
+un-panic-stricken
+Un-parisian
+Un-parisianized
+Un-peloponnesian
+Un-persian
+Un-petrarchan
+Un-philadelphian
+Un-pindaric
+Un-pindarical
+Un-pindarically
+Un-platonic
+Un-platonically
+Un-polish
+Un-portuguese
+un-preempted
+Un-presbyterian
+Un-protestant
+Un-protestantlike
+Un-prussian
+Un-prussianized
+Un-pythagorean
+un-reembodied
+Un-roman
+Un-romanize
+Un-romanized
+Un-saracenic
+Un-saxon
+Un-scotch
+Un-scottish
+Un-scripturality
+unself-assertive
+unself-centered
+unself-centred
+unself-changing
+unself-confident
+unself-conscious
+unself-consciously
+unself-consciousness
+unself-denying
+unself-determined
+unself-evident
+unself-indulgent
+unself-knowing
+unself-opinionated
+unself-possessed
+unself-reflecting
+unself-righteous
+unself-sacrificing
+unself-sufficient
+unself-supported
+unself-valuing
+unself-willed
+unself-willedness
+Un-semitic
+unsent-for
+Un-serbian
+Un-shakespearean
+Un-siberian
+Un-sicilian
+unsighed-for
+Un-slavic
+Un-socratic
+Un-southern
+Un-spaniardized
+Un-spanish
+Un-spartan
+Un-spenserian
+Un-sundaylike
+Un-swedish
+Un-swiss
+untalked-of
+Un-teutonic
+Un-thespian
+unthought-of
+unthought-on
+untongue-tied
+Un-tudor
+Un-turkish
+Un-tuscan
+Unuk al h
+Unuk al hay
+unup-braided
+Un-vedic
+Un-venetian
+Un-vergilian
+Un-victorian
+Un-viennese
+Un-virgilian
+Un-virginian
+Un-voltairian
+Un-wagnerian
+Un-washingtonian
+Un-welsh
+Un-wordsworthian
+unworm-eaten
+Un-yankee
+u-o umlaut
+up-a-daisy
+up-anchor
+up-and-coming
+up-and-comingness
+up-and-down
+up-and-down indicator
+up-and-downish
+up-and-downishness
+up-and-downy
+up-and-up
+upas tree
+up-bow
+up-bow sign
+upfeed system
+upholsterer bee
+U pin
+upland hickory
+U plate
+up-over
+up-page
+up-patient
+upper-circle
+upper-class
+upper classman
+upper crust
+upper-cruster
+upper-form
+upper-grade
+upper hand
+upper leather
+upper-school
+upper ten
+upper ten thousand
+up-put
+up-putting
+upright drill
+upright-growing
+upright-grown
+upright-hearted
+upright-heartedness
+upright-minded
+upright piano
+upright shave
+upright-standing
+upright-walking
+up-see-daisy
+upset price
+upsetting thermometer
+upside down
+upside-downism
+upside-downness
+upside-downwards
+up-sky
+Up-state
+Up-stater
+upsy-daisy
+upsy-freesy
+upsy-turvy
+up-to-date
+up-to-dately
+up-to-dateness
+up-to-datish
+up-to-datishness
+up-to-the-minute
+upward-borne
+upward-bound
+upward-gazing
+upward mordent
+upward-pointed
+upward-rushing
+upward-shooting
+upward-stirring
+upward-striving
+upward system
+upward-turning
+U rail
+Ural-altaian
+Ural-altaic
+uralite-gabbro
+Uralo-altaian
+Uralo-altaic
+Uralo-caspian
+Uralo-finnic
+Urania blue
+uranium glass
+uranium lead
+uranium nitrate
+uranium oxide
+uranium ray
+uranium red
+uranium yellow
+uranosouranic oxide
+urchin fish
+urea ferment
+urea-formaldehyde
+urea frost
+uredo-fruit
+ure-ox
+uretero-ureterostomy
+uretero-uterine
+uric-acid
+urinogenital ridge
+urinogenital sinus
+urn burial
+urn-buried
+urn-cornered
+urn-enclosing
+urn field
+urn moss
+urn schemata
+urn-shaped
+urn-topped
+urradhus law
+Ursae minorids
+Urta-juz
+urucu-rana
+urucuri iba
+usara root
+usar grass
+U section
+use district
+use inheritance
+use money
+U-shaped
+usher-in
+using-ground
+U-stirrup
+utility man
+utility room
+Utman khel
+Uto-aztecan
+U trap
+Utrecht velvet
+U tube
+uva grass
+U valley
+uva-ursi
+Uva-ursi
+uviol glass
+uviol lamp
+uvi yam
+Ux base
+uzara root
+vacancy clause
+vacant-brained
+vacant-eyed
+vacant-headed
+vacant-looking
+vacant-minded
+vacant-mindedness
+vacant-seeming
+vacation barrister
+vacation school
+vaccine lymph
+vaccine point
+vaccine therapy
+vaccino-syphilis
+vachette clasp
+vacuum boiler
+vacuum bottle
+vacuum brake
+vacuum breaker
+vacuum bulb
+vacuum can
+vacuum cleaner
+vacuum cleaning
+vacuum condenser
+vacuum crystallizer
+vacuum desiccator
+vacuum drier
+vacuum engine
+vacuum evaporating
+vacuum fan
+vacuum filter
+vacuum flask
+vacuum gauge
+vacuum hammer
+vacuum jar
+vacuum kettle
+vacuum line
+vacuum machine
+vacuum oven
+vacuum pack
+vacuum-packed
+vacuum pump
+vacuum separator
+vacuum shunt
+vacuum still
+vacuum strainer
+vacuum sweeper
+vacuum tank
+vacuum tar
+vacuum tester
+vacuum trap
+vacuum tube
+vacuum tube rectifier
+vacuum valve
+vacuum ventilation
+vacuum vessel
+vade mecum
+vagabond green
+vague-eyed
+vague-ideaed
+vague-looking
+vague-menacing
+vague-minded
+vague-phrased
+vague-shining
+vague-worded
+valence electron
+valence formula
+valence isomerism
+valence shell
+valency electron
+Val lace
+vallary crown
+vallate papilla
+vallecular canal
+valley board
+valley breeze
+valley flat
+valley lily
+valley mahogany
+valley oak
+valley partridge
+valley quail
+valley rafter
+valley roof
+valley tile
+valley train
+valley white oak
+valley wind
+valonia oak
+valuable consideration
+valuation account
+valuation survey
+value date
+valued policy
+valued-policy law
+value received
+value stress
+valval view
+valve body
+valve box
+valve cage
+valve cap
+valve casing
+valve casting
+valve chamber
+valve chest
+valve control
+valve coupling
+valve cup
+valve diagram
+valve ellipse
+valve file
+valve filter
+valve fitting
+valve gear
+valve generator
+valve grinder
+valve-grinding
+valve handle
+valve housing
+valve indicator
+valve-in-head engine
+valve key
+valve line
+valve motion
+valve plate
+valve ring
+valve rod
+valve seat
+valve-shaped
+valve spring
+valve stem
+valve tool
+valve travel
+valve trombone
+valve trumpet
+valve view
+valve washer
+valve wrench
+vampire bat
+vanadium bronze
+vanadium family
+vanadium oxide
+vanadium steel
+vanadous oxide
+van attendant
+van boy
+van builder
+van driver
+Vandyke beard
+Vandyke brown
+Vandyke collar
+Vandyke-edged
+Vandyke red
+vanilla bean
+vanilla chica
+vanilla extract
+vanilla grass
+vanilla leaf
+vanilla plant
+vanill

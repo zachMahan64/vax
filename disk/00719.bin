@@ -1,0 +1,1956 @@
+assified as a journal article.
+If none of the fields listed is present,
+then the reference will be classified as \*Qother.\*U
+.PP
+The footnote number is flagged in the text with the following sequence,
+where \fInumber\fP is the footnote number:
+.DS
+\e*([.\fInumber\fP\e*(.]
+.DE
+The \e*([. and \e*(.] stand for bracketing or superscripting.
+In \fBnroff\fP with low-resolution devices such as the lpr and a crt,
+footnote numbers will be bracketed.
+In \fBtroff,\fP or on daisy-wheel printers,
+footnote numbers will be superscripted.
+Punctuation normally comes before the reference number;
+this can be changed by using the \-P (postpunctuation)
+option of \fBrefer\fP.
+.PP
+In some cases, it is necessary to override
+certain fields in a reference.
+For instance, each time a work is cited,
+you may want to specify different page numbers,
+and you may want to change certain fields.
+This citation will find the Lesk reference,
+but will add specific page numbers to the output,
+even though no page numbers appeared in the original ref/*
+ * Copyright (c) 1984, 1985, 1986 Regents of the University of California.
+ * All rights reserved.  The Berkeley software License Agreement
+ * specifies the terms and conditions for redistribution.
+ *
+ *	@(#)ns_input.c	7.1 (Berkeley) 6/5/86
+ */
+
+#include "param.h"
+#include "systm.h"
+#include "mbuf.h"
+#include "domain.h"
+#include "protosw.h"
+#include "socket.h"
+#include "socketvar.h"
+#include "errno.h"
+#include "time.h"
+#include "kernel.h"
+
+#include "../net/if.h"
+#include "../net/route.h"
+#include "../net/raw_cb.h"
+
+#include "ns.h"
+#include "ns_if.h"
+#include "ns_pcb.h"
+#include "idp.h"
+#include "idp_var.h"
+#include "ns_error.h"
+
+/*
+ * NS initialization.
+ */
+union ns_host	ns_thishost;
+union ns_host	ns_zerohost;
+union ns_host	ns_broadhost;
+union ns_net	ns_zeronet;
+union ns_net	ns_broadnet;
+
+static u_short allones[] = {-1, -1, -1};
+
+struct nspcb nspcb;
+struct nspcb nsrawpcb;
+
+struct ifqueue	nsintrq;
+int	nsqmaxlen = IFQ_MAXLEN;
+
+int	idpcksum = 1;
+long	ns_pexseq;
+
+ns_init()
+{
+	extern struct timeval time;
+
+	ns_broadhost = * (union ns_host *) allones;
+	ns_broadnet = * (union ns_net *) allones;
+	nspcb.nsp_next = nspcb.nsp_prev = &nspcb;
+	nsrawpcb.nsp_next = nsrawpcb.nsp_prev = &nsrawpcb;
+	nsintrq.ifq_maxlen = nsqmaxlen;
+	ns_pexseq = time.tv_usec;
+}
+
+/*
+ * Idp input routine.  Pass to next level.
+ */
+int nsintr_getpck = 0;
+int nsintr_swtch = 0;
+nsintr()
+{
+	register struct idp *idp;
+	register struct mbuf *m;
+	register struct nspcb *nsp;
+	struct ifnet *ifp;
+	struct mbuf *m0;
+	register int i;
+	int len, s, error;
+	char oddpacketp;
+
+next:
+	/*
+	 * Get next datagram off input queue and get IDP header
+	 * in first mbuf.
+	 */
+	s = splimp();
+	IF_DEQUEUEIF(&nsintrq, m, ifp);
+	splx(s);
+	nsintr_getpck++;
+	if (m == 0)
+		return;
+	if ((m->m_off > MMAXOFF || m->m_len < sizeof (struct idp)) &&
+	    (m = m_pullup(m, sizeof (struct idp))) == 0) {
+		idpstat.idps_toosmall++;
+		goto next;
+	}
+
+	/*
+	 * Give any raw listeners a crack at the packet
+	 */
+	for (nsp = nsrawpcb.nsp_next; nsp != &nsrawpcb; nsp = nsp->nsp_next) {
+		struct mbuf *m1 = m_copy(m, 0, (int)M_COPYALL);
+		if (m1) idp_input(m1, nsp, ifp);
+	}
+
+	idp = mtod(m, struct idp *);
+	len = ntohs(idp->idp_len);
+	if (oddpacketp = len & 1) {
+		len++;		/* If this packet is of odd length,
+				   preserve garbage byte for checksum */
+	}
+
+	/*
+	 * Check that the amount of data in the buffers
+	 * is as at least much as the IDP header would have us expect.
+	 * Trim mbufs if longer than we expect.
+	 * Drop packet if shorter than we expect.
+	 */
+	i = -len;
+	m0 = m;
+	for (;;) {
+		i += m->m_len;
+		if (m->m_next == 0)
+			break;
+		m = m->m_next;
+	}
+	if (i != 0) {
+		if (i < 0) {
+			idpstat.idps_tooshort++;
+			m = m0;
+			goto bad;
+		}
+		if (i <= m->m_len)
+			m->m_len -= i;
+		else
+			m_adj(m0, -i);
+	}
+	m = m0;
+	if (idpcksum && ((i = idp->idp_sum)!=0xffff)) {
+		idp->idp_sum = 0;
+		if (i != (idp->idp_sum = ns_cksum(m,len))) {
+			idpstat.idps_badsum++;
+			idp->idp_sum = i;
+			if (ns_hosteqnh(ns_thishost, idp->idp_dna.x_host))
+				error = NS_ERR_BADSUM;
+			else
+				error = NS_ERR_BADSUM_T;
+			ns_error(m, error, 0);
+			goto next;
+		}
+	}
+	/*
+	 * Is this a directed broadcast?
+	 */
+	if (ns_hosteqnh(ns_broadhost,idp->idp_dna.x_host)) {
+		if ((!ns_neteq(idp->idp_dna, idp->idp_sna)) &&
+		    (!ns_neteqnn(idp->idp_dna.x_net, ns_broadnet)) &&
+		    (!ns_neteqnn(idp->idp_sna.x_net, ns_zeronet)) &&
+		    (!ns_neteqnn(idp->idp_dna.x_net, ns_zeronet)) ) {
+			/*
+			 * Look to see if I need to eat this packet.
+			 * Algorithm is to forward all young packets
+			 * and prematurely age any packets which will
+			 * by physically broadcasted.
+			 * Any very old packets eaten without forwarding
+			 * would die anyway.
+			 *
+			 * Suggestion of Bill Nesheim, Cornell U.
+			 */
+			if (idp->idp_tc < NS_MAXHOPS) {
+				idp_forward(idp);
+				goto next;
+			}
+		}
+	/*
+	 * Is this our packet? If not, forward.
+	 */
+	} else if (!ns_hosteqnh(ns_thishost,idp->idp_dna.x_host)) {
+		idp_forward(idp);
+		goto next;
+	}
+	/*
+	 * Locate pcb for datagram.
+	 */
+	nsp = ns_pcblookup(&idp->idp_sna, idp->idp_dna.x_port, NS_WILDCARD);
+	/*
+	 * Switch out to protocol's input routine.
+	 */
+	nsintr_swtch++;
+	if (nsp) {
+		if (oddpacketp) {
+			m_adj(m0, -1);
+		}
+		if ((nsp->nsp_flags & NSP_ALL_PACKETS)==0)
+			switch (idp->idp_pt) {
+
+			    case NSPROTO_SPP:
+				    spp_input(m, nsp, ifp);
+				    goto next;
+
+			    case NSPROTO_ERROR:
+				    ns_err_input(m);
+				    goto next;
+			}
+		idp_input(m, nsp, ifp);
+	} else {
+		ns_error(m, NS_ERR_NOSOCK, 0);
+	}
+	goto next;
+
+bad:
+	m_freem(m);
+	goto next;
+}
+
+u_char nsctlerrmap[PRC_NCMDS] = {
+	ECONNABORTED,	ECONNABORTED,	0,		0,
+	0,		0,		EHOSTDOWN,	EHOSTUNREACH,
+	ENETUNREACH,	EHOSTUNREACH,	ECONNREFUSED,	ECONNREFUSED,
+	EMSGSIZE,	0,		0,		0,
+	0,		0,		0,		0
+};
+
+idp_donosocks = 1;
+
+idp_ctlinput(cmd, arg)
+	int cmd;
+	caddr_t arg;
+{
+	struct ns_addr *ns;
+	struct nspcb *nsp;
+	struct ns_errp *errp;
+	int idp_abort();
+	extern struct nspcb *idp_drop();
+	int type;
+
+	if (cmd < 0 || cmd > PRC_NCMDS)
+		return;
+	if (nsctlerrmap[cmd] == 0)
+		return;		/* XXX */
+	type = NS_ERR_UNREACH_HOST;
+	switch (cmd) {
+		struct sockaddr_ns *sns;
+
+	case PRC_IFDOWN:
+	case PRC_HOSTDEAD:
+	case PRC_HOSTUNREACH:
+		sns = (struct sockaddr_ns *)arg;
+		if (sns->sns_family != AF_INET)
+			return;
+		ns = &sns->sns_addr;
+		break;
+
+	default:
+		errp = (struct ns_errp *)arg;
+		ns = &errp->ns_err_idp.idp_dna;
+		type = errp->ns_err_num;
+		type = ntohs((u_short)type);
+	}
+	switch (type) {
+
+	case NS_ERR_UNREACH_HOST:
+		ns_pcbnotify(ns, (int)nsctlerrmap[cmd], idp_abort, (long)0);
+		break;
+
+	case NS_ERR_NOSOCK:
+		nsp = ns_pcblookup(ns, errp->ns_err_idp.idp_sna.x_port,
+			NS_WILDCARD);
+		if(nsp && idp_donosocks && ! ns_nullhost(nsp->nsp_faddr))
+			(void) idp_drop(nsp, (int)nsctlerrmap[cmd]);
+	}
+}
+
+int	idpprintfs = 0;
+int	idpforwarding = 1;
+/*
+ * Forward a packet.  If some error occurs return the sender
+ * an error packet.  Note we can't always generate a meaningful
+ * error message because the NS errors don't have a large enough repetoire
+ * of codes and types.
+ */
+struct route idp_droute;
+struct route idp_sroute;
+
+idp_forward(idp)
+	register struct idp *idp;
+{
+	register int error, type, code;
+	struct mbuf *mcopy = NULL;
+	int agedelta = 1;
+	int flags = NS_FORWARDING;
+	int ok_there = 0;
+	int ok_back = 0;
+
+	if (idpprintfs) {
+		printf("forward: src ");
+		ns_printhost(&idp->idp_sna);
+		printf(", dst ");
+		ns_printhost(&idp->idp_dna);
+		printf("hop count %d\n", idp->idp_tc);
+	}
+	if (idpforwarding == 0) {
+		/* can't tell difference between net and host */
+		type = NS_ERR_UNREACH_HOST, code = 0;
+		goto senderror;
+	}
+	idp->idp_tc++;
+	if (idp->idp_tc > NS_MAXHOPS) {
+		type = NS_ERR_TOO_OLD, code = 0;
+		goto senderror;
+	}
+	/*
+	 * Save at most 42 bytes of the packet in case
+	 * we need to generate an NS error message to the src.
+	 */
+	mcopy = m_copy(dtom(idp), 0, imin((int)ntohs(idp->idp_len), 42));
+
+	if ((ok_there = idp_do_route(&idp->idp_dna,&idp_droute))==0) {
+		type = NS_ERR_UNREACH_HOST, code = 0;
+		goto senderror;
+	}
+	/*
+	 * Here we think about  forwarding  broadcast packets,
+	 * so we try to insure that it doesn't go back out
+	 * on the interface it came in on.  Also, if we
+	 * are going to physically broadcast this, let us
+	 * age the packet so we can eat it safely the second time around.
+	 */
+	if (idp->idp_dna.x_host.c_host[0] & 0x1) {
+		struct ns_ifaddr *ia = ns_iaonnetof(&idp->idp_dna);
+		struct ifnet *ifp;
+		if (ia) {
+			/* I'm gonna hafta eat this packet */
+			agedelta += NS_MAXHOPS - idp->idp_tc;
+			idp->idp_tc = NS_MAXHOPS;
+		}
+		if ((ok_back = idp_do_route(&idp->idp_sna,&idp_sroute))==0) {
+			/* error = ENETUNREACH; He'll never get it! */
+			m_freem(dtom(idp));
+			goto cleanup;
+		}
+		if (idp_droute.ro_rt &&
+		    (ifp=idp_droute.ro_rt->rt_ifp) &&
+		    idp_sroute.ro_rt &&
+		    (ifp!=idp_sroute.ro_rt->rt_ifp)) {
+			flags |= NS_ALLOWBROADCAST;
+		} else {
+			type = NS_ERR_UNREACH_HOST, code = 0;
+			goto senderror;
+		}
+	}
+	/* need to adjust checksum */
+	if (idp->idp_sum!=0xffff) {
+		union bytes {
+			u_char c[4];
+			u_short s[2];
+			long l;
+		} x;
+		register int shift;
+		x.l = 0; x.c[0] = agedelta;
+		shift = (((((int)ntohs(idp->idp_len))+1)>>1)-2) & 0xf;
+		x.l = idp->idp_sum + (x.l << shift);
+		x.l = x.s[0] + x..\" Copyright (c) 1980 Regents of the University of California.
+.\" All rights reserved.  The Berkeley software License Agreement
+.\" specifies the terms and conditions for redistribution.
+.\"
+.\"	@(#)f77IO.ms	5.4 (Berkeley) 4/28/86
+.\"
+.EH 'PS1:3-%''Introduction to the f77 I/O Library'
+.OH 'Introduction to the f77 I/O Library''PS1:3-%'
+.de Fo
+Fortran\\$1
+..
+.de Sm
+\s-1\\$1\s0
+..
+.\"
+.\"	Nh macro - same as NH but also saves heading for table of contents
+.\"	Nh usage: Nh level string, e.g.:  .Nh 2 "Calculator Sample"
+.de Nh
+.NH \\$1
+\\$2
+.XS
+.if '2'\\$1' .ti .25i
+.if '3'\\$1' .ti .5i
+\\*(SN \\$2
+.XE
+.PP
+..
+.ND ""
+.\" .nr ll 7.0i
+.\" .nr LL 7.0i
+.\" .po 0.0i
+.\" .rm PT
+.\" .rm BT
+.\".RP
+.TL
+Introduction to the f77 I/O Library
+.AU
+David L. Wasley
+.AU
+J. Berkman
+.AI
+University of California, Berkeley
+Berkeley, California 94720
+.AB
+The f77 I/O library, libI77.a,
+includes routines to perform all of the standard types of
+.Fo
+input and output specified in the
+.Sm ANSI
+1978
+.Fo
+standard.
+The I/O Library was written originally by Peter J. Weinberger at Bell Labs.
+Where the original implementation was incomplete,
+it has been rewritten to more closely implement the standard.
+Where the standard is vague,
+we have tried to provide flexibility within the constraints of the
+.UX
+operating system.
+A number of logical extensions and enhancements have been provided
+such as the use of the C stdio library routines to provide
+efficient buffering for file I/O.
+.sp 2
+.LP
+Revised September, 1985
+.AE
+.LP
+.\" page 2 is allocated to the table of contents
+.pn 3
+.bp
+.Nh 1 "Fortran I/O"
+The requirements of the
+.Sm ANSI
+standard impose significant overhead
+on programs that do large amounts of I/O. Formatted I/O can be
+very ``expensive'' while direct access binary I/O is usually very efficient.
+Because of the complexity of
+.Fo
+I/O,
+some general concepts deserve clarification.
+.Nh 2 "Types of I/O and logical records"
+There are four forms of I/O:
+.B formatted,
+.B unformatted,
+.B list\ directed,
+and
+.B namelist.
+The last two are
+related to formatted but do not obey all the rules for formatted I/O.
+There are two types of ``files'':
+.B external
+and
+.B internal
+and two modes of access to files:
+.B direct
+and
+.B sequential.
+The definition of a logical record depends upon the
+combination of I/O form, file type, and access mode specified by the
+.Fo
+I/O statement.
+.Nh 3 "Direct access external I/O"
+A logical record in a
+.B direct
+access
+.B external
+file is a string of bytes
+of a length specified when the file is opened.
+Read and write statements must not specify logical records longer than
+the original record size definition. Shorter logical records are allowed.
+.B Unformatted
+direct writes leave the unfilled part of the record undefined.
+.B Formatted
+direct writes cause the unfilled record to be padded with blanks.
+.Nh 3 "Sequential access external I/O"
+Logical records in
+.B sequentially
+accessed
+.B external
+files may be of arbitrary
+and variable length.
+Logical record length for
+.B unformatted
+sequential files is determined by
+the size of items in the iolist.
+The requirements of this form of I/O cause the external physical
+record size to be somewhat larger than the logical record size.
+For
+.B formatted
+write statements, logical record length is determined by
+the format statement interacting with the iolist at execution time.
+The ``newline'' character is the logical record delimiter.
+Formatted sequential access causes one or more logical records
+ending with ``newline'' characters to be read or written.
+.Nh 3 "List directed and namelist sequential external I/O"
+Logical record length for
+.B list\ directed
+and
+.B namelist
+I/O is relatively meaningless.
+On output, the record length is dependent on the magnitude of the
+data items.
+On input, the record length is determined by the data types and the file
+contents.
+By ANSI definition, a slash, ``/'', terminates execution of a
+list directed input operation.
+Namelist input is terminated by ``&end'' or ``$end'' (depending on whether
+the character before the namelist name was ``&'' or ``$'').
+.Nh 3 "Internal I/O"
+The logical record length for an
+.B internal
+read or write is the length of the
+character variable or array element. Thus a simple character variable
+is a single logical record. A character variable array is similar to
+a fixed length direct access file, and obeys the same rules.
+.B Unformatted
+and
+.B namelist
+I/O are not allowed on ``internal'' files.
+.Nh 2 "I/O execution"
+Note that each execution of a
+.Fo
+.B unformatted
+I/O statement causes a single
+logical record to be read or written. Each execution of a
+.Fo
+.B formatted
+I/O statement causes one or more logical records to be read or written.
+.PP
+A slash, ``/'', will terminate assignment of
+values to the input list during
+.B list\ directed
+input and the remainder of the current input line is skipped.
+The standard is rather vague on this point but seems to require that
+a new external logical record be found at the start of any formatted
+input. Therefore data following the slash is ignored and may be used
+to comment the data file.
+.PP
+.B "Direct access list directed"
+I/O is not allowed.
+.B "Unformatted internal"
+I/O is not allowed.
+.B Namelist
+I/O is allowed only with
+.B "external sequential"
+files.
+All other flavors of I/O are allowed, although some are not part of the
+.Sm ANSI
+standard.
+.PP
+Any I/O statement may include an
+.B err=
+clause to specify an alternative branch to be taken on errors
+and/or an
+.B iostat=
+clause to return the specific error code.
+Any error detected during I/O processing will cause the program to abort
+unless either
+.B err=
+or
+.B iostat=
+has been specificed in the program.
+Read statements may include
+.B end=
+to branch on end-of-file.
+The end-of-file indication for that logical unit may be reset with
+a \fBbackspace\fP statement.
+File position and the value of I/O list items is undefined following an error.
+.sp 1
+.Nh 1 "Implementation details"
+Some details of the current implementation may be useful in understanding
+constraints on
+.Fo
+I/O.
+.Nh 2 "Number of logical units"
+Unit numbers must be in the range 0 \- 99.
+The maximum number of logical units that a program may have open at one
+time is the same as the
+.UX
+system limit, currently 48.
+.Nh 2 "Standard logical units"
+By default, logical units 0, 5, and 6
+are opened to ``stderr'', ``stdin'', and ``stdout'' respectively.
+However they can be re-defined with an 
+.B open
+statement.
+To preserve error reporting, it is an error to close logical unit 0
+although it may be reopened to another file.
+.PP
+If you want to open the default file name for any preconnected logical unit,
+remember to 
+.B close
+the unit first.
+Redefining the standard units may impair normal console I/O.
+An alternative is to
+use shell re-direction to externally re-define the above units.
+To re-define default blank control or format of the standard input or output
+files, use the 
+.B open
+statement specifying the unit number and no
+file name (see \(sc\|2.4).
+.PP
+The standard units, 0, 5, and 6, are named internally ``stderr'', ``stdin'',
+and ``stdout'' respectively.
+These are not actual file names and can not be used for opening these units.
+.B Inquire
+will not return these names and will indicate
+that the above units are not named unless they have been opened to real files.
+The names are meant to make error reporting more meaningful.
+.Nh 2 "Vertical format control"
+Simple vertical format control is implemented. The logical unit must be opened
+for sequential access with
+.B "form = \(fmprint\(fm"
+(see \(sc\|3.2).
+Control codes ``0'' and ``1'' are replaced in the output file
+with ``\\n'' and ``\\f'' respectively.
+The control character ``+'' is not implemented and, like
+any other character in the first position of a record
+written to a ``print'' file, is dropped.
+The
+.B "form = \(fmprint\(fm"
+mode does not recognize vertical format control for
+.B "direct formatted, list directed,"
+or
+.B "namelist"
+output.
+.PP
+An alternative is to use
+the filter \fIfpr\fP(1) for vertical format control.
+It replaces ``0'' and ``1'' by
+``\\n'' and ``\\f'' respectively, and implements the ``+'' control code.
+Unlike
+.B "form = \(fmprint\(fm"
+which drops unrecognized form connd.  The operation of the
+.b visual
+command is otherwise identical to that of the
+.b edit
+command.
+.ne 2v+\n(psu
+.sp \n(psu
+Both the
+.b edit
+and
+.b visual
+commands assume some default text editors.  These default editors
+can be overridden by the valued options
+.q EDITOR
+and
+.q VISUAL
+for the standard and screen editors.  You might want to do:
+.(l
+set EDITOR=/usr/ucb/ex VISUAL=/usr/ucb/vi
+.)l
+.ip \fBwrite\fP
+The
+.b save
+command always writes the entire message, including the headers,
+into the file.  If you want to write just the message itself, you
+can use the
+.b write
+command.  The
+.b write
+command has the same syntax as the
+.b save
+command, and can be abbreviated to simply
+.b w .
+Thus, we could write the second message by doing:
+.(l
+w 2 file.c
+.)l
+As suggested by this example, the
+.b write
+command is useful for such tasks as sending and receiving
+source program text over the message system.
+.ip \fBz\fP
+.i Mail
+presents message headers in windowfuls as described under
+the
+.b headers
+command.
+You can move
+.i Mail's
+attention forward to the next window by giving the
+.(l
+z+
+.)l
+command.  Analogously, you can move to the previous window with:
+.(l
+z\-
+.)l
+.sh 2 "Custom options"
+.pp
+Throughout this manual, we have seen examples of binary and valued options.
+This section describes each of the options in alphabetical order, including
+some that you have not seen yet.
+To avoid confusion, please note that the options are either
+all lower case letters or all upper case letters.  When I start a sentence
+such as:
+.q "Ask"
+causes
+.i Mail
+to prompt you for a subject header,
+I am only capitalizing
+.q ask
+as a courtesy to English.
+.ip \fBEDITOR\fP
+The valued option
+.q EDITOR
+defines the pathname of the text editor to be used in the
+.b edit
+command and ~e.  If not defined, a standard editor is used.
+.ip \fBSHELL\fP
+The valued option
+.q SHELL
+gives the path name of your shell.  This shell is used for the
+.b !
+command and ~! escape.  In addition, this shell expands
+file names with shell metacharacters like * and ? in them.
+.ip \fBVISUAL\fP
+The valued option
+.q VISUAL
+defines the pathname of your screen editor for use in the
+.b visual
+command
+and ~v escape.  A standard screen editor is used if you do not define one.
+.ip \fBappend\fP
+The
+.q append
+option is binary and
+causes messages saved in
+.i mbox
+to be appended to the end rather than prepended.
+Normally,
+.i Mail will put messages in
+.i mbox
+in the same order that the system puts messages in your system mailbox.
+By setting
+.q append,
+you are requesting that
+.i mbox
+be appended to regardless.  It is in any event quicker to append.
+.ip \fBask\fP
+.q "Ask"
+is a binary option which
+causes
+.i Mail
+to prompt you for the subject of each message you send.
+If you respond with simply a newline, no subject field will be sent.
+.ip \fBaskcc\fP
+.q Askcc
+is a binary option which
+causes you to be prompted for additional carbon copy recipients at the
+end of each message.  Responding with a newline shows your
+satisfaction with the current list.
+.ip \fBautoprint\fP
+.q Autoprint
+is a binary option which
+causes the
+.b delete
+command to behave like
+.b dp
+\*- thus, after deleting a message, the next one will be typed
+automatically.  This is useful to quickly scanning and deleting
+messages in your mailbox.
+.ip \fBdebug\fP
+The binary option
+.q debug
+causes debugging information to be displayed. Use of this
+option is the same as useing the
+.ip \-d
+command line flag.
+.ip \fBdot\fP
+.q Dot
+is a binary option which, if set, causes
+.i Mail
+to interpret a period alone on a line as the terminator
+of a message you are sending.
+.ip \fBescape\fP
+To allow you to change the escape character used when sending
+mail, you can set the valued option
+.q escape.
+Only the first character of the
+.q escape
+option is used, and it must be doubled if it is to appear as
+the first character of a line of your message.  If you change your escape
+character, then ~ loses all its special meaning, and need no longer be doubled
+at the beginning of a line.
+.ip \fBfolder\fP
+The name of the directory to use for storing folders of messages.
+If this name begins with a `/'
+.i Mail
+considers it to be an absolute pathname; otherwise, the folder directory
+is found relative to your home directory.
+.ip \fBhold\fP
+The binary option
+.q hold
+causes messages that have been read but not manually dealt with
+to be held in the system mailbox. This prevents such messages from
+being automatically swept into your mbox.
+.ip \fBignore\fP
+The binary option
+.q ignore
+causes \s-2RUBOUT\s0 characters from your terminal to be ignored and echoed
+as @'s while you are sending mail.  \s-2RUBOUT\s0 characters retain their
+original meaning in
+.i Mail
+command mode.
+Setting the
+.q ignore
+option is equivalent to supplying the
+.b \-i
+flag on the command line as described in section 6.
+.ip \fBignoreeof\fP
+An option related to
+.q dot
+is
+.q ignoreeof
+which makes
+.i Mail
+refuse to accept a control\-d as the end of a message.
+.q Ignoreeof
+also applies to
+.i Mail
+command mode.
+.ip \fBkeep\fP
+The
+.q keep
+option causes
+.i Mail
+to truncate your system mailbox instead of deleting it when it
+is empty.  This is useful if you elect to protect your mailbox, which
+you would do with the shell command:
+.(l
+chmod 600 /usr/spool/mail/yourname
+.)l
+where
+.i yourname
+is your login name.  If you do not do this, anyone can probably read
+your mail, although people usually don't.
+.ip \fBkeepsave\fP
+When you
+.b save
+a message,
+.i Mail
+usually discards it when you
+.b quit .
+To retain all saved messages, set the
+.q keepsave
+option.
+.ip \fBmetoo\fP
+When sending mail to an alias,
+.i Mail
+makes sure that if you are included in the alias, that mail will not
+be sent to you.  This is useful if a single alias is being used by
+all members of the group.  If however, you wish to receive a copy of
+all the messages you send to the alias, you can set the binary option
+.q metoo.
+.ip \fBnoheader\fP
+The binary option
+.q noheader
+suppresses the printing of the version and headers when
+.i Mail
+is first invoked. Setting this option is the same as using
+.b \-N
+on the command line.
+.ip \fBnosave\fP
+Normally,
+when you abort a message with two \s-2RUBOUTs\s0,
+.i Mail
+copies the partial letter to the file
+.q dead.letter
+in your home directory.  Setting the binary option
+.q nosave
+prevents this.
+.ip \fBquiet\fP
+The binary option
+.q quiet
+suppresses the printing of the version when
+.i Mail
+is first invoked,
+as well as printing the for example
+.q "Message 4:"
+from the
+.b type
+command.
+.ip \fBrecord\fP
+If you love to keep records, then the
+valued option
+.q record
+can be set to the name of a file to save your outgoing mail.
+Each new message you send is appended to the end of the file.
+.ip \fBscreen\fP
+When
+.i Mail
+initially prints the message headers, it determines the number to
+print by looking at the speed of your terminal.  The faster your
+terminal, the more it prints.
+The valued option
+.q screen
+overrides this calculation and
+specifies how many message headers you want printed.
+This number is also used for scrolling with the
+.b z
+command.
+.ip \fBsendmail\fP
+To alternate delivery system, set the
+.q sendmail
+option to the full pathname of the program to use.  Note:  this is not
+for everyone!  Most people should use the default delivery system.
+.ip \fBtoplines\fP
+The valued option
+.q toplines
+defines the number of lines that the
+.q top
+command will print out instead of the default five lines.
+.ip \fBverbose\fP
+The binary option "verbose" causes
+.i Mail
+to invoke sendmail with the 
+.b \-v
+flag, which causes it to go into versbose mode and announce expansion
+of aliases, etc. Setting the "verbose" option is equivalent to
+invoking
+.i Mail
+with the
+.b \-v
+flag as described in section 6.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        /*
+ * Copyright (c) 1984, 1985, 1986 Regents of the University of California.
+ * All rights reserved.  The Berkeley software License Agreement
+ * specifies the terms and conditions for redistribution.
+ *
+ *	@(#)ns_proto.c	7.1 (Berkeley) 6/5/86
+ */
+
+#include "param.h"
+#include "socket.h"
+#include "protosw.h"
+#include "domain.h"
+#include "mbuf.h"
+
+#include "ns.h"
+
+/*
+ * NS protocol family: IDP, ERR, PE, SPP, ROUTE.
+ */
+int	ns_init();
+int	idp_input(), idp_output(), idp_ctlinput(), idp_usrreq();
+int	idp_raw_usrreq(), idp_ctloutput();
+int	spp_input(), spp_ctlinput();
+int	spp_usrreq(), spp_usrreq_sp(), spp_ctloutput();
+int	spp_init(), spp_fasttimo(), spp_slowtimo();
+extern	int raw_usrreq();
+
+extern	struct domain nsdomain;
+
+struct protosw nssw[] = {
+{ 0,		&nsdomain,	0,		0,
+  0,		idp_output,	0,		0,
+  0,
+  ns_init,	0,		0,		0,
+},
+{ SOCK_DGRAM,	&nsdomain,	0,		PR_ATOMIC|PR_ADDR,
+  0,		0,		idp_ctlinput,	idp_ctloutput,
+  idp_usrreq,
+  0,		0,		0,		0,
+},
+{ SOCK_STREAM,	&nsdomain,	NSPROTO_SPP,	PR_CONNREQUIRED|PR_WANTRCVD,
+  spp_input,	0,		spp_ctlinput,	spp_ctloutput,
+  spp_usrreq,
+  spp_init,	spp_fasttimo,	spp_slowtimo,	0,
+},
+{ SOCK_SEQPACKET,&nsdomain,	NSPROTO_SPP,	PR_CONNREQUIRED|PR_WANTRCVD|PR_ATOMIC,
+  spp_input,	0,		spp_ctlinput,	spp_ctloutput,
+  spp_usrreq_sp,
+  0,		0,		0,		0,
+},
+{ SOCK_RAW,	&nsdomain,	NSPROTO_RAW,	PR_ATOMIC|PR_ADDR,
+  idp_input,	idp_output,	0,		idp_ctloutput,
+  idp_raw_usrreq,
+  0,		0,		0,		0,
+},
+{ SOCK_RAW,	&nsdomain,	NSPROTO_ERROR,	PR_ATOMIC|PR_ADDR,
+  idp_ctlinput,	idp_output,	0,		idp_ctloutput,
+  idp_raw_usrreq,
+  0,		0,		0,		0,
+},
+};
+
+struct domain nsdomain =
+    { AF_NS, "network systems", 0, 0, 0, 
+      nssw, &nssw[sizeof(nssw)/sizeof(nssw[0])] };
+
+                                                                                                                                                                                                                                                                                                                                                                    /*
+ * Copyright (c) 1984, 1986 Regents of the University of California.
+ * All rights reserved.  The Berkeley software License Agreement
+ * specifies the terms and conditions for redistribution.
+ *
+ *	@(#)sp.h	7.1 (Berkeley) 6/5/86
+ */
+
+/*
+ * Definitions for Xerox NS style sequenced packet protocol
+ */
+
+struct sphdr {
+	u_char	sp_cc;		/* connection control */
+	u_char	sp_dt;		/* datastream type */
+#define	SP_SP	0x80		/* system packet */
+#define	SP_SA	0x40		/* send acknowledgement */
+#define	SP_OB	0x20		/* attention (out of band data) */
+#define	SP_EM	0x10		/* end of message */
+	u_short	sp_sid;		/* source connection identifier */
+	u_short	sp_did;		/* destination connection identifier */
+	u_short	sp_seq;		/* sequence number */
+	u_short	sp_ack;		/* acknowledge number */
+	u_short	sp_alo;		/* allocation number */
+};
+                                                                                                                                                                                                           /*
+ * Copyright (c) 1984, 1985, 1986 Regents of the University of California.
+ * All rights reserved.  The Berkeley software License Agreement
+ * specifies the terms and conditions for redistribution.
+ *
+ *	@(#)spidp.h	7.1 (Berkeley) 6/5/86
+ */
+
+/*
+ * Definitions for NS(tm) Internet Datagram Protocol
+ * containing a Sequenced Packet Protocol packet.
+ */
+struct spidp {
+	struct idp	si_i;
+	struct sphdr 	si_s;
+};
+struct spidp_q {
+	struct spidp_q	*si_next;
+	struct spidp_q	*si_prev;
+};
+#define SI(x)	((struct spidp *)x)
+#define si_sum	si_i.idp_sum
+#define si_len	si_i.idp_len
+#define si_tc	si_i.idp_tc
+#define si_pt	si_i.idp_pt
+#define si_dna	si_i.idp_dna
+#define si_sna	si_i.idp_sna
+#define si_sport	si_i.idp_sna.x_port
+#define si_cc	si_s.sp_cc
+#define si_dt	si_s.sp_dt
+#define si_sid	si_s.sp_sid
+#define si_did	si_s.sp_did
+#define si_seq	si_s.sp_seq
+#define si_ack	si_s.sp_ack
+#define si_alo	si_s.sp_alo
+                                                                                                                       /*
+ * Copyright (c) 1984, 1986 Regents of the University of California.
+ * All rights reserved.  The Berkeley software License Agreement
+ * specifies the terms and conditions for redistribution.
+ *
+ *	@(#)spp_debug.h	7.1 (Berkeley) 6/5/86
+ */
+
+struct	spp_debug {
+	u_long	sd_time;
+	short	sd_act;
+	short	sd_ostate;
+	caddr_t	sd_cb;
+	short	sd_req;
+	struct	spidp sd_si;
+	struct	sppcb sd_sp;
+};
+
+#define	SA_INPUT 	0
+#define	SA_OUTPUT	1
+#define	SA_USER		2
+#define	SA_RESPOND	3
+#define	SA_DROP		4
+
+#ifdef SANAMES
+char	*sanames[] =
+    { "input", "output", "user", "respond", "drop" };
+#endif
+
+#define	SPP_NDEBUG 100
+struct	spp_debug spp_debug[SPP_NDEBUG];
+int	spp_debx;
+                                                                                                                                                                                                                                                                                                                                                                          /*
+ * Copyright (c) 1984, 1985, 1986 Regents of the University of California.
+ * All rights reserved.  The Berkeley software License Agreement
+ * specifies the terms and conditions for redistribution.
+ *
+ *	@(#)spp_var.h	7.1 (Berkeley) 6/5/86
+ */
+
+/*
+ * Sp control block, one per connection
+ */
+struct sppcb {
+	struct	spidp_q	s_q;		/* queue for out-of-order receipt */
+	struct	nspcb	*s_nspcb;	/* backpointer to internet pcb */
+	u_char	s_state;
+	u_char	s_flags;
+#define SF_AK	0x01			/* Acknowledgement requested */
+#define SF_DELACK 0x02			/* Ak, waiting to see if we xmit*/
+#define SF_HI	0x04			/* Show headers on input */
+#define SF_HO	0x08			/* Show headers on output */
+#define SF_PI	0x10			/* Packet (datagram) interface */
+	u_short s_mtu;			/* Max packet size for this stream */
+/* use sequence fields in headers to store sequence numbers for this
+   connection */
+	struct	spidp s_shdr;		/* prototype header to transmit */
+#define s_cc s_shdr.si_cc		/* connection control (for EM bit) */
+#define s_dt s_shdr.si_dt		/* datastream type */
+#define s_sid s_shdr.si_sid		/* source connection identifier */
+#define s_did s_shdr.si_did		/* destination connection identifier */
+#define s_seq s_shdr.si_seq		/* sequence number */
+#define s_ack s_shdr.si_ack		/* acknowledge number */
+#define s_alo s_shdr.si_alo		/* allocation number */
+#define s_dport s_shdr.si_dna.x_port	/* where we are sending */
+	struct sphdr s_rhdr;		/* last received header (in effect!)*/
+	u_short s_rack;			/* their acknowledge number */
+	u_short s_ralo;			/* their allocation number */
+	u_short s_snt;			/* highest packet # we have sent */
+
+/* timeout stuff */
+	short	s_idle;			/* time idle */
+	short	s_timer[TCPT_NTIMERS];	/* timers */
+	short	s_rxtshift;		/* log(2) of rexmt exp. backoff */
+	u_short	s_rtseq;		/* packet being timed */
+	short	s_rtt;			/* timer for round trips */
+	short	s_srtt;			/* averaged timer */
+	char	s_force;		/* which timer expired */
+
+/* out of band data */
+	char	s_oobflags;
+#define SF_SOOB	0x08			/* sending out of band data */
+#define SF_IOOB 0x10			/* receiving out of band data */
+	char	s_iobc;			/* input characters */
+/* debug stuff */
+	u_short	s_want;			/* Last candidate for sending */
+};
+
+#define	nstosppcb(np)	((struct sppcb *)(np)->nsp_pcb)
+#define	sotosppcb(so)	(nstosppcb(sotonspcb(so)))
+
+struct	spp_istat {
+	short	hdrops;
+	short	badsum;
+	short	badlen;
+	short	slotim;
+	short	fastim;
+	short	nonucn;
+	short	noconn;
+	short	notme;
+	short	wrncon;
+	short	bdreas;
+	short	gonawy;
+	short	notyet;
+	short	lstdup;
+};
+
+#ifdef KERNEL
+struct spp_istat spp_istat;
+u_short spp_iss;
+extern struct sppcb *spp_close(), *spp_disconnect(),
+	*spp_usrclosed(), *spp_timers(), *spp_drop();
+#endif
+
+#define	SPP_ISSINCR	128
+/*
+ * SPP sequence numbers are 16 bit integers operated
+ * on with modular arithmetic.  These macros can be
+ * used to compare such integers.
+ */
+#define	SSEQ_LT(a,b)	(((short)((a)-(b))) < 0)
+#define	SSEQ_LEQ(a,b)	(((short)((a)-(b))) <= 0)
+#define	SSEQ_GT(a,b)	(((short)((a)-(b))) > 0)
+#define	SSEQ_GEQ(a,b)	(((short)((a)-(b))) >= 0)
+                             ing the kernel,
+more than half of the speedups are because of improvements in
+other parts of the system.
+Some of the more dramatic changes are described in the following
+subsections.
+.NH 3
+Hashed Databases
+.PP
+UNIX provides a set of database management routines, \fIdbm\fP,
+that can be used to speed lookups in large data files
+with an external hashed index file.
+The original version of dbm was designed to work with only one
+database at a time.  These routines were generalized to handle
+multiple database files, enabling them to be used in rewrites
+of the password and host file lookup routines.  The new routines
+used to access the password file significantly improve the running
+time of many important programs such as the mail subsystem,
+the C-shell (in doing tilde expansion), \fIls \-l\fP, etc.
+.NH 3
+Buffered I/O
+.PP
+The new filesystem with its larger block sizes allows better
+performance, but it is possible to degrade system performance
+by performing numerous small transfers rather than using
+appropriately-sized buffers.
+The standard I/O library
+automatically determines the optimal buffer size for each file.
+Some C library routines and commonly-used programs use low-level
+I/O or their own buffering, however.
+Several important utilities that did not use the standard I/O library
+and were buffering I/O using the old optimal buffer size,
+1Kbytes; the programs were changed to buffer I/O according to the
+optimal file system blocksize.
+These include the editor, the assembler, loader, remote file copy,
+the text formatting programs, and the C compiler.
+.PP
+The standard error output has traditionally been unbuffered
+to prevent delay in presenting the output to the user,
+and to prevent it from being lost if buffers are not flushed.
+The inordinate expense of sending single-byte packets through
+the network led us to impose a buffering scheme on the standard
+error stream.
+Within a single call to \fIfprintf\fP, all output is buffered temporarily.
+Before the call returns, all output is flushed and the stream is again
+marked unbuffered.
+As before, the normal block or line buffering mechanisms can be used
+instead of the default behavior.
+.PP
+It is possible for programs with good intentions to unintentionally
+defeat the standard I/O library's choice of I/O buffer size by using
+the \fIsetbuf\fP call to assign an output buffer.
+Because of portability requirements, the default buffer size provided
+by \fIsetbuf\fP is 1024 bytes; this can lead, once again, to added
+overhead.
+One such program with this problem was \fIcat\fP;
+there are undoubtedly other standard system utilities with similar problems
+as the system has changed much since they were originally written.
+.NH 3
+Mail System
+.PP
+The problems discussed in section 3.1.1 prompted significant work
+on the entire mail system.  The first problem identified was a bug
+in the \fIsyslog\fP program.  The mail delivery program, \fIsendmail\fP
+logs all mail transactions through this process with the 4.2BSD interprocess
+communication facilities.  \fISyslog\fP then records the information in
+a log file.  Unfortunately, \fIsyslog\fP was performing a \fIsync\fP 
+operation after each message it received, whether it was logged to a file
+or not.  This wreaked havoc on the effectiveness of the
+buffer cache and explained, to a large
+extent, why sending mail to large distribution lists generated such a
+heavy load on the system (one syslog message was generated for each
+message recipient causing almost a continuous sequence of sync operations).
+.PP
+The hashed data base files were
+installed in all mail programs, resulting in a order of magnitude
+speedup on large distribution lists.  The code in \fI/bin/mail\fP
+that notifies the \fIcomsat\fP program when mail has been delivered to
+a user was changed to cache host table lookups, resulting in a similar
+speedup on large distribution lists. 
+.PP
+Next, the file locking facilities
+provided in 4.2BSD, \fIflock\fP\|(2), were used in place of the old
+locking mechanism. 
+The mail system previously used \fIlink\fP and \fIunlink\fP in
+implementing file locking primitives. 
+Because these operations usually modify the contents of directories
+they require synchronous disk operations and cannot take
+advantage of the name cache maintained by the system.
+Unlink requires that the entry be found in the directory so that
+it can be removed; 
+link requires that the directory be scanned to insure that the name
+does not already exist.
+By contrast the advisory locking facility in 4.2BSD is
+efficient because it is all done with in-memory tables.
+Thus, the mail system was modified to use the file locking primitives.
+This yielded another 10% cut in the basic overhead of delivering mail.
+Extensive profiling and tuning of \fIsendmail\fP and
+compiling it without debugging code reduced the overhead by another 20%.
+.NH 3
+Network Servers
+.PP
+With the introduction of the network facilities in 4.2BSD,
+a myriad of services became available, each of which 
+required its own daemon process.
+Many of these daemons were rarely if ever used,
+yet they lay asleep in the process table consuming
+system resources and generally slowing down response.
+Rather than having many servers started at boot time, a single server,
+\fIinetd\fP was substituted.
+This process reads a simple configuration file
+that specifies the services the system is willing to support
+and listens for service requests on each service's Internet port.
+When a client requests service the appropriate server is created
+and passed a service connection as its standard input.  Servers
+that require the identity of their client may use the \fIgetpeername\fP
+system call; likewise \fIgetsockname\fP may be used to find out
+a server's local address without consulting data base files.
+This scheme is attractive for several reasons:
+.IP \(bu 3
+it eliminates
+as many as a dozen processes, easing system overhead and
+allowing the file and text tables to be made smaller,
+.IP \(bu 3
+servers need not contain the code required to handle connection
+queueing, simplifying the programs, and
+.IP \(bu 3
+installing and replacing servers becomes simpler.
+.PP
+With an increased numbers of networks, both local and external to Berkeley,
+we found that the overhead of the routing process was becoming
+inordinately high.
+Several changes were made in the routing daemon to reduce this load.
+Routes to external networks are no longer exchanged by routers
+on the internal machines, only a route to a default gateway.
+This reduces the amount of network traffic and the time required
+to process routing messages.
+In addition, the routing daemon was profiled
+and functions responsible for large amounts
+of time were optimized.
+The major changes were a faster hashing scheme,
+and inline expansions of the ubiquitous byte-swapping functions.
+.PP
+Under certain circumstances, when output was blocked,
+attempts by the remote login process
+to send output to the user were rejected by the system,
+although a prior \fIselect\fP call had indicated that data could be sent.
+This resulted in continuous attempts to write the data until the remote
+user restarted output.
+This problem was initially avoided in the remote login handler,
+and the original problem in the kernel has since been corrected.
+.NH 3
+The C Run-time Library
+.PP
+Several people have found poorly tuned code
+in frequently used routines in the C library [Lankford84].
+In particular the running time of the string routines can be
+cut in half by rewriting them using the VAX string instructions.
+The memory allocation routines have been tuned to waste less
+memory for memory allocations with sizes that are a power of two.
+Certain library routines that did file input in one-character reads
+have been corrected.
+Other library routines including \fIfread\fP and \fIfwrite\fP
+have been rewritten for efficiency.
+.NH 3
+Csh
+.PP
+The C-shell was converted to run on 4.2BSD by
+writing a set of routines to simulate the old jobs library.
+While this provided a functioning C-shell,
+it was grossly inefficient, generating up
+to twenty system calls per prompt.
+The C-shell has been modified to use the new signal
+facilities directly,
+cutting the number of system calls per prompt in half.
+Additional tu.\" Copyright (c) 1980 Regents of the University of California.
+.\" All rights reserved.  The Berkeley software License Agreement
+.\" specifies the terms and conditions for redistribution.
+.\"
+.\"	@(#)mail6.nr	6.1 (Berkeley) 5/23/86
+.\"
+.bp
+.sh 1 "Command line options"
+.pp
+This section describes command line options for
+.i Mail
+and what they are used for.
+.ip \-N
+Suppress the initial printing of headers.
+.ip \-d
+Turn on debugging information.  Not of general interest.
+.ip "\-f file"
+Show the messages in
+.i file
+instead of your system mailbox.  If
+.i file
+is omitted,
+.i Mail
+reads
+.i mbox
+in your home directory.
+.ip \-i
+Ignore tty interrupt signals.  Useful on noisy phone lines, which
+generate spurious RUBOUT or DELETE characters.  It's usually
+more effective to change your interrupt character to control\-c,
+for which see the
+.i stty
+shell command.
+.ip \-n
+Inhibit reading of /usr/lib/Mail.rc.  Not generally useful, since
+/usr/lib/Mail.rc is usually empty.
+.ip "\-s string"
+Used for sending mail.
+.i String
+is used as the subject of the message being composed.  If
+.i string
+contains blanks, you must surround it with quote marks.
+.ip "\-u name"
+Read
+.i names's
+mail instead of your own.  Unwitting others often neglect to protect
+their mailboxes, but discretion is advised. Essentially,
+.b "\-u user"
+is a shorthand way of doing
+.b "\-f /usr/spool/user".
+.ip "\-v"
+Use the
+.b \-v
+flag when invoking sendmail. This feature may also be enabled
+by setting the the option "verbose".
+.pp
+The following command line flags are also recognized, but are
+intended for use by programs invoking
+.i Mail
+and not for people.
+.ip "\-T file"
+Arrange to print on
+.i file
+the contents of the
+.i article-id
+fields of all messages that were either read or deleted.
+.b \-T
+is for the
+.i readnews
+program and should NOT be used for reading your mail.
+.ip "\-h number"
+Pass on hop count information.
+.i Mail
+will take the number, increment it, and pass it with
+.b \-h
+to the mail delivery system.
+.b \-h
+only has effect when sending mail and is used for network mail
+forwarding.
+.ip "\-r name"
+Used for network mail forwarding:  interpret
+.i name
+as the sender of the message.  The
+.i name
+and
+.b \-r
+are simply sent along to the mail delivery system.  Also,
+.i Mail
+will wait for the message to be sent and return the exit status.
+Also restricts formatting of message.
+.pp
+Note that
+.b \-h
+and
+.b \-r ,
+which are for network mail forwarding, are not used in practice
+since mail forwarding is now handled separately.  They may
+disappear soon.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           .\" Copyright (c) 1980 Regents of the University of California.
+.\" All rights reserved.  The Berkeley software License Agreement
+.\" specifies the terms and conditions for redistribution.
+.\"
+.\"	@(#)mail7.nr	6.1 (Berkeley) 5/23/86
+.\"
+.sh 1 "Format of messages"
+.pp
+This section describes the format of messages.
+Messages begin with a
+.i from
+line, which consists of the word
+.q From
+followed by a user name, followed by anything, followed by
+a date in the format returned by the
+.i ctime
+library routine described in section 3 of the Unix Programmer's
+Manual.  A possible
+.i ctime
+format date is:
+.(l
+Tue Dec  1 10:58:23 1981
+.)l
+The
+.i ctime
+date may be optionally followed by a single space and a
+time zone indication, which
+should be three capital letters, such as PDT.
+.pp
+Following the
+.i from
+line are zero or more
+.i "header field"
+lines.
+Each header field line is of the form:
+.(l
+name: information
+.)l
+.i Name
+can be anything, but only certain header fields are recognized as
+having any meaning.  The recognized header fields are:
+.i article-id ,
+.i bcc ,
+.i cc ,
+.i from ,
+.i reply-to ,
+.i sender ,
+.i subject ,
+and
+.i to .
+Other header fields are also significant to other systems; see,
+for example, the current Arpanet message standard for much more
+on this topic.
+A header field can be continued onto following lines by making the
+first character on the following line a space or tab character.
+.pp
+If any headers are present, they must be followed by a blank line.
+The part that follows is called the
+.i body
+of the message, and must be ASCII text, not containing null characters.
+Each line in the message body must be terminated with an ASCII newline
+character and no line may be longer than 512 characters.
+If binary data must be passed through the mail system, it is suggested
+that this data be encoded in a system which encodes six bits into
+a printable character.
+For example, one could use the upper and lower case letters, the digits,
+and the characters comma and period to make up the 64 characters.
+Then, one can send a 16-bit binary number
+as three characters.  These characters should be packed into lines,
+preferably lines about 70 characters long as long lines are transmitted
+more efficiently.
+.pp
+The message delivery system always adds a blank line to the end of
+each message.  This blank line must not be deleted.
+.pp
+The UUCP message delivery system sometimes adds a blank line to
+the end of a message each time it is forwarded through a machine.
+.pp
+It should be noted that some network transport protocols enforce
+limits to the lengths of messages.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      .\" Copyright (c) 1980 Regents of the University of California.
+.\" All rights reserved.  The Berkeley software License Agreement
+.\" specifies the terms and conditions for redistribution.
+.\"
+.\"	@(#)mail8.nr	6.1 (Berkeley) 5/23/86
+.\"
+.bp
+.sh 1 "Glossary"
+.pp
+This section contains the definitions of a few phrases
+peculiar to
+.i Mail .
+.ip "\fIalias\fP"
+An alternative name for a person or list of people.
+.ip "\fIflag\fP"
+An option, given on the command line of
+.i Mail ,
+prefaced with a \-.  For example,
+.b \-f
+is a flag.
+.ip "\fIheader field\fP"
+At the beginning of a message, a line which contains information
+that is part of the structure of the message.  Popular header fields
+include
+.i to ,
+.i cc ,
+and
+.i subject .
+.ip "\fImail\ \ \fP"
+A collection of messages.  Often used in the phrase,
+.q "Have you read your mail?"
+.ip "\fImailbox\fP"
+The place where your mail is stored, typically in the directory
+/usr/spool/mail.
+.ip "\fImessage\fP"
+A single letter from someone, initially stored in your
+.i mailbox .
+.ip "\fImessage list\fP"
+A string used in
+.i Mail
+command mode to describe a sequence of messages.
+.ip "\fIoption\fP"
+A piece of special purpose information used to tailor
+.i Mail
+to your taste.
+Options are specified with the
+.b set
+command.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 .\" Copyright (c) 1986 Regents of the University of California.
+.\" All rights reserved.  The Berkeley software License Agreement
+.\" specifies the terms and conditions for redistribution.
+.\"
+.\"	@(#)timed.ms	6.1 (Berkeley) 5/23/86
+.\"
+.TL
+Timed Installation and Operation Guide
+.AU
+Riccardo Gusella, Stefano Zatti, James M. Bloom
+.AI
+Computer Systems Research Group
+Computer Science Division
+Department of Electrical Engineering and Computer Science
+University of California, Berkeley
+Berkeley, CA 94720
+.AU
+Kirk Smith
+.AI
+Engineering Computer Network
+Department of Electrical Engineering
+Purdue University
+West Lafayette, IN 47906
+.FS
+This work was sponsored by the Defense Advanced Research Projects Agency
+(DoD), monitored by the Naval Electronics Systems
+Command under contract No. N00039-84-C-0089, and by the CSELT 
+Corporation of Italy.
+The views and conclusions contained in this document are those of the
+authors and should not be interpreted as representing official policies,
+either expressed or implied, of the Defense Research Projects Agency,
+of the US Government, or of CSELT.
+.FE
+.LP
+.EH 'SMM:8-%''Timed Installation and Operation'
+.OH 'Timed Installation and Operation''SMM:8-%'
+.SH 
+Introduction
+.PP
+The clock synchronization service for 
+the UNIX 4.3BSD operating system is composed of a collection of
+time daemons (\fItimed\fP) running on the machines in a local
+area network.
+The algorithms implemented by the service is based on a master-slave scheme.
+The time daemons communicate with each other using the 
+\fITime Synchronization Protocol\fP (TSP) which
+is built on the DARPA UDP protocol and described in detail in [4].
+.PP
+A time daemon has a twofold function.
+First, it supports the synchronization of the clocks 
+of the various hosts in a local area network.
+Second, it starts (or takes part in) the election that occurs
+among slave time daemons when, for any reason, the master disappears.
+The synchronization mechanism and the election procedure 
+employed by the program \fItimed\fP are described 
+in other documents [1,2,3].
+The next paragraphs are a brief overview of how the time daemon works.
+This document is mainly concerned with the administrative and technical
+issues of running \fItimed\fP at a particular site.
+.PP
+A \fImaster time daemon\fP measures the time
+differences between the clock of the machine on which it 
+is running and those of all other machines.
+The master computes the \fInetwork time\fP as the average of the 
+times provided by nonfaulty clocks.\**
+.FS
+A clock is considered to be faulty when its value 
+is more than a small specified
+interval apart from the majority of the clocks 
+of the other machines [1,2].
+.FE
+It then sends to each \fIslave time daemon\fP the
+correction that should be performed on the clock of its machine.
+This process is repeated periodically.
+Since the correction is expressed as a time difference rather than an 
+absolute time, transmission delays do not interfere with 
+the accuracy of the synchronization.
+When a machine comes up and joins the network,
+it starts a slave time daemon which
+will ask the master for the correct time and will reset the machine's clock
+before any user activity can begin.
+The time daemons are able to maintain a single network time in spite of 
+the drift of clocks away from each other. 
+The present implementation keeps processor clocks synchronized 
+within 20 milliseconds.
+.PP
+To ensure that the service provided is continuous and reliable,
+it is necessary to implement an election algorithm to elect a
+new master should the machine running the current master crash, the master
+terminate (for example, because of a run-time error), or 
+the network be partitioned.
+Under our algorithm, slaves are able to realize when the master has
+stopped functioning and to elect a new master from among themselves.
+It is important to note that, since the failure of the master results
+only in a gradual divergence of clock values, the election
+need not occur immediately.
+.PP
+The machines that are gateways between distinct local area
+networks require particular care.
+A time daemon on such machines may act as a \fIsubmaster\fP.
+This artifact depends on the current inability of
+transmission protocols to broadcast a message on a network
+other than the one to which the broadcasting machine is connected.
+The submaster appears as a slave on one network, and as a master
+on one or more of the other networks to which it is connected.
+.PP
+A submaster classifies each network as one of three types.
+A \fIslave network\fP is a network on which the submaster acts as a slave.
+There can only be one slave network.
+A \fImaster network\fP is a network on which the submaster acts as a master.
+An \fIignored network\fP is any other network which already has a valid master.
+The submaster tries periodically to become master on an ignored
+network, but gives up immediately if a master already exists.
+.SH
+Guidelines
+.PP
+While the synchronization algorithm is quite general, the election
+one, requiring a broadcast mechanism, puts constraints on
+the kind of network on which time daemons can run.
+The time daemon will only work on networks with broadcast capability
+augmented with point-to-point links.
+Machines that are only connected to point-to-point,
+non-broadcast networks may not use the time daemon.
+.PP
+If we exclude submasters, there will normally be, at most, one master time 
+daemon in a local area internetwork.
+During an election, only one of the slave time daemons
+will become the new master.
+However, because of the characteristics of its machine,
+a slave can be prevented from becoming the master.
+Therefore, a subset of machines must be designated as potential 
+master time daemons.
+A master time daemon will require CPU resources
+proportional to the number of slaves, in general, more than
+a slave time daemon, so it may be advisable to limit master time
+daemons to machines with more powerful processors or lighter loads.
+Also, machines with inaccurate clocks should not be used as masters.
+This is a purely administrative decision: an organization may
+well allow all of its machines to run master time daemons.
+.PP
+At the administrative level, a time daemon on a machine
+with multiple network interfaces, may be told to ignore all
+but one network or to ignore one network.
+This is done with the \fI\-n network\fP and \fI\-i network\fP
+options respectively at start-up time.
+Typically, the time daemon would be instructed to ignore all but
+the networks belonging to the local administrative control.
+.PP
+There are some limitations to the current
+implementation of the time daemon.
+It is expected that these limitations will be removed in future releases.
+The constant NHOSTS in /usr/src/etc/timed/globals.h limits the
+maximum number of machines that may be directly controlled by one
+master time daemon.
+The current maximum is 29 (NHOSTS \- 1).
+The constant  must be changed and the program recompiled if a site wishes to
+run \fItimed\fP on a larger (inter)network.
+.PP
+In addition, there is a \fIpathological situation\fP to
+be avoided at all costs, that might occur when
+time daemons run on multiply-connected local area networks.
+In this case, as we have seen, time daemons running on gateway machines
+will be submasters and they will act on some of those 
+networks as master time daemons.
+Consider machines A and B that are both gateways between
+networks X and Y.
+If time daemons were started on both A and B without constraints, it would be
+possible for submaster time daemon A to be a slave on network X
+and the master on network Y, while submaster time daemon B is a slave on 
+network Y and the master on network X.
+This \fIloop\fP of master time daemons will not function properly
+or guarantee a unique time on both networks, and will cause
+the submasters to use large amounts of system resources in the form
+of network bandwidth and CPU time.
+In fact, this kind of \fIloop\fP can also be generated with more
+than two master time daemons,
+when several local area networks are interconnected.
+.SH
+Installation
+.PP
+In order to start the time daemon on a given machine,
+the following lines should be
+added to the \fIlocal daemons\fP section in the file \fI/etc/rc.local\.{" Copyright (c) 1985 Regents of the University of California.
+.\" All rights reserved.  The Berkeley software License Agreement
+.\" specifies the terms and conditions for redistribution.
+.\"
+.\"	@(#)5.t	1.2 (Berkeley) 8/11/85
+.\"
+.ds RH Functional Extensions
+.NH
+Functional Extensions
+.PP
+Some of the facilities introduced in 4.2BSD were not completely
+implemented.  An important part of the effort that went into
+4.3BSD was to clean up and unify both new and old facilities.
+.NH 2
+Kernel Extensions
+.PP
+A significant effort went into improving
+the networking part of the kernel.
+The work consisted of fixing bugs,
+tuning the algorithms,
+and revamping the lowest levels of the system
+to better handle heterogeneous network topologies.
+.NH 3
+Subnets, Broadcasts and Gateways
+.PP
+To allow sites to expand their network in an autonomous
+and orderly fashion, subnetworks have been introduced in 4.3BSD [GADS85].
+This facility allows sites to subdivide their local Internet address
+space into multiple subnetwork address spaces that are visible
+only by hosts at that site.  To off-site hosts machines on a site's
+subnetworks appear to reside on a single network.  The routing daemon
+has been reworked to provide routing support in this type of
+environment.
+.PP
+The default Internet broadcast address is now specified with a host part
+of all one's, rather than all zero's.
+The broadcast address may be set at boot time on a per-interface basis.
+.NH 3
+Interface Addressing
+.PP
+The organization of network interfaces has been
+reworked to more cleanly support multiple
+network protocols.  Network interfaces no longer
+contain a host's address on that network; instead
+each interface contains a pointer to a list of addresses 
+assigned to that interface.  This permits a single
+interface to support, for example, Internet protocols
+at the same time as XNS protocols.
+.PP
+The Address Resolution Protocol (ARP) support
+for 10 megabyte/second Ethernet\(dg
+.FS
+\(dg Ethernet is a trademark of Xerox.
+.FE
+has been made more flexible by allowing hosts to
+act as an ``clearing house'' for hosts that do
+not support ARP.  In addition, system managers have
+more control over the contents of the ARP translation
+cache and may interactively interrogate and modify
+the cache's contents.
+.NH 3
+User Control of Network Buffering
+.PP
+Although the system allocates reasonable default amounts of buffering
+for most connections, certain operations such as file system dumps
+to remote machines benefit from significant increases in buffering [Walsh84].
+The \fIsetsockopt\fP system call has been extended to allow such requests.
+In addition, \fIgetsockopt\fP and \fIsetsockopt\fP,
+are now interfaced to the protocol level allowing protocol-specific
+options to be manipulated by the user.
+.NH 3
+Number of File Descriptors
+.PP
+To allow full use of the many descriptor based services available,
+the previous hard limit of 30 open files per process has been relaxed.
+The changes entailed generalizing \fIselect\fP to handle arrays of 
+32-bit words, removing the dependency on file descriptors from
+the page table entries,
+and limiting most of the linear scans of a process's file table.
+The default per-process descriptor limit was raised from 20 to 64,
+though there are no longer any hard upper limits on the number
+of file descriptors.
+.NH 3
+Kernel Limits
+.PP
+Many internal kernel configuration limits have been increased by suitable
+modifications to data structures.
+The limit on physical memory has been changed from 8 megabyte to 64 megabyte,
+and the limit of 15 mounted file systems has been changed to 255.
+The maximum file system size has been increased to 8 gigabyte,
+number of processes to 65536,
+and per process size to 64 megabyte of data and 64 megabyte of stack.
+Note that these are upper bounds,
+the default limits for these quantities are tuned for systems
+with 4-8 megabyte of physical memory.
+.NH 3
+Memory Management
+.PP
+The global clock page replacement algorithm used to have a single
+hand that was used both to mark and to reclaim memory.
+The first time that it encountered a page it would clear its reference bit.
+If the reference bit was still clear on its next pass across the page,
+it would reclaim the page.
+The use of a single hand does not work well with large physical
+memories as the time to complete a single revolution of the hand
+can take up to a minute or more.
+By the time the hand gets around to the marked pages,
+the information is usually no longer pertinent.
+During periods of sudden shortages,
+the page daemon will not be able to find any reclaimable pages until
+it has completed a full revolution.
+To alleviate this problem,
+the clock hand has been split into two separate hands.
+The front hand clears the reference bits,
+the back hand follows a constant number of pages behind
+reclaiming pages that still have cleared reference bits.
+While the code has been written to allow the distance between
+the hands to be varied, we have not found any algorithms
+suitable for determining how to dynamically adjust this distance.
+.PP
+The configuration of the virtual memory system used to require
+a significant understanding of its operation to do such
+simple tasks as increasing the maximum process size.
+This process has been significantly improved so that the most
+common configuration parameters, such as the virtual memory sizes,
+can be specified using a single option in the configuration file.
+Standard configurations support data and stack segments
+of 17, 33 and 64 megabytes.
+.NH 3
+Signals
+.PP
+The 4.2BSD signal implementation would push several words
+onto the normal run-time stack before switching to an
+alternate signal stack.
+The 4.3BSD implementation has been corrected so that
+the entire signal handler's state is now pushed onto the signal stack.
+Another limitation in the original signal implementation was
+that it used an undocumented system call to return from signals.
+Users could not write their own return from exceptions;
+4.3BSD formally specifies the \fIsigreturn\fP system call.
+.PP
+Many existing programs depend on interrupted system calls.
+The restartable system call semantics of 4.2BSD signals caused
+many of these programs to break.
+To simplify porting of programs from inferior versions of 
+.UX
+the \fIsigvec\fP system call has been extended so that
+programmers may specify that system calls are not to be
+restarted after particular signals.
+.NH 3
+System Logging
+.PP
+A system logging facility has been added
+that sends kernel messages to the
+syslog daemon for logging in /usr/adm/messages and possibly for 
+printing on the system console.
+The revised scheme for logging messages
+eliminates the time lag in updating the messages file,
+unifies the format of kernel messages,
+provides a finer granularity of control over the messages
+that get printed on the console,
+and eliminates the degradation in response during the printing of 
+low-priority kernel messages.
+Recoverable system errors and common resource limitations are logged
+using this facility.
+Most system utilities such as init and login,
+have been modified to log errors to syslog
+rather than writing directly on the console.
+.NH 3
+Windows
+.PP
+The tty structure has been augmente

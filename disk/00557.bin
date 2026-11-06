@@ -1,0 +1,1400 @@
+socket.h ../h/socketvar.h ../h/unpcb.h
+uipc_usrreq.o: ../h/un.h ../h/inode.h ../h/file.h ../h/stat.h
+vm_drum.o: ../sys/vm_drum.c ../machine/pte.h ../h/param.h
+vm_drum.o: ../machine/machparam.h ../h/signal.h ../h/types.h ../h/systm.h
+vm_drum.o: ../h/dir.h ../h/user.h ../machine/pcb.h ../h/dmap.h ../h/time.h
+vm_drum.o: ../h/resource.h ../h/namei.h ../h/uio.h ../h/errno.h ../h/proc.h
+vm_drum.o: ../h/buf.h ../h/text.h ../h/map.h ../h/vm.h ../h/vmparam.h
+vm_drum.o: ../machine/vmparam.h ../h/vmmac.h ../h/vmmeter.h ../h/vmsystm.h
+vm_drum.o: ../h/cmap.h ../h/kernel.h
+vm_mem.o: ../sys/vm_mem.c ../machine/pte.h ../h/param.h ../machine/machparam.h
+vm_mem.o: ../h/signal.h ../h/types.h ../h/systm.h ../h/cmap.h ../h/dir.h
+vm_mem.o: ../h/user.h ../machine/pcb.h ../h/dmap.h ../h/time.h ../h/resource.h
+vm_mem.o: ../h/namei.h ../h/uio.h ../h/errno.h ../h/proc.h ../h/text.h
+vm_mem.o: ../h/vm.h ../h/vmparam.h ../machine/vmparam.h ../h/vmmac.h
+vm_mem.o: ../h/vmmeter.h ../h/vmsystm.h ../h/file.h ../h/inode.h ../h/buf.h
+vm_mem.o: .rno.h ../h/conf.h ../h/buf.h ../h/systm.h ../h/vm.h
+mem.o: ../h/vmparam.h ../machine/vmparam.h ../h/vmmac.h ../h/vmmeter.h
+mem.o: ../h/vmsystm.h ../h/cmap.h ../h/uio.h ../vax/mtpr.h
+sys_machdep.o: ../vax/sys_machdep.c ../h/param.h ../machine/machparam.h
+sys_machdep.o: ../h/signal.h ../h/types.h ../h/systm.h ../h/dir.h ../h/user.h
+sys_machdep.o: ../machine/pcb.h ../h/dmap.h ../h/time.h ../h/resource.h
+sys_machdep.o: ../h/namei.h ../h/uio.h ../h/errno.h ../h/ioctl.h
+sys_machdep.o: ../h/ttychars.h ../h/ttydev.h ../h/file.h ../h/proc.h ../h/uio.h
+sys_machdep.o: ../h/kernel.h ../h/mtio.h ../h/buf.h ../h/trace.h ../vax/dkio.h
+sys_machdep.o: ../vax/pte.h ../vaxuba/ubareg.h ../vaxuba/ubavar.h
+trap.o: ../vax/trap.c ../vax/psl.h ../vax/reg.h ../vax/pte.h ../h/param.h
+trap.o: ../machine/machparam.h ../h/signal.h ../h/types.h ../h/systm.h
+trap.o: ../h/dir.h ../h/user.h ../machine/pcb.h ../h/dmap.h ../h/time.h
+trap.o: ../h/resource.h ../h/namei.h ../h/uio.h ../h/errno.h ./assym.s
+trap.o: ../h/proc.h ../h/seg.h ../vax/trap.h ../h/acct.h ../h/kernel.h
+trap.o: ../vax/mtpr.h
+tu.o: ../vax/tu.c ../h/param.h ../machine/machparam.h ../h/signal.h
+tu.o: ../h/types.h ../h/systm.h ../h/buf.h ../h/conf.h ../h/dir.h ../h/user.h
+tu.o: ../machine/pcb.h ../h/dmap.h ../h/time.h ../h/resource.h ../h/namei.h
+tu.o: ../h/uio.h ../h/errno.h ../h/kernel.h ../vax/cpu.h ../vax/mtpr.h
+tu.o: ../vax/rsp.h
+ufs_machdep.o: ../vax/ufs_machdep.c ../vax/pte.h ../h/param.h
+ufs_machdep.o: ../machine/machparam.h ../h/signal.h ../h/types.h ../h/systm.h
+ufs_machdep.o: ../h/dir.h ../h/user.h ../machine/pcb.h ../h/dmap.h ../h/time.h
+ufs_machdep.o: ../h/resource.h ../h/namei.h ../h/uio.h ../h/errno.h ../h/buf.h
+ufs_machdep.o: ../h/conf.h ../h/proc.h ../h/seg.h ../h/vm.h ../h/vmparam.h
+ufs_machdep.o: ../machine/vmparam.h ../h/vmmac.h ../h/vmmeter.h ../h/vmsystm.h
+vm_machdep.o: ../vax/vm_machdep.c ../vax/pte.h ../h/param.h
+vm_machdep.o: ../machine/machparam.h ../h/signal.h ../h/types.h ../h/systm.h
+vm_machdep.o: ../h/dir.h ../h/user.h ../machine/pcb.h ../h/dmap.h ../h/time.h
+vm_machdep.o: ../h/resource.h ../h/namei.h ../h/uio.h ../h/errno.h ../h/proc.h
+vm_machdep.o: ../h/cmap.h ../h/mount.h ../h/vm.h ../h/vmparam.h
+vm_machdep.o: ../machine/vmparam.h ../h/vmmac.h ../h/vmmeter.h ../h/vmsystm.h
+vm_machdep.o: ../h/text.h ../vax/mtpr.h
+if_de.o: ../vaxif/if_de.c ./de.h ../machine/pte.h ../h/param.h
+if_de.o: ../machine/machparam.h ../h/signal.h ../h/types.h ../h/systm.h
+if_de.o: ../h/mbuf.h ../h/buf.h ../h/protosw.h ../h/socket.h ../h/vmmac.h
+if_de.o: ../h/ioctl.h ../h/ttychars.h ../h/ttydev.h ../h/errno.h ../h/syslog.h
+if_de.o: ../net/if.h ../net/if_arp.h ../net/netisr.h ../net/route.h
+if_de.o: ../netinet/in.h ../netinet/in_systm.h ../netinet/in_var.h
+if_de.o: ../netinet/ip.h ../netinet/if_ether.h ../netns/ns.h ../netns/ns_if.h
+if_de.o: ../vax/cpu.h ../vax/mtpr.h ../vaxif/if_dereg.h ../vaxif/if_uba.h
+if_de.o: ../vaxuba/ubareg.h ../vaxuba/ubavar.h
+if_ec.o: ../vaxif/if_ec.c ./ec.h ../machine/pte.h ../h/param.h
+if_ec.o: ../machine/machparam.h ../h/signal.h ../h/types.h ../h/systm.h
+if_ec.o: ../h/mbuf.h ../h/buf.h ../h/protosw.h ../h/socket.h ../h/syslog.h
+if_ec.o: ../h/vmmac.h ../h/ioctl.h ../h/ttychars.h ../h/ttydev.h ../h/errno.h
+if_ec.o: ../net/if.h ../net/if_arp.h ../net/netisr.h ../net/route.h
+if_ec.o: ../netinet/in.h ../netinet/in_systm.h ../netinet/in_var.h
+if_ec.o: ../netinet/ip.h ../netinet/if_ether.h ../netns/ns.h ../netns/ns_if.h
+if_ec.o: ../vax/cpu.h ../vax/mtpr.h ../vaxif/if_ecreg.h ../vaxif/if_uba.h
+if_ec.o: ../vaxuba/ubareg.h ../vaxuba/ubavar.h
+if_en.o: ../vaxif/if_en.c ./en.h ../machine/pte.h ../h/param.h
+if_en.o: ../machine/machparam.h ../h/signal.h ../h/types.h ../h/systm.h
+if_en.o: ../h/mbuf.h ../h/buf.h ../h/protosw.h ../h/socket.h ../h/vmmac.h
+if_en.o: ../h/errno.h ../h/ioctl.h ../h/ttychars.h ../h/ttydev.h ../net/if.h
+if_en.o: ../net/if_arp.h ../net/netisr.h ../net/route.h ../netinet/in.h
+if_en.o: ../netinet/in_systm.h ../netinet/in_var.h ../netinet/ip.h
+if_en.o: ../netns/ns.h ../netns/ns_if.h ../vax/cpu.h ../vax/mtpr.h
+if_en.o: ../vaxif/if_en.h ../vaxif/if_enreg.h ../vaxif/if_uba.h
+if_en.o: ../vaxuba/ubareg.h ../vaxuba/ubavar.h
+if_ex.o: ../vaxif/if_ex.c ./ex.h ../machine/pte.h ../h/param.h
+if_ex.o: ../machine/machparam.h ../h/signal.h ../h/types.h ../h/systm.h
+if_ex.o: ../h/mbuf.h ../h/buf.h ../h/protosw.h ../h/socket.h ../h/vmmac.h
+if_ex.o: ../h/ioctl.h ../h/ttychars.h ../h/ttydev.h ../h/errno.h ../net/if.h
+if_ex.o: ../net/if_arp.h ../net/netisr.h ../net/route.h ../netinet/in.h
+if_ex.o: ../netinet/in_systm.h ../netinet/in_var.h ../netinet/ip.h
+if_ex.o: ../netinet/if_ether.h ../netns/ns.h ../netns/ns_if.h ../vax/cpu.h
+if_ex.o: ../vax/mtpr.h ../vaxif/if_exreg.h ../vaxif/if_uba.h ../vaxuba/ubareg.h
+if_ex.o: ../vaxuba/ubavar.h
+if_il.o: ../vaxif/if_il.c ./il.h ../machine/pte.h ../h/param.h
+if_il.o: ../machine/machparam.h ../h/signal.h ../h/types.h ../h/systm.h
+if_il.o: ../h/mbuf.h ../h/buf.h ../h/protosw.h ../h/socket.h ../h/vmmac.h
+if_il.o: ../h/ioctl.h ../h/ttychars.h ../h/ttydev.h ../h/errno.h ../net/if.h
+if_il.o: ../net/if_arp.h ../net/netisr.h ../net/route.h ../netinet/in.h
+if_il.o: ../netinet/in_systm.h ../netinet/in_var.h ../netinet/ip.h
+if_il.o: ../netinet/if_ether.h ../netns/ns.h ../netns/ns_if.h ../vax/cpu.h
+if_il.o: ../vax/mtpr.h ../vaxif/if_il.h ../vaxif/if_ilreg.h ../vaxif/if_uba.h
+if_il.o: ../vaxuba/ubareg.h ../vaxuba/ubavar.h
+if_uba.o: ../vaxif/if_uba.c ../machine/pte.h ../h/param.h
+if_uba.o: ../machine/machparam.h ../h/signal.h ../h/types.h ../h/systm.h
+if_uba.o: ../h/mbuf.h ../h/map.h ../h/buf.h ../h/cmap.h ../h/vmmac.h
+if_uba.o: ../h/socket.h ../h/syslog.h ../net/if.h ../net/if_arp.h ../vax/mtpr.h
+if_uba.o: ../vaxif/if_uba.h ../vaxuba/ubareg.h ../vaxuba/ubavar.h
+hp.o: ../vaxmba/hp.c ./hp.h ../machine/pte.h ../h/param.h
+hp.o: ../machine/machparam.h ../h/signal.h ../h/types.h ../h/systm.h ../h/dk.h
+hp.o: ../h/buf.h ../h/conf.h ../h/dir.h ../h/user.h ../machine/pcb.h
+hp.o: ../h/dmap.h ../h/time.h ../h/resource.h ../h/namei.h ../h/uio.h
+hp.o: ../h/errno.h ../h/map.h ../vax/mtpr.h ../h/vm.h ../h/vmparam.h
+hp.o: ../machine/vmparam.h ../h/vmmac.h ../h/vmmeter.h ../h/vmsystm.h
+hp.o: ../h/cmap.h ../h/dkbad.h ../h/ioctl.h ../h/ttychars.h ../h/ttydev.h
+hp.o: ../h/uio.h ../h/syslog.h ../vax/dkio.h ../vaxmba/mbareg.h
+hp.o: ../vaxmba/mbavar.h ../vaxmba/hpreg.h
+ht.o: ../vaxmba/ht.c ./tu.h ../machine/pte.h ../h/param.h
+ht.o: ../machine/machparam.h ../h/signal.h ../h/types.h ../h/systm.h ../h/buf.h
+ht.o: ../h/conf.h ../h/dir.h ../h/file.h ../h/user.h ../machine/pcb.h
+ht.o: ../h/dmap.h ../h/time.h ../h/resource.h ../h/namei.h ../h/uio.h
+ht.o: ../h/errno.h ../h/map.h ../h/ioctl.h ../h/ttychars.h ../h/ttydev.h
+ht.o: ../h/mtio.h ../h/cmap.h ../h/uio.h ../h/tty.h ../h/ttychars.h
+ht.o: ../h/ttydev.h ../vax/cpu.h ../vaxmba/mbareg.h ../vaxmba/mbavar.h
+ht.o: ../vaxmba/htreg.h
+mba.o: ../vaxmba/mba.c ./mba.h ../machine/pte.h ../h/param.h
+mba.o: ../machine/machparam.h ../h/signal.h ../h/types.h ../h/systm.h ../h/dk.h
+mba.o: ../h/buf.h ../h/conf.h ../h/dir.h ../h/user.h ../machine/pcb.h
+mba.o: ../h/dmap.h ../h/time.h ../h/resource.h ../h/namei.h ../h/uio.h
+mba.o: ../h/errno.h ../h/proc.h ../h/map.h ../vax/mtpr.h ../h/vm.h
+mba.o: ../h/vmparam.h ../machine/vmparam.h ../h/vmmac.h ../h/vmmeter.h
+mba.o: ../h/vmsystm.h ../vaxmba/mbareg.h ../vaxmba/mbavar.h
+mt.o: ../vaxmba/mt.c ./mu.h ../machine/pte.h ../h/param.h
+mt.o: ../machine/machparam.h ../h/signal.h ../h/types.h ../h/systm.h ../h/buf.h
+mt.o: ../h/conf.h ../h/dir.h ../h/file.h ../h/user.h ../machine/pcb.h
+mt.o: ../h/dmap.h ../h/time.h ../h/resource.h ../h/namei.h ../h/uio.h
+mt.o: ../h/errno.h ../h/map.h ../h/ioctl.h ../h/ttychars.h ../h/ttydev.h
+mt.o: ../h/mtio.h ../h/cmap.h ../h/uio.h ../h/tty.h ../h/ttychars.h
+mt.o: ../h/ttydev.h ../vax/cpu.h ../vaxmba/mbareg.h ../vaxmba/mbavar.h
+mt.o: ../vaxmba/mtreg.h
+dh.o: ../vaxuba/dh.c ./dh.h ../machine/pte.h ./bk.h ./uba.h ../h/param.h
+dh.o: ../machine/machparam.h ../h/signal.h ../h/types.h ../h/conf.h ../h/dir.h
+dh.o: ../h/user.h ../machine/pcb.h ../h/dmap.h ../h/time.h ../h/resource.h
+dh.o: ../h/namei.h ../h/uio.h ../h/errno.h ../h/proc.h ../h/ioctl.h
+dh.o: ../h/ttychars.h ../h/ttydev.h ../h/tty.h ../h/#include "../machine/pte.h"
+#include "../h/param.h"
+#include "../h/buf.h"
+#include "../h/map.h"
+#include "../h/vm.h"
+
+#include "../vaxmba/mbavar.h"
+#include "../vaxuba/ubavar.h"
+
+
+#define C (caddr_t)
+
+extern struct mba_driver hpdriver;
+extern struct mba_driver hpdriver;
+extern struct mba_driver hpdriver;
+extern struct mba_driver hpdriver;
+extern struct mba_driver htdriver;
+extern struct mba_driver mtdriver;
+
+struct mba_device mbdinit[] = {
+	/* Device,  Unit, Mba, Drive, Dk */
+	{ &hpdriver, 0,   '?',    0,  1 },
+	{ &hpdriver, 1,   '?',  '?',  1 },
+	{ &hpdriver, 2,   '?',  '?',  1 },
+	{ &hpdriver, 3,   '?',  '?',  1 },
+	{ &htdriver, 0,   '?',  '?',  0 },
+	{ &mtdriver, 0,   '?',  '?',  0 },
+	0
+};
+
+struct mba_slave mbsinit [] = {
+	/* Driver,  Ctlr, Unit, Slave */
+	{ &htdriver,   0,   0,      0 },
+	{ &htdriver,   0,   1,      1 },
+	{ &mtdriver,   0,   0,      0 },
+	{ &mtdriver,   0,   1,      1 },
+	0
+};
+
+extern struct uba_driver hkdriver;
+extern Xrkintr0();
+int	 (*hkint0[])() = { Xrkintr0, 0 } ;
+extern struct uba_driver tmdriver;
+extern Xtmintr0();
+int	 (*tmint0[])() = { Xtmintr0, 0 } ;
+extern struct uba_driver utdriver;
+extern Xutintr0();
+int	 (*utint0[])() = { Xutintr0, 0 } ;
+extern struct uba_driver tmscpdriver;
+extern Xtmscpintr0();
+int	 (*tmscpint0[])() = { Xtmscpintr0, 0 } ;
+extern struct uba_driver scdriver;
+extern Xupintr0();
+int	 (*scint0[])() = { Xupintr0, 0 } ;
+extern struct uba_driver udadriver;
+extern Xudintr0();
+int	 (*udaint0[])() = { Xudintr0, 0 } ;
+extern struct uba_driver idcdriver;
+extern Xidcintr0();
+int	 (*idcint0[])() = { Xidcintr0, 0 } ;
+extern struct uba_driver hldriver;
+extern Xrlintr0();
+int	 (*hlint0[])() = { Xrlintr0, 0 } ;
+extern struct uba_driver dhdriver;
+extern Xdhrint0(), Xdhxint0();
+int	 (*dhint0[])() = { Xdhrint0, Xdhxint0, 0 } ;
+extern struct uba_driver dmdriver;
+extern Xdmintr0();
+int	 (*dmint0[])() = { Xdmintr0, 0 } ;
+extern struct uba_driver dhdriver;
+extern Xdhrint1(), Xdhxint1();
+int	 (*dhint1[])() = { Xdhrint1, Xdhxint1, 0 } ;
+extern struct uba_driver dzdriver;
+extern Xdzrint0(), Xdzxint0();
+int	 (*dzint0[])() = { Xdzrint0, Xdzxint0, 0 } ;
+extern struct uba_driver dzdriver;
+extern Xdzrint1(), Xdzxint1();
+int	 (*dzint1[])() = { Xdzrint1, Xdzxint1, 0 } ;
+extern struct uba_driver dzdriver;
+extern Xdzrint2(), Xdzxint2();
+int	 (*dzint2[])() = { Xdzrint2, Xdzxint2, 0 } ;
+extern struct uba_driver dzdriver;
+extern Xdzrint3(), Xdzxint3();
+int	 (*dzint3[])() = { Xdzrint3, Xdzxint3, 0 } ;
+extern struct uba_driver dzdriver;
+extern Xdzrint4(), Xdzxint4();
+int	 (*dzint4[])() = { Xdzrint4, Xdzxint4, 0 } ;
+extern struct uba_driver dzdriver;
+extern Xdzrint5(), Xdzxint5();
+int	 (*dzint5[])() = { Xdzrint5, Xdzxint5, 0 } ;
+extern struct uba_driver dzdriver;
+extern Xdzrint6(), Xdzxint6();
+int	 (*dzint6[])() = { Xdzrint6, Xdzxint6, 0 } ;
+extern struct uba_driver dzdriver;
+extern Xdzrint7(), Xdzxint7();
+int	 (*dzint7[])() = { Xdzrint7, Xdzxint7, 0 } ;
+extern struct uba_driver zsdriver;
+extern Xtsintr0();
+int	 (*zsint0[])() = { Xtsintr0, 0 } ;
+extern struct uba_driver dmfdriver;
+extern Xdmfsrint0(), Xdmfsxint0(), Xdmfdaint0(), Xdmfdbint0(), Xdmfrint0(), Xdmfxint0(), Xdmflint0();
+int	 (*dmfint0[])() = { Xdmfsrint0, Xdmfsxint0, Xdmfdaint0, Xdmfdbint0, Xdmfrint0, Xdmfxint0, Xdmflint0, 0 } ;
+extern struct uba_driver dmzdriver;
+extern Xdmzrinta0(), Xdmzxinta0(), Xdmzrintb0(), Xdmzxintb0(), Xdmzrintc0(), Xdmzxintc0();
+int	 (*dmzint0[])() = { Xdmzrinta0, Xdmzxinta0, Xdmzrintb0, Xdmzxintb0, Xdmzrintc0, Xdmzxintc0, 0 } ;
+extern struct uba_driver dhudriver;
+extern Xdhurint0(), Xdhuxint0();
+int	 (*dhuint0[])() = { Xdhurint0, Xdhuxint0, 0 } ;
+extern struct uba_driver lpdriver;
+extern Xlpintr0();
+int	 (*lpint0[])() = { Xlpintr0, 0 } ;
+extern struct uba_driver endriver;
+extern Xenxint0(), Xenrint0(), Xencollide0();
+int	 (*enint0[])() = { Xenxint0, Xenrint0, Xencollide0, 0 } ;
+extern struct uba_driver ecdriver;
+extern Xecrint0(), Xeccollide0(), Xecxint0();
+int	 (*ecint0[])() = { Xecrint0, Xeccollide0, Xecxint0, 0 } ;
+extern struct uba_driver dedriver;
+extern Xdeintr0();
+int	 (*deint0[])() = { Xdeintr0, 0 } ;
+extern struct uba_driver ildriver;
+extern Xilrint0(), Xilcint0();
+int	 (*ilint0[])() = { Xilrint0, Xilcint0, 0 } ;
+extern struct uba_driver exdriver;
+extern Xexcdint0();
+int	 (*exint0[])() = { Xexcdint0, 0 } ;
+
+struct uba_ctlr ubminit[] = {
+/*	 driver,	ctlr,	ubanum,	alive,	intr,	addr */
+	{ &hkdriver,	0,	'?',	0,	hkint0, C 0177440 },
+	{ &tmdriver,	0,	'?',	0,	tmint0, C 0172520 },
+	{ &utdriver,	0,	'?',	0,	utint0, C 0172440 },
+	{ &tmscpdriver,	0,	'?',	0,	tmscpint0, C 0174500 },
+	{ &scdriver,	0,	'?',	0,	scint0, C 0176700 },
+	{ &udadriver,	0,	'?',	0,	udaint0, C 0172150 },
+	{ &idcdriver,	0,	  0,	0,	idcint0, C 0175606 },
+	{ &hldriver,	0,	'?',	0,	hlint0, C 0174400 },
+	{ &zsdriver,	0,	'?',	0,	zsint0, C 0172520 },
+	0
+};
+
+struct uba_device ubdinit[] = {
+	/* driver,  unit, ctlr,  ubanum, slave,   intr,    addr,    dk, flags*/
+	{ &hkdriver,   0,     0,  '?',     0,        0, C 00     ,  1,  0x0 },
+	{ &hkdriver,   1,     0,  '?',     1,        0, C 00     ,  1,  0x0 },
+	{ &hkdriver,   2,     0,  '?',     2,        0, C 00     ,  1,  0x0 },
+	{ &hkdriver,   3,     0,  '?',     3,        0, C 00     ,  1,  0x0 },
+	{ &tmdriver,   0,     0,  '?',     0,        0, C 00     ,  0,  0x0 },
+	{ &tmdriver,   1,     0,  '?',     1,        0, C 00     ,  0,  0x0 },
+	{ &utdriver,   0,     0,  '?',     0,        0, C 00     ,  0,  0x0 },
+	{ &utdriver,   1,     0,  '?',     1,        0, C 00     ,  0,  0x0 },
+	{ &tmscpdriver,   0,     0,  '?',     0,        0, C 00     ,  0,  0x0 },
+	{ &tmscpdriver,   1,     0,  '?',     1,        0, C 00     ,  0,  0x0 },
+	{ &scdriver,   0,     0,  '?',     0,        0, C 00     ,  1,  0x0 },
+	{ &scdriver,   1,     0,  '?',     1,        0, C 00     ,  1,  0x0 },
+	{ &scdriver,   2,     0,  '?',     2,        0, C 00     ,  1,  0x0 },
+	{ &scdriver,   3,     0,  '?',     3,        0, C 00     ,  1,  0x0 },
+	{ &udadriver,   0,     0,  '?',     0,        0, C 00     ,  1,  0x0 },
+	{ &udadriver,   1,     0,  '?',     1,        0, C 00     ,  1,  0x0 },
+	{ &udadriver,   2,     0,  '?',     2,        0, C 00     ,  1,  0x0 },
+	{ &udadriver,   3,     0,  '?',     3,        0, C 00     ,  1,  0x0 },
+	{ &idcdriver,   0,     0,    0,     0,        0, C 00     ,  1,  0x0 },
+	{ &idcdriver,   1,     0,    0,     1,        0, C 00     ,  1,  0x0 },
+	{ &hldriver,   0,     0,  '?',     0,        0, C 00     ,  1,  0x0 },
+	{ &hldriver,   1,     0,  '?',     1,        0, C 00     ,  1,  0x0 },
+	{ &dhdriver,   0,    -1,  '?',    -1,   dhint0, C 0160020,  0,  0x0 },
+	{ &dmdriver,   0,    -1,  '?',    -1,   dmint0, C 0170500,  0,  0x0 },
+	{ &dhdriver,   1,    -1,  '?',    -1,   dhint1, C 0160040,  0,  0x0 },
+	{ &dzdriver,   0,    -1,  '?',    -1,   dzint0, C 0160100,  0,  0xff },
+	{ &dzdriver,   1,    -1,  '?',    -1,   dzint1, C 0160110,  0,  0xff },
+	{ &dzdriver,   2,    -1,  '?',    -1,   dzint2, C 0160120,  0,  0xff },
+	{ &dzdriver,   3,    -1,  '?',    -1,   dzint3, C 0160130,  0,  0xff },
+	{ &dzdriver,   4,    -1,  '?',    -1,   dzint4, C 0160140,  0,  0xff },
+	{ &dzdriver,   5,    -1,  '?',    -1,   dzint5, C 0160150,  0,  0xff },
+	{ &dzdriver,   6,    -1,  '?',    -1,   dzint6, C 0160160,  0,  0xff },
+	{ &dzdriver,   7,    -1,  '?',    -1,   dzint7, C 0160170,  0,  0xff },
+	{ &zsdriver,   0,     0,  '?',     0,        0, C 00     ,  0,  0x0 },
+	{ &dmfdriver,   0,    -1,  '?',    -1,   dmfint0, C 0160340,  0,  0xfc },
+	{ &dmzdriver,   0,    -1,  '?',    -1,   dmzint0, C 0160540,  0,  0xffffff },
+	{ &dhudriver,   0,    -1,  '?',    -1,   dhuint0, C 0160440,  0,  0x0 },
+	{ &lpdriver,   0,    -1,  '?',    -1,   lpint0, C 0177514,  0,  0x0 },
+	{ &endriver,   0,    -1,  '?',    -1,   enint0, C 0161000,  0,  0x0 },
+	{ &ecdriver,   0,    -1,  '?',    -1,   ecint0, C 0164330,  0,  0x0 },
+	{ &dedriver,   0,    -1,  '?',    -1,   deint0, C 0174510,  0,  0x0 },
+	{ &ildriver,   0,    -1,  '?',    -1,   ilint0, C 0164000,  0,  0x0 },
+	{ &exdriver,   0,    -1,  '?',    -1,   exint0, C 0164344,  0,  0x0 },
+	0
+};
+                                                                                                                                                        ttychars.h ../h/ttydev.h
+dh.o: ../h/map.h ../h/buf.h ../h/vm.h ../h/vmparam.h ../machine/vmparam.h
+dh.o: ../h/vmmac.h ../h/vmmeter.h ../h/vmsystm.h ../h/kernel.h ../h/syslog.h
+dh.o: ../vaxuba/ubareg.h ../vaxuba/ubavar.h ../vaxuba/dhreg.h ../vaxuba/dmreg.h
+dh.o: ../h/bkmac.h ../h/clist.h ../h/file.h ../h/uio.h
+dhu.o: ../vaxuba/dhu.c ./dhu.h ../machine/pte.h ./bk.h ../h/param.h
+dhu.o: ../machine/machparam.h ../h/signal.h ../h/types.h ../h/conf.h ../h/dir.h
+dhu.o: ../h/user.h ../machine/pcb.h ../h/dmap.h ../h/time.h ../h/resource.h
+dhu.o: ../h/namei.h ../h/uio.h ../h/errno.h ../h/proc.h ../h/ioctl.h
+dhu.o: ../h/ttychars.h ../h/ttydev.h ../h/tty.h ../h/ttychars.h ../h/ttydev.h
+dhu.o: ../h/map.h ../h/buf.h ../h/vm.h ../h/vmparam.h ../machine/vmparam.h
+dhu.o: ../h/vmmac.h ../h/vmmeter.h ../h/vmsystm.h ../h/kernel.h ../h/syslog.h
+dhu.o: ./uba.h ../vaxuba/ubareg.h ../vaxuba/ubavar.h ../vaxuba/dhureg.h
+dhu.o: ../h/bkmac.h ../h/clist.h ../h/file.h ../h/uio.h
+dmf.o: ../vaxuba/dmf.c ./dmf.h ../machine/pte.h ./bk.h ./uba.h ../h/param.h
+dmf.o: ../machine/machparam.h ../h/signal.h ../h/types.h ../h/conf.h ../h/dir.h
+dmf.o: ../h/user.h ../machine/pcb.h ../h/dmap.h ../h/time.h ../h/resource.h
+dmf.o: ../h/namei.h ../h/uio.h ../h/errno.h ../h/proc.h ../h/ioctl.h
+dmf.o: ../h/ttychars.h ../h/ttydev.h ../h/tty.h ../h/ttychars.h ../h/ttydev.h
+dmf.o: ../h/map.h ../h/buf.h ../h/vm.h ../h/vmparam.h ../machine/vmparam.h
+dmf.o: ../h/vmmac.h ../h/vmmeter.h ../h/vmsystm.h ../h/bkmac.h ../h/clist.h
+dmf.o: ../h/file.h ../h/uio.h ../h/kernel.h ../h/syslog.h ../vaxuba/ubareg.h
+dmf.o: ../vaxuba/ubavar.h ../vaxuba/dmfreg.h
+dmz.o: ../vaxuba/dmz.c ./dmz.h ../machine/pte.h ./bk.h ./uba.h ../h/param.h
+dmz.o: ../machine/machparam.h ../h/signal.h ../h/types.h ../h/conf.h ../h/dir.h
+dmz.o: ../h/user.h ../machine/pcb.h ../h/dmap.h ../h/time.h ../h/resource.h
+dmz.o: ../h/namei.h ../h/uio.h ../h/errno.h ../h/proc.h ../h/ioctl.h
+dmz.o: ../h/ttychars.h ../h/ttydev.h ../h/tty.h ../h/ttychars.h ../h/ttydev.h
+dmz.o: ../h/map.h ../h/buf.h ../h/vm.h ../h/vmparam.h ../machine/vmparam.h
+dmz.o: ../h/vmmac.h ../h/vmmeter.h ../h/vmsystm.h ../h/bkmac.h ../h/clist.h
+dmz.o: ../h/file.h ../h/uio.h ../h/kernel.h ../h/syslog.h ../vaxuba/ubareg.h
+dmz.o: ../vaxuba/ubavar.h ../vaxuba/dmzreg.h ../vaxuba/dmreg.h
+dz.o: ../vaxuba/dz.c ./dz.h ./bk.h ../machine/pte.h ../h/param.h
+dz.o: ../machine/machparam.h ../h/signal.h ../h/types.h ../h/systm.h
+dz.o: ../h/ioctl.h ../h/ttychars.h ../h/ttydev.h ../h/tty.h ../h/ttychars.h
+dz.o: ../h/ttydev.h ../h/dir.h ../h/user.h ../machine/pcb.h ../h/dmap.h
+dz.o: ../h/time.h ../h/resource.h ../h/namei.h ../h/uio.h ../h/errno.h
+dz.o: ../h/proc.h ../h/map.h ../h/buf.h ../h/vm.h ../h/vmparam.h
+dz.o: ../machine/vmparam.h ../h/vmmac.h ../h/vmmeter.h ../h/vmsystm.h
+dz.o: ../h/conf.h ../h/bkmac.h ../h/file.h ../h/uio.h ../h/kernel.h
+dz.o: ../h/syslog.h ../vaxuba/pdma.h ../vaxuba/ubavar.h ../vaxuba/dzreg.h
+idc.o: ../vaxuba/idc.c ./rb.h ../machine/pte.h ../h/param.h
+idc.o: ../machine/machparam.h ../h/signal.h ../h/types.h ../h/systm.h
+idc.o: ../h/buf.h ../h/conf.h ../h/dir.h ../h/user.h ../machine/pcb.h
+idc.o: ../h/dmap.h ../h/time.h ../h/resource.h ../h/namei.h ../h/uio.h
+idc.o: ../h/errno.h ../h/map.h ../h/vm.h ../h/vmparam.h ../machine/vmparam.h
+idc.o: ../h/vmmac.h ../h/vmmeter.h ../h/vmsystm.h ../h/dk.h ../h/cmap.h
+idc.o: ../h/dkbad.h ../h/uio.h ../h/kernel.h ../h/syslog.h ../vax/cpu.h
+idc.o: ../vaxuba/ubareg.h ../vaxuba/ubavar.h ../vaxuba/idcreg.h
+lp.o: ../vaxuba/lp.c ./lp.h ../machine/pte.h ../h/param.h
+lp.o: ../machine/machparam.h ../h/signal.h ../h/types.h ../h/dir.h ../h/user.h
+lp.o: ../machine/pcb.h ../h/dmap.h ../h/time.h ../h/resource.h ../h/namei.h
+lp.o: ../h/uio.h ../h/errno.h ../h/buf.h ../h/systm.h ../h/map.h ../h/uio.h
+lp.o: ../h/ioctl.h ../h/ttychars.h ../h/ttydev.h ../h/tty.h ../h/ttychars.h
+lp.o: ../h/ttydev.h ../h/kernel.h ../vaxuba/ubavar.h
+rk.o: ../vaxuba/rk.c ./rk.h ../machine/pte.h ../h/param.h
+rk.o: ../machine/machparam.h ../h/signal.h ../h/types.h ../h/systm.h ../h/buf.h
+rk.o: ../h/conf.h ../h/dir.h ../h/user.h ../machine/pcb.h ../h/dmap.h
+rk.o: ../h/time.h ../h/resource.h ../h/namei.h ../h/uio.h ../h/errno.h
+rk.o: ../h/map.h ../h/vm.h ../h/vmparam.h ../machine/vmparam.h ../h/vmmac.h
+rk.o: ../h/vmmeter.h ../h/vmsystm.h ../h/dk.h ../h/cmap.h ../h/dkbad.h
+rk.o: ../h/uio.h ../h/kernel.h ../h/syslog.h ../vax/cpu.h ../vaxuba/ubareg.h
+rk.o: ../vaxuba/ubavar.h ../vaxuba/rkreg.h
+rl.o: ../vaxuba/rl.c ./rl.h ../machine/pte.h ../h/param.h
+rl.o: ../machine/machparam.h ../h/signal.h ../h/types.h ../h/systm.h ../h/dk.h
+rl.o: ../h/dkbad.h ../h/buf.h ../h/conf.h ../h/dir.h ../h/user.h
+rl.o: ../machine/pcb.h ../h/dmap.h ../h/time.h ../h/resource.h ../h/namei.h
+rl.o: ../h/uio.h ../h/errno.h ../h/map.h ../h/vm.h ../h/vmparam.h
+rl.o: ../machine/vmparam.h ../h/vmmac.h ../h/vmmeter.h ../h/vmsystm.h
+rl.o: ../h/cmap.h ../h/uio.h ../h/kernel.h ../vax/cpu.h ../vax/nexus.h
+rl.o: ../vaxuba/ubavar.h ../vaxuba/ubareg.h ../vaxuba/rlreg.h
+tm.o: ../vaxuba/tm.c ./te.h ./ts.h ../machine/pte.h ../h/param.h
+tm.o: ../machine/machparam.h ../h/signal.h ../h/types.h ../h/systm.h ../h/buf.h
+tm.o: ../h/dir.h ../h/conf.h ../h/user.h ../machine/pcb.h ../h/dmap.h
+tm.o: ../h/time.h ../h/resource.h ../h/namei.h ../h/uio.h ../h/errno.h
+tm.o: ../h/file.h ../h/map.h ../h/vm.h ../h/vmparam.h ../machine/vmparam.h
+tm.o: ../h/vmmac.h ../h/vmmeter.h ../h/vmsystm.h ../h/ioctl.h ../h/ttychars.h
+tm.o: ../h/ttydev.h ../h/mtio.h ../h/cmap.h ../h/uio.h ../h/kernel.h ../h/tty.h
+tm.o: ../h/ttychars.h ../h/ttydev.h ../vax/cpu.h ../vaxuba/ubareg.h
+tm.o: ../vaxuba/ubavar.h ../vaxuba/tmreg.h
+tmscp.o: ../vaxuba/tmscp.c ./tms.h ../vax/pte.h ../h/param.h
+tmscp.o: ../machine/machparam.h ../h/signal.h ../h/types.h ../h/systm.h
+tmscp.o: ../h/buf.h ../h/conf.h ../h/dir.h ../h/user.h ../machine/pcb.h
+tmscp.o: ../h/dmap.h ../h/time.h ../h/resource.h ../h/namei.h ../h/uio.h
+tmscp.o: ../h/errno.h ../h/file.h ../h/map.h ../h/vm.h ../h/vmparam.h
+tmscp.o: ../machine/vmparam.h ../h/vmmac.h ../h/vmmeter.h ../h/vmsystm.h
+tmscp.o: ../h/ioctl.h ../h/ttychars.h ../h/ttydev.h ../h/syslog.h ../h/mtio.h
+tmscp.o: ../h/cmap.h ../h/uio.h ../h/tty.h ../h/ttychars.h ../h/ttydev.h
+tmscp.o: ../vax/cpu.h ../vax/mtpr.h ../vaxuba/ubareg.h ../vaxuba/ubavar.h
+tmscp.o: ../vaxuba/tmscpreg.h ../vax/tmscp.h
+ts.o: ../vaxuba/ts.c ./ts.h ../machine/pte.h ../h/param.h
+ts.o: ../machine/machparam.h ../h/signal.h ../h/types.h ../h/systm.h ../h/buf.h
+ts.o: ../h/dir.h ../h/conf.h ../h/user.h ../machine/pcb.h ../h/dmap.h
+ts.o: ../h/time.h ../h/resource.h ../h/namei.h ../h/uio.h ../h/errno.h
+ts.o: ../h/file.h ../h/map.h ../h/vm.h ../h/vmparam.h ../machine/vmparam.h
+ts.o: ../h/vmmac.h ../h/vmmeter.h ../h/vmsystm.h ../h/ioctl.h ../h/ttychars.h
+ts.o: ../h/ttydev.h ../h/mtio.h ../h/cmap.h ../h/uio.h ../h/tty.h
+ts.o: ../h/ttychars.h ../h/ttydev.h ../vax/cpu.h ../vaxuba/ubareg.h
+ts.o: ../vaxuba/ubavar.h ../vaxuba/tsreg.h
+uba.o: ../vaxuba/uba.c ../machine/pte.h ../h/param.h ../machine/machparam.h
+uba.o: ../h/signal.h ../h/types.h ../h/systm.h ../h/map.h ../h/buf.h ../h/vm.h
+uba.o: ../h/vmparam.h ../machine/vmparam.h ../h/vmmac.h ../h/vmmeter.h
+uba.o: ../h/vmsystm.h ../h/dir.h ../h/user.h ../machine/pcb.h ../h/dmap.h
+uba.o: ../h/time.h ../h/resource.h ../h/namei.h ../h/uio.h ../h/errno.h
+uba.o: ../h/proc.h ../h/conf.h ../h/dk.h ../h/kernel.h ../vax/cpu.h
+uba.o: ../vax/mtpr.h ../vax/nexus.h ../vaxuba/ubareg.h ../vaxuba/ubavar.h
+uba.o: ./ik.h ./vs.h
+uda.o: ../vaxuba/uda.c ./ra.h ../machine/pte.h ../h/param.h
+uda.o: ../machine/machparam.h ../h/signal.h ../h/types.h ../h/systm.h
+uda.o: ../h/buf.h ../h/conf.h ../h/dir.h ../h/user.h ../machine/pcb.h
+uda.o: ../h/dmap.h ../h/time.h ../h/resource.h ../h/namei.h ../h/uio.h
+uda.o: ../h/errno.h ../h/map.h ../h/vm.h ../h/vmparam.h ../machine/vmparam.h
+uda.o: ../h/vmmac.h ../h/vmmeter.h ../h/vmsystm.h ../h/dk.h ../h/cmap.h
+uda.o: ../h/uio.h ../vax/cpu.h ../vaxuba/ubareg.h ../vaxuba/ubavar.h
+uda.o: ../vax/mtpr.h ../vaxuba/udareg.h ../vax/mscp.h
+up.o: ../vaxuba/up.c ./up.h ../machine/pte.h ../h/param.h
+up.o: ../machine/machparam.h ../h/signal.h ../h/types.h ../h/systm.h ../h/dk.h
+up.o: ../h/dkbad.h ../h/buf.h ../h/conf.h ../h/dir.h ../h/user.h
+r11,_boothowto
+/* calculate firstaddr, and call main() */
+	movab	_end+NBPG-1,r0; bbcc $31,r0,0f; 0:; ashl $-PGSHIFT,r0,-(sp)
+	addl2	$UPAGES+1,(sp); calls $1,_main
+/* proc[1] == /etc/init now running here; run icode */
+	pushl	$PSL_CURMOD|PSL_PRVMOD; pushl $0; rei
+
+/* signal trampoline code: it is known that this code takes exactly 19 bytes */
+/* in ../vax/pcb.h and in the movc3 above */
+sigcode:
+	calls	$4,8(pc)	# params pushed by sendsig
+	movl	sp,ap		# calls frame built by sendsig
+	chmk	$103		# cleanup mask and onsigstack
+	halt			# sigreturn() does not return!
+	.word	0x3f		# registers 0-5
+	callg	(ap),*16(ap)	# call the signal handler
+	ret			# return to code above
+
+	.set	exec,11
+	.set	exit,1
+	.globl	_icode
+	.globl	_initflags
+	.globl	_szicode
+/*
+ * Icode is copied out to process 1 to exec /etc/init.
+ * If the exec fails, process 1 exits.
+ */
+_icode:
+	pushab	b`argv-l0(pc)
+l0:	pushab	b`init-l1(pc)
+l1:	pushl	$2
+	movl	sp,ap
+	chmk	$exec
+	chmk	$exit
+
+init:	.asciz	"/etc/init"
+	.align	2
+_initflags:
+	.long	0
+argv:	.long	init+5-_icode
+	.long	_initflags-_icode
+	.long	0
+_szicode:
+	.long	_szicode-_icode
+
+/*
+ * Primitives
+ */ 
+
+#ifdef GPROF
+#define	ENTRY(name, regs) \
+	.globl _/**/name; .align 1; _/**/name: .word regs; jsb mcount
+#define	JSBENTRY(name, regs) \
+	.globl _/**/name; _/**/name: \
+	movl fp,-(sp); movab -12(sp),fp; pushr $(regs); jsb mcount; \
+	popr $(regs); movl (sp)+,fp
+#else
+#define	ENTRY(name, regs) \
+	.globl _/**/name; .align 1; _/**/name: .word regs
+#define	JSBENTRY(name, regs) \
+	.globl _/**/name; _/**/name:
+#endif GPROF
+#define R0 0x01
+#define R1 0x02
+#define R2 0x04
+#define R3 0x08
+#define R4 0x10
+#define R5 0x20
+#define R6 0x40
+
+/*
+ * badaddr(addr, len)
+ *	see if access addr with a len type instruction causes a machine check
+ *	len is length of access (1=byte, 2=short, 4=long)
+ */
+	.globl	_badaddr
+_badaddr:
+	.word	0
+	movl	$1,r0
+	mfpr	$IPL,r1
+	mtpr	$HIGH,$IPL
+	movl	4(ap),r3
+	movl	8(ap),r4
+	movab	2f,nofault		# jump to 2f on machcheck
+	bbc	$0,r4,1f; tstb	(r3)
+1:	bbc	$1,r4,1f; tstw	(r3)
+1:	bbc	$2,r4,1f; tstl	(r3)
+1:	clrl	r0			# made it w/o machine checks
+2:	clrl	nofault
+	mtpr	r1,$IPL
+	ret
+
+/*
+ * update profiling information for the user
+ * addupc(pc, &u.u_prof, ticks)
+ */
+ENTRY(addupc, 0)
+	movl	8(ap),r2		# &u.u_prof
+	subl3	8(r2),4(ap),r0		# corrected pc
+	blss	9f
+	extzv	$1,$31,r0,r0		# logical right shift
+	extzv	$1,$31,12(r2),r1	# ditto for scale
+	emul	r1,r0,$0,r0
+	ashq	$-14,r0,r0
+	tstl	r1
+	bneq	9f
+	bicl2	$1,r0
+	cmpl	r0,4(r2)		# length
+	bgequ	9f
+	addl2	(r2),r0			# base
+	probew	$3,$2,(r0)
+	beql	8f
+	addw2	12(ap),(r0)
+9:
+	ret
+8:
+	clrl	12(r2)
+	ret
+
+/*
+ * Copy a null terminated string from the user address space into
+ * the kernel address space.
+ *
+ * copyinstr(fromaddr, toaddr, maxlength, &lencopied)
+ */
+ENTRY(copyinstr, R6)
+	movl	12(ap),r6		# r6 = max length
+	jlss	8f
+	movl	4(ap),r1		# r1 = user address
+	bicl3	$~(NBPG*CLSIZE-1),r1,r2	# r2 = bytes on first page
+	subl3	r2,$NBPG*CLSIZE,r2
+	movl	8(ap),r3		# r3 = kernel address
+1:
+	cmpl	r6,r2			# r2 = min(bytes on page, length left);
+	jgeq	2f
+	movl	r6,r2
+2:
+	prober	$3,r2,(r1)		# bytes accessible?
+	jeql	8f
+	subl2	r2,r6			# update bytes left count
+#ifdef NOSUBSINST
+	# fake the locc instr. for processors that don't have it
+	movl	r2,r0
+6:
+	tstb	(r1)+
+	jeql	5f
+	sobgtr	r0,6b
+	jbr	7f
+5:
+	decl	r1
+	jbr	3f
+7:
+#else
+	locc	$0,r2,(r1)		# null byte found?
+	jneq	3f
+#endif
+	subl2	r2,r1			# back up pointer updated by `locc'
+	movc3	r2,(r1),(r3)		# copy in next piece
+	movl	$(NBPG*CLSIZE),r2	# check next page
+	tstl	r6			# run out of space?
+	jneq	1b
+	movl	$ENOENT,r0		# set error code and return
+	jbr	9f
+3:
+	tstl	16(ap)			# return length?
+	beql	4f
+	subl3	r6,12(ap),r6		# actual len = maxlen - unused pages
+	subl2	r0,r6			#	- unused on this page
+	addl3	$1,r6,*16(ap)		#	+ the null byte
+4:
+	subl2	r0,r2			# r2 = number of bytes to move
+	subl2	r2,r1			# back up pointer updated by `locc'
+	incl	r2			# copy null byte as well
+	movc3	r2,(r1),(r3)		# copy in last piece
+	clrl	r0			# redundant
+	ret
+8:
+	movl	$EFAULT,r0
+9:
+	tstl	16(ap)
+	beql	1f
+	subl3	r6,12(ap),*16(ap)
+1:
+	ret
+
+/*
+ * Copy a null terminated string from the kernel
+ * address space to the user address space.
+ *
+ * copyoutstr(fromaddr, toaddr, maxlength, &lencopied)
+ */
+ENTRY(copyoutstr, R6)
+	movl	12(ap),r6		# r6 = max length
+	jlss	8b
+	movl	4(ap),r1		# r1 = kernel address
+	movl	8(ap),r3		# r3 = user address
+	bicl3	$~(NBPG*CLSIZE-1),r3,r2	# r2 = bytes on first page
+	subl3	r2,$NBPG*CLSIZE,r2
+1:
+	cmpl	r6,r2			# r2 = min(bytes on page, length left);
+	jgeq	2f
+	movl	r6,r2
+2:
+	probew	$3,r2,(r3)		# bytes accessible?
+	jeql	8b
+	subl2	r2,r6			# update bytes left count
+#ifdef NOSUBSINST
+	# fake the locc instr. for processors that don't have it
+	movl	r2,r0
+6:
+	tstb	(r1)+
+	jeql	5f
+	sobgtr	r0,6b
+	jbr	7f
+5:
+	decl	r1
+	jbr	3b
+7:
+#else
+	locc	$0,r2,(r1)		# null byte found?
+	jneq	3b
+#endif
+	subl2	r2,r1			# back up pointer updated by `locc'
+	movc3	r2,(r1),(r3)		# copy in next piece
+	movl	$(NBPG*CLSIZE),r2	# check next page
+	tstl	r6			# run out of space?
+	jneq	1b
+	movl	$ENOENT,r0		# set error code and return
+	jbr	9b
+
+/*
+ * Copy a null terminated string from one point to another in
+ * the kernel address space.
+ *
+ * copystr(fromaddr, toaddr, maxlength, &lencopied)
+ */
+ENTRY(copystr, R6)
+	movl	12(ap),r6		# r6 = max length
+	jlss	8b
+	movl	4(ap),r1		# r1 = src address
+	movl	8(ap),r3		# r3 = dest address
+1:
+	movzwl	$65535,r2		# r2 = bytes in first chunk
+	cmpl	r6,r2			# r2 = min(bytes in chunk, length left);
+	jgeq	2f
+	movl	r6,r2
+2:
+	subl2	r2,r6			# update bytes left count
+#ifdef NOSUBSINST
+	# fake the locc instr. for processors that don't have it
+	movl	r2,r0
+6:
+	tstb	(r1)+
+	jeql	5f
+	sobgtr	r0,6b
+	jbr	7f
+5:
+	decl	r1
+	jbr	3b
+7:
+#else
+	locc	$0,r2,(r1)		# null byte found?
+	jneq	3b
+#endif
+	subl2	r2,r1			# back up pointer updated by `locc'
+	movc3	r2,(r1),(r3)		# copy in next piece
+	tstl	r6			# run out of space?
+	jneq	1b
+	movl	$ENOENT,r0		# set error code and return
+	jbr	9b
+
+/* 
+ * Copy specified amount of data from user space into the kernel
+ * Copyin(from, to, len)
+ *	r1 == from (user source address)
+ *	r3 == to (kernel destination address)
+ *	r5 == length
+ */
+	.align	1
+JSBENTRY(Copyin, R1|R3|R5)
+	cmpl	r5,$(NBPG*CLSIZE)	# probing one page or less ?
+	bgtru	1f			# no
+	prober	$3,r5,(r1)		# bytes accessible ?
+	beql	ersb			# no
+	movc3	r5,(r1),(r3)
+/*	clrl	r0			# redundant */
+	rsb
+1:
+	blss	ersb			# negative length?
+	pushl	r6			# r6 = length
+	movl	r5,r6
+	bicl3	$~(NBPG*CLSIZE-1),r1,r0	# r0 = bytes on first page
+	subl3	r0,$(NBPG*CLSIZE),r0
+	addl2	$(NBPG*CLSIZE),r0	# plus one additional full page
+	jbr	2f
+
+ciloop:
+	movc3	r0,(r1),(r3)
+	movl	$(2*NBPG*CLSIZE),r0	# next amount to move
+2:
+	cmpl	r0,r6
+	bleq	3f
+	movl	r6,r0
+3:
+	prober	$3,r0,(r1)		# bytes accessible ?
+	beql	ersb1			# no
+	subl2	r0,r6			# last move?
+	bneq	ciloop			# no
+
+	movc3	r0,(r1),(r3)
+/*	clrl	r0			# redundant */
+	movl	(sp)+,r6		# restore r6
+	rsb
+
+ersb1:
+	movl	(sp)+,r6		# restore r6
+ersb:
+	movl	$EFAULT,r0
+	rsb
+
+/* 
+ * Copy specified amount of data from kernel to the user space
+ * Copyout(from, to, len)
+ *	r1 == from (kernel source address)
+ *	r3 == to (user destination address)
+ *	r5 == length
+ */
+	.align	1
+JSBENTRY(Copyout, R1|R3|R5)
+	cmpl	r5,$(NBPG*CLSIZE)	# moving one page or less ?
+	bgtru	1f			# no
+	probew	$3,r5,(r3)		# bytes writeable?
+	beql	ersb			# no
+	movc3	r5,(r1),(r3)
+/*	clrl	r0			# redundant */
+	rsb
+1:
+	blss	ersb			# negative length?
+	pushl	r6			# r6 = length
+	movl	r5,r6
+	bicl3	$~(NBPG*CLSIZE-1),r3,r0	# r0 = bytes on first page
+	subl3	r0,$(NBPG*CLSIZE),r0
+	addl2	$(NBPG*CLSIZE),r0	# plus one additional full page
+	jbr	2f
+
+coloop:
+	movc3	r0,(r1),(r3)
+	movl	$(2*NBPG*CLSIZE),r0	# next amount to move
+2:
+	cmpl	r0,r6
+	bleq	3f
+	movl	r6,r0
+3:
+	probew	$3,r0,(r3)		# bytes writeable?
+	beql	ersb1			# no
+	subl2	r0,r6			# last move?
+	bneq	coloop			# no
+
+	movc3	r0,(r1),(r3)
+/*	clrl	r0			# redundant */
+	movl	(sp)+,r6		# restore r6
+	rsb
+
+/*
+ * non-local goto's
+ */
+#ifdef notdef		/* this is now expanded completely inline */
+	.align	1
+JSBENTRY(Setjmp, R0)
+	movl	fp,(r0)+	# current stack frame
+	movl	(sp),(r0)	# resuming pc
+	clrl	r0
+	rsb
+#endif
+
+#define PCLOC 16	/* location of pc in calls frame */
+#define APLOC 8		/* location of ap,fp in calls frame */
+	.align	1
+JSBENTRY(INE} | ${AS} -o conf.o
+	rm -f conf.s
+
+cons.o: ../vax/cons.c
+	${CC} -c -S ${COPTS} ../vax/cons.c
+	${C2} cons.s | ${INLINE} | ${AS} -o cons.o
+	rm -f cons.s
+
+cpudata.o: ../vax/cpudata.c
+	${CC} -c -S ${COPTS} ../vax/cpudata.c
+	${C2} cpudata.s | ${INLINE} | ${AS} -o cpudata.o
+	rm -f cpudata.s
+
+crl.o: ../vax/crl.c
+	${CC} -c -S ${COPTS} ../vax/crl.c
+	${C2} crl.s | ${INLINE} | ${AS} -o crl.o
+	rm -f crl.s
+
+dkbad.o: ../vax/dkbad.c
+	${CC} -c -S ${COPTS} ../vax/dkbad.c
+	${C2} dkbad.s | ${INLINE} | ${AS} -o dkbad.o
+	rm -f dkbad.s
+
+flp.o: ../vax/flp.c
+	${CC} -c -S ${COPTS} ../vax/flp.c
+	${C2} flp.s | ${INLINE} | ${AS} -o flp.o
+	rm -f flp.s
+
+in_cksum.o: ../vax/in_cksum.c
+	${CC} -c -S ${COPTS} ../vax/in_cksum.c
+	${C2} in_cksum.s | ${INLINE} | ${AS} -o in_cksum.o
+	rm -f in_cksum.s
+
+ka630.o: ../vax/ka630.c
+	${CC} -c -S ${COPTS} ../vax/ka630.c
+	${C2} ka630.s | ${INLINE} | ${AS} -o ka630.o
+	rm -f ka630.s
+
+ns_cksum.o: ../vax/ns_cksum.c
+	${CC} -c -S ${COPTS} ../vax/ns_cksum.c
+	${C2} ns_cksum.s | ${INLINE} | ${AS} -o ns_cksum.o
+	rm -f ns_cksum.s
+
+machdep.o: ../vax/machdep.c
+	${CC} -c -S ${COPTS} ${PARAM} ../vax/machdep.c
+	${C2} machdep.s | ${INLINE} | ${AS} -o machdep.o
+	rm -f machdep.s
+
+mem.o: ../vax/mem.c
+	${CC} -c -S ${COPTS} ../vax/mem.c
+	${C2} mem.s | ${INLINE} | ${AS} -o mem.o
+	rm -f mem.s
+
+sys_machdep.o: ../vax/sys_machdep.c
+	${CC} -c -S ${COPTS} ../vax/sys_machdep.c
+	${C2} sys_machdep.s | ${INLINE} | ${AS} -o sys_machdep.o
+	rm -f sys_machdep.s
+
+trap.o: ../vax/trap.c
+	${CC} -c -S ${COPTS} ../vax/trap.c
+	${C2} trap.s | ${INLINE} | ${AS} -o trap.o
+	rm -f trap.s
+
+tu.o: ../vax/tu.c
+	${CC} -c -S ${COPTS} ../vax/tu.c
+	${C2} tu.s | ${INLINE} | ${AS} -o tu.o
+	rm -f tu.s
+
+udiv.o: ../vax/udiv.s
+	-ln -s ../vax/udiv.s udiv.c
+	${CC} -E ${COPTS} udiv.c | ${AS} -o udiv.o
+	rm -f udiv.c
+
+ufs_machdep.o: ../vax/ufs_machdep.c
+	${CC} -c -S ${COPTS} ../vax/ufs_machdep.c
+	${C2} ufs_machdep.s | ${INLINE} | ${AS} -o ufs_machdep.o
+	rm -f ufs_machdep.s
+
+urem.o: ../vax/urem.s
+	-ln -s ../vax/urem.s urem.c
+	${CC} -E ${COPTS} urem.c | ${AS} -o urem.o
+	rm -f urem.c
+
+vm_machdep.o: ../vax/vm_machdep.c
+	${CC} -c -S ${COPTS} ../vax/vm_machdep.c
+	${C2} vm_machdep.s | ${INLINE} | ${AS} -o vm_machdep.o
+	rm -f vm_machdep.s
+
+if_de.o: ../vaxif/if_de.c
+	${CC} -c -S ${COPTS} ../vaxif/if_de.c
+	${C2} -i if_de.s | ${INLINE} | ${AS} -o if_de.o
+	rm -f if_de.s
+
+if_ec.o: ../vaxif/if_ec.c
+	${CC} -c -S ${COPTS} ../vaxif/if_ec.c
+	${C2} -i if_ec.s | ${INLINE} | ${AS} -o if_ec.o
+	rm -f if_ec.s
+
+if_en.o: ../vaxif/if_en.c
+	${CC} -c -S ${COPTS} ../vaxif/if_en.c
+	${C2} -i if_en.s | ${INLINE} | ${AS} -o if_en.o
+	rm -f if_en.s
+
+if_ex.o: ../vaxif/if_ex.c
+	${CC} -c -S ${COPTS} ../vaxif/if_ex.c
+	${C2} -i if_ex.s | ${INLINE} | ${AS} -o if_ex.o
+	rm -f if_ex.s
+
+if_il.o: ../vaxif/if_il.c
+	${CC} -c -S ${COPTS} ../vaxif/if_il.c
+	${C2} -i if_il.s | ${INLINE} | ${AS} -o if_il.o
+	rm -f if_il.s
+
+if_uba.o: ../vaxif/if_uba.c
+	${CC} -c -S ${COPTS} ../vaxif/if_uba.c
+	${C2} -i if_uba.s | ${INLINE} | ${AS} -o if_uba.o
+	rm -f if_uba.s
+
+hp.o: ../vaxmba/hp.c
+	${CC} -c -S ${COPTS} ../vaxmba/hp.c
+	${C2} -i hp.s | ${INLINE} | ${AS} -o hp.o
+	rm -f hp.s
+
+ht.o: ../vaxmba/ht.c
+	${CC} -c -S ${COPTS} ../vaxmba/ht.c
+	${C2} -i ht.s | ${INLINE} | ${AS} -o ht.o
+	rm -f ht.s
+
+mba.o: ../vaxmba/mba.c
+	${CC} -c -S ${COPTS} ../vaxmba/mba.c
+	${C2} -i mba.s | ${INLINE} | ${AS} -o mba.o
+	rm -f mba.s
+
+mt.o: ../vaxmba/mt.c
+	${CC} -c -S ${COPTS} ../vaxmba/mt.c
+	${C2} -i mt.s | ${INLINE} | ${AS} -o mt.o
+	rm -f mt.s
+
+dh.o: ../vaxuba/dh.c
+	${CC} -c -S ${COPTS} ../vaxuba/dh.c
+	${C2} -i dh.s | ${INLINE} | ${AS} -o dh.o
+	rm -f dh.s
+
+dhu.o: ../vaxuba/dhu.c
+	${CC} -c -S ${COPTS} ../vaxuba/dhu.c
+	${C2} -i dhu.s | ${INLINE} | ${AS} -o dhu.o
+	rm -f dhu.s
+
+dmf.o: ../vaxuba/dmf.c
+	${CC} -c -S ${COPTS} ../vaxuba/dmf.c
+	${C2} -i dmf.s | ${INLINE} | ${AS} -o dmf.o
+	rm -f dmf.s
+
+dmz.o: ../vaxuba/dmz.c
+	${CC} -c -S ${COPTS} ../vaxuba/dmz.c
+	${C2} -i dmz.s | ${INLINE} | ${AS} -o dmz.o
+	rm -f dmz.s
+
+dz.o: ../vaxuba/dz.c
+	${CC} -c -S ${COPTS} ../vaxuba/dz.c
+	${C2} -i dz.s | ${INLINE} | ${AS} -o dz.o
+	rm -f dz.s
+
+idc.o: ../vaxuba/idc.c
+	${CC} -c -S ${COPTS} ../vaxuba/idc.c
+	${C2} -i idc.s | ${INLINE} | ${AS} -o idc.o
+	rm -f idc.s
+
+lp.o: ../vaxuba/lp.c
+	${CC} -c -S ${COPTS} ../vaxuba/lp.c
+	${C2} -i lp.s | ${INLINE} | ${AS} -o lp.o
+	rm -f lp.s
+
+rk.o: ../vaxuba/rk.c
+	${CC} -c -S ${COPTS} ../vaxuba/rk.c
+	${C2} -i rk.s | ${INLINE} | ${AS} -o rk.o
+	rm -f rk.s
+
+rl.o: ../vaxuba/rl.c
+	${CC} -c -S ${COPTS} ../vaxuba/rl.c
+	${C2} -i rl.s | ${INLINE} | ${AS} -o rl.o
+	rm -f rl.s
+
+tm.o: ../vaxuba/tm.c
+	${CC} -c -S ${COPTS} ../vaxuba/tm.c
+	${C2} -i tm.s | ${INLINE} | ${AS} -o tm.o
+	rm -f tm.s
+
+tmscp.o: ../vaxuba/tmscp.c
+	${CC} -c -S ${COPTS} ../vaxuba/tmscp.c
+	${C2} -i tmscp.s | ${INLINE} | ${AS} -o tmscp.o
+	rm -f tmscp.s
+
+ts.o: ../vaxuba/ts.c
+	${CC} -c -S ${COPTS} ../vaxuba/ts.c
+	${C2} -i ts.s | ${INLINE} | ${AS} -o ts.o
+	rm -f ts.s
+
+uba.o: ../vaxuba/uba.c
+	${CC} -c -S ${COPTS} ../vaxuba/uba.c
+	${C2} -i uba.s | ${INLINE} | ${AS} -o uba.o
+	rm -f uba.s
+
+uda.o: ../vaxuba/uda.c
+	${CC} -c -S ${COPTS} ../vaxuba/uda.c
+	${C2} -i uda.s | ${INLINE} | ${AS} -o uda.o
+	rm -f uda.s
+
+up.o: ../vaxuba/up.c
+	${CC} -c -S ${COPTS} ../vaxuba/up.c
+	${C2} -i up.s | ${INLINE} | ${AS} -o up.o
+	rm -f up.s
+
+ut.o: ../vaxuba/ut.c
+	${CC} -c -S ${COPTS} ../vaxuba/ut.c
+	${C2} -i ut.s | ${INLINE} | ${AS} -o ut.o
+	rm -f ut.s
+
+
+# DO NOT DELETE THIS LINE -- make depend uses it
+
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     _Xdmfdbint0 _dmfdbint _Xdmfrint0 _dmfrint _Xdmfxint0 _dmfxint _Xdmflint0 _dmflint _Xdmzrinta0 _dmzrinta _Xdmzxinta0 _dmzxinta _Xdmzrintb0 _dmzrintb _Xdmzxintb0 _dmzxintb _Xdmzrintc0 _dmzrintc _Xdmzxintc0 _dmzxintc _Xdhurint0 _dhurint _Xdhuxint0 _dhuxint _Xlpintr0 _lpintr _Xenxint0 _enxint _Xenrint0 _enrint _Xencollide0 _encollide _Xecrint0 _ecrint _Xeccollide0 _eccollide _Xecxint0 _ecxint _Xdeintr0 _deintr _Xilrint0 _ilrint _Xilcint0 _ilcint _Xexcdint0 _excdint _intrnames _eintrnames _eintrcnt                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             #define NCT 0
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  #define NDH 2
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  #define NDHU 1
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 #define NDMF 1
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 #define NDMZ 1
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 #define NDN 0
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  #define NDZ 8
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  #define NKG 0
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  #ifdef LOCORE
+#define	P_LINK 0
+#define	P_RLINK 4
+#define	P_XLINK 108
+#define	P_ADDR 16
+#define	P_PRI 21
+#define	P_STAT 23
+#define	P_WCHAN 96
+#define	P_TSIZE 68
+#define	P_DSIZE 72
+#define	P_SSIZE 76
+#define	P_P0BR 104
+#define	P_SZPT 66
+#define	P_TEXTP 100
+#define	P_FLAG 44
+#define	SSLEEP 1
+#define	SRUN 3
+#define	UBA_BRRVR 48
+#define	UH_UBA 0
+#define	UH_VEC 8
+#define	UH_SIZE 64
+#define	RP_FLAG 12
+#define	X_CADDR 64
+#define	V_SWTCH 0
+#define	V_TRAP 4
+#define	V_SYSCALL 8
+#define	V_INTR 12
+#define	V_SOFT 16
+#define	V_PDMA 20
+#define	V_FAULTS 92
+#define	V_PGREC 52
+#define	V_FASTPGREC 112
+#define	UPAGES 10
+#define	CLSIZE 2
+#define	SYSPTSIZE 3584
+#define	USRPTSIZE 4096
+#define	MSGBUFPTECNT 8
+#define	NMBCLUSTERS 256
+#define	U_PROCP 128
+#define	U_RU 1640
+#define	RU_MINFLT 32
+#else
+asm(".set	U_ARG,156");
+asm(".set	U_QSAVE,192");
+#endif
+/*
+ * Copyright (c) 1982, 1986 Regents of the University of California.
+ * All rights reserved.  The Berkeley software License Agreement
+ * specifies the terms and conditions for redistribution.
+ *
+ *	@(#)rpb.s	7.1 (Berkeley) 6/5/86
+ */
+
+/*
+ * This has to get loaded first (physical 0) as 780 memory restart rom
+ * only looks for rpb on a 64K page boundary (doc isn't wrong,
+ * it never says what size "page boundary" rpb has to be on).
+ */
+	.globl	_rpb
+_rpb:
+	.space	508
+erpb:
+	.space	4
+/*
+ * Copyright (c) 1982, 1986 Regents of the University of California.
+ * All rights reserved.  The Berkeley software License Agreement
+ * specifies the terms and conditions for redistribution.
+ *
+ *	@(#)scb.s	7.1 (Berkeley) 6/5/86
+ */
+
+#include "uba.h"
+
+/*
+ * System control block
+ */
+	.set	INTSTK,1	# handle this interrupt on the interrupt stack
+	.set	HALT,3		# halt if this interrupt occurs
+
+_scb:	.globl	_scb
+
+#define	STRAY	.long	_Xstray+INTSTK
+#define	STRAY8	STRAY;STRAY;STRAY;STRAY;STRAY;STRAY;STRAY;STRAY
+#define	STRAY15	STRAY;STRAY;STRAY;STRAY;STRAY;STRAY;STRAY;STRAY8
+#define	KS(a)	.long	_X/**/a
+#define	IS(a)	.long	_X/**/a+INTSTK
+#define	STOP(a)	.long	_X/**/a+HALT
+
+/* 000 */	STRAY;		IS(machcheck);	IS(kspnotval);	STOP(powfail);
+/* 010 */	KS(privinflt);	KS(xfcflt);	KS(resopflt);	KS(resadflt);
+/* 020 */	KS(protflt);	KS(transflt);	KS(tracep);	KS(bptflt);
+/* 030 */	KS(compatflt);	KS(arithtrap);	STRAY;		STRAY;
+/* 040 */	KS(syscall);	KS(chme);	KS(chms);	KS(chmu);
+/* 050 */	STRAY;		IS(cmrd);	STRAY;		STRAY;
+/* 060 */	IS(wtime);	STRAY;		STRAY;		STRAY;
+/* 070 */	STRAY;		STRAY;		STRAY;		STRAY;
+/* 080 */	STRAY;		STRAY;		KS(astflt);	STRAY;
+/* 090 */	STRAY;		STRAY;		STRAY;		STRAY;
+/* 0a0 */	IS(softclock);	STRAY;		STRAY;		STRAY;
+/* 0b0 */	IS(netintr);	STRAY;		STRAY;		STRAY;
+/* 0c0 */	IS(hardclock);	STRAY;		KS(emulate);	KS(emulateFPD);
+/* 0d0 */	STRAY;		STRAY;		STRAY;		STRAY;
+/* 0e0 */	STRAY;		STRAY;		STRAY;		STRAY;
+/* 0f0 */	IS(consdin);	IS(consdout);	IS(cnrint);	IS(cnxint);
+/* 100 */	IS(nexzvec); STRAY15;		/* ipl 0x14, nexus 0-15 */
+/* 140 */	IS(nexzvec); STRAY15;		/* ipl 0x15, nexus 0-15 */
+/* 180 */	IS(nexzvec); STRAY15;		/* ipl 0x16, nexus 0-15 */
+/* 1c0 */	IS(nexzvec); STRAY15;		/* ipl 0x17, nexus 0-15 */
+
+	.globl	_UNIvec
+_UNIvec:	.space	512		# 750 unibus intr vector
+					# 1st UBA jump table on 780's
+#if NUBA > 1
+	.globl	_UNI1vec
+_UNI1vec:	.space	512		# 750 second unibus intr vector
+					# 2nd UBA jump table on 780's
+#endif
+#define	I_CLOCK	0
+#define	I_CNR	4
+#define	I_CNX	8
+#define	I_TUR	12
+#define	I_TUX	16
+#define	I_MBA0	20
+#define	I_MBA1	24
+#define	I_MBA2	28
+#define	I_MBA3	32
+#define	I_UBA0	36
+#define	I_UBA1	40
+#define	I_UBA2	44
+#define	I_UBA3	48
+/*
+ * Copyright (c) 1980, 1986 Regents of the University of California.
+ * All rights reserved.  The Berkeley software License Agreement
+ * specifies the terms and conditions for redistribution.
+ *
+ *	@(#)locore.s	7.1 (Berkeley) 6/5/86
+ */
+
+#include "psl.h"
+#include "pte.h"
+
+#include "errno.h"
+#include "cmap.h"
+
+#include "mtpr.h"
+#include "trap.h"
+#include "cpu.h"
+#include "nexus.h"
+#include "cons.h"
+#include "clock.h"
+#include "ioa.h"
+#include "ka630.h"
+#include "../vaxuba/ubareg.h"
+
+#include "dz.h"
+#include "uu.h"
+#include "ps.h"
+#include "mba.h"
+#include "uba.h"
+
+	.set	HIGH,0x1f	# mask for total disable
+	.set	MCKVEC,4	# offset into scb of machine check vector
+	.set	NBPG,512
+	.set	PGSHIFT,9
+
+	.set	NISP,3		# number of interrupt stack pages
+
+/*
+ * User structure is UPAGES at top of user space.
+ */
+	.globl	_u
+	.set	_u,0x80000000 - UPAGES*NBPG
+
+	.globl	_intstack
+_intstack:
+	.space	NISP*NBPG
+eintstack:
+
+/*
+ * Do a dump.
+ * Called by auto-restart.
+ * May be called manually.
+ */
+	.align	2
+	.globl	_doadump
+_doadump:
+	nop; nop				# .word 0x0101
+#define	_rpbmap	_Sysmap				# rpb, scb, UNI*vec, istack*4
+	bicl2	$PG_PROT,_rpbmap
+	bisl2	$PG_KW,_rpbmap
+	mtpr	$0,$TBIA
+	tstl	_rpb+RP_FLAG			# dump only once!
+	bneq	1f
+	incl	_rpb+RP_FLAG
+	movl	sp,erpb
+	movab	erpb,sp
+	mfpr	$PCBB,-(sp)
+	mfpr	$MAPEN,-(sp)
+	mfpr	$IPL,-(sp)
+	mtpr	$0,$MAPEN
+	mtpr	$HIGH,$IPL
+	pushr	$0x3fff
+	calls	$0,_dumpsys
+1:
+	pushl	$TXDB_BOOT
+	calls	$1,_tocons
+	halt
+
+/*
+ * Interrupt vector routines
+ */ 
+	.globl	_waittime
+
+#define	SCBVEC(name)	.align 2; .globl _X/**/name; _X/**/name
+#define	PANIC(msg)	clrl _waittime; pushab 1f; \
+			calls $1,_panic; 1: .asciz msg
+#define	PRINTF(n,msg)	pushab 1f; calls $n+1,_printf; MSG(msg)
+#define	MSG(msg)	.data; 1: .asciz msg; .text
+#define	PUSHR		pushr $0x3f
+#define	POPR		popr $0x3f
+
+	.data
+nofault: .long	0	# where to go on predicted machcheck
+	.text
+SCBVEC(machcheck):
+	tstl	nofault
+	bneq	1f
+	PUSHR; pushab 6*4(sp); calls $1,_machinecheck; POPR;
+	addl2 (sp)+,sp; rei
+	.align	2
+1:
+	casel	_cpu,$1,$VAX_MAX
+0:
+	.word	8f-0b		# 1 is 780
+	.word	5f-0b		# 2 is 750
+	.word	5f-0b		# 3 is 730
+	.word	7f-0b		# 4 is 8600
+	.word	1f-0b		# ???
+	.word	1f-0b		# ???
+	.word	1f-0b		# ???
+	.word	1f-0b		# 8 is 630
+5:
+#if defined(VAX750) || defined(VAX730)
+	mtpr	$0xf,$MCESR
+#endif
+	brb	1f
+7:
+#if VAX8600
+	mtpr	$0,$EHSR
+#endif
+	brb	1f
+8:
+#if VAX780
+	mtpr	$0,$SBIFS
+#endif
+1:
+	addl2	(sp)+,sp		# discard mchchk trash
+	movl	nofault,(sp)
+	rei
+SCBVEC(kspnotval):
+	PUSHR; PANIC("KSP not valid");
+SCBVEC(powfail):
+	halt
+SCBVEC(chme): SCBVEC(chms): SCBVEC(chmu):
+	PUSHR; PANIC("CHM? in kernel");
+SCBVEC(stray):
+	PUSHR; PRINTF(0, "stray scb interrupt\n"); POPR;
+	rei
+SCBVEC(nexzvec):
+	PUSHR; mfpr $IPL,-(sp); PRINTF(1, "nexus stray intr ipl%x\n"); POPR; rei
+SCBVEC(cmrd):
+	PUSHR; calls $0,_memerr; POPR; rei
+SCBVEC(wtime):
+	PUSHR; pushl 6*4(sp); PRINTF(1,"write timeout %x\n"); POPR;
+	PANIC("wtimo");
+
+#if NMBA > 0
+SCBVEC(mba3int):
+	PUSHR; incl _intrcnt+I_MBA3; pushl $3; brb 1f
+SCBVEC(mba2int):
+	PUSHR; incl _intrcnt+I_MBA2; pushl $2; brb 1f
+SCBVEC(mba1int):
+	PUSHR; incl _intrcnt+I_MBA1; pushl $1; brb 1f
+SCBVEC(mba0int):
+	PUSHR; incl _intrcnt+I_MBA0; pushl $0
+1:	calls $1,_mbintr
+	POPR
+	incl	_cnt+V_INTR
+	rei
+#endif
+
+#if defined(VAX780) || defined(VAX8600)
+/*
+ * Registers for the uba handling code
+ */
+#define	rUBANUM	r0
+#define	rUBAHD	r1
+#define	rUVEC	r3
+#define	rUBA	r4
+/* r2,r5 are scratch */
+
+#define	I_UBA	I_UBA0		/* base of UBA interrupt counters */
+
+#if NUBA > 4
+SCBVEC(ua7int):
+	PUSHR; movl $7,rUBANUM; moval _uba_hd+(7*UH_SIZE),rUBAHD; brb 1f
+SCBVEC(ua6int):
+	PUSHR; movl $6,rUBANUM; moval _uba_hd+(6*UH_SIZE),rUBAHD; brb 1f
+SCBVEC(ua5int):
+	PUSHR; movl $5,rUBANUM; moval _uba_hd+(5*UH_SIZE),rUBAHD; brb 1f
+SCBVEC(ua4int):
+	PUSHR; movl $4,rUBANUM; moval _uba_hd+(4*UH_SIZE),rUBAHD; brb 1f
+#endif
+SCBVEC(ua3int):
+	PUSHR; movl $3,rUBANUM; moval _uba_hd+(3*UH_SIZE),rUBAHD; brb 1f
+SCBVEC(ua2int):
+	PUSHR; movl $2,rUBANUM; moval _uba_hd+(2*UH_SIZE),rUBAHD; brb 1f
+SCBVEC(ua1int):
+	PUSHR; movl $1,rUBANUM; moval _uba_hd+(1*UH_SIZE),rUBAHD; brb 1f
+SCBVEC(ua0int):
+	PUSHR; movl $0,rUBANUM; moval _uba_hd+(0*UH_SIZE),rUBAHD;
+1:
+	mfpr	$IPL,r2				/* r2 = mfpr(IPL); */
+	movl	UH_UBA(rUBAHD),rUBA		/* uba = uhp->uh_uba; */
+	movl	UBA_BRRVR-0x14*4(rUBA)[r2],rUVEC
+					/* uvec = uba->uba_brrvr[r2-0x14] */
+ubanorm:
+	bleq	ubaerror 
+	addl2	UH_VEC(rUBAHD),rUVEC		/* uvec += uh->uh_vec */
+	bicl3	$3,(rUVEC),r1 
+	jmp	2(r1)				/* 2 skips ``pushr $0x3f'' */
+ubaerror:
+	PUSHR; calls $0,_ubaerror; POPR		/* ubaerror r/w's r0-r5 */
+	tstl rUVEC; jneq ubanorm		/* rUVEC contains result */
+	incl _intrcnt+I_UBA[rUBANUM]
+	incl	_cnt+V_INTR
+	POPR
+	rei
+#endif
+SCBVEC(cnrint):
+	PUSHR; calls $0,_cnrint; POPR
+	incl _cnt+V_INTR
+  τ!  Θ°      °                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           ω  ]  ­  Σ  `  h  p  x    ¬    €    ”  ω  ω  ά  Τ  Τ  Τ  ω  %  ω  ω  1  ω  ω  ω  ω  ω  ω  ω  ω  ω  X  ω  ω  ω  ω  ω  m  ω  ω  ω  …  ω  ω  ω  E  ω  ¤  ¨  ω  ω  ω  ω  ω  ω  ω  ω  ½  υ    -    ω  ω  ω  ω  ω  ω  ω  ω  ω  ω  ω  ω  ω  ω  ω    ω  ω  ω  ω  ω  ω  ω  ω  ω  ω  ω  ω  ω  ω  ω    ω  ω  ω  ω  ω  ω  ω  ω  ω  ω  ω  ω  ω  ω  ω    ω  ω  ω  ω  ω  ω  ω  ω  ω  ω  ω  ω  ω  ω  ω                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  Κ   xοO  Θ   οD  Ϊ 9Υολρÿÿ.ΦογρÿÿΠ^οΜσÿÿοΖσÿÿ^Ϋ~Ϋ8~Ϋ~Ϊ 8Ϊ»ÿ?ϋ ο―ρÿÿέϋο¦ρÿÿ  Υο’  »?®ϋορÿÿΊ?ΐ^  ΟοΑ      ! ! ! ! Ϊ&Ϊ J   Ϊ 0ΐ^ΠοJ  n»?ΤοLρÿÿο   ϋο?ρÿÿKSP not valid      »?Το$ρÿÿο   ϋορÿÿCHM? in kernel »?οψ  ϋοωπÿÿΊ?  »?Ϋ~οφ  ϋοβπÿÿΊ?   »?ϋ οΣπÿÿΊ?»?έ®οκ  ϋοΎπÿÿΊ?Το¶πÿÿο   ϋο©πÿÿwtimo    »?Φο`Β  έ"»?ΦοPΒ  έ»?Φο@Β  έ
+»?Φο0Β  έ ϋοkπÿÿΊ?Φοoπÿÿ  »?ΠPήορÿÿQ.  »?ΠPήοΕπÿÿQ  »?ΠPήοuπÿÿQ  »?Π Pήο%πÿÿQΫRΠaTΠB¤ΰSΐ΅SΛcQ΅»?ϋ οπÿÿΊ?ΥSδΦ@οΒΑ  ΦοόοÿÿΊ? »?ϋ ογοÿÿΊ?ΦοηοÿÿΦοΑ  »?ϋ οΛοÿÿΊ?ΦοΟοÿÿΦοmΑ  »?ΪΑ  €έ®έ®ϋο¦οÿÿΊ?ΦοªοÿÿΦο@Α     »?έ®έ®ϋο…οÿÿΊ?Φοοÿÿ»?εοsοÿÿϋ οkοÿÿεοdοÿÿϋ ο\οÿÿε οUοÿÿϋ οMοÿÿΊ?ΦοUοÿÿ»?Φοπΐ  ΟοRΏ      οƒ   ϋ ο οÿÿϋ οοÿÿΊ?Φοοÿÿ  »?ϋ οοÿÿΊ?ΦοοÿÿΦο­ΐ  Δ    Pΰ    SΠSPΠ€Q΅R“€RψRΔRΐRPΠ€RΡR€‚΅ΠR ψΤΊ?ΦοΖξÿÿέSέ€ϋ° ΠSΎοξÿÿUΥ¥ΫQQµ ΦeΧ¥ΥΊ?Ρ¥οxξÿÿT‘dσΠ¥Q¤S<dPΪ 0^ ΫUUυSΫR0M ΫUU<΅ώR RPΨ PυSΩ07 ο4ξÿÿTΫUU¤0& ΫUU¤οξÿÿU±¤PΠ¥Π¥Ϊ@   Π  UΫRΰRυUφομνÿÿUΠ¥Υιο  Ϋ[Γ@"  ZxÿZZΊ?Γ@"  PxÿP~Ϋ~οπ  ϋο­νÿÿΊ?  έ έ1`  έ έY  έ έQ  έ έI  έ έ A  έ έ9  έ3έ έ
+-  έ'θέ	 έ ÿÿ  ÿÿ  Σ
+οH  έέ Ϋ~ϋ ο7νÿÿΪΦο2νÿÿΐ^Ϊ   έΫ~ϋ ονÿÿΪΦονÿÿΐ^Ϊ  Ϊ Ϊ  €Ϊ\& €Ϊp*  Ϊ\&  Ϊp*  	Π   ^Ϋ>PομΌ  QοPaοΔμÿÿPΠP€οΊϊÿÿQΠQ€ΠRΤSΐSυRϊΠS€ΤWέέWϋο7  ΥPρÿÿÿ   WγÿοƒμÿÿVο|μÿÿUεU ΐ   U|fρUVψÿ¨ÿο_μÿÿ¨ÿοVμÿÿ¨ÿοMμÿÿϋ οFμÿÿΤRο>ϊÿÿQεQ xχQQΙ   RBοƒ  ςQRοΚ   xοt  Θ   οi  οξÿÿQεQ xχQQΙ   ψRBοL  ςQRοοενÿÿQεQ xχQQΙ   RBο+  ςQRοΪ 9Ϊ8A  xχWο¶λÿÿΠο°λÿÿο«λÿÿΠο¥λÿÿο λÿÿο™νÿÿVΚÿ  VεV xχVSΙ   Sο‘{  ΦSοuΗ4€PΪP:ΪPΪ 	ΐ PΠφÿ QΪQΞQQήA ΨRΪR
+Π
+RοHλÿQΐ
+SΧSήΑ ώQΙ   πSpΪQ:τRλΑ aΞ΅Ξ΅ΠQ΅Ϋ΅PΫ	΅T΅WΫ
+΅XΫ΅\Π΅`ΠZ΅8Π[΅<ο   ΅HΤ΅Lx	SSΪSοβΦÿP(ο3    lΠZοΡκÿÿΠ[οΚκÿÿοΓμÿÿPεP xχP~ΐnϋο°κÿÿέ  ΐέ ϋ―Π^\Όg  ? ϊlΌ――	έΠ^\ΌΌ/etc/init                  ,     ΠPΫQΪΠ¬SΠ¬Tο   ο:  α T•cαTµcαTΥcΤPΤο   ΪQ  Π¬RΓΆ¬P/οPPοΆQzQP PyςPPΥQΚPΡPΆΐbP` ¬`ΤΆ@ Π¬VgΠ¬QΛ όÿÿQRΓR   RΠ¬SΡVRΠVRRaAΒRV: RaΒRQ(RacΠ   RΥVΧΠP$Υ¬ΓV¬VΒPVΑVΌΒPRΒRQΦR(RacΤPΠPΥ¬ΓV¬Ό@ Π¬VιΠ¬QΠ¬SΛ όÿÿSRΓR   RΡVRΠVRRcΓΒRV: Ra™ΒRQ(RacΠ   RΥVΧΠP¦@ Π¬V›Π¬QΠ¬S<ÿÿRΡVRΠVRΒRV: Ra1YÿΒRQ(RacΥVάΠP1lÿΡU   UaN(UacGέVΠUVΛ όÿÿQPΓP   Pΐ   P(PacΠ   PΡPVΠVPPaΒPVβ(PacΠVΠVΠP ΡU   Ucμ(UacεέVΠUVΛ όÿÿSPΓP   Pΐ   P(PacΠ   PΡPVΠVPPc«ΒPVβ(PacΠVΠ€οAΈ  Π`ο6Έ  Ρ]ο3Έ  	ήορÿÿÿ­ο$Έ  ϋουηÿÿΠοΈ  P`  Π¬P}V€}X€}Z€}­€Α\€Π­`ΤPΥ ο%   ϋοΌηÿÿ QxώQQ~Aο¬ηÿÿR`²βQο ηÿÿ setrq  QxώQQδQοηÿÿο   ϋοzηÿÿ`RβQοnηÿÿ Τ remrq swtch Ϊ ΥοTηÿÿσοηÿÿÿϋοCηÿÿ Πο;ηÿÿΦο5ηÿÿκ  ο-ηÿÿPΝΪεPο ηÿÿκ~@οηÿÿQ± RΑ	πPοηÿÿΤο ηÿÿΤοϊζÿÿΥΆ`¥‘ΆΤΆΠ²PΠPο·  x	PPΪΠο$F  ο3ΣÿΪPΠο(ΣÿοF  Ϊ z€:ΥοΣÿΠοΣÿPΤο
+Σÿ}€V}€X}€Z}€\Π€QΡQ^ο   ϋοζÿÿΠQ^Π`nΠ  ΐ ®ldctx `Π`PΞP`φ`P`μΠQ`ΤP`ΰQ`ΤP  Ι   ¬ο}E  Ϊ z€:( Όο`€  Ι   ¬οWE  Ϊ x€:, n  οψ]€   Π¬PΠ¬QΥ¬0Ρ   Q `Oΐ   Pρ   ώÿÿQγÿQ`4ΠPΡ   Q `ΐ   Pρ   ώÿÿQγÿQ`ΠPΤP  Π¬PεPΰPrΫRβR ΫSδPΫRΫ	SΫ
+RΫSΑ¬PQΐÿ  QxχPPxχQQΰ¬α¬ΡPS/ΡQS(Π@bSα¬αSνS•¬νSςQPάΠPΤP»?ο	®SΚSΠοpΡÿUΠRΡS¥DΑ¥D¥HPΡSPΤRxSTΐ¥hT2¥BTxTTΒ  @ TΐSTxTTΐ¥hTΤR“‚¤Ί?Λ  ΰÿdPΊ?Βο–δÿÿPxÿPPΦPΔPΐο…δÿÿPΥRαW   `Ί?αX   `Ί?€¤α¤¤« ¤P«€ÿ¤Q©PQ¤x	SPΪP:ΐ   PΪP:ΥR$Π¥dPΠ @UxSSΑ¥hSP

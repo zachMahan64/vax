@@ -1,0 +1,2207 @@
+.IT awk
+program is translated into a 
+parse tree which is then directly executed
+by a simple interpreter.
+.PP
+.IT Awk
+was designed for ease of use rather than processing speed;
+the delayed evaluation of variable types
+and the necessity to break input
+into fields makes high speed difficult to achieve in any case.
+Nonetheless,
+the program has not proven to be unworkably slow.
+.PP
+Table I below shows the execution (user + system) time
+on a PDP-11/70 of
+the
+.UC UNIX
+programs
+.IT wc ,
+.IT grep ,
+.IT egrep ,
+.IT fgrep ,
+.IT sed ,
+.IT lex ,
+and
+.IT awk
+on the following simple tasks:
+.IP "\ \ 1."
+count the number of lines.
+.IP "\ \ 2."
+print all lines containing ``doug''.
+.IP "\ \ 3."
+print all lines containing ``doug'', ``ken'' or ``dmr''.
+.IP "\ \ 4."
+print the third field of each line.
+.IP "\ \ 5."
+print the third and second fields of each line, in that order.
+.IP "\ \ 6."
+append all lines containing ``doug'', ``ken'', and ``dmr''
+to files ``jdoug'', ``jken'', and ``jdmr'', respectively.
+.IP "\ \ 7."
+print each lireturn type (one of the types mentioned
+above which begin with 'C_'). It will be assigned to retval.
+The second argument is the value to be assigned to lispretval,
+except in the case of a C_THROW, where the second argument
+is the tag to throw to and the third argument is the value
+to assign to lispretval.
+This function never returns. 
+If it doesn't find a catch frame
+which matches what it is looking for, it signals an error.
+The function is called with 
+.i calls
+and the arguments are stacked on the C runtime stack, not the 
+namestack.
+.+c Liszt:\ The\ Lisp\ Compiler
+.sh 0 _
+.nr $1 \n(ch
+.pp
+The purpose of compiling a lisp function is to create a representation of 
+the function which can be evaluated in less time and perhaps take
+up less space.
+There are two approaches to lisp compilers.
+One is to convert the functions to a compact form, often called 
+.i bytecodes
+which can be rapidly interpreted.
+Each bytecode represents a primitive operation in the lisp system.
+This approach is simple to implement but there is an time penalty
+in using an  interpreter.
+The other approach is to compiled to  machine code.
+In general, this is not as portable as the bytecode  approach but the result
+generally runs faster.
+There are two ways of compiling to  machine code. 
+One is to place arguments to functions in registers. 
+If there are more arguments than registers, the arguments are put on
+a stack and a special type of call is made.
+This method is used in Maclisp.
+The other method is to assume a stack model, in which
+arguments to a function are placed on a stack.
+This is what the 
+.Fr
+compiler Liszt does.
+The stack model made it much easier to write parts of the lisp
+system in the C langauge.
+It also simplifies the garbage collector since the mark phase doesn't
+have to locate and peruse all saved registers looking for lisp data.
+.sh 2 File\ Compiler
+.pp
+When a file of lisp expressions is loaded,
+the 
+.i load 
+function repeatedly reads and evaluates the forms in the
+file.
+Some of these evaluations may result in functions being defined, 
+and others may use the functions just defined or previously defined.
+The job of the lisp compiler is to create an object file, which,
+when read in 
+by 
+.i fasl,
+acts just like it was 
+.i load ed
+in, except when a function is defined it is defined in machine
+code, not as a lisp expression.
+This is quite a bit different from what compilers do in other languages
+and it is done this way to make it easier to 
+switch between compiled and
+interpreted code.
+.sh +0 Differences\ between\ compiled\ and\ interpreted
+.pp
+There are some differences, though, between compiled and interpreted code.
+Local variables in compiled code are lexically scoped (put on the
+namestack and inaccessible to other functions) unless the variable
+has been declared 
+.i special.
+The declaration:
+.(b
+\fI(declare (special x y))\fP
+.)b
+declares both x and y to be special from this point in the file on.
+The declaration 
+.(b
+\fI(declare (specials t))\fP
+.)b
+declares all variables to be special.
+.pp
+Lisp has a very powerful macro definition system.
+The compiler will macro expand all it can, whereas the interpreter
+expands macros when necessary but never replaces a macro call with
+its expansion.
+Thus if you redefine a macro, the compiled code that uses it will
+still work the same way, but the interpreted code will use the 
+new definition. 
+Also, when compiling a file, macro definitions must be
+done before any call on the macro  is encountered during compiling.
+In the interpreter, 
+macros can be defined or redefined anytime up until
+they are used.
+Thus the interpreter is far freer about macro definitions than 
+the compiler.
+This could cause programs which work interpreted to
+fail compiled.
+.sh +0 Top\ level\ algorithm
+.pp
+The top level algorithm of the compiler is simply this: 
+.np 
+read a lisp expression from the input file
+.np 
+macro expand the top level of the form as much as possible
+.np 
+if the form is a function definition (a list beginning with
+the symbol 'def')
+then compile it.
+.np 
+if the form is not a function definition then put it on a list of 
+forms that will be evaluated when the file is 
+.i fasl ed
+in.
+.np
+if not at end of file, go to step 1.
+.pp
+In reality, step 3 is a bit more complex.
+If the definition is of a macro, then the form will be evaluated
+immediately, thus adding the macro definition to the compiler's 
+environment.
+If the lisp variable 
+.i macros 
+is t then the macro will also be compiled.
+There are also some forms like \fI(progn\ 'compile\ ...)\fP
+and \fI(eval-when\ ()\ )\fP which determine when the 
+forms get compiled and evaluated.  
+See the lisp manual for details.
+.sh +0 Expression\ Compilation
+.pp
+Just as the interpreter is centered around the 
+.i eval
+function, the lisp compiler is centered around the function
+.i d-exp
+whose job it is to compile the expression passed to it.
+The lisp compiler is one pass.
+Before a call to d-exp returns,
+all the compiled code for a form has been computed and written
+to a file.
+One reason that the lisp compiler can be a single pass compiler
+is that the assembler which reads the compiler's output is 
+a two pass assembler.
+.sh +1 global\ state\ variables
+.pp
+There are a number of variables that maintain the state of
+the compilation process.
+These variables are declared special and are thus dynamically scoped
+and visible to any function within the compiler.
+When d-exp 
+is called their meanings are:
+.ip \fIv-form\fP
+- contains the expression to be compiled.
+.ip \fIg-loc\fP
+- tells where the result of evaluating this expression should be put.
+If g-loc is nil, then the value returned is unimportant and shouldn't
+be put anywhere.
+.ip \fIg-cc\fP
+- controls conditional branches.
+If g-cc is non nil, then it is a list cell whose value has
+either a non-null car or non-null cdr but not both. 
+If the car is non-nil then
+if  the  value  of  the expression held in 
+v-form  is  non-nil, a branch should be done to the symbol
+stored  in  \fI(car\ g-cc)\fP. 
+If the cdr is non-nil  then if the value of v-form
+is  nil,  a branch should be done to the symbol stored in 
+\fI(cdr\ g-cc)\fP. Since at
+every  conditional  
+branch  control should  either jump or continue, the car and cdr will
+never both be specified.
+.ip   \fIg-ret\fP
+- is non nil if the result of evaluating v-form will be returned as the
+value of the function we are evaluating. 
+This is used to allow liszt to detect
+when tail recursion removal is possible.
+.ip  \fIg-locs\fP
+- maintains current information about the state of the stacks:
+the bindstack (for specials), the namestack (for locals) and the
+C runtime stack (for catch frames)
+The form of g-locs is a stack of tokens stored as a list.
+The meaning of each token is as follows:
+.br
+\fInil\fP - this represents an unnamed object on the namestack.  This happens
+when calling functions, when the arguments are stacked prior
+to a function call.
+.br
+\fI<symbol>\fP - the given symbol is the name of a local variable on the namestack.
+.br
+\fI(prog . <n>)\fP - prog statement which binds <n> special variables
+.br
+\fI(do . <n>)\fP - head of a do statement which binds <n> special variables
+.br
+\fI(catcherrset . 0)\fP - catch or errset frame on stack
+.br
+\fI(lambda . <n>)\fP - lambda expression which binds <n> special variables
+.ip \fIg-labs\fP
+- this is a stack of labels. 
+There is one entry in g-labs for every entry which is a list
+in g-locs.
+the forms of the entries are:
+.br
+\fInil\fP - no labels in this form
+.br
+\fI(endlab (real . gen) (real2 . gen2) ...)\fP - endlab is the label to go to
+to get out of this body.  After this label will be code
+to unbind specials and pop off locals.
+The 'real' labels are those found in the code. the gen
+labels are those generated and put in the assembler code.
+.sh +0 Function\ compilation
+.pp
+The action d-exp takes when compiling an expression depends on the
+type of expression.
+For atoms (symbols and numbers) the compilation is very simple, it
+is just a matter of putting the value where g-loc specifies and 
+then jumping if specified by g-cc.
+When the expression is a list, d-exp first macro
+expands the form and then looks at the first element of 
+the list (if the list has not macro expanded ne prefixed by ``line-number\ :\ ''.
+.IP "\ \ 8."
+sum the fourth column of a table.
+.LP
+The program
+.IT wc
+merely counts words, lines and characters in its input;
+we have already mentioned the others.
+In all cases the input was a file containing
+10,000 lines
+as created by the
+command
+.IT "ls \-l" ;
+each line has the form
+.P1
+-rw-rw-rw- 1 ava 123 Oct 15 17:05 xxx
+.P2
+The total length of this input is
+452,960 characters.
+Times for
+.IT lex
+do not include compile or load.
+.PP
+As might be expected,
+.IT awk
+is not as fast as the specialized tools
+.IT wc ,
+.IT sed ,
+or the programs in the
+.IT grep
+family,
+but
+is faster than the more general tool
+.IT lex .
+In all cases, the tasks were
+about as easy to express as
+.IT awk
+programs
+as programs in these other languages;
+tasks involving fields were
+considerably easier to express as
+.IT awk
+programs.
+Some of the test programs are shown in
+.IT awk ,
+.IT sed
+and
+.IT lex .
+.[
+$LIST$
+.]
+.1C
+.TS
+center;
+c c c c c c c c c
+c c c c c c c c c
+c|n|n|n|n|n|n|n|n|.
+				Task
+Program	1	2	3	4	5	6	7	8
+_
+\fIwc\fR	8.6
+\fIgrep\fR	11.7	13.1
+\fIegrep\fR	6.2	11.5	11.6
+\fIfgrep\fR	7.7	13.8	16.1
+\fIsed\fR	10.2	11.6	15.8	29.0	30.5	16.1
+\fIlex\fR	65.1	150.1	144.2	67.7	70.3	104.0	81.7	92.8
+\fIawk\fR	15.0	25.6	29.9	33.3	38.9	46.4	71.4	31.1
+_
+.TE
+.sp
+.ce
+\fBTable I.\fR  Execution Times of Programs. (Times are in sec.)
+.sp 2
+.2C
+.PP
+The programs for some of these jobs are shown below.
+The
+.IT lex
+programs are generally too long to show.
+.LP
+AWK:
+.LP
+.P1
+1.	END	{print NR}
+.P2
+.P1
+2.	/doug/
+.P2
+.P1
+3.	/ken|doug|dmr/
+.P2
+.P1
+4.	{print $3}
+.P2
+.P1
+5.	{print $3, $2}
+.P2
+.P1
+6.	/ken/	{print >"jken"}
+	/doug/	{print >"jdoug"}
+	/dmr/	{print >"jdmr"}
+.P2
+.P1
+7.	{print NR ": " $0}
+.P2
+.P1
+8.		{sum = sum + $4}
+	END	{print sum}
+.P2
+.LP
+SED:
+.LP
+.P1
+1.	$=
+.P2
+.P1
+2.	/doug/p
+.P2
+.P1
+3.	/doug/p
+	/doug/d
+	/ken/p
+	/ken/d
+	/dmr/p
+	/dmr/d
+.P2
+.P1
+4.	/[^ ]* [ ]*[^ ]* [ ]*\e([^ ]*\e) .*/s//\e1/p
+.P2
+.P1
+5.	/[^ ]* [ ]*\e([^ ]*\e) [ ]*\e([^ ]*\e) .*/s//\e2 \e1/p
+.P2
+.P1
+6.	/ken/w jken
+	/doug/w jdoug
+	/dmr/w jdmr
+.P2
+.LP
+LEX:
+.LP
+.P1
+1.	%{
+	int i;
+	%}
+	%%
+	\en	i++;
+	.	;
+	%%
+	yywrap() {
+		printf("%d\en", i);
+	}
+.P2
+.P1
+2.	%%
+	^.*doug.*$	printf("%s\en", yytext);
+	.	;
+	\en	;
+.P2
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           .
+.ip /usr/bin/newaliases
+A link to /usr/lib/sendmail;
+causes the alias database to be rebuilt.
+Running this program is completely equivalent to giving
+.i sendmail
+the
+.b \-bi
+flag.
+.ip /usr/bin/mailq
+Prints a listing of the mail queue.
+This program is equivalent to using the
+.b \-bp
+flag to
+.i sendmail .
+.ip /usr/lib/sendmail.cf
+The configuration file,
+in textual form.
+.ip /usr/lib/sendmail.fc
+The configuration file
+represented as a memory image.
+.ip /usr/lib/sendmail.hf
+The SMTP help file.
+.ip /usr/lib/sendmail.st
+A statistics file; need not be present.
+.ip /usr/lib/aliases
+The textual version of the alias file.
+.ip /usr/lib/aliases.{pag,dir}
+The alias file in
+.i dbm \|(3)
+format.
+.ip /usr/spool/mqueue
+The directory in which the mail queue
+and temporary files reside.
+.ip /usr/spool/mqueue/qf*
+Control (queue) files for messages.
+.ip /usr/spool/mqueue/df*
+Data files.
+.ip /usr/spool/mqueue/lf*
+Lock files
+.ip /usr/spool/mqueue/tf*
+Temporary versions of the qf files,
+used during queue file rebuild.
+.ip /usr/spool/mqueue/nf*
+A file used when creating a unique id.
+.ip /usr/spool/mqueue/xf*
+A transcript of the current session.
+.\".ro
+.\".ls 1
+.\".tp
+.\".sp 2i
+.\".in 0
+.\".ce 100
+.\".sz 24
+.\".b SENDMAIL
+.\".sz 14
+.\".sp
+.\"INSTALLATION AND OPERATION GUIDE
+.\".sp
+.\".sz 10
+.\"Eric Allman
+.\"Britton-Lee, Inc.
+.\".sp
+.\"Version 5.8
+.\".ce 0
+.pn 2
+.bp
+.ce
+.sz 12
+TABLE OF CONTENTS
+.sz 10
+.sp
+.\" remove some things to avoid "out of temp file space" problem
+.rm sh
+.rm (x
+.rm )x
+.rm ip
+.rm pp
+.rm lp
+.rm he
+.rm fo
+.rm eh
+.rm oh
+.rm ef
+.rm of
+.xp
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           AA99999
+ACHECK
+ARPANET
+Allman
+Argv
+Arpa
+Arpanet
+BSD
+Bcc
+Britton
+CHmonet
+CHucbmonet
+CRLF
+Cnt
+Ctest.cf
+DAEMON
+Daemon
+DdfA13557
+Dj
+DlFrom
+DnMAILER
+Dq
+EDU
+EOH
+Eol
+FTP
+Guide''SMM:07
+H?D?date
+H?F?from
+H?x?full
+HELO
+HTo
+HdrInfo
+Hmessage
+Hreceived
+Hsubject
+IP
+IPC
+Info
+LHS
+LocalMailer
+MAXATOM
+MAXFIELD
+MAXHOP
+MAXLINE
+MAXMAILERS
+MAXNAME
+MAXPRIORITIES
+MAXPV
+MAXRWSETS
+MAXTRUST
+MAXUSERENVIRON
+Makefile
+Makefiles
+Maxsize
+Mether
+Mlocal
+MsgSize
+NBS80
+NDBM
+NOTUNIX
+Neigus73
+NoReturn
+OT3d
+PDT
+PSyserr
+Pfirst
+Pjunk
+Postel74
+Postel77
+Pspecial
+QUEUESIZE
+RCPT
+RFC
+RFC's
+RFC819
+RFC821
+RFC822
+RHS
+Rmckusick
+Ruleset
+Rulesets
+Rwnj
+S,D
+SENDMAIL
+SMM:07
+SMTP
+Sendmail
+Sendmail's
+Seric
+TCP
+TSyserr
+UCBARPA
+UCBARPA.BERKELEY.ARPA
+UCBARPA:eric
+UGLYUUCP
+UNIX80
+Ucbvax
+Usrerr
+VMUNIX
+a.CC.Berkeley.EDU
+addr
+aliases.dir
+aliases.pag
+argv
+argv's
+arpanet
+arpaproto.cf
+aux
+backslash
+backslashes
+bd
+berkeley.EDU
+bi
+bollard
+bool
+bp
+bt
+bz
+c70:user
+calder
+cf.hosttable
+cf.named
+checkcompat
+cnt
+conf.c
+conf.h
+config.m4
+csam
+csam.arpa
+daemon
+daemon.c
+daemons
+decvax
+dev
+doc
+ef
+eric
+ernie
+errno
+ethernet
+fi
+fo
+gethostent
+groupid
+hdrinfo
+hname
+host.domain
+hosta
+hostb
+hostname
+hostname.netname
+hostnames
+htemplate
+ie
+iff
+info
+installcf
+ip
+lbl
+lf
+lhs
+lib
+libsys.a
+ljobs
+lnx
+m4CONFIG
+m4LIBS
+mail.cf
+mailq
+mailstats
+makefile
+maphostname
+matisse
+mc
+mckusick
+md
+meC
+mflags
+mit
+monet
+monet:bollard
+mqueue
+msg
+name1
+name2
+ndir
+netname
+newaliases
+nf
+nosuchuser
+nrcpt
+oQ
+oT1d
+oT2m
+omqueue
+pag,dir
+pathname
+pathnames
+pid
+pp
+pri
+prog
+q30m
+qf
+queueing
+queueups
+rc
+rc.local
+rfc819.lpr
+rfc822.lpr
+rhs
+rlsm
+rmail
+ruleset
+rulesets
+rwset
+rwsets
+sam
+sendmail
+sendmail's
+sendmail.cf
+sendmail.fc
+sendmail.hf
+sendmail.st
+si
+sp
+src
+subdaemon
+suid
+syserr
+syslog
+syslogd
+sysname
+test.cf
+text1
+text2
+tf
+timestamp
+timestamps
+types.h
+ucb
+ucbarpa
+ucbmonet
+ucbvax
+ucsfcgl.cf
+user1
+user2
+usera
+userb
+userc
+userid
+usrerr
+uucpproto.cf
+val
+vangogh.berkeley.edu
+voyeurism
+wnj
+word1
+word2
+xf
+xx
+xyzvax
+                                                                                                                                -    .   S€    ..  .    3101 t y/    aa s0    aed512 y1    beehive 2    diablo  3    dtc382  4    ibm3101 5    std 6    stdcrt  7   	 tandem653  .8    teleray 9    vt100   :   	 wyse-adds  .;   	 xerox1720  .<   	 xerox1730  .=    xerox1730-lm  c >  Ø  zenith29 -lm                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    to an atom).
+If the first element is a symbol  then the list is
+is a function call.
+If the function is one of the functions which liszt knows how to open compile
+then liszt will call the particular routine designated to open
+compile this function.
+There are two classes of functions within liszt that
+do open compiling.
+The first class, the fl-expr class, are distinguished by names which
+begin with c-.
+These functions always generate
+code which returns the result in r0.
+They are not equipped to obey the contents of g-loc and g-cc.
+Thus d-exp, after calling one of these functions, must do what
+is necessary to obey g-loc and g-cc.
+The other class of open compiling functions, the fl-exprcc class (whose
+names begin with cc-),
+handle g-loc and g-cc.
+As a result these are usually much more complex and generate better code.
+.sh -1 Register\ Conventions
+.pp
+The register conventions used by liszt are an extension of those
+used by the C code.
+.ip \fIr0\fP
+- return value placed here
+.ip \fIr1,r2,r3,r4\fP
+- scratch registers.
+When long strings of 
+.i car's
+or
+.i cdr's
+are done (such as
+.i caddadr )
+these registers are used in a least-recently-used fashion to access down
+the list. 
+The compiler keeps track of the values in these registers but must
+assume that they are garbage after a function is called.
+.ip \fIr5\fP
+- fixnum accumulator.
+There a number of functions which work on fixnum's only and these
+usually put their result in r5.
+The assembler code function 
+.i qnewint
+which returns a pointer to a cell containing a fixnum value (after
+checking if it is in the fixnum table), expects its argument to be
+in r5.
+.ip \fIr6\fP
+np
+.ip \fIr7\fP
+lbot.
+When calling a function, this register is set just before the function
+call, and after the function call its value is used to reset the value
+of np in order to pop the arguments off the namestack.
+.ip \fIr8\fP
+the literal table pointer.
+The compiler generates a table of all the literal lisp data
+which the compiled code might access.
+Upon function entry a pointer to the base of this table is put in r8.
+For example, if we compile \fI(setq\ x\ 'foo)\fP then we will
+need a pointer to the lisp symbol
+.i foo
+and if the symbol
+.i x
+as been declared special we will also need a pointer to 
+.i x .
+.ip \fIr10\fP
+- upon function entry the value of lbot (r7) is put in r10.  
+This allows us to reference the arguments to our function while
+using lbot to call other function.
+.sh +0 Addresses
+There are four types of addresses used internally in Franz: 
+symbolic, intermediate addresses (iadr), extended intermediate (eiadr)
+and vax assembler format.
+.sh +1 Symbolic
+.pp
+These are the names of lisp objects, such as `a', `foo', 34,
+or 3.234234.
+A name is either a local variable, a special variable or a
+number.  A number is either a small fixnum, large fixnum,
+bignum or floating point number.
+.sh +0 Intermediate\ address\ (IADR)
+.pp
+This type of address is generated from a symbolic address by
+.i d-loc, 
+.i d-loclit 
+and the routines 
+.i d-simple
+and 
+.i d-rsimple 
+which
+call them. The forms are
+.ip \fINil\fP
+- the location or value of nil.
+.ip \fIT\fP   
+- the location or value of t.
+.ip \fIreg\fP
+- register r0, which is where the result of function calls
+are stored.
+.ip \fIstack\fP
+- the address pointed to by np with np incremented after
+the value is stored.  (i.e  (r6)+)
+.ip \fIunstack\fP
+- the address one word below np (np is decremented before
+accessing. (i.e. -(r6))
+.ip \fI<symbol>\fP
+- this is just <symbol>.  This allows strange forms to be
+represented directly.
+.ip \fI(stack\ n)\fP
+- The n'th value on the namestack for this function.
+The first value 0(r10) is (stack 1).
+.ip \fI(vstack\ n)\fP
+- The cdr of the n'th value on the namestack.  
+That is, (stack 1) is *0(r10)
+.ip \fI(bind\ n)\fP
+- The value of the n'th value in 
+the literal table.  If 
+this refers to a symbol, then this is the value
+of the symbol.
+If this refers to a list then this
+this is the cdr of the list (although this is a rare
+use). (bind 1) corresponds to *0(r8).
+.ip \fI(lbind\ n)\fP
+- The n'th value in the literal table.  If 
+this refers to 
+object foo then this is the address of foo
+in memory.
+.ip \fI(fixnum\ n)\fP
+- This is the address of small fixnum n in memory.
+A small fixnum is in the range -1024 to 1023.
+.ip \fI(immed\ n)\fP
+- The is the immediate constant n. 
+.sh +0 extended\ intermediate\ address\ (EIADR)
+.pp
+This address is generated from an IADR by e-cvt.  It 
+symbolically represents a vax address.  
+.ip \fI<atom>\fP
+- This corresponds to <atom>.
+.ip \fI(n\ <atom>)\fP
+- This corresponds to n(<atom>)
+(stack n+1) and (lbind n+1) are converted to these forms.
+.ip \fI(n\ <atom1>\ <atom2>)\fP
+- This corresponds to n(<atom1>)[<atom2>]
+There is currently no IADR which generates this.
+.ip \fI(*\ n\ <atom>)\fP
+-This corresponds to *n(<atom>)
+(vstack n+1) and (bind n+1) are converted to these forms.
+.ip \fI(+\ <atom>)\fP
+- This corresponds to (<atom>)+.
+stack is converted to this form.
+.ip \fI(-\ <atom>)\fP
+- This corresponds to -(<atom>)
+unstack is converted to this form.
+.ip \fI($\ <numb>)\fP
+- This corresponds to $<atom>
+(immed <numb>) is converted to this form.
+.ip \fI(#\ <numb>)\fP
+- This corresponds to $<loc> where <loc> equals 
+the base of the fixnums (0x1400) plus 4 * <numb>
+(fixnum <numb>) is converted to this form
+.ip \fI(*\ #\ <numb>)\fP
+- This corresponds to $<numb>.  It is generated
+by d-rsimple occasionally when you ask for the
+cdr of a number (which you do sometimes when you
+are compiling fixnum operators).
+.sh +0 Vax\ Unix\ assembler\ addresses
+.pp
+The addresses are printed from a EIADR by e-cvtas.  The conversions
+are shown in the above section.
+.sh -1 Function\ calling\ convention
+.sh +1 Function\ linkages
+.pp
+The function associated with a symbol is stored in the function 
+definition slot of the symbol.  If the function slot contains a
+list then the function is to be interpreted and its 'car' will 
+be lambda, nlambda, lexpr or macro.  If the function is compiled then 
+the function definition slot will contain a binary object. 
+A binary object 
+is composed of two independent parts: the discipline and the entry.
+The discipline is one of:
+.ip \fIlambda\fP
+- a function whose arguments should be evaluated.
+.ip \fInlambda\fP
+- a function whose arguments should not be evaluated but
+which should be passed as a list
+.ip  \fImacro\fP
+- a function which should be passed the unevaluated form
+being evaluated and whose result should be evaluated.
+.ip \fI\"subroutine\"\fP
+- a foreign function subroutine
+.ip  \fI\"integer-function\"\fP
+- a foreign function returning an integer
+.ip \fI\"real-function"\fP
+- a foreign function returning a flonum.
+.pp   
+A lexpr is not in the list as there is no difference to the caller
+between compiled lambda's and compiled lexprs.
+.sh +0 Transfer\ tables
+Most calls from compiled code to other lisp functions go through
+transfer tables.  A transfer table entry is a pair: symbol, address
+of routine. 
+When another lisp function is called it uses the 
+.i calls 
+instruction which will
+indirectly jump through the address in the transfer table.  This
+address may point to the desired function or it may point to the
+interface routine.  If a call ends up in the interface routine, 
+then that routine will trace back through the call stack and eventually
+reach the tranfer table entry that it was 'called through'. Since the
+transfer table entry contains a symbol which names the function
+to be called, the interface routine can determine which routine
+was to have been called.  If that routine is compiled then the 
+interface routine can modify the transfer table so that a call
+through that table entry will go directly to the desired function.
+If the routine to be called is interpreted, or if the user has
+requested that transfer linkages should be disabled, then the
+interface routine will go through the 'funcall' function 
+in the interpreter to continue the call.  
+.sh +0 calling\ sequence\ in\ the\ compiler:
+.pp
+When transfer tables are used
+.(b
+	\fBforeach\fP arg
+	 \fBcompute\fP arg and stack result using (r6)+
+	 for example: movl r0,(r6)+
+	movab -n(r6),r7    where n = 4*number of args to fcn
+	calls  $0,*trantb+m      where m is the index .\" Copyright (c) 1986 Regents of the University of California.
+.\" All rights reserved.  The Berkeley software License Agreement
+.\" specifies the terms and conditions for redistribution.
+.\"
+.\"	@(#)00.contents	5.2 (Berkeley) 6/3/86
+.\"
+.OH '''SMM Contents'
+.EH 'SMM Contents'''
+.TL
+UNIX System Manager's Manual (SMM)
+.sp
+\s-24.3 Berkeley Software Distribution, Virtual \s-2VAX\s+2\-11 Version\s+2
+.sp
+\fRApril, 1986\fR
+.PP
+This volume contains manual pages and supplementary documents useful to system
+administrators.
+The information in these documents applies to
+the Virtual \s-2VAX\s0-11 version of the system as distributed by U.C.
+Berkeley.
+.SH
+Reference Manual \- Section 8
+.tl '''(8)'
+.IP
+Section 8 of the UNIX Programmer's Manual contains information related to
+system operation, administration,  and maintenance.
+.SH
+System Installation and Administration
+.IP
+.tl 'Installing and Operating 4.3BSD on the VAX''SMM:1'
+.QP
+The definitive reference document for those occasions when
+you find you need to start over again.
+
+.IP
+.tl 'Building 4.3BSD UNIX Systems with \fIConfig\fP''SMM:2'
+.QP
+In-depth discussions of the use and operation of the \fIconfig\fP
+program, and how to build your very own Unix kernel.
+
+.IP
+.tl 'Using ADB to Debug the Kernel''SMM:3'
+.QP
+Techniques for figuring out after the fact why the kernel crashed.
+
+.IP
+.tl 'Disc Quotas in a UNIX Environment''SMM:4'
+.QP
+A light introduction to the techniques
+for limiting the use of disc resources.
+
+.IP
+.tl 'Fsck \- The UNIX File System Check Program''SMM:5'
+.QP
+A reference document for using the \fIfsck\fP program during
+times of file system distress.
+
+.IP
+.tl 'Line Printer Spooler Manual''SMM:6'
+.QP
+This document describes the structure and installation procedure
+for the line printer spooling system.  
+
+.IP
+.tl 'Sendmail Installation and Operation Guide''SMM:7'
+.QP
+The last word in installing and operating the \fIsendmail\fP program.
+
+.IP
+.tl 'Timed Installation and Operation Guide''SMM:8'
+.QP
+Describes how to maintain time synchronization between machines
+in a local network.
+
+.IP
+.tl 'UUCP Implementation Description''SMM:9'
+.QP
+Describes the implementation of uucp; for the installer and administrator.
+
+.IP
+.tl 'USENET Version B Installation''SMM:10'
+.QP
+How to install and maintain the News system.
+
+.IP
+.tl 'Name Server Operations Guide''SMM:11'
+.QP
+If you have a network this will be of interest.
+
+.SH
+Supporting Documentation
+
+.IP
+.tl 'Bug Fixes and Changes in 4.3BSD''SMM:12'
+.QP
+This document summarizes changes visible to the user accustomed to 4.2BSD.
+
+.IP
+.tl 'Changes to the Kernel in 4.3BSD''SMM:13'
+.QP
+A summary for the hard-core of changes in the kernel from 4.2BSD to 4.3BSD.
+
+.IP
+.tl 'A Fast File System for UNIX''SMM:14'
+.QP
+A description of the 4.2BSD file system organization, design and implementation.
+
+.IP
+.tl '4.3BSD Networking Implementation Notes''SMM:15'
+.QP
+A concise description of the system interfaces used within the
+networking subsystem.
+
+.IP
+.tl 'Sendmail \- An Internetwork Mail Router''SMM:16'
+.QP
+An overview document on the design and implementation of \fIsendmail\fP.
+
+.IP
+.tl 'On the Security of UNIX''SMM:17'
+.QP
+Hints on how to break UNIX, and how to avoid your system being broken.
+
+.IP
+.tl 'Password Security \- A Case History''SMM:18'
+.QP
+How the bad guys used to be able to break the password algorithm, and why
+they cannot now (at least not so easily).
+
+.IP
+.tl 'A Tour Through the Portable C Compiler''SMM:19'
+.QP
+How the portable C compiler works inside.  
+
+.IP
+.tl 'Writing NROFF Terminal Descriptions''SMM:20'
+.QP
+A description of how to add a printer with new characteristics
+to Version 7 \fInroff\fP.
+
+.IP
+.tl 'A Dial\-Up Network of UNIX Systems''SMM:21'
+.QP
+Describes UUCP, a program for communicating files between UNIX systems.
+
+.IP
+.tl 'The Berkeley UNIX Time Synchronization Protocol''SMM:22'
+.QP
+The protocols and algorithms used by timed,
+the network time synchronization daemon.
+                                                                                                                                                                        .\" Copyright (c) 1986 Regents of the University of California.
+.\" All rights reserved.  The Berkeley software License Agreement
+.\" specifies the terms and conditions for redistribution.
+.\"
+.\"	@(#)Title	6.3 (Berkeley) 6/3/86
+.\"
+.ps 18
+.vs 22
+.sp 2.75i
+.ft B
+.ce 2
+UNIX System Manager's Manual
+(SMM)
+.ps 14
+.vs 16
+.sp |4i
+.ce 2
+4.3 Berkeley Software Distribution
+Virtual VAX\-11 Version
+.sp |5.75i
+.ft R
+.pt 12
+.vs 16
+.ce
+April, 1986
+.sp |8.2i
+.ce 5
+Computer Systems Research Group
+Computer Science Division
+Department of Electrical Engineering and Computer Science
+University of California
+Berkeley, California  94720
+.bp
+.ll 5.3i
+.in 1.25i
+.hy 0
+.ps 10
+.vs 12p
+.sp |2.8i
+Copyright 1979, 1980, 1983, 1986 Regents of the University of California.
+Permission to copy these documents or any portion thereof as necessary
+for licensed use of the software is granted to licensees of this
+software, provided this copyright notice and statement of permission
+are included.
+.sp 2
+Documents SMM:17, 18, and 21
+are copyright 1979, AT&T Bell Laboratories, Incorporated.
+Documents SMM:9 and 19 are modifications of earlier documents that
+are copyrighted 1979 by AT&T Bell Laboratories, Incorporated.
+Holders of \x'-1p'UNIX\v'-4p'\s-3TM\s0\v'4p'/32V,
+System III, or System V software licenses are
+permitted to copy these documents, or any portion of them,
+as necessary for licensed use of the software,
+provided this copyright notice and statement of permission
+are included.
+.sp 2
+Document SMM:10 is part of the user contributed software.
+.sp 2
+This manual reflects system enhancements made at Berkeley and sponsored
+in part by the Defense Advanced Research Projects Agency
+(DoD), Arpa Order No. 4871 monitored by the Naval Electronics Systems
+Command under contract No. N00039-84-C-0089.
+The views and conclusions contained in these documents are those of the
+authors and should not be interpreted as representing official policies,
+either expressed or implied, of the Defense Research Projects Agency
+or of the US Government.
+.br
+.ll 6.5i
+.lt 6.5i
+.po .75i
+.in 0i
+.af % i
+.ds ET\"
+.de HD
+.po 0
+.lt 7.4i
+.tl ''''
+.lt
+.po
+'sp 18p
+.if o .tl '\\*(ET''- % -'
+.if e .tl '- % -''\\*(ET'
+'sp 18p
+.ns
+..
+.de FO
+'sp 18p
+.if e .tl '\s9\\*(Dt''\\*(Ed\s0'
+.if o .tl '\s9\\*(Ed''\\*(Dt\s0'
+'bp
+..
+.wh 0 HD
+.wh -60p FO
+.bp 1
+.ds ET \s9\f2Table \|of \|Contents\fP\s0
+.ds Ed 4.3BSD
+.ds Dt April \|1986
+.ce
+\f3TABLE \|OF \|CONTENTS\fP
+.nr x .5i
+.in +\nxu
+.nf
+.ta \n(.lu-\nxuR
+.de xx
+\\$1\f3 \a \fP\\$2
+..
+.de t
+.sp 1v
+.ne .5i
+.cs 3
+.ti -.5i
+.ss 18
+\f3\s9\\$2. \\$3\s0\fP
+.ss 12
+.if t .sp .5v
+.cs 3 36
+.so \\$1
+..
+.t /usr/man/man0/toc8 8 "System Maintenance"
+.in -.5i
+.cs 3
+.if n .ta 8n 16n 24n 32n 40n 48n 56n 64n 72n 80n
+.if t .ta .5i 1i 1.5i 2i 2.5i 3i 3.5i 4i 4.5i 5i 5.5i 6i 6.5i
+                                                                                                                                                                                                                                                                                                                        #
+# Copyright (c) 1986 Regents of the University of California.
+# All rights reserved.  The Berkeley software License Agreement
+# specifies the terms and conditions for redistribution.
+#
+#	%W% (Berkeley) %G%
+#
+PRINTER=-Pdp
+TROFF=	ditroff ${PRINTER}
+EQN=	deqn ${PRINTER}
+TBL=	dtbl ${PRINTER}
+PIC=	pic ${PRINTER}
+LPR=	lpr -n ${PRINTER}
+
+SRC=	op.me
+
+op: op.out
+	${LPR} op.out
+
+op.out: ${SRC}
+	${PIC} ${SRC} | ${EQN} | ${TROFF} -t -me > op.out
+
+clean:
+	rm -f op.out op.me.spell errs Errs
+
+spell:	${SRC}
+	@for i in ${SRC}; do \
+		echo $$i; spell $$i | sort | comm -23 - spell.ok > $$i.spell; \
+	done
+                                                                                                                                                                                                                                                                                                                                                                                                                                             of the function
+				 in the transfer table.
+	movl r7,r6		restore r6
+.)b
+.pp
+The compiler supports local functions, which are function accessible
+only within one file.
+Because they are not accessible from C code, we can use a very fast
+call and return sequence when calling them.
+To call a local function
+.(b
+	\fBforeach\fP arg
+	 \fBcompute\fP and stack using (r6)+
+	jsb	LOCALNAME	go directly to the function, it will 
+				restore r6 before it returns.
+.)b
+.pp
+The beginning of each function looks as follows. 
+First for a non-lexpr function called in the standard way
+(topsim is the label jumped to when tail merging, it will be unique
+for each function; the brackets indicate the optional code which
+exists if the -p switch is given to liszt);
+.(b
+	.word	0x5c0		# save r6, r7, r8, r10
+    [   movab	mcounts,r0	# if profiling, mcounts replaced by fasl
+	jsb	mcount	]
+	movab	linker,r8	# set up r8
+	movl	r7,r10		# set up oldlbot
+	movab	n(r10),r6	# n = 4*Number of args expected.
+topsim:
+.)b
+.pp
+Now for lexprs:
+.(b
+	.word	0x5c0
+    [   movab	mcounts,r0	# if profiling. [mcounts replaced by fasl]
+	jsb	mcount	]
+	movab	linker,r8	# set up r8
+	subl3	$4,r7,-(sp)	# address one word below bottom of args
+topsim:
+	movl	r6,r10		# first free addr to arg base
+	subl3	r7,r6,r0	# number of args * 4 into r0
+	movab 	0x1400(r0),(r6)+ # stack boxed number of args
+	movl	0(r10),-(sp)	# also store on stack so user can't clobber
+.)b
+.pp
+And finally for local functions:
+.(b
+	movl	r10,-(sp)	# save r10
+	movab	-n(r6),r10	# set up arg base using arg top
+topsim:
+.)b
+.sh -1 Assembler\ file\ format
+.pp
+The liszt compiler generates a file which is in Unix assembler format.
+The Unix assembler converts that file into an object file which fasl
+then reads.
+Although the object file generated is a standard Unix object
+file (as defined in /usr/include/a.out.h), it is not of a 
+format that  the Unix ld loader can understand.
+This is because the requirements  of a lisp object file are different
+from an object file of other languages.
+The 
+run time semantics of lisp and the fact that lisp data must be protected
+from garbage collection are the principal differences.
+The unconventional object file created by the unix assembler 
+is a result of the
+unconventional assembler input file.
+Next we will look at what must be put in the assembler file and how
+it is put there.
+.pp
+The assembler file must contain
+.ip \fIinstructions\fP
+- vax assembler code for the compiled functions. 
+If there aren't any functions compiled, this can be empty.
+.ip \fIliterals\fP
+- lisp data which is referred to by compiled code
+.ip \fItransfer\ table\fP
+- the names of the functions which correspond to the calls through
+the transfer table.
+The instructions simply say 'call indirect through the nth transfer
+table entry'.
+.ip \fIfunction\ names\fP
+- the names of the functions which are being 
+defined.
+.ip \fIload\ time\ forms\fP
+- in order to mimic the 
+.i load
+function, fasl has to be able to evaluate lisp expressions at fasl 
+time, so we must be able to store lisp expressions in the assembler
+file and indicate when they should be evaluated.
+.pp
+Based on the requirements above, the form of the assembler file
+is as described below.
+The assembler  builds two segments: text and data.
+We put all of our information in the text segment.
+The compiler places some annotation strings in the data segment
+so that the object file can be identified, however the data segment
+is ignored by fasl.
+The format is
+.ip \fIcompiled\ instructions\fP
+The instructions for each compiled  (non-local) function begins with
+.(b
+    .globl F00003
+    F00003:
+   .word 0x5c0
+.)b
+The globl declaration and the fact that the symbol name begins
+with a F will tell fasl that this is the beginning of a lisp
+function.
+The symbols beginning with F must be unique within a file
+but may be duplicated in other files.
+The lisp  name of the function will appear later.
+Next the instructions for the function are given.
+Only a small fixed set of external symbols may be referenced.
+The list is found in the code for nfasl.c and the common
+ones will be described below (soon).
+Labels should be given a name beginning with L and should
+be unique within the file.
+.ip \fItable\ sizes\fP
+somewhere in the file there should be a pair of 'set' assembler
+pseudo ops which describe the sizes of the literal table and
+transfer table.
+The form is this
+.(b
+    .set linker_size  4
+    .set trans_size 3
+.)b
+where linker_size is the number of entries in the literal table
+which will be required and trans_size is the number of entries
+in the transfer table which will be required.
+Those tables will be built by  fasl.
+.ip \fIbinder\ table\fP
+- this table describes  the order that the functions should be
+defined and forms evaluated.
+It is a table of longwords  beginning at the symbol bind_org
+and ending when a -1 entry is seen.
+The meaning of the entries will be described below.
+.ip \fIlisp\ expression\ table\fP
+- this is a table of null terminated strings beginning at the 
+symbol lit_org and ending at the symbol lit_end.
+Each string is read by the lisp read function (using the
+raw readtable).
+The first linker_size expressions are put in the literal table.
+The next trans_size expressions are the names  of the
+functions to put in the transfer table.
+The remaining expressions correspond to the entries in the
+binder table.
+The binder entries are processed, one by one. 
+Provided that the binder entry is not -1,  an expression
+is read from the lisp expression table.
+Then if the binder table entry is 0, that expression is the name of
+a lambda type lisp function.
+A binary object is created, the discipline is set to lambda and
+the function address is set to the lexically next function 
+defined in the
+file.
+If the binder entry is 1 then this is an nlambda function, and
+if the entry is 2 then this is a macro function.
+If the entry is 99 then the expression just read should be evaluated
+by the lisp function eval.
+.pp
+The lisp compiler normally puts the assembler format output file in /tmp
+and removes it when it is done. 
+The -S switch will tell liszt to write the 
+assembler file in the same place as
+the source file, and with the same root name but a .s extension.
+The -C file will tell the lisp compiler to comment the file as it
+generates it, making it easier to understand what is going on.
+Assume that the following is file foo.l:
+.(b
+(defun foo (x) (bar y) (baz k))
+(print (foo 3))
+(def test (nlambda (l) (print 'hithere) (foo 3)))
+.)b
+we now compile it with -SC
+.(b
+    .globl	F00007	#(fcn lambda foo)
+    F00007:
+    .word	0x5c0
+    movab	linker,r8
+    movl	r7,r10
+    movab	4(r10),r6
+    L00008:
+    movl	*0(r8),(r6)+	#(calling bar)
+	    #(from y to stack)
+    movab	-4(r6),r7
+    calls	$0,*trantb+0
+    movl	r7,r6
+    movl	*4(r8),(r6)+	#(calling baz)
+	    #(from k to stack)
+    movab	-4(r6),r7
+    calls	$0,*trantb+8
+    movl	r7,r6
+    ret
+    .globl	F00009	#(fcn nlambda test)
+    F00009:
+    .word	0x5c0
+    movab	linker,r8
+    movl	r7,r10
+    movab	4(r10),r6
+    L00010:
+    movl	8(r8),(r6)+	#(calling print)
+	    #(from 'hithere to stack)
+    movab	-4(r6),r7
+    calls	$0,*trantb+16
+    movl	r7,r6
+    movl	$5132,(r6)+	#(calling foo)
+	    #(from (fixnum 3) to stack)
+    movab	-4(r6),r7
+    calls	$0,*trantb+24
+    movl	r7,r6
+    ret
+    bind_org:
+    .set linker_size,	3
+    .set trans_size,	4
+    .long	0
+    .long	99
+    .long	1
+    .long -1
+    lit_org:
+    .asciz "y"
+    .asciz "k"
+    .asciz "hithere"
+    .asciz "bar"
+    .asciz "baz"
+    .asciz "print"
+    .asciz "foo"
+    .asciz "foo"
+    .asciz "(print (foo 3))"
+    .asciz "test"
+    lit_end:
+    .data  # this is just for documentation 
+    .asciz "@(#)Compiled by Lisp Compiler 7.1 on Sun Feb 21 17:51:54 1982"
+    .asciz "@(#)decl.l	1.5	2/10/82"
+    .asciz "@(#)array.l	1.1	9/25/81"
+    .asciz "@(#)datab.l	1.1	9/25/81"
+    .asciz "@(#)expr.l	1.1	9/25/81"
+    .asciz "@(#)io.l	1.1	9/25/81"
+    .asciz "@(#)funa.l	1.3	2/10/82"
+    .asciz "@(#)funb.l	1.2	2/10/82"
+    .asciz "@(#)func.l	1.2	2/10/82"
+    .asciz "@(#)tlev.l	1.4	10/24/81"
+    .asciz "@(#)fixnum.l	1.6	10/21/81"
+    .asciz "@(#)util.l	1.2	10/7/81"
+.)b
+.sh +0 functions\ callable\ from\ compiled\ lisp\ code
+.sh +0 Obje.\" Copyright (c) 1983 Eric P. Allman
+.\" Berkeley, California
+.\"
+.\" Copyright (c) 1983 Regents of the University of California.
+.\" All rights reserved.  The Berkeley software License Agreement
+.\" specifies the terms and conditions for redistribution.
+.\"
+.\"	@(#)op.me	5.8 (Berkeley) 5/9/86
+.\"
+.\" eqn % | troff -me
+.\"if n .ls 2
+.\".he 'Sendmail Installation and Operation Guide''%'
+.\".fo 'Version 5.8''Last Mod 5/9/86'
+.eh 'SMM:07-%''Sendmail Installation and Operation Guide'
+.oh 'Sendmail Installation and Operation Guide''SMM:07-%'
+.nr si 3n
+.de $0
+.(x
+.in \\$3u*3n
+.ti -3n
+\\$2.  \\$1
+.)x
+..
+.de $C
+.(x
+.in 0
+\\$1 \\$2.  \\$3
+.)x
+..
+.+c
+.(l C
+.sz 16
+.b SENDMAIL
+.sz 12
+.sp
+.b "INSTALLATION AND OPERATION GUIDE"
+.sz 10
+.sp
+.r
+Eric Allman
+Britton-Lee, Inc.
+.sp
+Version 5.8
+.)l
+.sp 2
+.pp
+.i Sendmail
+implements a general purpose internetwork mail routing facility
+under the UNIX*
+.(f
+*UNIX is a trademark of Bell Laboratories.
+.)f
+operating system.
+It is not tied to any one transport protocol \*-
+its function may be likened to a crossbar switch,
+relaying messages from one domain into another.
+In the process,
+it can do a limited amount of message header editing
+to put the message into a format that is appropriate
+for the receiving domain.
+All of this is done under the control of a configuration file.
+.pp
+Due to the requirements of flexibility
+for
+.i sendmail ,
+the configuration file can seem somewhat unapproachable.
+However, there are only a few basic configurations
+for most sites,
+for which standard configuration files have been supplied.
+Most other configurations
+can be built by adjusting an existing configuration files
+incrementally.
+.pp
+Although
+.i sendmail
+is intended to run
+without the need for monitoring,
+it has a number of features
+that may be used to monitor or adjust the operation
+under unusual circumstances.
+These features are described.
+.pp
+Section one describes how to do a basic
+.i sendmail
+installation.
+Section two
+explains the day-to-day information you should know
+to maintain your mail system.
+If you have a relatively normal site,
+these two sections should contain sufficient information
+for you to install
+.i sendmail
+and keep it happy.
+Section three
+describes some parameters that may be safely tweaked.
+Section four
+has information regarding the command line arguments.
+Section five
+contains the nitty-gritty information about the configuration
+file.
+This section is for masochists
+and people who must write their own configuration file.
+The appendixes give a brief
+but detailed explanation of a number of features
+not described in the rest of the paper.
+.pp
+The references in this paper are actually found
+in the companion paper
+.ul
+Sendmail \- An Internetwork Mail Router.
+This other paper should be read before this manual
+to gain a basic understanding
+of how the pieces fit together.
+.pn 4
+.bp
+.sh 1 "BASIC INSTALLATION"
+.pp
+There are two basic steps to installing sendmail.
+The hard part is to build the configuration table.
+This is a file that sendmail reads when it starts up
+that describes the mailers it knows about,
+how to parse addresses,
+how to rewrite the message header,
+and the settings of various options.
+Although the configuration table is quite complex,
+a configuration can usually be built
+by adjusting an existing off-the-shelf configuration.
+The second part is actually doing the installation,
+i.e., creating the necessary files, etc.
+.pp
+The remainder of this section will describe the installation of sendmail
+assuming you can use one of the existing configurations
+and that the standard installation parameters are acceptable.
+All pathnames and examples
+are given from the root of the
+.i sendmail
+subtree,
+normally
+.i /usr/src/usr.lib/sendmail
+on 4.3BSD.
+.sh 2 "Off-The-Shelf Configurations"
+.pp
+The configuration files
+are all in the subdirectories
+.i cf.named
+and
+.i cf.hosttable
+of the sendmail directory.
+The directory
+.i cf.named
+contains configuration files that have been tailored for the name server
+.i named \|(8).
+These are the configuration files currently being used at Berkeley.
+The configuration files in
+.i cf.hosttable
+are some typical ones and the old Berkeley versions from before the name server
+was being used.
+You should create a symbolic link from
+.i cf
+to the directory that you are going to use.
+For example,
+to use the name server:
+.(b
+ln \-s cf.named cf
+.)b
+The ones used at Berkeley are in
+.i m4 \|(1)
+format;
+files with names ending
+.q .m4
+are
+.i m4
+include files,
+while files with names ending
+.q .mc
+are the master files.
+Files with names ending
+.q .cf
+are the
+.i m4
+processed versions of the corresponding
+.q .mc
+file.
+.pp
+Three off the shelf configurations are supplied
+to handle the basic cases:
+.np
+Arpanet (TCP) sites not running the name server
+can use
+.i cf.hosttable/arpaproto.cf .
+For simple sites,
+you should be able to use this file without modification.
+This file is not in
+.i m4
+format.
+.np
+UUCP sites can use
+.i cf.hosttable/uucpproto.cf .
+If your UUCP node name is not the same as your
+system name
+(as printed by the
+.i hostname (1)
+command)
+you may have to modify the
+.b U
+macro.
+This file is not in
+.i m4
+format.
+.np
+A group of machines at a single site
+connected by an ethernet
+with (only) one host connected to the outside world
+via UUCP
+is represented by two configuration files:
+.i cf.hosttable/lanroot.mc
+should be installed on the host with outside connections
+and
+.i cf.hosttable/lanleaf.mc
+should be installed on all other hosts.
+These will require slightly more configuration.
+First, in both files the
+.b D
+macro and
+.b D
+class must be adjusted to indicate your local domain.
+For example,
+if your company is known as
+.q Muse
+you will want to change both of those accordingly.
+(As distributed, they are called XXX.)
+Second,
+in
+.i lanleaf.mc
+you will have to change the
+.b R
+macro to the name of the root host,
+that is,
+the host that runs
+.i lanroot.mc .
+For example,
+they might appear as:
+.(b
+DDMuse
+CDLOCAL Muse
+.sp \n(psu
+DRErato
+.)b
+Internally, the root host will be known as
+.q Erato.Muse
+and other hosts will be known as
+.q Thalia.Muse ,
+.q Clio.Muse ,
+etc.
+.pp
+The file you need should be copied to a file with the same name
+as your system,
+e.g.,
+.(b
+cp uucpproto.cf ucsfcgl.cf
+.)b
+This file
+is now ready for installation as
+.i /usr/lib/sendmail.cf .
+.sh 2 "Installation Using the Makefile"
+.pp
+A makefile exists in the root of the
+.i sendmail
+directory that will do all of these steps
+for a 4.3BSD system.
+It may have to be slightly tailored
+for use on other systems.
+.pp
+Before using this makefile, you should create a symbolic link from
+.i cf
+to the directory containing your configuration files.
+You should also have created your configuration file
+and left it in the file
+.q cf/\fIsystem\fP.cf
+where
+.i system
+is the name of your system
+(i.e., what is returned by
+.i hostname \|(1)).
+If you do not have
+.i hostname
+you can use the declaration
+.q HOST=\fIsystem\fP
+on the
+.i make \|(1)
+command line.
+You should also examine the file
+.i md/config.m4
+and change the
+.i m4
+macros there to reflect any libraries and compilation flags
+you may need.
+.pp
+The basic installation procedure is to type:
+.(b
+make
+make install
+make installcf
+.)b
+in the root directory of the
+.i sendmail
+distribution.
+This will make all binaries
+and install them in the standard places.
+The second and third
+.i make
+commands must be executed as the superuser (root).
+.sh 2 "Installation by Hand"
+.pp
+Along with building a configuration file,
+you will have to install the
+.i sendmail
+startup into your UNIX system.
+If you are doing this installation
+in conjunction with a regular Berkeley UNIX install,
+these steps will already be complete.
+Many of these steps will have to be executed as the superuser (root).
+.sh 3 "lib/libsys.a"
+.pp
+The library in lib/libsys.a
+contains some routines that should in some sense
+be part of the system library.
+These are the system logging routines
+and the new directory access routines
+(if required).
+If you are not running the 4.3BSD directory code
+and do not have the compatibility routines installed in your system library,
+you should execute the command:
+.(b
+(cd lib; make ndir)
+.)b
+This will compile and install the 4.3 compatibility routines
+H        0        0        0        0        0        0        0        0        0
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           1       1       1       1       1       1       1       1       1       
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       \EG1MMM.`40K0001202080K8001????00^L\EC80L80{80^L\EK010100????K0601??0000c818100\EG1HHH.\07210000019A27FD006A280D002A200A52429FE8524861086118612861360N031B4C3F3F1800N041B0C1B4C38301800N001B3B313030301800N011B3B313030341800N021B3B313030381800N050800N061B3B313335301800\07211000015A58E8D5011A58F8D5111A5908D5211A5918D531160\07212000015AD5011858EAD5111858FAD52118590AD5311859160\0721300004B2071C5858E0A18658E0A0A858EA900858F268FA5278590A50A29018591A9F51865908590A90165918591A59038E58E8590A591E58F290185912071C5180A0A0A0901858EA900858F268F60\0721350000BA9472031DEA9502031DE60\E\E\E\EG1MMM.^A
+                                                                                                                                                                                                                                                                                                                                                                                                                                                     
+                                                                               
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            	9
+2		1	1	1	!1	)1	11	91	A1	I1	Q1	Y1	a1	i1	q1	y1
+	9
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        	        1        1        1        1        1        1        1        1        1        1        1        1        1        1        1        1                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            H        0        0        0        0        0        0        0        0        0                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   3        1        1        1        1        1        1        1        1        1        1        1        1        1
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         in the library.
+You should then type:
+.(b
+(cd lib; make)
+.)b
+This will recompile and fill the library.
+.sh 3 "/usr/lib/sendmail"
+.pp
+The binary for sendmail is located in /usr/lib.
+There is a version available in the source directory
+that is probably inadequate for your system.
+You should plan on recompiling and installing the entire system:
+.(b
+cd src
+make clean
+make
+cp sendmail /usr/lib
+chgrp kmem /usr/lib/sendmail
+.)b
+.sh 3 "/usr/lib/sendmail.cf"
+.pp
+The configuration file
+that you created earlier
+should be installed in /usr/lib/sendmail.cf:
+.(b
+cp cf/\fIsystem\fP.cf /usr/lib/sendmail.cf
+.)b
+.sh 3 "/usr/ucb/newaliases"
+.pp
+If you are running delivermail,
+it is critical that the
+.i newaliases
+command be replaced.
+This can just be a link to
+.i sendmail :
+.(b
+rm \-f /usr/ucb/newaliases
+ln /usr/lib/sendmail /usr/ucb/newaliases
+.)b
+.sh 3 "/usr/spool/mqueue"
+.pp
+The directory
+.i /usr/spool/mqueue
+should be created to hold the mail queue.
+This directory should be mode 777
+unless
+.i sendmail
+is run setuid,
+when
+.i mqueue
+should be owned by the sendmail owner
+and mode 755.
+.sh 3 "/usr/lib/aliases*"
+.pp
+The system aliases are held in three files.
+The file
+.q /usr/lib/aliases
+is the master copy.
+A sample is given in
+.q lib/aliases
+which includes some aliases which
+.i must
+be defined:
+.(b
+cp lib/aliases /usr/lib/aliases
+.)b
+You should extend this file with any aliases that are apropos to your system.
+.pp
+Normally
+.i sendmail
+looks at a version of these files maintained by the
+.i dbm \|(3)
+routines.
+These are stored in
+.q /usr/lib/aliases.dir
+and
+.q /usr/lib/aliases.pag.
+These can initially be created as empty files,
+but they will have to be initialized promptly.
+These should be mode 666 if you are running a reasonably relaxed system:
+.(b
+cp /dev/null /usr/lib/aliases.dir
+cp /dev/null /usr/lib/aliases.pag
+chmod 666 /usr/lib/aliases.*
+newaliases
+.)b
+.sh 3 "/usr/lib/sendmail.fc"
+.pp
+If you intend to install the frozen version of the configuration file
+(for quick startup)
+you should create the file /usr/lib/sendmail.fc
+and initialize it.
+This step may be safely skipped.
+.(b
+cp /dev/null /usr/lib/sendmail.fc
+/usr/lib/sendmail \-bz
+.)b
+.sh 3 "/etc/rc"
+.pp
+It will be necessary to start up the sendmail daemon when your system reboots.
+This daemon performs two functions:
+it listens on the SMTP socket for connections
+(to receive mail from a remote system)
+and it processes the queue periodically
+to insure that mail gets delivered when hosts come up.
+.pp
+Add the following lines to
+.q /etc/rc
+(or
+.q /etc/rc.local
+as appropriate)
+in the area where it is starting up the daemons:
+.(b
+if [ \-f /usr/lib/sendmail ]; then
+	(cd /usr/spool/mqueue; rm \-f [lnx]f*)
+	/usr/lib/sendmail \-bd \-q30m &
+	echo \-n ' sendmail' >/dev/console
+fi
+.)b
+The
+.q cd
+and
+.q rm
+commands insure that all lock files have been removed;
+extraneous lock files may be left around
+if the system goes down in the middle of processing a message.
+The line that actually invokes
+.i sendmail
+has two flags:
+.q \-bd
+causes it to listen on the SMTP port,
+and
+.q \-q30m
+causes it to run the queue every half hour.
+.pp
+If you are not running a version of UNIX
+that supports Berkeley TCP/IP,
+do not include the
+.b \-bd
+flag.
+.sh 3 "/usr/lib/sendmail.hf"
+.pp
+This is the help file used by the SMTP
+.b HELP
+command.
+It should be copied from
+.q lib/sendmail.hf :
+.(b
+cp lib/sendmail.hf /usr/lib
+.)b
+.sh 3 "/usr/lib/sendmail.st"
+.pp
+If you wish to collect statistics
+about your mail traffic,
+you should create the file
+.q /usr/lib/sendmail.st :
+.(b
+cp /dev/null /usr/lib/sendmail.st
+chmod 666 /usr/lib/sendmail.st
+.)b
+This file does not grow.
+It is printed with the program
+.q aux/mailstats.
+.sh 3 "/usr/ucb/newaliases"
+.pp
+If
+.i sendmail
+is invoked as
+.q newaliases,
+it will simulate the
+.b \-bi
+flag
+(i.e., will rebuild the alias database;
+see below).
+This should be a link to /usr/lib/sendmail.
+.sh 3 "/usr/ucb/mailq"
+.pp
+If
+.i sendmail
+is invoked as
+.q mailq,
+it will simulate the
+.b \-bp
+flag
+(i.e.,
+.i sendmail
+will print the contents of the mail queue;
+see below).
+This should be a link to /usr/lib/sendmail.
+.sh 1 "NORMAL OPERATIONS"
+.sh 2 "Quick Configuration Startup"
+.pp
+A fast version of the configuration file
+may be set up by using the
+.b \-bz
+flag:
+.(b
+/usr/lib/sendmail \-bz
+.)b
+This creates the file
+.i /usr/lib/sendmail.fc
+(\c
+.q "frozen configuration" ).
+This file is an image of
+.i sendmail 's
+data space after reading in the configuration file.
+If this file exists,
+it is used instead of
+.i /usr/lib/sendmail.cf
+.i sendmail.fc
+must be rebuilt manually every time
+.i sendmail.cf
+is changed.
+.pp
+The frozen configuration file will be ignored
+if a
+.b \-C
+flag is specified
+or if sendmail detects that it is out of date.
+However, the heuristics are not strong
+so this should not be trusted.
+.sh 2 "The System Log"
+.pp
+The system log is supported by the
+.i syslogd \|(8)
+program.
+.sh 3 "Format"
+.pp
+Each line in the system log
+consists of a timestamp,
+the name of the machine that generated it
+(for logging from several machines
+over the ethernet),
+the word
+.q sendmail: ,
+and a message.
+.sh 3 "Levels"
+.pp
+If you have
+.i syslogd \|(8)
+or an equivalent installed,
+you will be able to do logging.
+There is a large amount of information that can be logged.
+The log is arranged as a succession of levels.
+At the lowest level
+only extremely strange situations are logged.
+At the highest level,
+even the most mundane and uninteresting events
+are recorded for posterity.
+As a convention,
+log levels under ten
+are considered
+.q useful;
+log levels above ten
+are usually for debugging purposes.
+.pp
+A complete description of the log levels
+is given in section 4.6.
+.sh 2 "The Mail Queue"
+.pp
+The mail queue should be processed transparently.
+However, you may find that manual intervention is sometimes necessary.
+For example,
+if a major host is down for a period of time
+the queue may become clogged.
+Although sendmail ought to recover gracefully when the host comes up,
+you may find performance unacceptably bad in the meantime.
+.sh 3 "Printing the queue"
+.pp
+The contents of the queue can be printed
+using the
+.i mailq
+command
+(or by specifying the
+.b \-bp
+flag to sendmail):
+.(b
+mailq
+.)b
+This will produce a listing of the queue id's,
+the size of the message,
+the date the message entered the queue,
+and the sender and recipients.
+.sh 3 "Format of queue files"
+.pp
+All queue files have the form
+\fIx\fP\|\fBf\fP\fIAA99999\fP
+where
+.i AA99999
+is the
+.i id
+for this file
+and the
+.i x
+is a type.
+The types are:
+.ip d
+The data file.
+The message body (excluding the header) is kept in this file.
+.ip l
+The lock file.
+If this file exists,
+the job is currently being processed,
+and a queue run will not process the file.
+For that reason,
+an extraneous
+.b lf
+file can cause a job to apparently disappear
+(it will not even time out!).
+.ip n
+This file is created when an id is being created.
+It is a separate file to insure that no mail can ever be destroyed
+due to a race condition.
+It should exist for no more than a few milliseconds
+at any given time.
+.ip q
+The queue control file.
+This file contains the information necessary to process the job.
+.ip t
+A temporary file.
+These are an im

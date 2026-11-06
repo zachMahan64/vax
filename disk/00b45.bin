@@ -1,0 +1,1895 @@
+l be discussed later.
+.KF
+.TS
+center;
+lll .
+.B
+array	exit	precision
+automatic	external	procedure
+break	false	read
+call	field	readbin
+case	for	real
+character	function	repeat
+common	go	return
+complex	goto	select
+continue	if	short
+debug	implicit	sizeof
+default	include	static
+define	initial	struct
+dimension	integer	subroutine
+do	internal	true
+double	lengthof	until
+doubleprecision	logical	value
+else	long	while
+end	next	write
+equivalence	option	writebin
+.R
+.TE
+.KE
+The use of these words is discussed below.
+These words may not be used for any other purpose.
+.NH 3
+Strings
+.PP
+A character string is a sequence of characters surrounded by quotation marks.
+If the string is bounded by single-quote marks ( \fB\'\fR ), it may contain double
+quote marks ( \fB"\fR ), and vice versa.
+A quoted string may not be broken across a line boundary.
+.DS
+.B
+ \'hello there\'
+ "ain\'t misbehavin\'"
+.R
+.DE
+.NH 3
+Integer Constants
+.PP
+An integer constant is a sequence of one or more digits.
+.DS B
+.B
+0
+57
+123456
+.R
+.DE
+.NH 3
+Floating Point Cursor.
+Another command,
+Control-D,
+deletes the character
+after the cursor,
+causing the rest of the text on the line to shift left.
+If Control-D is typed at the end of a line,
+that line and the next line are joined together.
+.LP
+To erase a larger amount of text,
+use the Control-K command,
+which kills a line at a time.
+If Control-K is done at the beginning or
+middle of a line,
+it kills all the text up to the end of the line.
+If Control-K is done at the end of a line,
+it joins that line and the next line.
+If Control-K is done twice, it kills the rest of the line and the line
+separator also.
+.NH 2
+Files \(em Saving Your Work
+.XS \n(PN 5n
+\*(SN Files \(em Saving Your Work
+.XE
+.LP
+The commands above are sufficient for creating text in the \s-2JOVE\s0 buffer.
+The more advanced \s-2JOVE\s0 commands just make things easier.
+But to keep any text permanently you must put it in a \fIfile\fP.
+Files are the objects which
+.UX
+uses for storing data for a length of time.
+To tell \s-2JOVE\s0 to read text into a file,
+choose a filename,
+such as \fIfoo.bar\fP,
+and type C-X C-R \fIfoo.bar\fP<return>.
+This reads the file \fIfoo.bar\fP so that its contents appear on the screen
+for editing.
+You can make changes,
+and then save the file by typing C-X C-S (save-file).
+This makes the changes permanent and actually changes the file \fIfoo.bar\fP.
+Until then,
+the changes are only inside \s-2JOVE\s0,
+and the file \fIfoo.bar\fP is not really changed.
+If the file \fIfoo.bar\fP doesn't exist,
+and you want to create it,
+read it as if it did exist.
+When you save your text with C-X C-S the file will be created.
+.NH 2
+Exiting and Pausing \(em Leaving \s-2JOVE\s0
+.XS \n(PN 5n
+\*(SN Exiting and Pausing \(em Leaving \s-2JOVE\s0
+.XE
+.LP
+The command C-X C-C (\fIexit-jove\fP) will terminate the \s-2JOVE\s0
+session and return to the shell.  If there are modified but 
+unsaved buffers, \s-2JOVE\s0 will ask you for confirmation, and you
+can abort the command, look at what buffers are
+modified but unsaved using C-X C-B (\fIlist-buffers\fP), save the 
+valuable ones, and then exit.  If what you want to do, on the other hand,
+is \fIpreserve\fP the editing session but return to the shell temporarily
+you can (under Berkeley 
+.UX
+only) issue the command ESC S (\fIpause-jove\fP), do your 
+.UX 
+work within the c-shell, then return to \s-2JOVE\s0 using the 
+\fIfg\fP command to resume editing at the point where you paused.
+For this sort of situation you might consider using an \fIinteractive
+shell\fP (that is, a shell in a \s-2JOVE\s0 window) which lets you use
+editor commands to manipulate your 
+.UX 
+commands (and their output) while never leaving the editor.
+(The interactive shell feature is described below.)
+.NH 2
+Giving Numeric Arguments to \s-2JOVE\s0 Commands
+.XS \n(PN 5n
+\*(SN Giving Numeric Arguments to \s-2JOVE\s0 Commands
+.XE
+.LP
+Any \s-2JOVE\s0 command can be given a \fInumeric argument\fP.
+Some commands interpret the argument as a repetition count.
+For example,
+giving an argument of ten to the C-F command (forward-character) moves forward
+ten characters.
+With these commands,
+no argument is equivalent to an argument of 1.
+.LP
+Some commands use the value of the argument,
+but do something peculiar (or nothing) when there is no argument.
+For example,
+ESC G (\fIgoto-line\fP) with an argument \fBn\fP
+goes to the beginning of the \fBn\fP'th line.
+But ESC G with no argument doesn't do anything.
+Similarly, C-K with an argument kills that many lines, including their line
+separators.  Without an argument, C-K when there is text on the line to the
+right of
+the cursor kills that text; when there is no text after the cursor, C-K
+deletes the line separator.
+.LP
+The fundamental way of specifying an argument is to use ESC followed
+by the digits of the argument, for example, ESC 123 ESC G to go to line
+123. Negative arguments are allowed,
+although not all of the commands know what to do with one.
+.LP
+Typing C-U means do the next command four times.
+Two such C-U's multiply the next command by sixteen.
+Thus,
+C-U C-U C-F moves forward sixteen characters.
+This is a good way to move forward quickly,
+since it moves about 1/4 of a line on most terminals.
+Other useful combinations are:
+C-U C-U C-N (move down a good fraction of the screen),
+C-U C-U C-O (make "a lot" of blank lines),
+and C-U C-K (kill four lines \(em note that typing C-K four times
+would kill 2 lines).
+.LP
+There are other,
+terminal-dependent ways of specifying arguments.
+They have the same effect but may be easier to type.
+If your terminal
+has a numeric keypad which sends something recognizably different from
+the ordinary digits,
+it is possible to program \s-2JOVE\s0 to to allow use of
+the numeric keypad for specifying arguments.
+.NH 2
+The Mark and the Region
+.XS \n(PN 5n
+\*(SN The Mark and the Region
+.XE
+.LP
+In general,
+a command that processes an arbitrary part of the buffer
+must know where to start and where to stop.
+In \s-2JOVE\s0,
+such commands usually operate on the text between point and \fIthe mark\fP.
+This body of text is called \fIthe region\fP.
+To specify a region,
+you set point to one end of it and mark at the other.
+It doesn't matter which one comes earlier in the text.
+.IP "C-@" 15n
+Set the mark where point is.
+.IP "C-X C-X" 15n
+Interchange mark and point.
+.LP
+For example,
+if you wish to convert part of the buffer to all upper-case,
+you can use the C-X C-U command,
+which operates on the text in the region.
+You can first go to the beginning of the text to be capitalized,
+put the mark there, move to the end, and then type C-X C-U.
+Or,
+you can set the mark at the end of the text,
+move to the beginning,
+and then type C-X C-U.
+C-X C-U runs the command \fIcase-region-upper\fP,
+whose name signifies that the region,
+or everything between point and mark,
+is to be capitalized.
+.LP
+The way to set the mark is with the C-@ command or (on some
+terminals) the C-Space command.
+They set the mark where point is.
+Then you can move point away,
+leaving mark behind.  When the mark is set, "[Point pushed]" is printed on
+the message line.
+.LP
+Since terminals have only one cursor,
+there is no way for \s-2JOVE\s0 to show you where the mark is located.
+You have to remember.
+The usual solution to this problem is to set the mark and then use it soon,
+before you forget where it is.
+But you can see where the mark is with
+the command C-X C-X which puts the mark where point was and point
+where mark was.
+The extent of the region is unchanged,
+but the cursor and point are now at the previous location of the mark.
+.NH 2
+The Ring of Marks
+.XS \n(PN 5n
+\*(SN The Ring of Marks
+.XE
+.LP
+Aside from delimiting the region,
+the mark is also useful for remembering a spot that you may want to go back to.
+To make this feature more useful,
+\s-2JOVE\s0 remembers 16 previous locations of the mark.
+Most commands that set the mark push the old mark onto this stack.
+To return to a marked location, use C-U C-@.
+This moves point to where the mark was,
+and restores the mark from the stack of former marks.
+So repeated use of this command moves point to all of the old
+marks on the stack,
+one by one.
+Since the stack is actually a ring,
+enough uses of C-U C-@ bring point back to where it was originally.
+.LP
+Some commands whose primary purpose is to move point a great distance
+take advantage of the stack of marks to give you a way to undo the
+command.
+The best example is ESC <,
+which moves to the beginning of the buffer.
+If there are more than 22 lines between the beginning of
+the buffer and point,
+ESC < sets the mark first,
+so that you can use C-U C-@ or C-X C-X to go back to where you were.
+You can change the number of lines from 22 since it is kept in the variable \fImark-threshold\fP.
+By setting it to 0,
+you can make these commands always set the mark.
+By setting it to a very large number you can prevent these commands from ever
+setting the mark.
+If a command decides to set the mark,
+it prints the message \fI[Point pushed]\fP.
+.NH 2
+Killing and Moving Text
+.XS \n(PN 5n
+\*(SN Killing and Moving Text
+.XE
+.LP
+The most common way of moving or copying text with \s-2JOVE\s0 is to kill it,
+and get it back again in one or more places.
+This is very safe
+because the last several pieces of killed onstants
+.PP
+A floating point constant contains a dot and/or an exponent field.
+An
+.I "exponent field"
+is a letter
+.B d
+or
+.B e
+followed by an optionally signed integer constant.
+If
+@I@
+and
+@J@
+are integer constants and
+@E@
+is an exponent field, then a floating constant has one of the following forms:
+.DS B
+.I
+ \fB.\fPI
+ I\fB.\fP
+ I\fB.\fPJ
+ IE
+ I\fB.\fPE
+ \fB.\fPIE
+ I\fB.\fPJE
+.R
+.DE
+.NH 3
+Punctuation
+.PP
+Certain characters are used to group or separate objects in the language.
+These are
+.TS
+center;
+ll.
+parentheses	(  )
+braces	{  }
+comma	,
+semicolon	;
+colon	:
+end-of-line
+.TE
+The end-of-line is a token (statement separator)
+when the line is neither blank nor continued.
+.NH 3
+Operators
+.PP
+The EFL operators are written as sequences of one or more
+non-alphanumeric characters.
+.DS B
++   \-   \(**   /   \(**\(**
+<   <=   >   >=   ==   \*~=
+&&   |\||   &   |
++=   \-=   \(*=   /=   \(**\(**=
+&&=   |\||=      &=   |=
+\->   .   $
+.DE
+A dot (`\fB.\fR') is an operator when it qualifies a structure element name,
+but not when it acts as a decimal point in a numeric constant.
+There is a special mode (see the Atavisms section)
+in which some of the operators may be represented by a string consisting of a dot, an identifier, and a dot
+(\fIe.g., \fB.lt.\fR ).
+.NH 2
+Macros
+.PP
+EFL has a simple macro substitution facility.
+An identifier may be defined to be equal to a string of tokens;
+whenever that name appears as a token in the program,
+the string replaces it.
+A macro name is given a value in a
+.B define
+statement like
+.DS
+define count     n += 1
+.DE
+Any time the name
+.B count
+appears in the program, it is replaced by the statement
+.DS C
+.B
+n += 1
+.R
+.DE
+A
+.B define
+statement must appear alone on a line;
+the form is
+.DS  C
+\fBdefine   \fIname   \fIrest-of-line\fR
+.DE
+Trailing comments are part of the string.
+.NH 1
+PROGRAM FORM
+.NH 2
+Files
+.PP
+A
+.I file
+is a sequence of lines.
+A file is compiled as a single unit.
+It may contain one or more procedures.
+Declarations and options that appear outside of a procedure
+affect the succeeding procedures on that file.
+.NH 2
+Procedures
+.PP
+Procedures are the largest grouping of statements in EFL.
+Each procedure has a name by which it is invoked.
+(The first procedure invoked during execution, known as the
+.I main
+procedure,
+has the null name.)
+Procedure calls and argument passing are discussed in Section 8.
+.NH 2
+Blocks
+.PP
+Statements may be formed into groups inside of a procedure.
+To describe the scope of names, it is convenient to introduce the ideas of
+.I block
+and of
+.I "nesting level."
+The beginning of a program file is at nesting level zero.
+Any options, macro definitions,
+or variable declarations there are also at level zero.
+The text immediately following a
+.B procedure
+statement is at level 1.
+After the declarations,
+a left brace marks the beginning of a new block and increases the nesting level by 1;
+a right brace drops the level by 1.
+(Braces inside declarations do not mark blocks.)
+(See Section 7.2).
+An
+.B end
+statement marks the end of the procedure, level 1, and the return to level 0.
+A name
+(variable or macro)
+that is defined at level
+@k@
+is defined throughout that block and in all deeper nested levels in which that name is not
+redefined or redeclared.
+Thus, a procedure might look like the following:
+.DS B
+.ta .7i 1.4i 2.1i 2.8i
+.B
+#   block 0
+procedure george
+real x
+x = 2
+ . . .
+if(x > 2)
+	{	# new block
+	integer x	# a different variable
+	do x = 1,7
+		write(,x)
+	. . .
+	}	# end of block
+end	# end of procedure, return to block 0
+.DE
+.NH 2
+Statements
+.PP
+A statement is terminated by end of line or by a semicolon.
+Statements are of the following types:
+.DS B
+Option
+Include
+Define
+.sp .3
+Procedure
+End
+.sp .3
+Declarative
+Executable
+.DE
+The
+.B option
+statement is described in Section 10.
+The
+.B include,
+.B define,
+and
+.B end
+statements have been described above;
+they may not be followed by another statement on a line.
+Each procedure begins with a
+.B procedure
+statements and finishes with an
+.B end
+statement; these are discussed in Section 8.
+Declarations describe types and values of variables and
+procedures.
+Executable statements cause specific actions to be taken.
+A block is an example of an executable statement; it is made up
+of declarative and executable statements.
+.NH 2
+Labels
+.PP
+An executable statement may have a
+.I label
+which may be used in a branch statement.
+A label is an identifier followed by a colon, as in
+.DS B
+.B
+.ta 1i
+	read(, x)
+	if(x < 3) goto error
+	. . .
+error:	fatal("bad input")
+.R
+.DE
+.NH 1
+DATA TYPES AND VARIABLES
+.PP
+EFL supports a small number of basic (scalar) types.
+The programmer may define objects made up of variables of basic type;
+other aggregates may then be defined in terms of previously defined aggregates.
+.NH 2
+Basic Types
+.PP
+The basic types are
+.DS B
+\fBlogical
+\fBinteger
+\fBfield(\fIm\|\fB:\fIn\|\fB)
+\fBreal
+\fBcomplex
+\fBlong real
+\fBlong complex
+\fBcharacter(\fIn\|\fB)
+.R
+.DE
+A logical quantity may take on the two values true and false.
+An integer may take on any whole number value in some machine-dependent range.
+A field quantity is an integer restricted to a particular closed interval
+@([m:n])@.
+A `real' quantity is a floating point approximation to a real or rational number.
+A long real is a more precise approximation to a rational.
+(Real quantities are represented as single precision floating point numbers;
+long reals are double precision floating point numbers.)
+A complex quantity is an approximation to a complex number, and is represented as a pair of reals.
+A character quantity is a fixed-length string of @n@ characters.
+.NH 2
+Constants
+.PP
+There is a notation for a constant of each basic type.
+.LP
+A logical may take on the two values
+.DS B
+.B
+true
+false
+.R
+.DE
+An integer or field constant is a fixed point constant,
+optionally preceded by a plus or minus sign, as in
+.DS B
+.B
+17
+\-94
++6
+0
+.R
+.DE
+A long real (`double precision') constant is a floating point constant containing an exponent field that
+begins with the letter
+.B d.
+A real (`single precision') constant is any other floating point constant.
+A real or long real constant may be preceded by a plus or minus sign.
+The following are valid
+.B real
+constants:
+.DS B
+.B
+ 17.3
+ \-.4
+ 7.9e\-6   @(~=~7.9 times 10 sup -6 )@
+14e9    @(~=~1.4 times 10 sup 10 )@
+.R
+.DE
+The following are valid
+.B "long real"
+constants
+.DS B
+.B
+ 7.9d\-6   @(~=~7.9 times 10 sup -6 )@
+5d3
+.R
+.DE
+.LP
+A character constant is a quoted string.
+.NH 2
+Variables
+.PP
+A variable is a quantity with a name and a location.
+At any particular time the variable may also have a value.
+(A variable is said to be
+.I undefined
+before it is initialized or assigned its first value,
+and after certain indefinite operations are performed.)
+Each variable has certain attributes:
+.NH 3
+Storage Class
+.PP
+The association of a name and a location is either
+transitory or permanent.
+Transitory association is achieved when arguments are passed to procedures.
+Other associations are permanent (static).
+(A future extension of EFL may include dynamically allocated variables.)
+.NH 3
+Scope of Names
+.PP
+The names of
+common areas
+are global,
+as are procedure names:
+these names may be used anywhere in the program.
+All other names are local to the block in which they are declared.
+.NH 3
+Precision
+.PP
+Floating point variables are either of normal or
+.B long
+precision.
+This attribute may be stated independently of the basic type.
+.NH 2
+Arrays
+.PP
+It is possible to declare rectangular arrays (of any dimension) of values of the same type.
+The index set is always a cross-product of intervals of integers.
+The lower and upper bounds of the intervals must be constants for arrays that are local or
+.B common.
+A formal argument array may have intervals that are of length equal to one of the other formal arguments.
+An element of an array is denoted by the array name followed by a parenthesized comma-separated list of integer values,
+each of which must lie within the corresponding interval.
+(The intervals may include negative numbers.)
+Entire arrays may be passed as procedure arguments or in input/output lists,
+or they may be initialized;
+all other array references must be to individual elements..\" Copyright (c) 1980 Regents of the University of California.
+.\" All rights reserved.  The Berkeley software License Agreement
+.\" specifies the terms and conditions for redistribution.
+.\"
+.\"	@(#)tutor.me	6.5 (Berkeley) 5/10/86
+.\"
+.oh 'Introductory 4.3BSD IPC''PS1:7-%'
+.eh 'PS1:7-%''Introductory 4.3BSD IPC'
+.rs
+.sp 2
+.sz 14
+.ft B
+.ce 2
+An Introductory 4.3BSD
+Interprocess Communication Tutorial
+.sz 10
+.sp 2
+.ce
+.i "Stuart Sechrest"
+.ft
+.sp
+.ce 4
+Computer Science Research Group
+Computer Science Division
+Department of Electrical Engineering and Computer Science
+University of California, Berkeley
+.sp 2
+.ce
+.i ABSTRACT
+.sp
+.(c
+.pp
+Berkeley UNIX\(dg 4.3BSD offers several choices for interprocess communication.
+To aid the programmer in  developing programs which are comprised of
+cooperating
+processes, the different choices are discussed and a series of example 
+programs are presented.  These programs
+demonstrate in a simple way the use of pipes, socketpairs, sockets
+and the use of datagram and stream communication.  The intent of this
+document is to present a few simple example programs, not to describe the
+networking system in full.
+.)c
+.sp 2
+.(f
+\(dg\|UNIX is a trademark of AT&T Bell Laboratories.
+.)f
+.b
+.sh 1 "Goals"
+.r
+.pp
+Facilities for interprocess communication (IPC) and networking
+were a major addition to UNIX in the Berkeley UNIX 4.2BSD release.
+These facilities required major additions and some changes
+to the system interface.
+The basic idea of this interface is to make IPC similar to file I/O.
+In UNIX a process has a set of I/O descriptors, from which one reads
+and to which one writes.
+Descriptors may refer to normal files, to devices (including terminals),
+or to communication channels.
+The use of a descriptor has three phases: its creation,
+its use for reading and writing, and its destruction.  By using descriptors
+to write files, rather than simply naming the target file in the write
+call, one gains a surprising amount of flexibility.  Often, the program that
+creates a descriptor will be different from the program that uses the
+descriptor.  For example the shell can create a descriptor for the output 
+of the `ls'
+command that will cause the listing to appear in a file rather than
+on a terminal.
+Pipes are another form of descriptor that have been used in UNIX
+for some time.
+Pipes allow one-way data transmission from one process
+to another; the two processes and the pipe must be set up by a common
+ancestor.
+.pp
+The use of descriptors is not the only communication interface
+provided by UNIX.
+The signal mechanism sends a tiny amount of information from one 
+process to another.
+The signaled process receives only the signal type,
+not the identity of the sender,
+and the number of possible signals is small.
+The signal semantics limit the flexibility of the signaling mechanism
+as a means of interprocess communication.
+.pp
+The identification of IPC with I/O is quite longstanding in UNIX and
+has proved quite successful.  At first, however, IPC was limited to
+processes communicating within a single machine.  With Berkeley UNIX
+4.2BSD this expanded to include IPC between machines.  This expansion
+has necessitated some change in the way that descriptors are created.
+Additionally, new possibilities for the meaning of read and write have
+been admitted.  Originally the meanings, or semantics, of these terms
+were fairly simple.  When you wrote something it was delivered.  When
+you read something, you were blocked until the data arrived.
+Other possibilities exist,
+however.  One can write without full assurance of delivery if one can
+check later to catch occasional failures.  Messages can be kept as
+discrete units or merged into a stream. 
+One can ask to read, but insist on not waiting if nothing is immediately
+available.  These new possibilities are allowed in the Berkeley UNIX IPC
+interface.  
+.pp
+Thus Berkeley UNIX 4.3BSD offers several choices for IPC.
+This paper presents simple examples that illustrate some of
+the choices.
+The reader is presumed to be familiar with the C programming language
+[Kernighan & Ritchie 1978],
+but not necessarily with the system calls of the UNIX system or with
+processes and interprocess communication.
+The paper reviews the notion of a process and the types of
+communication that are supported by Berkeley UNIX 4.3BSD.
+A series of examples are presented that create processes that communicate
+with one another.  The programs show different ways of establishing
+channels of communication.
+Finally, the calls that actually transfer data are reviewed.
+To clearly present how communication can take place,
+the example programs have been cleared of anything that
+might be construed as useful work.
+They can, therefore, serve as models
+for the programmer trying to construct programs which are comprised of 
+cooperating processes.
+.b
+.sh 1 "Processes"
+.pp
+A \fIprogram\fP is both a sequence of statements and a rough way of referring 
+to the computation that occurs when the compiled statements are run.
+A \fIprocess\fP can be thought of as a single line of control in a program.
+Most programs execute some statements, go through a few loops, branch in
+various directions and then end.  These are single process programs.
+Programs can also have a point where control splits into two independent lines,
+an action called \fIforking.\fP
+In UNIX these lines can never join again.  A call to the system routine 
+\fIfork()\fP, causes a process to split in this way.
+The result of this call is that two independent processes will be
+running, executing exactly the same code.
+Memory values will be the same for all values set before the fork, but,
+subsequently, each version will be able to change only the 
+value of its own copy of each variable.
+Initially, the only difference between the two will be the value returned by
+\fIfork().\fP  The parent will receive a process id for the child, 
+the child will receive a zero.
+Calls to \fIfork(),\fP
+therefore, typically precede, or are included in, an if-statement.
+.pp
+A process views the rest of the system through a private table of descriptors.
+The descriptors can represent open files or sockets (sockets are communication
+objects that will be discussed below).  Descriptors are referred to
+by their index numbers in the table.  The first three descriptors are often
+known by special names, \fI stdin, stdout\fP and \fIstderr\fP.
+These are the standard input, output and error.
+When a process forks, its descriptor table is copied to the child.
+Thus, if the parent's standard input is being taken from a terminal
+(devices are also treated as files in UNIX), the child's input will 
+be taken from the
+same terminal.  Whoever reads first will get the input.  If, before forking,
+the parent changes its standard input so that it is reading from a
+new file, the child will take its input from the new file.  It is
+also possible to take input from a socket, rather than from a file.
+.b
+.sh 1 "Pipes"
+.r
+.pp
+Most users of UNIX know that they can pipe the output of a 
+program ``prog1'' to the input of another, ``prog2,'' by typing the command
+\fI``prog1 | prog2.''\fP
+This is called ``piping'' the output of one program
+to another because the mechanism used to transfer the output is called a
+pipe.
+When the user types a command, the command is read by the shell, which
+decides how to execute it.  If the command is simple, for example,
+.i "``prog1,''"
+the shell forks a process, which executes the program, prog1, and then dies.
+The shell waits for this termination and then prompts for the next
+command.
+If the command is a compound command,
+.i "``prog1 | prog2,''"
+the shell creates two processes connected by a pipe. One process
+runs the program, prog1, the other runs prog2.  The pipe is an I/O
+mechanism with two ends, or sockets.  Data that is written into one socket
+can be read from the other.  
+.(z
+.ft CW
+.so pipe.c
+.ft
+.ce 1
+Figure 1\ \ Use of a pipe
+.)z
+.pp
+Since a program specifies its input and output only by the descriptor table
+indices, which appear as variables or constants,
+the input source and output destination can be changed without
+changing the text of the program.
+It is in this way that the shell is able to set up pipes.  Befor
+.NH 2
+Structures
+.PP
+It is possible to define new types which are made up of elements of other types.
+The compound object is known as a
+.I structure;
+its constituents are called
+.I members
+of the structure.
+The structure may be given a name,
+which acts as a type name in the remaining statements within the scope of its declaration.
+The elements of a structure may be of any type
+(including previously defined structures),
+or they may be arrays of such objects.
+Entire structures may be passed to procedures or be used in input/output lists;
+individual elements of structures may be referenced.
+The uses of structures will be detailed below.
+The following structure might represent a symbol table:
+.DS B
+.B
+.ta .7i 1.4i 2.1i
+struct tableentry
+	{
+	character(8) name
+	integer hashvalue
+	integer numberofelements
+	field(0:1) initialized, used, set
+	field(0:10) type
+	}
+.DE
+.NH 1
+EXPRESSIONS
+.PP
+Expressions are syntactic forms that yield a value.
+An expression may have any of the following forms, recursively applied:
+.DS B
+.I
+primary
+\fB(\fI expression \fB)\fI
+unary-operator  expression
+expression  binary-operator  expression
+.DE
+In the following table of operators,
+all operators on a line have equal precedence
+and have higher precedence than operators on later lines.
+The meanings of these operators are described in sections 5.3 and 5.4.
+.DS B
+.B
+\->  .
+\(**\(**
+\(**  /      \fIunary\fB +  \-  ++  \-\-
++  \-
+<  <=  >  >=  ==  \*~=
+&  &&
+|  |\||
+$
+=  +=  \-=  \(**=  /=  \(**\(**=    &=  |=  &&=  |\||=
+.R
+.DE
+Examples of expressions are
+.DS B
+.B
+a<b && b<c
+\-(a + sin(x)) / (5+cos(x))\(**\(**2
+.R
+.DE
+.NH 2
+Primaries
+.PP
+Primaries are the basic elements of expressions, as follows:
+.NH 3
+Constants
+.PP
+Constants are described in Section 4.2.
+.NH 3
+Variables
+.PP
+Scalar variable names are primaries.
+They may appear on the left or the right side of an assignment.
+Unqualified names of aggregates (structures or arrays)
+may only appear as procedure arguments and in input/output lists.
+.NH 3
+Array Elements
+.PP
+An element of an array is denoted by the array name followed by a parenthesized list of subscripts,
+one integer value for each declared dimension:
+.DS B
+.B
+a(5)
+b(6,\|\-3,\|4)
+.R
+.DE
+.NH 3
+Structure Members
+.PP
+A structure name followed by a dot followed by the name of a member of that structure constitutes a reference to
+that element.
+If that element is itself a structure, the reference may be further qualified.
+.DS B
+.B
+a.b
+x(3).y(4).z(5)
+.R
+.DE
+.NH 3
+Procedure Invocations
+.PP
+A procedure is invoked by an expression of one of the forms
+.DS B
+\fIprocedurename \fB( )\fR
+\fIprocedurename \fB( \fIexpression\fB )\fR
+\fIprocedurename \fB( \fIexpression-1\fB, \fI...\fB, \fIexpression-n \fB)\fR
+.DE
+The
+.I procedurename
+is either the name of a variable
+declared
+.B external
+or it is the name of a
+function known to the EFL compiler (see Section 8.5),
+or it is the actual name of a procedure, as it appears in a
+.B procedure
+statement.
+If a
+.I procedurename
+is declared
+.B external
+and is an argument of the current procedure,
+it is associated with the procedure name passed as actual argument;
+otherwise it is the actual name of a procedure.
+Each
+.I expression
+in the above is called an
+.I "actual argument".
+Examples of procedure invocations are
+.DS B
+.B
+f(x)
+work()
+g(x, y+3, 'xx')
+.R
+.DE
+When one of these procedure invocations is to be performed,
+each of the actual argument expressions is first evaluated.
+The types, precisions, and bounds of actual and formal arguments should agree.
+If an actual argument is a variable name, array element, or structure member,
+the called procedure is permitted to use the corresponding formal argument as the left side
+of an assignment or in an input list;
+otherwise it may only use the value.
+After the formal and actual arguments are associated,
+control is passed to the first executable statement of the procedure.
+When a
+.B return
+statement is executed in that procedure,
+or when control reaches the
+.B end
+statement of that procedure,
+the function value is made available as the value of the procedure invocation.
+The type of the value is determined by the attributes of
+the
+.I procedurename
+that are declared or implied in the calling procedure,
+which must agree with the attributes declared for the function in its procedure.
+In the special case of a generic function,
+the type of the result is also affected by the type of the argument.
+See Chapter 8 for details.
+.NH 3
+Input/Output Expressions
+.PP
+The EFL input/output syntactic forms
+may be used as integer primaries that have
+a non-zero value
+if an error occurs during the input or output.
+See Section 7.7.
+.NH 3
+Coercions
+.PP
+An expression of one precision or type may be converted to another by an expression of the form
+.DS C
+\fIattributes \fB( \fIexpression \fB)\fR
+.DE
+At present, the only
+.I attributes
+permitted are precision and basic types.
+Attributes are separated by white space.
+An arithmetic value of one type may be coerced to any other arithmetic type;
+a character expression of one length may be coerced to a character expression of another length;
+logical expressions may not be coerced to a nonlogical type.
+As a special case,
+a quantity of
+.B complex
+or
+.B "long complex"
+type may be constructed from two integer or real quantities
+by passing two expressions (separated by a comma) in the coercion.
+Examples and equivalent values are
+.DS B
+.B
+integer(5.3) = 5
+long real(5) = 5.0d0
+complex(5,3) = @5+3i@
+.R
+.DE
+Most conversions are done implicitly,
+since most binary operators permit operands of different arithmetic types.
+Explicit coercions are of most use when it is necessary to convert the type of an actual argument
+to match that of the corresponding formal parameter in a procedure call.
+.NH 3
+Sizes
+.PP
+There is a notation which yields the amount of memory required to store a datum
+or an item of specified type:
+.DS B
+\fBsizeof ( \fIleftside\fB )
+\fBsizeof ( \fIattributes\fB )
+.R
+.DE
+In the first case,
+.I leftside
+can denote a variable, array, array element, or structure member.
+The value of
+.B sizeof
+is an integer, which gives the size in arbitrary units.
+If the size is needed in terms of the size of some specific unit, this
+can be computed by division:
+.DS B
+.B
+sizeof(x) / sizeof(integer)
+.R
+.DE
+yields the size of the variable
+.B x
+in integer words.
+.PP
+The distance between consecutive elements of an array may not equal
+.B sizeof
+because certain data types require final padding on some machines.
+The
+.B lengthof
+operator gives this larger value, again in arbitrary units.
+The syntax is
+.DS B
+\fBlengthof ( \fIleftside\fB )
+\fBlengthof ( \fIattributes\fB )
+.R
+.DE
+.NH 2
+Parentheses
+.PP
+An expression surrounded by parentheses is itself an expression.
+A parenthesized expression must be evaluated before an expression of which it is a part is evaluated.
+.NH 2
+Unary Operators
+.PP
+All of the unary operators in EFL are prefix operators.
+The result of a unary operator has the same type as its operand.
+.NH 3
+Arithmetic
+.PP
+Unary
+.B +
+has no effect.
+A unary
+.B \-
+yields the negative of its operand.
+.PP
+The prefix operator
+.B ++
+adds one to its operand.
+The prefix operator
+.B \-\-
+subtracts one from its operand.
+The value of either expression is the result of the addition or subtraction.
+For these two operators, the operand must be a scalar,
+array element, or structure member of arithmetic type.
+(As a side effect, the operand value is changed.)
+.NH 3
+Logical
+.PP
+The only logical unary operator is complement
+(\fB\*~\fR).
+This operator is defined by the equations
+.DS B
+.B
+\*~ true = false
+\*~ false = true
+.R
+.DE
+.NH 2
+Binary Operators
+.PP
+Most EFL operators have two operands, separated by the operator.
+Because the character set must be limited,
+some of the operators are denoted by strings of two or three special characters.
+All binary operators except exponentiation are left associative.
+.NH 3
+Arithmetic
+.PP
+The binary arithmetic operators are
+.KS
+.TS
+center;
+ll.
++	addition
+@-@	subtraction
+\(**	multiplication
+/	division
+\(**\(**	exponentiation
+.TE
+.KE
+Exponentiation is right associative:
+a\(**\(**b\(**\(**c = a\(**\(**(b\(**\(**c) = @a sup {(b sup c )}@
+The operations have the conventional meanings:
+@8+2~=~10@,
+@8e executing
+prog1, the process can close whatever is at \fIstdout\fP
+and replace it with one
+end of a pipe.  Similarly, the process that will execute prog2 can substitute
+the opposite end of the pipe for 
+\fIstdin.\fP
+.pp
+Let us now examine a program that creates a pipe for communication between
+its child and itself (Figure 1).
+A pipe is created by a parent process, which then forks.
+When a process forks, the parent's descriptor table is copied into 
+the child's.  
+.pp
+In Figure 1, the parent process makes a call to the system routine 
+\fIpipe().\fP
+This routine creates a pipe and places descriptors for the sockets
+for the two ends of the pipe in the process's descriptor table.
+\fIPipe()\fP
+is passed an array into which it places the index numbers of the 
+sockets it created.
+The two ends are not equivalent.  The socket whose index is
+returned in the low word of the array is opened for reading only,
+while the socket in the high end is opened only for writing.
+This corresponds to the fact that the standard input is the first
+descriptor of a process's descriptor table and the standard output
+is the second.  After creating the pipe, the parent creates the child 
+with which it will share the pipe by calling \fIfork().\fP
+Figure 2 illustrates the effect of a fork.
+The parent process's descriptor table points to both ends of the pipe.
+After the fork, both parent's and child's descriptor tables point to
+the pipe.
+The child can then use the pipe to send a message to the parent.
+.(z
+-
+.bl 5.8i
+-
+.\" pipe.grn goes here
+.sp
+.ce 1
+Figure 2\ \ Sharing a pipe between parent and child
+.)z
+.pp
+Just what is a pipe?
+It is a one-way communication mechanism, with one end opened
+for reading and the other end for writing.
+Therefore, parent and child need to agree on which way to turn
+the pipe, from parent to child or the other way around.
+Using the same pipe for communication both from parent to child and 
+from child to parent would be possible (since both processes have 
+references to both ends), but very complicated.
+If the parent and child are to have a two-way conversation,
+the parent creates two pipes, one for use in each direction.
+(In accordance with their plans, both parent and child in the example above
+close the socket that they will not use.  It is not required that unused
+descriptors be closed, but it is good practice.)
+A pipe is also a \fIstream\fP communication mechanism; that
+is, all messages sent through the pipe are placed in order
+and reliably delivered.  When the reader asks for a certain
+number of bytes from this
+stream, he is given as many bytes as are available, up
+to the amount of the request. Note that these bytes may have come from 
+the same call to \fIwrite()\fR or from several calls to \fIwrite()\fR
+which were concatenated.
+.b
+.sh 1 "Socketpairs"
+.r
+.pp
+Berkeley UNIX 4.3BSD provides a slight generalization of pipes.  A pipe is a
+pair of connected sockets for one-way stream communication.  One may
+obtain a pair of connected sockets for two-way stream communication
+by calling the routine \fIsocketpair().\fP
+The program in Figure 3 calls \fIsocketpair()\fP
+to create such a connection.  The program uses the link for
+communication in both directions.  Since socketpairs are
+an extension of pipes, their use resembles that of pipes. 
+Figure 4 illustrates the result of a fork following a call to 
+\fIsocketpair().\fP
+.pp
+\fISocketpair()\fP
+takes as
+arguments a specification of a domain, a style of communication, and a
+protocol.  
+These are the parameters shown in the example.
+Domains and protocols will be discussed in the next section.
+Briefly,
+a domain is a space of names that may be bound
+to sockets and implies certain other conventions.
+Currently, socketpairs have only been implemented for one
+domain, called the UNIX domain.
+The UNIX domain uses UNIX path names for naming sockets.  
+It only allows communication
+between sockets on the same machine.
+.pp
+Note that the header files 
+.i "<sys/socket.h>"
+and
+.i "<sys/types.h>."
+are required in this program.
+The constants AF_UNIX and SOCK_STREAM are defined in 
+.i "<sys/socket.h>,"
+which in turn requires the file 
+.i "<sys/types.h>"
+for some of its definitions.
+.(z
+.ft CW
+.so socketpair.c
+.ft
+.ce 1
+Figure 3\ \ Use of a socketpair
+.)z
+.(z
+-
+.bl 5.8i
+-
+.\" socketpair.grn goes here
+.sp
+.ce 1
+Figure 4\ \ Sharing a socketpair between parent and child
+.)z
+.b
+.sh 1 "Domains and Protocols"
+.r
+.pp
+Pipes and socketpairs are a simple solution for communicating between
+a parent and child or between child processes.
+What if we wanted to have processes that have no common ancestor
+with whom to set up communication?
+Neither standard UNIX pipes nor socketpairs are
+the answer here, since both mechanisms require a common ancestor to
+set up the communication.
+We would like to have two processes separately create sockets
+and then have messages sent between them.  This is often the
+case when providing or using a service in the system.  This is
+also the case when the communicating processes are on separate machines.
+In Berkeley UNIX 4.3BSD one can create individual sockets, give them names and
+send messages between them.
+.pp
+Sockets created by different programs use names to refer to one another;
+names generally must be translated into addresses for use.
+The space from which an address is drawn is referred to as a
+.i domain.
+There are several domains for sockets.
+Two that will be used in the examples here are the UNIX domain (or AF_UNIX,
+for Address Format UNIX) and the Internet domain (or AF_INET).
+UNIX domain IPC is an experimental facility in 4.2BSD and 4.3BSD.
+In the UNIX domain, a socket is given a path name within the file system
+name space.
+A file system node is created for the socket and other processes may 
+then refer to the socket by giving the proper pathname.
+UNIX domain names, therefore, allow communication between any two processes
+that work in the same file system.
+The Internet domain is the UNIX implementation of the DARPA Internet
+standard protocols IP/TCP/UDP.
+Addresses in the Internet domain consist of a machine network address
+and an identifying number, called a port.
+Internet domain names allow communication between machines.
+.pp
+Communication follows some particular ``style.''
+Currently, communication is either through a \fIstream\fP
+or by \fIdatagram.\fP
+Stream communication implies several things.  Communication takes
+place across a connection between two sockets.  The communication
+is reliable, error-free, and, as in pipes, no message boundaries are
+kept. Reading from a stream may result in reading the data sent from
+one or several calls to \fIwrite()\fP
+or only part of the data from a single call, if there is not enough room
+for the entire message, or if not all the data from a large message
+has been transferred.
+The protocol implementing such a style will retransmit messages
+received with errors. It will also return error messages if one tries to
+send a message after the connection has been broken.
+Datagram communication does not use connections.  Each message is
+addressed individually.  If the address is correct, it will generally
+be received, although this is not guaranteed.  Often datagrams are
+used for requests that require a response from the 
+recipient.  If no response
+arrives in a reasonable amount of time, the request is repeated.
+The individual datagrams will be kept separate when they are read, that
+is, message boundaries are preserved.
+.pp
+The difference in performance between the two styles of communication is 
+generally less important than the difference in semantics.  The
+performance gain that one might find in using datagrams must be weighed
+against the increased complexity of the program, which must now concern
+itself with lost or out of order messages.  If lost messages may simply be 
+ignored, the quantity of traffic may be a consideration. The expense
+of setting up a connection is best justified by frequent use of the connection.
+Since the performance of a protocol changes as it is tuned for different
+situations, it is best to seek the most up-to-date information when
+making choices for a program in which performance is crucial.
+.pp
+A protocol is a set of rules, data formatthat create such a connection.
+The program in 7a is relatively simple.
+To initiate a connection, this program simply creates
+a stream socket, then calls \fIconnect()\fP,
+specifying the address of the socket to which
+it wishes its socket connected.  Provided that the target socket exists and
+is prepared to handle a connection, connection will be complete,
+and the program can begin to send
+messages.  Messages will be delivered in order without message
+boundaries, as with pipes.  The connection is destroyed when either
+socket is closed (or soon thereafter).  If a process persists 
+in sending messages after the connection is closed, a SIGPIPE signal 
+is sent to the process by the operating system.  Unless explicit action
+is taken to handle the signal (see the manual page for \fIsignal\fP
+or \fIsigvec\fP),
+the process will terminate and the shell
+will print the message ``broken pipe.'' 
+.(z
+.ft CW
+.so streamwrite.c
+.ft
+.ce 1
+Figure 7a\ \ Initiating an Internet domain stream connection
+.)z
+.(z
+.ft CW
+.so streamread.c
+.ft
+.ce 1
+Figure 7b\ \ Accepting an Internet domain stream connection
+.sp 2
+.ft CW
+.so strchkread.c
+.ft
+.ce 1
+Figure 7c\ \ Using select() to check for pending connections
+.)z
+.(z
+-
+.bl 5.8i
+-
+.\" accept.grn goes here
+.sp
+.ce 1
+Figure 8\ \ Establishing a stream connection
+.)z
+.pp
+Forming a connection is asymmetrical; one process, such as the
+program in Figure 7a, requests a connection with a particular socket,
+the other process accepts connection requests.
+Before a connection can be accepted a socket must be created and an address
+bound to it.  This
+situation is illustrated in the top half of Figure 8.  Process 2
+has created a socket and bound a port number to it.  Process 1 has created an
+unnamed socket.
+The address bound to process 2's socket is then made known to process 1 and, 
+perhaps to several other potential communicants as well.
+If there are several possible communicants,
+this one socket might receive several requests for connections.
+As a result, a new socket is created for each connection.  This new socket
+is the endpoint for communication within this process for this connection.
+A connection may be destroyed by closing the corresponding socket.
+.pp
+The program in Figure 7b is a rather trivial example of a server.  It 
+creates a socket to which it binds a name, which it then advertises.
+(In this case it prints out the socket number.)  The program then calls
+\fIlisten()\fP for this socket.  
+Since several clients may attempt to connect more or less
+simultaneously, a queue of pending connections is maintained in the system
+address space.  \fIListen()\fP
+marks the socket as willing to accept connections and initializes the queue.
+When a connection is requested, it is listed in the queue.  If the
+queue is full, an error status may be returned to the requester.
+The maximum length of this queue is specified by the second argument of
+\fIlisten()\fP; the maximum length is limited by the system.  
+Once the listen call has been completed, the program enters
+an infinite loop.  On each pass through the loop, a new connection is
+accepted and removed from the queue, and, hence, a new socket for the 
+connection is created.  The bottom half of Figure 8 shows the result of
+Process 1 connecting with the named socket of Process 2, and Process 2
+accepting the connection.  After the connection is created, the
+service, in this case printing out the messages, is performed and the
+connection socket closed.  The \fIaccept()\fP
+call will take a pending connection
+request from the queue if one is available, or block waiting for a request.
+Messages are read from the connection socket.
+Reads from an active connection will normally block until data is available.
+The number of bytes read is returned.  When a connection is destroyed,
+the read call returns immediately.  The number of bytes returned will
+be zero.
+.pp
+The program in Figure 7c is a slight variation on the server in Figure 7b.
+It avoids blocking when there are no pending connection requests by 
+calling \fIselect()\fP
+to check for pending requests before calling \fIaccept().\fP
+This strategy is useful when connections may be received
+on more than one socket, or when data may arrive on other connected
+sockets before another connection request.
+.pp
+The programs in Figures 9a and 9b show a program using stream communication
+in the UNIX domain.  Streams in the UNIX domain can be used for this sort
+of program in exactly the same way as Internet domain streams, except for
+the form of the names and the restriction of the connections to a single
+file system.  There are some differences, however, in the functionality of 
+streams in the two domains, notably in the handling of 
+\fIout-of-band\fP data (discussed briefly below).  These differences
+are beyond the scope of this paper.
+.(z
+.ft CW
+.so ustreamwrite.c
+.ft
+.ce 1
+Figure 9a\ \ Initiating a UNIX domain stream connection
+.sp 2
+.ft CW
+.so ustreamread.c
+.ft
+.ce 1
+Figure 9b\ \ Accepting a UNIX domain stream connection
+.)z
+.b
+.sh 1 "Reads, Writes, Recvs, etc."
+.r
+.pp
+UNIX 4.3BSD has several system calls for reading and writing information.
+The simplest calls are \fIread() \fP and \fIwrite().\fP \fIWrite()\fP
+takes as arguments the index of a descriptor, a pointer to a buffer 
+containing the data and the size of the data.
+The descriptor may indicate either a file or a connected socket.  
+``Connected'' can mean either a connected stream socket (as described
+in Section 8) or a datagram socket for which a \fIconnect()\fP
+call has provided a default destination (see the \fIconnect()\fP manual page).
+\fIRead()\fP also takes a descriptor that indicates either a file or a socket.
+\fIWrite()\fP requires a connected socket since no destination is 
+specified in the parameters of the system call.
+\fIRead()\fP can be used for either a connected or an unconnected socket.
+These calls are, therefore, quite flexible and may be used to
+write applications that require no assumptions about the source of
+their input or the destination of their output.
+There are variations on \fIread() \fP and \fIwrite()\fP
+that allow the source and destination of the input and output to use
+several separate buffers, while retaining the flexibility to handle
+both files and sockets.  These are \fIreadv()\fP and \fI writev(),\fP
+for read and write \fIvector.\fP
+.pp 
+It is sometimes necessary to send high priority data over a
+connection that may have unread low priority data at the
+other end.  For example, a user interface process may be interpreting
+commands and sending them on to another process through a stream connection.
+The user interface may have filled the stream with as yet unprocessed 
+requests when the user types
+a command to cancel all outstanding requests.
+Rather than have the high priority data wait
+to be processed after the low priority data, it is possible to
+send it as \fIout-of-band\fP
+(OOB) data.  The notification of pending OOB data results in the generation of
+a SIGURG signal, if this signal has been enabled (see the manual
+page for \fIsignal\fP or \fIsigvec\fP).
+See [Leffler 1986] for a more complete description of the OOB mechanism.
+There are a pair of calls similar to \fIread\fP and \fIwrite\fP
+that allow options, including sending 
+and receiving OOB information; these are \fI send()\fP
+and \fIrecv().\fP
+These calls are used only with sockets; specifying a descriptor for a file will
+result in the return of an error status.  These calls also allow
+\fIpeeking\fP at data in a stream.
+That is, they allow a process to read data without removing the data from
+the stream.  One use of this facility is to read ahead in a stream
+to determine the size of the next item to be read.
+When not using these options, these calls have the same functions as 
+\fIread()\fP and \fIwrite().\fP
+.pp
+To send datagrams, one must be allowed to specify the destination.
+The call \fIsendto()\fP
+takes a destination address as an argument and is therefore used for
+sending datagrams.  The call \fIrecvfrom()\fP
+is often used to read datagrams, since this call returns the address
+of the sender, if it is available, along with the data.
+If the identity of the sender does not matter, one may use \fIread()\fP
+s and conventions that regulate the
+transfer of data between participants in the communication.
+In general, there is one protocol for each socket type (stream,
+datagram, etc.) within each domain.
+The code that implements a protocol 
+keeps track of the names that are bound to sockets,
+sets up connections and	transfers data between sockets,
+perhaps sending the data across a network.
+This code also keeps track of the names that are bound to sockets.
+It is possible for several protocols, differing only in low level
+details, to implement the same style of communication within
+a particular domain.  Although it is possible to select
+which protocol should be used, for nearly all uses it is sufficient to
+request the default protocol.  This has been done in all of the example
+programs.
+.pp
+One specifies the domain, style and protocol of a socket when
+it is created.  For example, in Figure 5a the call to \fIsocket()\fP
+causes the creation of a datagram socket with the default protocol 
+in the UNIX domain.
+.b
+.sh 1 "Datagrams in the UNIX Domain"
+.r
+.(z
+.ft CW
+.so udgramread.c
+.ft
+.ce 1
+Figure 5a\ \ Reading UNIX domain datagrams
+.)z
+.pp
+Let us now look at two programs that create sockets separately.
+The programs in Figures 5a and 5b use datagram communication
+rather than a stream.  
+The structure used to name UNIX domain sockets is defined
+in the file \fI<sys/un.h>.\fP
+The definition has also been included in the example for clarity.
+.pp
+Each program creates a socket with a call to \fIsocket().\fP
+These sockets are in the UNIX domain.
+Once a name has been decided upon it is attached to a socket by the
+system call \fIbind().\fP
+The program in Figure 5a uses the name ``socket'',
+which it binds to its socket.
+This name will appear in the working directory of the program.
+The routines in Figure 5b use its
+socket only for sending messages.  It does not create a name for
+the socket because no other process has to refer to it.  
+.(z
+.ft CW
+.so udgramsend.c
+.ft
+.ce 1
+Figure 5b\ \ Sending a UNIX domain datagrams
+.)z
+.pp
+Names in the UNIX domain are path names.  Like file path names they may
+be either absolute (e.g. ``/dev/imaginary'') or relative (e.g. ``socket'').
+Because these names are used to allow processes to rendezvous, relative
+path names can pose difficulties and should be used with care.
+When a name is bound into the name space, a file (inode) is allocated in the
+file system.  If
+the inode is not deallocated, the name will continue to exist even after
+the bound socket is closed.  This can cause subsequent runs of a program
+to find that a name is unavailable, and can cause 
+directories to fill up with these
+objects.  The names are removed by calling \fIunlink()\fP or using
+the \fIrm\fP\|(1) command.
+Names in the UNIX domain are only used for rendezvous.  They are not used
+for message delivery once a connection is established.  Therefore, in
+contrast with the Internet domain, unbound sockets need not be (and are
+not) automatically given addresses when they are connected.  
+.pp
+There is no established means of communicating names to interested
+parties.  In the example, the program in Figure 5b gets the
+name of the socket to which it will send its message through its
+command line arguments.  Once a line of communication has been created,
+one can send the names of additional, perhaps new, sockets over the link.
+Facilities will have to be built that will make the distribution of
+names less of a problem than it now is.
+.b
+.sh 1 "Datagrams in the Internet Domain"
+.r
+.(z
+.ft CW
+.so dgramread.c
+.ft
+.ce 1
+Figure 6a\ \ Reading Internet domain datagrams
+.)z
+.pp
+The examples in Figure 6a and 6b are very close to the previous example
+except that the socket is in the Internet domain.
+The structure of Internet domain addresses is defined in the file
+\fI<netinet/in.h>\fP.
+Internet addresses specify a host address (a 32-bit number)
+and a delivery slot, or port, on that
+machine.  These ports are managed by the system routines that implement 
+a particular protocol.
+Unlike UNIX domain names, Internet socket names are not entered into 
+the file system and, therefore,
+they do not have to be unlinked after the socket has been closed.
+When a message must be sent between machines it is sent to
+the protocol routine on the destination machine, which interprets the
+address to determine to which socket the message should be delivered.
+Several different protocols may be active on 
+the same machine, but, in general, they will not communicate with one another.
+As a result, different protocols are allowed to use the same port numbers.
+Thus, implicitly, an Internet address is a triple including a protocol as
+well as the port and machine address.
+An \fIassociation\fP is a temporary or permanent specification
+of a pair of communicating sockets.
+An association is thus identified by the tuple
+<\fIprotocol, local machine address, local port,
+remote machine address, remote port\fP>.
+An association may be transient when using datagram sockets;
+the association actually exists during a \fIsend\fP operation.
+.(z
+.ft CW
+.so dgramsend.c
+.ft
+.ce 1
+Figure 6b\ \ Sending an Internet domain datagram
+.)z
+.pp
+The protocol for a socket is chosen when the socket is created.  The 
+local machine address for a socket can be any valid network address of the
+machine, if it has more than one, or it can be the wildcard value
+INADDR_ANY.
+The wildcard value is used in the program in Figure 6a.
+If a machine has several network addresses, it is likely
+that messages sent to any of the addresses should be deliverable to
+a socket.  This will be the case if the wildcard value has been chosen.
+Note that even if the wildcard value is chosen, a program sending messages
+to the named socket must specify a valid network address.  One can be willing
+to receive from ``anywhere,'' but one cannot send a message ``anywhere.''
+The program in Figure 6b is given the destination host name as a command
+line argument.
+To determine a network address to which it can send the message, it looks
+up
+the host address by the call to \fIgethostbyname()\fP.
+The returned structure includes the host's network address,
+which is copied into the structure specifying the
+destination of the message.
+.pp
+The port number can be thought of as the number of a mailbox, into
+which the protocol places one's messages.  Certain daemons, offering
+certain advertised services, have reserved
+or ``well-known'' port numbers.  These fall in the range
+from 1 to 1023.  Higher numbers are available to general users.
+Only servers need to ask for a particular number.
+The system will assign an unused port number when an address
+is bound to a socket.
+This may happen when an explicit \fIbind\fP
+call is made with a port number of 0, or
+when a \fIconnect\fP or \fIsend\fP
+is performed on an unbound socket.
+Note that port numbers are not automatically reported back to the user.
+After calling \fIbind(),\fP asking for port 0, one may call 
+\fIgetsockname()\fP to discover what port was actually assigned. 
+The routine \fIgetsockname()\fP
+will not work for names in the UNIX domain.
+.pp
+The format of the socket address is specified in part by standards within the
+Internet domain.  The specification includes the order of the bytes in
+the address.  Because machines differ in the internal representation
+they ordinarily use
+to represent integers, printing out the port number as returned by 
+\fIgetsockname()\fP may result in a misinterpretation.  To
+print out the number, it is necessary to use the routine \fIntohs()\fP
+(for \fInetwork to host: short\fP) to convert the number from the
+network representation to the host's representation.  On some machines,
+such as 68000-based machines, this is a null operation.  On others,
+such as VAXes, this results in a swapping of bytes.  Another routine
+exists to convert a short integer from the host format to the network format,
+called \fIhtons()\fP; similar routines exist for long integers.
+For further information, refer to the
+entry for \fIbyteorder\fP in section 3 of the manual.
+.b
+.sh 1 "Connections"
+.r
+.pp
+To send data between stream sockets (having communication style SOCK_STREAM),
+the sockets must be connected.
+Figures 7a and 7b show two programs or \fIrecv().\fP
+.pp
+Finally, there are a pair of calls that allow the sending and
+receiving of messages from multiple buffers, when the address of the
+recipient must be specified.  These are \fIsendmsg()\fP and 
+\fIrecvmsg().\fP
+These calls are actually quite general and have other uses,
+including, in the UNIX domain, the transmission of a file descriptor from one
+process to another.
+.pp
+The various options for reading and writing are shown in Figure 10,
+together with their parameters.  The parameters for each system call
+reflect the differences in function of the different calls.
+In the examples given in this paper, the calls \fIread()\fP and 
+\fIwrite()\fP have been used whenever possible.
+.(z
+.ft CW
+	/*
+	 * The variable descriptor may be the descriptor of either a file
+	 * or of a socket.
+	 */
+	cc = read(descriptor, buf, nbytes)
+	int cc, descriptor; char *buf; int nbytes;
+
+	/*
+	 * An iovec can include several source buffers.
+	 */
+	cc = readv(descriptor, iov, iovcnt)
+	int cc, descriptor; struct iovec *iov; int iovcnt;
+
+	cc = write(descriptor, buf, nbytes)
+	int cc, descriptor; char *buf; int nbytes;
+
+	cc = writev(descriptor, iovec, ioveclen)
+	int cc, descriptor; struct iovec *iovec; int ioveclen;
+
+	/*
+	 * The variable ``sock'' must be the descriptor of a socket.
+	 * Flags may include MSG_OOB and MSG_PEEK.
+	 */
+	cc = send(sock, msg, len, flags)
+	int cc, sock; char *msg; int len, flags; 
+
+	cc = sendto(sock, msg, len, flags, to, tolen)
+	int cc, sock; char *msg; int len, flags;
+	struct sockaddr *to; int tolen;
+
+	cc = sendmsg(sock, msg, flags)
+	int cc, sock; struct msghdr msg[]; int flags;
+
+	cc = recv(sock, buf, len, flags)
+	int cc, sock; char *buf; int len, flags;
+
+	cc = recvfrom(sock, buf, len, flags, from, fromlen)
+	int cc, sock; char *buf; int len, flags;
+	struct sockaddr *from; int *fromlen;
+
+	cc = recvmsg(sock, msg, flags)
+	int cc, socket; struct msghdr msg[]; int flags;
+.ft
+.sp 1
+.ce 1
+Figure 10\ \ Varieties of read and write commands
+.)z
+.b
+.sh 1 "Choices"
+.r
+.pp
+This paper has presented examples of some of the forms
+of communication supported by
+Berkeley UNIX 4.3BSD.  These have been presented in an order chosen for
+ease of presentation.  It is useful to review these options emphasizing the
+factors that make each attractive.
+.pp
+Pipes have the advantage of portability, in that they are supported in all
+UNIX systems.  They also are relatively
+simple to use.  Socketpairs share this simplicity and have the additional
+advantage of allowing bidirectional communication.  The major shortcoming
+of these mechanisms is that they require communicating processes to be
+descendants of a common process.  They do not allow intermachine communication.
+.pp
+The two communication domains, UNIX and Internet, allow processes with no common
+ancestor to communicate.
+Of the two, only the Internet domain allows
+communication between machines.
+This makes the Internet domain a necessary
+choice for processes running on separate machines.
+.pp
+The choice between datagrams and stream communication is best made by
+carefully considering the semantic and performance
+requirements of the application.
+Streams can be both advantageous and disadvantageous.  One disadvantage
+is that a process is only allowed a limited number of open streams,
+as there are usually only 64 entries available in the open descriptor
+table.  This can cause problems if a single server must talk with a large
+number of clients. 
+Another is that for delivering a short message the stream setup and 
+teardown time can be unnecessarily long.  Weighed against this are
+the reliability built into the streams.  This will often be the
+deciding factor in favor of streams.
+.b
+.sh 1 "What to do Next"
+.r
+.pp
+Many of the examples presented here can serve as models for multiprocess
+programs and for programs distributed across several machines.  
+In developing a new multiprocess program, it is often easiest to 
+first write the code to create the processes and communication paths.
+After this code is debugged, the code specific to the application can
+be added.
+.pp
+An introduction to the UNIX system and programming using UNIX system calls
+can be found in [Kernighan and Pike 1984].
+Further documentation of the Berkeley UNIX 4.3BSD IPC mechanisms can be 
+found in [Leffler et al. 1986].
+More detailed information about particular calls and protocols
+is provided in sections
+2, 3 and 4 of the
+UNIX Programmer's Manual [CSRG 1986].
+In particular the following manual pages are relevant:
+.(b
+.TS
+l l.
+creating and naming sockets	socket(2), bind(2)
+establishing connections	listen(2), accept(2), connect(2)
+transferring data	read(2), write(2), send(2), recv(2)
+addresses	inet(4F)
+protocols	tcp(4P), udp(4P).
+.TE
+.)b
+.(b
+.sp
+.b
+Acknowledgements
+.pp
+I would like to thank Sam Leffler and Mike Karels for their help in
+understanding the IPC mechanisms and all the people whose comments 
+have helped in writing and improving this report.
+.pp
+This work was sponsored by the Defense Advanced Research Projects Agency
+(DoD), ARPA Order No. 4031, monitored by the Naval Electronics Systems
+Command under contract No. N00039-C-0235. 
+The views and conclusions contained in this document are those of the
+author and should not be interpreted as representing official policies,
+either expressed or implied, of the Defense Research Projects Agency
+or of the US Government.
+.)b
+.(b
+.sp
+.b
+References
+.r
+.sp
+.ls 1
+B.W. Kernighan & R. Pike, 1984,
+.i "The UNIX Programming Environment."
+Englewood Cliffs, N.J.: Prentice-Hall.
+.sp
+.ls 1
+B.W. Kernighan & D.M. Ritchie, 1978,
+.i "The C Programming Language,"
+Englewood Cliffs, N.J.: Prentice-Hall.
+.sp
+.ls 1
+S.J. Leffler, R.S. Fabry, W.N. Joy, P. Lapsley, S. Miller & C. Torek, 1986,
+.i "An Advanced 4.3BSD Interprocess Communication Tutorial."
+Computer Systems Research Group,
+Department of Electrical Engineering and Computer Science,
+University of California, Berkeley.
+.sp
+.ls 1
+Computer Systems Research Group, 1986,
+.i "UNIX Programmer's Manual, 4.3 Berkeley Software Distribution."
+Computer Systems Research Group,
+Department of Electrical Engineering and Computer Science,
+University of California, Berkeley.
+.)b
+.\" Copyright (c) 1986 Regents of the University of California.
+.\" All rights reserved.  The Berkeley software License Agreement
+.\" specifies the terms and conditions for redistribution.
+.\"
+.\"	@(#)udgramread.c	6.3 (Berkeley) 5/8/86
+.\"
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <sys/un.h>
+
+/*
+ * In the included file <sys/un.h> a sockaddr_un is defined as follows
+ * struct sockaddr_un {
+ *	short	sun_family;
+ *	char	sun_path[108];
+ * }; 
+ */
+
+#include <stdio.h>
+
+#define NAME "socket"
+
+/*
+ * This program creates a UNIX domain datagram socket, binds a name to it,
+ * then reads from the socket. 
+ */
+main()
+{
+	int sock, length;
+	struct sockaddr_un name;
+	char buf[1024];
+
+	/* Create socket from which to read. */
+	sock = socket(AF_UNIX, SOCK_DGRAM, 0);
+	if (sock < 0) {
+		perror("opening datagram socket");
+		exit(1);
+	}
+	/* Create name. */
+	name.sun_family = AF_UNIX;
+	strcpy(name.sun_path, NAME);
+	if (bind(sock, &name, sizeof(struct sockaddr_un))) {
+		perror("binding name to datagram socket");
+		exit(

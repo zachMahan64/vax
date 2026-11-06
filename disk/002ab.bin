@@ -1,0 +1,2860 @@
+e ice
+vanillyl alcohol
+vanishing fraction
+vanishing line
+vanishing point
+vanishing trace
+vanity box
+Vanity fair
+Vanity-fairian
+vanity-proof
+van-john
+van load
+van loader
+van owner
+vantage game
+vantage ground
+vantage point
+vantage post
+van-winged hawk
+vapor bath
+vapor bathing
+vapor-belted
+vapor-braided
+vapor-burdened
+vapor burner
+vapor cabinet
+vapor cloud
+vapor-clouded
+vapor condenser
+vapor density
+vapor engine
+vaporer moth
+vapor-filled
+vapor-headed
+vapor heating
+vapor inhaler
+vapor jacket
+vapor lamp
+vapor lock
+vapor plane
+vapor pressure
+vapor-producing
+vapor regulator
+vapor-sandaled
+vapor stove
+vapor tension
+vapor trail
+vapor treatment
+vapor valve
+vapor volume
+Vaqueros formation
+vare widgeon
+variable condenser
+variable density system
+variable error
+variable-speed gear
+variable time fuze
+variation compass
+variation factor
+variation range
+varicose aneurysm
+variegated-leaved
+variety hybrid
+variety shop
+variety show
+various-blossomed
+various-colored
+various-formed
+various-leaved
+variscite green
+varnish brush
+varnin" "ex." "vi:" vi(1)
+.xx "" "" "ex, edit: text editor." "" ex(1)
+.xx "" "" "ex: Excelan 10 Mb/s Ethernet interface." "" ex(4)
+.xx "" "lpq: spool queue" "examination program." "" lpq(1)
+.xx "" "uuq:" "examine or manipulate the uucp queue." "" uuq(1C)
+.xx "" "ex:" "Excelan 10 Mb/s Ethernet interface." "" ex(4)
+.xx "" "execl, execv, execle, execlp, execvp," "exec, execve, exect, environ: execute a file." "" execl(3)
+.xx "" "/while, \fB:\fP, \fB.\fP, break, continue, cd, eval," "exec, exit, export, login, read, readonly, set,/" "" sh(1)
+.xx "" "" "exec: overlay shell with specified command." "" csh(1)
+.xx "exect, environ: execute a file." "" "execl, execv, execle, execlp, execvp, exec, execve," "" execl(3)
+.xx "environ: execute a file." "execl, execv," "execle, execlp, execvp, exec, execve, exect," "" execl(3)
+.xx "execute a file." "execl, execv, execle," "execlp, execvp, exec, execve, exect, environ:" "" execl(3)
+.xx "" "execl, execv, execle, execlp, execvp, exec, execve," "exect, environ: execute a file." "" execl(3)
+.xx "" "execlp, execvp, exec, execve, exect, environ:" "execute a file." "execl, execv, execle," execl(3)
+.xx "" "execve:" "execute a file." "" execve(2)
+.xx "" "alarm:" "execute a subroutine after a specified time." "" alarm(3F)
+.xx "" "system:" "execute a UNIX command." "" system(3F)
+.xx "" "repeat:" "execute command repeatedly." "" csh(1)
+.xx "" "at:" "execute commands at a later time." "" at(1)
+.xx "" "lastcomm: show last commands" "executed in reverse order." "" lastcomm(1)
+.xx "" "uux: unix to unix command" "execution." "" uux(1C)
+.xx "" "acct:" "execution accounting file." "" acct(5)
+.xx "" "uuxqt: UUCP" "execution file interpreter." "" uuxqt(8C)
+.xx "" "sleep: suspend" "execution for an interval." "" sleep(1)
+.xx "" "sleep: suspend" "execution for an interval." "" sleep(3F)
+.xx "" "sleep: suspend" "execution for interval." "" sleep(3)
+.xx "" "usleep: suspend" "execution for interval." "" usleep(3)
+.xx "" "monitor, monstartup, moncontrol: prepare" "execution profile." "" monitor(3)
+.xx "" "pxp: Pascal" "execution profiler." "" pxp(1)
+.xx "" "rexecd: remote" "execution server." "" rexecd(8C)
+.xx "" "etime, dtime: return elapsed" "execution time." "" etime(3F)
+.xx "" "profil:" "execution time profile." "" profil(2)
+.xx "" "pix: Pascal interpreter and" "executor." "" pix(1)
+.xx "environ: execute a file." "execl," "execv, execle, execlp, execvp, exec, execve, exect," "" execl(3)
+.xx "" "execl, execv, execle, execlp, execvp, exec," "execve, exect, environ: execute a file." "" execl(3)
+.xx "" "" "execve: execute a file." "" execve(2)
+.xx "file." "execl, execv, execle, execlp," "execvp, exec, execve, exect, environ: execute a" "" execl(3)
+.xx "" "link: make a link to an" "existing file." "" link(3F)
+.xx "" "tunefs: tune up an" "existing file system." "" tunefs(8)
+.xx "" "/\fB:\fP, \fB.\fP, break, continue, cd, eval, exec," "exit, export, login, read, readonly, set, shift,/" "" sh(1)
+.xx "" "breaksw:" "exit from switch." "" csh(1)
+.xx "" "" "exit: leave shell." "" csh(1)
+.xx "" "" "_exit: terminate a process." "" exit(2)
+.xx "pending output." "" "exit: terminate a process after flushing any" "" exit(3)
+.xx "" "" "exit: terminate process with status." "" exit(3F)
+.xx "" "break:" "exit while/foreach loop." "" csh(1)
+.xx "logarithm, power." "" "exp, expm1, log, log10, log1p, pow: exponential," "" exp(3M)
+.xx "" "glob: filename" "expand argument list." "" csh(1)
+.xx "" "compress, uncompress, zcat: compress and" "expand data." "" compress(1)
+.xx "" "expand, unexpand:" "expand tabs to spaces, and vice versa." "" expand(1)
+.xx "versa." "" "expand, unexpand: expand tabs to spaces, and vice" "" expand(1)
+.xx "diction." "diction," "explain: print wordy sentences; thesaurus for" "" diction(1)
+.xx "" "aardvark: yet another" "exploration game." "" aardvark(6)
+.xx "" "adventure: an" "exploration game." "" adventure(6)
+.xx "" "rogue:" "Exploring The Dungeons of Doom." "" rogue(6)
+.xx "logarithm, power." "exp," "expm1, log, log10, log1p, pow: exponential," "" exp(3M)
+.xx "" "frexp, ldexp, modf: split into mantissa and" "exponent." "" frexp(3)
+.xx "" "drem, finite, logb, scalb: copysign, remainder," "exponent manipulations." "copysign," ieee(3M)
+.xx "" "exp, expm1, log, log10, log1p, pow:" "exponential, logarithm, power." "" exp(3M)
+.xx "" "/\fB.\fP, break, continue, cd, eval, exec, exit," "export, login, read, readonly, set, shift, times,/" "" sh(1)
+.xx "" "" "expr: evaluate arguments as an expression." "" expr(1)
+.xx "" "expr: evaluate arguments as an" "expression." "" expr(1)
+.xx "" "re_comp, re_exec: regular" "expression handler." "" regex(3)
+.xx "" "addbib: create or" "extend bibliographic database." "" addbib(1)
+.xx "" "efl:" "Extended Fortran Language." "" efl(1)
+.xx "strings." "xstr:" "extract strings from C programs to implement shared" "" xstr(1)
+.xx "" "" "f77: Fortran 77 compiler." "" f77(1)
+.xx "" "ioinit: change" "f77 I/O initialization." "" ioinit(3F)
+.xx "libraries.." "plot: openpl et al.:" "f77 library interface to \fIplot\fR (3X)" "" plot(3F)
+.xx "" "tclose, tread, twrite, trewin, tskipf, tstate:" "f77 tape I/O." "topen," topen(3F)
+.xx "ceiling, and round-to-nearest functions." "" "fabs, floor, ceil, rint: absolute value, floor," "" floor(3M)
+.xx "" "networking: introduction to networking" "facilities." "" intro(4N)
+.xx "" "signal: simplified software signal" "facilities." "" signal(3C)
+.xx "" "sigvec: software signal" "facilities." "" sigvec(2)
+.xx "" "malloc, free," "falloc: memory allocator." "" malloc(3F)
+.xx "" "true," "false: provide truth values." "" true(1)
+.xx "" "" "false, true: provide truth values." "" false(1)
+.xx "" "inet: Internet protocol" "family." "" inet(4F)
+.xx "" "ns: Xerox Network Systems(tm) protocol" "family." "" ns(4F)
+.xx "checking the disks." "" "fastboot, fasthalt: reboot/halt the system without" "" fastboot(8)
+.xx "the disks." "fastboot," "fasthalt: reboot/halt the system without checking" "" fastboot(8)
+.xx "" "abort: generate a" "fault." "" abort(3)
+.xx "" "trpfpe, fpecnt: trap and repair floating point" "faults." "" trpfpe(3F)
+.xx "export, login,/" "sh, for, case, if, while, \fB:\fP," "\fB.\fP, break, continue, cd, eval, exec, exit," "" sh(1)
+.xx "exit, export, login,/" "sh, for, case, if, while," "\fB:\fP, \fB.\fP, break, continue, cd, eval, exec," "" sh(1)
+.xx "" "" "fclose, fflush: close or flush a stream." "" fclose(3S)
+.xx "" "" "fcntl: file control." "" fcntl(2)
+.xx "" "ecvt," "fcvt, gcvt: output conversion." "" ecvt(3)
+.xx "" "" "fdate: return date and time in an ASCII string." "" fdate(3F)
+.xx "" "fopen, freopen," "fdopen: open a stream." "" fopen(3S)
+.xx "" "ferror," "feof, clearerr, fileno: stream status inquiries." "" ferror(3S)
+.xx "inquiries." "" "ferror, feof, clearerr, fileno: stream status" "" ferror(3S)
+.xx "subroutines." "dbminit," "fetch, store, delete, firstkey, nextkey: data base" "" dbm(3X)
+.xx "" "head: give first" "few lines." "" head(1)
+.xx "" "fclose," "fflush: close or flush a stream." "" fclose(3S)
+.xx "extreme values." "flmin, flmax," "ffrac, dflmin, dflmax, dffrac, inmax: return" "" flmin(3F)
+.xx "" "bcopy, bcmp, bzero," "ffs: bit and byte string operations." "" bstring(3)
+.xx "" "" "fg: bring job into foreground." "" csh(1)
+.xx "" "getc," "fgetc: get a character from a logical unit." "" getc(3F)
+.xx "" "getc, getchar," "fgetc, getw: get character or word from stream." "" getc(3S)
+.xx "" "gets," "fgets: get a string from a stream." "" gets(3S)
+.xx "" "grep, egrep," "fgrep: search a file for a pattern." "" grep(1)
+.xx "" "locate a program file including aliases and paths" "(\fIcsh\fR only)." "which:" which(1)
+.xx "" "robots:" "fight off villainous robots." "" robots(6)
+.xx "" "access: determine accessibility of" "file." "" access(2)
+.xx "" "access: determine accessability of a" "file." "" access(3F)
+.xx "" "acct: execution accounting" "file." "" acct(5)
+.xx "" "chmod: change mode of" "file." "" chmod(2)
+.xx "" "chmod: change mode of a" "file." "" chmod(3F)
+.xx "" "chown: change owner and group of a" "file." "" chown(2)
+.xx "" "colrm: remove columns from a" "file." "" colrm(1)
+.xx "" "core: format of memory image" "file." "" core(5)
+.xx "" "creat: create a new" "filesh cleaner
+varnish dryer
+varnish-drying
+varnish filler
+varnish gum
+varnishing day
+varnish maker
+varnish-making
+varnish remover
+varnish renovator
+varnish sumac
+varnish thinner
+varnish-treated
+varnish-treating
+varnish tree
+Varronian canon
+Varronian satire
+varying duty
+varying-speed motor
+vasa parrot
+vase clock
+vase painter
+vase painting
+vase rug
+vase-shaped
+vase-vine
+vassal state
+vast-dimensioned
+vast-rolling
+vast-skirted
+vat builder
+vat color
+vat dye
+Vatican city
+Vatican codex
+Vatican fragment
+vat keeper
+vat liquor
+vat-net
+vat setter
+vat waste
+vau consecutive
+vau conversive
+vaulting capital
+vaulting cell
+vaulting course
+vaulting horse
+vaulting pillar
+vaulting shaft
+vaulting shoe
+vaulting tile
+vault mount
+vault rib
+vaunt-courier
+V bend
+V block
+V-blouse
+V bob
+V-bottom
+V connection
+V crowder
+V croze
+V curve
+veal bird
+vector addition
+vector algebra
+vector analysis
+vector area
+vector field
+vector line
+vector point function
+vector potential
+vector product
+vector quantity
+vector sum
+vedette boat
+vedette post
+vegetable alkali
+vegetable bezoar
+vegetable black
+vegetable brimstone
+vegetable calomel
+vegetable cheese
+vegetable dye
+vegetable earth
+vegetable-eating
+vegetable egg
+vegetable ethiops
+vegetable-feeding
+vegetable fibrin
+vegetable flannel
+vegetable gelatin
+vegetable glue
+vegetable gold
+vegetable-growing
+vegetable hair
+vegetable ivory
+vegetable jelly
+vegetable kingdom
+vegetable lamb
+vegetable marrow
+vegetable mold
+vegetable naphtha
+vegetable oil
+vegetable orange
+vegetable oyster
+vegetable parchment
+vegetable plate
+vegetable red
+vegetable satyr
+vegetable sheep
+vegetable spermaceti
+vegetable stock
+vegetable tallow
+vegetable-tallow tree
+vegetable wax
+vegetation-proof
+vegetation spirit
+vehicle tank
+veil-hid
+veil-wearing
+vein-bearing
+vein claim
+vein dike
+vein-healing
+veining tool
+vein islet
+vein-mining
+vein quartz
+vein-streaked
+velar-pharyngeal
+veld cornet
+veld-kost
+veld sickness
+veld sore
+velleda moth
+vellum binder
+vellum binding
+vellum-bound
+vellum cloth
+vellum-covered
+vellum form
+vellum-leaved
+vellum paper
+vellum-papered
+vellum-written
+velocity co-ordinate
+velocity function
+velocity head
+velocity potential
+velocity ratio
+velocity screen
+velocity stage
+velt-marshal
+velvet ant
+velvet ash
+velvet-banded
+velvet bean
+velvet-bearded
+velvet bent
+velvet-black
+velvet bur
+velvet cap
+velvet-caped
+velvet carpet
+velvet-clad
+velvet cork
+velvet dock
+velvet duck
+velvet finish
+velvet fish
+velvet flower
+velvet glove
+velvet grass
+velvet green
+velvet groundsel
+velvet leather jacket
+velvet-leaved
+velvet moss
+velvet osier
+velvet paper
+velvet-pile
+velvet plant
+velvet rug
+velvet runner
+velvet scoter
+velvet sponge
+velvet-suited
+velvet tree
+velvet violet
+vending machine
+veneer grafting
+veneer moth
+venerable-looking
+Venetian blind
+Venetian point
+Venetian school
+vengeance-crying
+vengeance-prompting
+vengeance-sated
+vengeance-scathed
+vengeance-seeking
+vengeance-taking
+V-engine
+Venice blue
+Venice glass
+Venice treacle
+Venice turpentine
+venom-breathing
+venom-breeding
+venom-cold
+venom-fanged
+venom-hating
+venom maker
+venom-mouthed
+venomous-hearted
+venomous-looking
+venomous-minded
+venom-spotted
+venom-sputtering
+venom-venting
+vent drill
+vent feather
+ventilating apparatus
+ventilating blower
+ventilating brick
+ventilating column
+ventilating engineer
+ventilating fan
+ventilating grate
+ventilating jack
+ventilating millstone
+ventilating skylight
+vent punch
+vent stack
+vent tank
+venture capital
+Venturi meter
+venturi tube
+vent wire
+verbena family
+verbena oil
+verbena violet
+verb phrase
+verd antique
+verdigris green
+verditer blue
+verditer green
+verd russe
+verge escapement
+verge paper
+verge watch
+vermeil-cheeked
+vermeil-dyed
+vermeil-rimmed
+vermeil-tinctured
+vermeil-tinted
+vermeil-veined
+vermiform process
+vermilion-colored
+vermilion-dyed
+vermilion-red
+vermilion-spotted
+vermilion-tawny
+vermilion-veined
+vermin-covered
+vermin-destroying
+vermin-eaten
+vermin-footed
+vermin-haunted
+vermin-infested
+vermin-ridden
+vermin-spoiled
+vermin-tenanted
+Vermont cent
+Vermont snakeroot
+vernal-bearded
+vernal-blooming
+vernal-flowering
+vernal grass
+vernal-seeming
+vernal-tinctured
+vernier telescope
+vernonia purple
+Verona brown
+Verona orris
+verse anthem
+verse-colored
+verse-commemorated
+verse-prose
+verse service
+version book
+vers libre
+vers librist
+vertical-grained
+vertical lift bridge
+vertical-lift mower
+vert russe
+vervain family
+vervain hummingbird
+vervain mallow
+vervain sage
+vervain thoroughwort
+vesico-umbilical
+vesico-urachal
+vesico-ureteral
+vesico-urethral
+vesico-uterine
+vesper bird
+vesper mouse
+vestibule car
+vestibule latch
+vestibule school
+vestibule train
+vestibulo-urethral
+vesting order
+Vestorian blue
+vest-pocket
+vest-pocket camera
+vestry board
+vestry room
+vetch-leaved
+vetiver green
+vetivert oil
+veto message
+veto power
+V-formed
+V-grooved
+Via lactea
+via media
+via-medialism
+vi apple
+vibration massage
+vibration number
+vibration point
+vibration-proof
+vibratory current
+vibratory massage
+vicarage tithe
+vicar-choralship
+vicar-general
+vicar-generalship
+vice-abbot
+vice-admiral
+vice-admiralship
+vice-admiralty
+vice-admiralty court
+vice-agent
+Vice-apollo
+vice-apostle
+vice-apostolical
+vice-architect
+vice-begotten
+vice-bishop
+vice-bitten
+vice-burgomaster
+vice-butler
+vice-caliph
+vice-cancellarian
+vice-chair
+vice-chairman
+vice-chamberlain
+vice-chancellor
+vice-chancellorship
+Vice-christ
+vice-collector
+vice-commodore
+vice-constable
+vice-consul
+vice-consular
+vice-consulate
+vice-consulship
+vice-corrupted
+vice-county
+vice-created
+vice-dean
+vice-deity
+vice-detesting
+vice-dictator
+vice-director
+vice-emperor
+vice-freed
+vice-general
+Vice-god
+Vice-godhead
+vice-government
+vice-governor
+vice-governorship
+vice-guilty
+vice-haunted
+vice-headmaster
+vice-imperial
+vice-king
+vice-kingdom
+vice-legate
+vice-legateship
+vice-librarian
+vice-lieutenant
+vice-loathing
+vice-marred
+vice-marshal
+vice-master
+vice-ministerial
+vice-nature
+vice-palatine
+vice-papacy
+vice-patron
+vice-patronage
+vice-polluted
+vice-pope
+vice-porter
+vice-postulator
+vice-prefect
+vice-presidency
+vice-president
+vice-presidential
+vice-presidentship
+vice-priest
+vice-principal
+vice-principalship
+vice-prior
+vice-protector
+vice-provost
+vice-provostship
+vice-punishing
+vice-queen
+vice-rebuking
+vice-rector
+vice-rectorship
+vice-regalize
+vice-regency
+vice-regent
+vice-reign
+vice-residency
+vice-resident
+vice-secretary
+vice-sheriff
+vice-sick
+vice-squandered
+vice-stadtholder
+vice-steward
+vice-sultan
+vice-taming
+vice-tenace
+vice-throne
+vice-treasurer
+vice-treasurership
+vice-trustee
+vice-upbraiding
+vice-verger
+vice versa
+vice-viceroy
+vice-warden
+vice-wardenry
+vice-wardenship
+vice-worn
+vicontiel rent
+vicontiel writ
+Victoria blue
+Victoria cross
+Victoria day
+Victoria embankment
+Victoria green
+Victoria lake
+Victoria lawn
+Victoria lily
+Victoria violet
+Victory button
+Victory day
+Victory loan
+victory medal
+victualing bill
+victualing house
+victualing note
+victualing office
+victualing ship
+victualing station
+victualing yard
+victual rent
+vida finch
+view angle
+view finder
+view halloo
+vigesimo-quarto
+vigilance committee
+vigogne yarn
+vile-born
+vile-bred
+vile-concluded
+vile-fashioned
+vile-looking
+vile-natured
+vile-proportioned
+vile-smelling
+vile-spirited
+vile-spoken
+vile-tasting
+villa-dotted
+villa-dwelling
+village-born
+village cart
+village community
+village-dwelling
+village economy
+village-lit
+village reserve
+village soviet
+villa-haunted
+villainous-looking
+villainy-proof
+Villanova culture
+villein socage
+vinaigrette sauce
+vine bamboo
+vine bark louse
+vine-bearing
+vine beetle
+vine black
+vine-bordered
+vine borer
+vine bower
+vine cactus
+vine chafer
+vine-clad
+vine-covered
+vine-crowned
+vine-decked
+vine-encircled
+vine-fed
+vine forester
+vine fretter
+vinegar eel
+vinegar essence
+vinegar-faced
+vinegar-flavored
+vinegar fly
+vinegar-generating
+vinegar-hearted
+vinegar lamp
+vine-garlanded
+vinegar maker
+vinegar making
+vinegar mother
+vinegar plant
+vinegar rot
+vinegar-tart
+vinegar tree
+vinegar worm
+vine-growing
+vine hawk moth
+vine hopper
+vine-hung
+vine-laced
+vine leaf
+vine-leafed
+vine leaf folder
+vine-leaved
+vine leek
+vine louse
+vine-mantled
+vine maple
+vine mesquite
+vine mildew
+vine misquite
+vine moth
+vine peach
+vine pest
+vine-planted
+vine-producing
+vine-robed
+vine sawfly
+vine scale
+vine-shadowed
+vine-sheltered
+vine slug
+vine sorrel
+vine sph." "" creat(2)
+.xx "" "source: read commands from" "file." "" csh(1)
+.xx "" "ctags: create a tags" "file." "" ctags(1)
+.xx "" "dd: convert and copy a" "file." "" dd(1)
+.xx "" "disktab: disk description" "file." "" disktab(5)
+.xx "" "execvp, exec, execve, exect, environ: execute a" "file." "execl, execv, execle, execlp," execl(3)
+.xx "" "execve: execute a" "file." "" execve(2)
+.xx "" "flock: apply or remove an advisory lock on an open" "file." "" flock(2)
+.xx "" "fpr: print Fortran" "file." "" fpr(1)
+.xx "" "group: group" "file." "" group(5)
+.xx "" "L.aliases: UUCP hostname alias" "file." "" L.aliases(5)
+.xx "" "L.cmds: UUCP remote command permissions" "file." "" L.cmds(5)
+.xx "" "L-devices: UUCP device description" "file." "" L-devices(5)
+.xx "" "L-dialcodes: UUCP phone number index" "file." "" L-dialcodes(5)
+.xx "" "link: make a hard link to a" "file." "" link(2)
+.xx "" "link: make a link to an existing" "file." "" link(3F)
+.xx "" "L.sys: UUCP remote host description" "file." "" L.sys(5)
+.xx "" "mkdir: make a directory" "file." "" mkdir(2)
+.xx "" "mknod: make a special" "file." "" mknod(2)
+.xx "" "mknod: build special" "file." "" mknod(8)
+.xx "" "rebuild the data base for the mail aliases" "file." "newaliases:" newaliases(1)
+.xx "" "open a file for reading or writing, or create a new" "file." "open:" open(2)
+.xx "" "passwd: password" "file." "" passwd(5)
+.xx "" "pr: print" "file." "" pr(1)
+.xx "" "remote: remote host description" "file." "" remote(5)
+.xx "" "rename: change the name of a" "file." "" rename(2)
+.xx "" "rename: rename a" "file." "" rename(3F)
+.xx "" "resolver configuration" "file." "" resolver(5)
+.xx "" "rev: reverse lines of a" "file." "" rev(1)
+.xx "" "rmdir: remove a directory" "file." "" rmdir(2)
+.xx "" "size: size of an object" "file." "" size(1)
+.xx "" "the printable strings in a object, or other binary," "file." "strings: find" strings(1)
+.xx "" "sum: sum and count blocks in a" "file." "" sum(1)
+.xx "" "symlink: make symbolic link to a" "file." "" symlink(2)
+.xx "" "tail: deliver the last part of a" "file." "" tail(1)
+.xx "" "touch: update date last modified of a" "file." "" touch(1)
+.xx "" "uniq: report repeated lines in a" "file." "" uniq(1)
+.xx "" "USERFILE: UUCP pathname permissions" "file." "" USERFILE(5)
+.xx "" "uuencode: format of an encoded uuencode" "file." "" uuencode(5)
+.xx "" "vipw: edit the password" "file." "" vipw(8)
+.xx "" "versions of object modules were used to construct a" "file." "what: show what" what(1)
+.xx "" "diff: differential" "file and directory comparator." "" diff(1)
+.xx "" "bugfiler:" "file bug reports in folders automatically." "" bugfiler(8)
+.xx "" "mkstr: create an error message" "file by massaging C source." "" mkstr(1)
+.xx "" "diff3: 3-way differential" "file comparison." "" diff3(1)
+.xx "" "fcntl:" "file control." "" fcntl(2)
+.xx "" "rcp: remote" "file copy." "" rcp(1C)
+.xx "" "umask: change or display" "file creation mask." "" csh(1)
+.xx "" "umask: set" "file creation mode mask." "" umask(2)
+.xx "" "" "file: determine file type." "" file(1)
+.xx "" "rdist: remote" "file distribution program." "" rdist(1)
+.xx "" "setfsent, endfsent: get file system descriptor" "file entry." "/getfsspec, getfsfile, getfstype," getfsent(3)
+.xx "" "getgrgid, getgrnam, setgrent, endgrent: get group" "file entry." "getgrent," getgrent(3)
+.xx "" "setpwent, endpwent, setpwfile: get password" "file entry." "getpwent, getpwuid, getpwnam," getpwent(3)
+.xx "" "getttynam, setttyent, endttyent: get ttys" "file entry." "getttyent," getttyent(3)
+.xx "" "grep, egrep, fgrep: search a" "file for a pattern." "" grep(1)
+.xx "" "open: open a" "file for reading or writing, or create a new file." "" open(2)
+.xx "" "aliases: aliases" "file for sendmail." "" aliases(5)
+.xx "" "uuencode, uudecode: encode/decode a binary" "file for transmission via mail." "" uuencode(1C)
+.xx "" "ar: archive (library)" "file format." "" ar(5)
+.xx "" "tar: tape archive" "file format." "" tar(5)
+.xx "" "which: locate a program" "file including aliases and paths (\fIcsh\fR only)." "" which(1)
+.xx "" "chfn, chsh, passwd: change password" "file information." "" chfn(1)
+.xx "" "chfn, chsh, passwd: change password" "file information." "" chsh(1)
+.xx "" "chfn, chsh, passwd: change password" "file information." "" passwd(1)
+.xx "" "uuxqt: UUCP execution" "file interpreter." "" uuxqt(8C)
+.xx "" "fsplit: split a multi-routine Fortran" "file into individual files." "" fsplit(1)
+.xx "" "split: split a" "file into pieces." "" split(1)
+.xx "" "pmerge: pascal" "file merger." "" pmerge(1)
+.xx "" "mktemp: make a unique" "file name." "" mktemp(3)
+.xx "" "fseek, ftell: reposition a" "file on a logical unit." "" fseek(3F)
+.xx "" "more, page:" "file perusal filter for crt viewing." "" more(1)
+.xx "" "stat, lstat, fstat: get" "file status." "" stat(2)
+.xx "" "stat, lstat, fstat: get" "file status." "" stat(3F)
+.xx "" "mkfs: construct a" "file system." "" mkfs(8)
+.xx "" "mkproto: construct a prototype" "file system." "" mkproto(8)
+.xx "" "mount, umount: mount or remove" "file system." "" mount(2)
+.xx "" "mount, umount: mount and dismount" "file system." "" mount(8)
+.xx "" "newfs: construct a new" "file system." "" newfs(8)
+.xx "" "repquota: summarize quotas for a" "file system." "" repquota(8)
+.xx "" "setquota: enable/disable quotas on a" "file system." "" setquota(2)
+.xx "" "tunefs: tune up an existing" "file system." "" tunefs(8)
+.xx "repair." "fsck:" "file system consistency check and interactive" "" fsck(8)
+.xx "" "getfsfile, getfstype, setfsent, endfsent: get" "file system descriptor file entry." "/getfsspec," getfsent(3)
+.xx "" "dcheck:" "file system directory consistency check." "" dcheck(8)
+.xx "" "dump: incremental" "file system dump." "" dump(8)
+.xx "" "rdump:" "file system dump across the network." "" rdump(8C)
+.xx "" "rrestore: restore a" "file system dump across the network." "" rrestore(8C)
+.xx "" "hier:" "file system hierarchy." "" hier(7)
+.xx "" "dumpfs: dump" "file system information." "" dumpfs(8)
+.xx "" "quot: summarize" "file system ownership." "" quot(8)
+.xx "" "quotacheck:" "file system quota consistency checker." "" quotacheck(8)
+.xx "" "quotaon, quotaoff: turn" "file system quotas on and off." "" quotaon(8)
+.xx "" "restore: incremental" "file system restore." "" restore(8)
+.xx "" "icheck:" "file system storage consistency check." "" icheck(8)
+.xx "" "mtab: mounted" "file system table." "" mtab(5)
+.xx "" "fs, inode: format of" "file system volume." "" fs(5)
+.xx "" "utime: set" "file times." "" utime(3C)
+.xx "" "utimes: set" "file times." "" utimes(2)
+.xx "" "uusend: send a" "file to a remote host." "" uusend(1C)
+.xx "" "truncate: truncate a" "file to a specified length." "" truncate(2)
+.xx "" "patch: a program for applying a diff" "file to an original." "" patch(1)
+.xx "" "ftp: ARPANET" "file transfer program." "" ftp(1C)
+.xx "" "tftp: trivial" "file transfer program." "" tftp(1C)
+.xx "" "ftpd: DARPA Internet" "File Transfer Protocol server." "" ftpd(8C)
+.xx "" "tftpd: DARPA Trivial" "File Transfer Protocol server." "" tftpd(8C)
+.xx "" "file: determine" "file type." "" file(1)
+.xx "" "basename: strip" "filename affixes." "" basename(1)
+.xx "" "glob:" "filename expand argument list." "" csh(1)
+.xx "" "ferror, feof, clearerr," "fileno: stream status inquiries." "" ferror(3S)
+.xx "" "checknr: check nroff/troff" "files." "" checknr(1)
+.xx "" "cmp: compare two" "files." "" cmp(1)
+.xx "" "comm: select or reject lines common to two sorted" "files." "" comm(1)
+.xx "" "config: build system configuration" "files." "" config(8)
+.xx "" "find: find" "files." "" find(1)
+.xx "" "split a multi-routine Fortran file into individual" "files." "fsplit:" fsplit(1)
+.xx "" "makedev: make system special" "files." "" makedev(8)
+.xx "" "mv: move or rename" "files." "" mv(1)
+.xx "" "rmdir, rm: remove (unlink) directories or" "files." "" rmdir(1)
+.xx "" "sort: sort or merge" "files." "" sort(1)
+.xx "" "uulog: display UUCP log" "files." "" uulog(1C)
+.xx "" "intro: introduction to special" "files and hardware support." "" intro(4)
+.xx "" "catman: create the cat" "files for the manual." "" catman(8)
+.xx "" "fsync: synchronize a" "file's in-core state with that on disk." "" inx
+vine tie
+vine turner
+vine webworm
+vine weevil
+vine wilt
+vine-wreathed
+vineyard plow
+vintage wine
+vintage year
+vinylidene resin
+viola alta
+viola bastarda
+viola da braccio
+viola da gamba
+viola damore
+viola da spalla
+viola di bordone
+viola di fagotto
+viola pomposa
+viol block
+viol da braccio
+viole damour
+violet-black
+violet-blind
+violet-blindness
+violet-bloom
+violet-blue
+violet-brown
+violet carmine
+violet-colored
+violet cress
+violet-crimson
+violet-crowned
+violet-dyed
+violet-ear
+violet-eared
+violet-embroidered
+violet family
+violet-flowered
+violet-garlanded
+violet-gray
+violet-green
+violet-green swallow
+violet-headed
+violet-horned
+violet-hued
+violet-inwoven
+violet prairie clover
+violet-purple
+violet ray
+violet-rayed
+violet-red
+violet-ringed
+violet root
+violet root rot
+violet-scented
+violet shell
+violet-shrouded
+violet-stoled
+violet-striped
+violet-sweet
+violet-tailed
+violet-throated
+violet tip
+violet water
+violet wood
+violet wood sorrel
+violin bow
+violin case
+violin clef
+violin diapason
+violino piccolo
+violin piano
+violin-shaped
+violin string
+violoncello piccolo
+viper-bit
+viper broth
+viper-curled
+viper gourd
+viper grass
+viper-haunted
+viper-headed
+viper lozenge
+viper-mouthed
+viper-nourished
+viper wine
+virgin birth
+virgin-born
+virgin bower
+virgin dip
+virgin-eyed
+virgin forest
+virgin honey
+Virginia beard grass
+Virginia bluebell
+Virginia broomrape
+Virginia cedar
+virgin knot
+virgin-minded
+virgin moth
+virgin parchment
+virgin rosin
+virgin scammony
+virgin soil
+virgin spawn
+virgin tree
+virgin-vested
+virgin widow
+virgin wool
+viridine green
+viridine yellow
+virola tallow
+virtue-armed
+virtue-binding
+virtue-loving
+virtue-tempting
+virtue-wise
+virus disease
+vis-a-vis
+vis-a-visness
+viscera itch
+vise cap
+vise chuck
+vise coupling
+visibility curve
+vis inertiae
+vision-directed
+vision-filled
+vision-haunted
+vision-seeing
+vision-struck
+visiting book
+visiting card
+visiting day
+visiting list
+visiting nurse
+visiting patrol
+visiting ticket
+visitor-general
+vitamin-free
+vitello-intestinal
+vitreous body
+vitreous china
+vitreous copper
+vitreous electricity
+vitreous fusion
+vitreous humor
+vitreous selenium
+vitreous silver
+vitreous sponge
+vitreous table
+vitrified fort
+vitriolated tartar
+vitriol chamber
+vitriolized bone
+vitriol stone
+vitro-clarain
+vitro-di-trina
+Vitruvian scroll
+vitular apoplexy
+viva-voce
+viverrine cat
+viverrine otter
+vizard-faced
+vizard-hid
+vizard maker
+vizard making
+vizard mask
+vizard-wearing
+V-necked
+voa vanga
+vocabulary entry
+vocabulary test
+vocal band
+vocal chink
+vocal cord
+vocal fold
+vocal fremitus
+vocal lip
+vocal process
+vocal resonance
+vocal sac
+vocal score
+vocational advisor
+vocational council
+vocational counselor
+vocational director
+voice box
+voiced breath
+voice glide
+voice glottis
+voice key
+voice leading
+voiceless glide
+voice part
+voice placing
+voice stop
+voice tube
+void end
+void space
+voix celeste
+volant piece
+volar accessory ligament
+volar carpal ligament
+volatile alkali
+volatile liniment
+volatile oil
+volatile salt
+volcanic ash
+volcanic bomb
+volcanic cloud
+volcanic cone
+volcanic dust
+volcano fish
+Volga-baltaic
+Volhynia fever
+volitional tremor
+volley fire
+Volta effect
+voltage amplification
+voltage changer
+voltage coil
+voltage divider
+voltage gradient
+voltage ratio
+voltage regulator
+voltage relay
+voltage transformer
+voltaic battery
+voltaic cell
+voltaic circuit
+voltaic couple
+voltaic current
+voltaic electricity
+voltaic pile
+voltameter law
+volt-ampere
+volt box
+volt-coulomb
+volte-face
+volt-second
+voluble-tongued
+volume color
+volume density
+volume displacement
+volume integral
+volume resistance
+volume table
+volumetric analysis
+volumetric flask
+volumetric solution
+volumetric strain
+voluntary affidavit
+voluntary association
+voluntary bankruptcy
+voluntary conveyance
+voluntary escape
+voluntary improvement
+voluntary jurisdiction
+voluntary manslaughter
+voluntary muscle
+voluntary oath
+voluntary school
+voluntary waste
+volunteer militia
+volunteer navy
+volute centrifugal pump
+volute compass
+volute spring
+volutin granule
+vomerine cartilage
+vomic nut
+vomiting center
+vomiting gas
+vomit nut
+vortex atom
+vortex filament
+vortex fringe
+vortex line
+vortex plate
+vortex ring
+vortex sheet
+vortex theory
+vortex tube
+vortex wheel
+vortical motion
+vote-bringing
+vote-buying
+vote-casting
+vote-catching
+vote checking
+vote counter
+voting machine
+voting trust
+votive medal
+votive offering
+votive office
+voucher check
+voucher register
+vouchers payable
+voucher system
+voussoir-shaped
+vow-bound
+vow-breaking
+vowel flame
+vowel gradation
+vowel harmony
+vowel mutation
+vowel point
+vowel system
+vow-keeping
+vow-pledged
+voyage policy
+V point
+vrai reseau
+V scraper
+V section
+V-shaped
+V-shaped comb
+V thread
+V tool
+V-type engine
+Vuelta tobacco
+vulcanite grinding wheel
+vulcanite pavement
+Vulcanized fiber
+vulgar establishment
+vulgar fraction
+vulgar purgation
+vulgar substitution
+vulpine opossum
+vulture-beaked
+vulture-gnawn
+vulture hock
+vulture-hocked
+vulture raven
+vulture-rent
+vulture-torn
+vulture-tortured
+vulture-winged
+vulturine eagle
+vulturine guinea fowl
+vulturine sea eagle
+V vat
+V weld
+V winding
+waberan-leaf
+wabert-leaf
+wad hook
+wading bird
+wafer ash
+wafer bread
+wafer cake
+wafer capsule
+wafer cutter
+wafer iron
+wafer paper
+wafer-sealed
+wafer sheet
+wafer stamp
+wafer tong
+wafer-torn
+waffle ingot
+waffle iron
+wage board
+wage capital
+wage earner
+wage earning
+wage fixing
+wage fund
+wage-fund theory
+wage labor
+wage level
+wage paying
+wage rate
+wagering contract
+wager policy
+wage scale
+wages fund
+wage slave
+wage slavery
+wages-man
+wage system
+waging board
+wagon bed
+wagon boiler
+wagon box
+wagon breast
+wagon ceiling
+wagon filler
+wagon greaser
+wagon gun
+wagon hammer
+wagon-headed
+wagon lock
+wagon master
+wagon road
+wagon roof
+wagon-roofed
+wagon seat
+wagon-shaped
+wagon shed
+wagon shoe
+wagon table
+wagon tent
+wagon tongue
+wagon top
+wagon track
+wagon trail
+wagon train
+wagon tree
+wagon vault
+wagon-vaulted
+wagon wheel
+wagon yard
+wagtail flycatcher
+wag-tongue
+Waha lake trout
+waika chewstick
+wainscot chair
+wainscot-faced
+wainscot-joined
+wainscot oak
+wainscot-paneled
+waist anchor
+waist belt
+waist board
+waist boat
+waist boater
+waist-deep
+waist-high
+waist-pressing
+waist strap
+waist tree
+wait-a-bit
+wait-awhile
+waiter-on
+wait fee
+waiting man
+waiting room
+wait service
+wake current
+wake dirge
+Wake knot
+wake-robin
+wake-up
+Walden inversion
+Waldorf salad
+wale knot
+wale shore
+walk-around
+walk clerk
+walker-on
+walkie-talkie
+walking beam
+walking boat
+walking crane
+walking engine
+walking fern
+walking fish
+walking gentleman
+walking leaf
+walking line
+walking mort
+walking-out
+walking papers
+walking pipe
+walking scow
+walking staff
+walking stick
+walking-sticked
+walking-stick palm
+walking straw
+walking sword
+walking toad
+walking twig
+walking tyrant
+walking wheel
+walk-on
+walk-up
+wallaby acacia
+wallaby bush
+wallaby grass
+wallaby-proof
+wall anchor
+wall arcade
+wall barley
+wall bearing
+wall bed
+wall bee
+wall-bound
+wall box
+wall bracket
+wall bugloss
+wall cabbage
+wall cabinet
+wall card
+wall-cheeked
+wall clamp
+wall-climbing
+wall crane
+wall creeper
+wall cress
+wall-defended
+wall-drilling
+walled-in
+walled plain
+walled-up
+wall-encircled
+wall engine
+wall-fed
+wall fern
+wall-fight
+wallflower brown
+wall frame
+wall fruit
+wall garden
+wall gecko
+wall germander
+wall gillyflower
+wall-girt
+wall grass
+wall green
+wall grenade
+wall hanging
+wall hawkweed
+wall hold
+wall hook
+walling crib
+walling-in
+walling wax
+wall-inhabiting
+wall link
+wall-loving
+wall painting
+wall penny grass
+wall pennywort
+wall pie
+wall-piercing
+wall-plat
+wall rocket
+wall rue
+wall rue spleenwort
+wall saltpeter
+wall-scaling
+wall-shaking
+wall-sided
+wall speedwell
+wall spleenwort
+Wall street
+Wall street loan
+wall tower
+wall wasp
+walnut blight
+walnut borer
+walnut brown
+walnut case-bearer
+walnut caterpillar
+walnut curculio
+walnut family
+walnut-finished
+walnut-framed
+walnut-inlaid
+walnut juice
+walnut moth
+walnut oil
+walnut-paneled
+walnut scale
+walnut shell
+walnut spanworm
+walnut sphinx
+walnut-stained
+walnut tree
+walnut-trimmed
+walnut weevil
+walnut worm
+walrus bird
+waltzing mouse
+waltz measure
+waltz song
+wamble-cropped
+wampum belt
+wampum snake
+wan-cheeked
+wan-colored
+wand bearer
+wand-bearing
+wandering albatross
+wandering ant
+wandering cell
+wandering dervish
+wandering dune
+wandering star
+wandering tattler
+wander fsync(2)
+.xx "" "rm, rmdir: remove (unlink)" "files or directories." "" rm(1)
+.xx "" "uucico, uucpd: transfer" "files queued by uucp or uux." "" uucico(8C)
+.xx "" "badsect: create" "files to contain bad sectors." "" badsect(8)
+.xx "" "fstab: static information about the" "filesystems." "" fstab(5)
+.xx "" "more, page: file perusal" "filter for crt viewing." "" more(1)
+.xx "" "colcrt:" "filter nroff output for CRT previewing." "" colcrt(1)
+.xx "" "col:" "filter reverse line feeds." "" col(1)
+.xx "" "plot: graphics" "filters." "" plot(1G)
+.xx "" "refer:" "find and insert literature references in documents." "" refer(1)
+.xx "" "find:" "find files." "" find(1)
+.xx "" "" "find: find files." "" find(1)
+.xx "" "look:" "find lines in a sorted list." "" look(1)
+.xx "manual." "man:" "find manual information by keywords; print out the" "" man(1)
+.xx "" "ttyname, isatty, ttyslot:" "find name of a terminal." "" ttyname(3)
+.xx "" "ttynam, isatty:" "find name of a terminal port." "" ttynam(3F)
+.xx "" "lorder:" "find ordering relation for an object library." "" lorder(1)
+.xx "" "lookbib: build inverted index for a bibliography," "find references in a bibliography." "indxbib," lookbib(1)
+.xx "" "spell, spellin, spellout:" "find spelling errors." "" spell(1)
+.xx "binary, file." "strings:" "find the printable strings in a object, or other" "" strings(1)
+.xx "" "" "finger: user information lookup program." "" finger(1)
+.xx "" "" "fingerd: remote user information server." "" fingerd(8C)
+.xx "manipulations." "copysign, drem," "finite, logb, scalb: copysign, remainder, exponent" "" ieee(3M)
+.xx "" "fold: fold long lines for" "finite width output device." "" fold(1)
+.xx "" "plot: openpl et al.: f77 library interface to" "\fIplot\fR (3X) libraries.." "" plot(3F)
+.xx "" "head: give" "first few lines." "" head(1)
+.xx "" "dbminit, fetch, store, delete," "firstkey, nextkey: data base subroutines." "" dbm(3X)
+.xx "" "fish: play ``Go" "Fish''." "" fish(6)
+.xx "" "" "fish: play ``Go Fish''." "" fish(6)
+.xx "" "nice, nohup: run a command at low priority" "(\fIsh\fR only)." "" nice(1)
+.xx "" "" "fl: console floppy interface." "" fl(4)
+.xx "" "arff," "flcopy: archiver and copier for floppy." "" arff(8V)
+.xx "extreme values." "flmin," "flmax, ffrac, dflmin, dflmax, dffrac, inmax: return" "" flmin(3F)
+.xx "return extreme values." "" "flmin, flmax, ffrac, dflmin, dflmax, dffrac, inmax:" "" flmin(3F)
+.xx "" "trpfpe, fpecnt: trap and repair" "floating point faults." "" trpfpe(3F)
+.xx "" "trapov: trap and repair" "floating point overflow." "" trapov(3F)
+.xx "" "infnan: signals invalid" "floating-point operations on a VAX (temporary)." "" infnan(3M)
+.xx "file." "" "flock: apply or remove an advisory lock on an open" "" flock(2)
+.xx "and round-to-nearest functions." "fabs," "floor, ceil, rint: absolute value, floor, ceiling," "" floor(3M)
+.xx "" "fabs, floor, ceil, rint: absolute value," "floor, ceiling, and round-to-nearest functions." "" floor(3M)
+.xx "" "arff, flcopy: archiver and copier for" "floppy." "" arff(8V)
+.xx "" "rx: DEC RX02" "floppy disk interface." "" rx(4)
+.xx "" "rxformat: format" "floppy disks." "" rxformat(8V)
+.xx "" "fl: console" "floppy interface." "" fl(4)
+.xx "" "fclose, fflush: close or" "flush a stream." "" fclose(3S)
+.xx "" "" "flush: flush output to a logical unit." "" flush(3F)
+.xx "" "flush:" "flush output to a logical unit." "" flush(3F)
+.xx "" "exit: terminate a process after" "flushing any pending output." "" exit(3)
+.xx "" "/gcd, invert, rpow, msqrt, mcmp, move, min, omin," "fmin, m_in, mout, omout, fmout, m_out, sdiv, itom:/" "" mp(3X)
+.xx "" "/mcmp, move, min, omin, fmin, m_in, mout, omout," "fmout, m_out, sdiv, itom: multiple precision/" "" mp(3X)
+.xx "" "" "fmt: simple text formatter." "" fmt(1)
+.xx "device." "" "fold: fold long lines for finite width output" "" fold(1)
+.xx "" "fold:" "fold long lines for finite width output device." "" fold(1)
+.xx "" "bugfiler: file bug reports in" "folders automatically." "" bugfiler(8)
+.xx "" "vwidth: make troff width table for a" "font." "" vwidth(1)
+.xx "" "vfont:" "font formats for the Benson-Varian or Versatec." "" vfont(5)
+.xx "" "" "fopen, freopen, fdopen: open a stream." "" fopen(3S)
+.xx "" "" "foreach: loop over list of names." "" csh(1)
+.xx "" "fg: bring job into" "foreground." "" csh(1)
+.xx "" "" "fork: create a copy of this process." "" fork(3F)
+.xx "" "" "fork: create a new process." "" fork(2)
+.xx "" "idate, itime: return date or time in numerical" "form." "" idate(3F)
+.xx "" "dmesg: collect system diagnostic messages to" "form error log." "" dmesg(8)
+.xx "" "ar: archive (library) file" "format." "" ar(5)
+.xx "" "dump, dumpdates: incremental dump" "format." "" dump(5)
+.xx "" "tar: tape archive file" "format." "" tar(5)
+.xx "" "indent: indent and" "format C program source." "" indent(1)
+.xx "" "format: how to" "format disk packs." "" format(8V)
+.xx "" "rxformat:" "format floppy disks." "" rxformat(8V)
+.xx "" "htable: convert NIC standard" "format host tables." "" htable(8)
+.xx "" "gettable: get NIC" "format host tables from a host." "" gettable(8C)
+.xx "" "" "format: how to format disk packs." "" format(8V)
+.xx "vtroff, or troff." "vlp:" "Format Lisp programs to be printed with nroff," "" vlp(1)
+.xx "" "uuencode:" "format of an encoded uuencode file." "" uuencode(5)
+.xx "" "dir:" "format of directories." "" dir(5)
+.xx "" "fs, inode:" "format of file system volume." "" fs(5)
+.xx "" "core:" "format of memory image file." "" core(5)
+.xx "" "tbl:" "format tables for nroff or troff." "" tbl(1)
+.xx "" "tp: DEC/mag tape" "formats." "" tp(5)
+.xx "" "vfont: font" "formats for the Benson-Varian or Versatec." "" vfont(5)
+.xx "" "scanf, fscanf, sscanf:" "formatted input conversion." "" scanf(3S)
+.xx "" "printf, fprintf, sprintf:" "formatted output conversion." "" printf(3S)
+.xx "" "fmt: simple text" "formatter." "" fmt(1)
+.xx "" "bib, listrefs: bibliographic" "formatter; list bibliographic reference items." "" bib(1)
+.xx "" "nroff: text" "formatting." "" nroff(1)
+.xx "" "troff, nroff: text" "formatting and typesetting." "" troff(1)
+.xx "" "ms: text" "formatting macros." "" ms(7)
+.xx "" "me: macros for" "formatting papers." "" me(7)
+.xx "" "f77:" "Fortran 77 compiler." "" f77(1)
+.xx "" "ratfor: rational" "Fortran dialect." "" ratfor(1)
+.xx "" "fpr: print" "Fortran file." "" fpr(1)
+.xx "" "fsplit: split a multi-routine" "Fortran file into individual files." "" fsplit(1)
+.xx "" "efl: Extended" "Fortran Language." "" efl(1)
+.xx "" "intro: introduction to" "FORTRAN library functions." "" intro(3F)
+.xx "" "putc, fputc: write a character to a" "fortran logical unit." "" putc(3F)
+.xx "" "struct: structure" "Fortran programs." "" struct(1)
+.xx "adage." "" "fortune: print a random, hopefully interesting," "" fortune(6)
+.xx "login,/" "sh, for, case, if, while, \fB:\fP, \fB." "\fP, break, continue, cd, eval, exec, exit, export," "" sh(1)
+.xx "exit, export,/" "sh, for, case, if, while, \fB:" "\fP, \fB.\fP, break, continue, cd, eval, exec," "" sh(1)
+.xx "compiler/interpreter." "" "fp: Functional Programming language" "" fp(1)
+.xx "" "trpfpe," "fpecnt: trap and repair floating point faults." "" trpfpe(3F)
+.xx "" "" "fpr: print Fortran file." "" fpr(1)
+.xx "" "printf," "fprintf, sprintf: formatted output conversion." "" printf(3S)
+.xx "" "putc, putchar," "fputc, putw: put character or word on a stream." "" putc(3S)
+.xx "" "putc," "fputc: write a character to a fortran logical unit." "" putc(3F)
+.xx "" "puts," "fputs: put a string on a stream." "" puts(3S)
+.xx "" "ik: Ikonas" "frame buffer, graphics device interface." "" ik(4)
+.xx "" "liszt: compile a" "Franz Lisp program." "" liszt(1)
+.xx "" "" "fread, fwrite: buffered binary input/output." "" fread(3S)
+.xx "" "df: disk" "free." "" df(1)
+.xx "" "malloc," "free, falloc: memory allocator." "" malloc(3F)
+.xx "" "malloc," "free, realloc, calloc, alloca: memory allocator." "" malloc(3)
+.xx "" "fopen," "freopen, fdopen: open a stream." "" fopen(3S)
+.xx "exponent." "" "frexp, ldexp, modf: split into mantissa and" "" frexp(3)
+.xx "" "from: who is my mail" "from?." "" from(1)
+.xx "" "sccs:" "front end for the SCCS subsystem." "" sccs(1)
+.xx "" "" "fs, inode: format of file system vtermite
+wand-shaped
+wand shoot
+wand shooting
+wand shot
+wand-waving
+wane cloud
+want ad
+wantage rod
+wanton-cruel
+wanton-eyed
+wanton-mad
+wanton-sick
+wanton-tongued
+wanton-winged
+wan-worn
+Wa-palaung
+wapper-eyed
+wapper-jawed
+war-appareled
+war baby
+war bag
+war bird
+war-blasted
+warble fly
+warbler green
+warbling vireo
+war bonnet
+war book
+war boom
+war boomerang
+war bow
+war-breathing
+war-breeding
+war bride
+war-broken
+war cabinet
+war cart
+war chest
+war cloud
+war club
+War college
+war cross
+war cry
+war dance
+war debt
+War democrat
+warden court
+war-denouncing
+warden pie
+War department
+ward heeler
+ward hill
+war-dight
+war-disabled
+wardmote court
+wardmote quest
+war dog
+war-dreading
+wardrobe bed
+wardrobe case
+wardrobe dealer
+wardrobe trunk
+war drum
+ward-walk
+war eagle
+ware cleaner
+ware goose
+ware grinder
+warehouse bond
+warehouse boy
+warehouse clerk
+warehouse foreman
+warehouse receipt
+warehouse sorter
+ware sorter
+war-fain
+war-famed
+war flame
+war footing
+war game
+war gas
+war-god
+war-goddess
+war guilt
+war-hawk
+war head
+war horse
+War industries board
+war lord
+war machine
+warm-backed
+warm-blooded
+warm-breathed
+warm-clad
+warm-colored
+warm-complexioned
+warm-contested
+warmed-over
+warmed-up
+warm-glowing
+warm-headed
+warming house
+warming pad
+warming pan
+warm-kept
+warm-lying
+warm-reeking
+warm-sheltered
+warm spot
+warm-tempered
+warm-tinted
+warm-working
+warm-wrapped
+war neurosis
+warning lever
+War office
+warp beam
+warp frame
+warping bank
+warping chock
+warping hook
+warp-knit
+warp-knitted
+warp knitting
+warp lace
+warp land
+warple way
+warp net
+warp-net frame
+warp-proof
+war proof
+warp sizer
+warp stitch
+warp tier
+warrant officer
+warrant trying
+warranty deed
+war rebel
+Warren girder
+Warren hoe
+warrior ant
+warrior bush
+war risk
+war risk insurance
+war-savings certificate
+war-savings stamp
+war scare
+war school
+war scythe
+war service chevron
+war song
+war spirit
+war stamp
+war-tax stamp
+wart cress
+wart disease
+warted gourd
+warted grass
+warted spurge
+wart grass
+wart hog
+war traitor
+wart snake
+wart spurge
+warty egg
+warty-faced honey eater
+war vessel
+war-weary
+war whoop
+wary-eyed
+wary-footed
+wary-looking
+war zone
+wash ball
+wash barrel
+wash bear
+wash boiler
+wash boring
+wash-colored
+washed metal
+washed-out
+washed sale
+washed-up
+wash gilding
+wash goods
+washing bear
+washing bottle
+washing crystal
+washing machine
+washing maid
+Washington asparagus
+Washington cedar
+Washington cent
+Washington fir
+Washington hand press
+Washington lily
+Washington palm
+Washington pie
+Washington thorn
+wash leather
+wash mill
+wash miller
+wash-mouth
+Washoe process
+wash oil
+washout process
+wash pitcher
+washrag gourd
+wash strake
+wash-up
+wash water
+wasp ant
+wasp-barbed
+wasp bee
+wasp beetle
+wasp fly
+wasp-minded
+wasp nest
+wasp spider
+wasp-stung
+wasp waist
+wasp-waisted
+wasp-waistedness
+wassail bowl
+wassail cup
+waste baling
+waste bank
+waste bin
+waste book
+waste box
+waste boy
+waste breaker
+waste bundler
+waste-cleaning
+waste-dwelling
+waste heat
+waste-heat boiler
+waste-heat drier
+waste leaf
+waste mold
+waste nut
+waste pallet
+wastepaper basket
+waste-wax process
+wasting asset
+wasting palsy
+watch adjuster
+Watch-and-warder
+watch bell
+watch bracelet
+watch cleaner
+watch crystal
+watchet-colored
+watch fob
+watch glass
+watching brief
+watching rate
+watchman beetle
+watch repairer
+watch screw thread
+watch spring
+water adder
+water agrimony
+water aloe
+water avens
+water awlwort
+water bag
+water-bearing
+water-beaten
+water bewitched
+water-bind
+water boatman
+water bog rush
+water-borne
+water-bound
+water breather
+water-breathing
+water-broken
+water carrier
+water closet
+water color
+water-colored
+water-colorist
+water-commanding
+water-consolidated
+water-cool
+water-cooled
+water cooler
+water-cressy
+water crowfoot
+water-drinking
+water dropwort
+water farmer
+water-fennel oil
+water fern
+water-finished
+water-flowing
+water foxtail
+water-free
+water frontage
+water-fronter
+water furrow
+water-galled
+water gap
+water-gas tar
+water gate
+water-gild
+water gilder
+water gilding
+water-girt
+water-glass painting
+water grass
+water-gray
+water-gruel
+water-gruellish
+water hair grass
+water-inch
+watering-pot shell
+water-jacket
+water-jacketing
+water-jelly
+water-jet
+water kelpie
+water-laid
+water-lily family
+water-lily tree
+water-line
+water-lined
+water-line model
+water meadow grass
+water-milfoil family
+water moccasin
+water-nut family
+water oat
+water-packed
+water-plantain family
+water poa
+water-power engineering
+water pump
+water pumper
+water-pumping
+water-purpie
+water-quenched
+water reed
+water-ret
+water rice
+water-rolled
+water-rot
+water-seal
+water-sealed
+water-season
+water set
+water-shield family
+water-shot
+water-sick
+water-slaked lime
+water slide
+water-smoke
+water snake
+water-soak
+water-soluble
+water-standing
+water-starwort family
+water-struck
+water-supply
+water-supply engineer
+water-supply engineering
+water-sweet
+water tare grass
+water telescope
+water tower
+watertube boiler
+water-vascular
+water-washed
+water-waved
+water-white
+water works
+watery-colored
+watery-eyed
+watery-headed
+Watteau back
+watt-hour
+wattle bark
+wattle crow
+wattled bee eater
+wattled crow
+wattled honey eater
+wattled lapwing
+wattled stare
+watt-second
+wave-cut
+wave-encircled
+wave form
+wave-form theory
+wave-green
+wave guide
+wave-haired
+wave-hollowed
+wave-lashed
+wave-laved
+wave-line
+wave-making
+wave-moist
+wave surface
+wave system
+wave telegraphy
+wave telephony
+wave theory
+wave top
+wave train
+wave trap
+wave wheel
+wave winding
+wavy-coated
+wavy-edged
+wavy-grained
+wavy-haired
+wavy-leaved
+wavy-toothed
+waw consecutive
+waw conversive
+waw-waw
+wax bean
+wax-bearing
+wax-billed
+wax bleacher
+wax brown
+wax candle
+wax cloth
+wax cluster
+wax-coated
+wax-colored
+wax-composed
+wax-covered
+wax end
+wax-ended
+wax-erected
+wax-extracting
+wax-featured
+wax-finished
+wax-forming
+wax gland
+wax-headed
+wax-jointed
+wax-lighted
+wax paper
+wax-polished
+wax-producing
+wax-red
+wax-rubbed
+wax-secreting
+wax-stitched
+wax-tipped
+wax-topped
+wax-white
+wax worm
+wax-yellow
+way baggage
+way beam
+way-beguiling
+way bennet
+way bent
+way car
+way chain
+way-clearing
+way-down
+way enough
+wayfaring tree
+way freight
+way-god
+waygoing crop
+way-haunting
+wayleave rent
+way-off
+way out
+way passenger
+way point
+way shaft
+wayside cross
+way station
+way thistle
+way ticket
+way-up
+way-weary
+way-wise
+weak-ankled
+weak-armed
+weak-backed
+weak-bodied
+weak-built
+weak-chested
+weak-chined
+weak-chinned
+weak-eyed
+weak-fibered
+weak-headed
+weak-headedly
+weak-headedness
+weak-hinged
+weak-jawed
+weak-kneed
+weak-kneedly
+weak-kneedness
+weak-legged
+weak-limbed
+weak-lunged
+weak-minded
+weak-mindedly
+weak-mindedness
+weak-nerved
+weak-pated
+weak-spirited
+weak-spiritedly
+weak-spiritedness
+weak-stemmed
+weak-stomached
+weak-toned
+weak-winged
+we-all
+wealth-encumbered
+wealth-fraught
+wealth-getting
+wealth-yielding
+Wealthy spot
+weaning brash
+wear back
+wearing apparel
+wearing course
+wear iron
+wear limit gauge
+wear-out
+weary-foot
+weary-footed
+weary-laden
+weary-looking
+weary-winged
+weary-worn
+weasel cat
+weasel coot
+weasel-faced
+weasel lemur
+weasel spider
+weasel word
+weasel-worded
+weather anchor
+weather-battered
+weather-beaten
+weather-bitt
+weather-bitten
+weather-bound
+weather bow
+weather box
+weather breeder
+weather-breeding
+weather cast
+weather caster
+weather chart
+weather cloth
+weather-driven
+weather-eaten
+weathered oak
+weather eye
+weather-fagged
+weather-fast
+weather-fend
+weather-free
+weather gall
+weather gauge
+weather-going tide
+weather-guard
+weather-hardened
+weather helm
+weather side
+weather-slated
+weather slating
+weather stain
+weather station
+weather-stayed
+weather strip
+weather-tanned
+weather tide
+weather vane
+weather wisdom
+weather-wise
+weaver finch
+weaver shell
+webbing moth
+Weber formation
+Weberian apparatus
+Weberian ossicle
+weber turn
+web-fingered
+web-footed
+web-footedness
+web frame
+web-glazed
+web glazing
+web lead
+web-perfecting
+web perfecting press
+web printing
+web saw
+web stiffener
+web-toed
+web wheel
+web-winged
+web-worked
+Weddell seal
+wedding cake
+wedding chest
+wedding day
+wedding dinner
+wedding flower
+wedding gown
+wedding guest
+wedding journey
+wedding march
+wedding ring
+wedding sheet
+wedge-bearing
+wedge-billed
+wedge bone
+wedge character
+wedged-tailed
+wedge-form
+wedge-formed
+Wedge furnace
+wedge gauge
+wedge gearing
+wedge-shaped
+wedge-tailed
+wedge-tailed dove
+wedge-tailed eagle
+wedge-tailed gull
+wedge-tailed shearwater
+wedolume." "" fs(5)
+.xx "" "scanf," "fscanf, sscanf: formatted input conversion." "" scanf(3S)
+.xx "" "mklost+found: make a lost+found directory for" "fsck." "" mklost+found(8)
+.xx "repair." "" "fsck: file system consistency check and interactive" "" fsck(8)
+.xx "" "" "fseek, ftell: reposition a file on a logical unit." "" fseek(3F)
+.xx "" "" "fseek, ftell, rewind: reposition a stream." "" fseek(3S)
+.xx "individual files." "" "fsplit: split a multi-routine Fortran file into" "" fsplit(1)
+.xx "" "" "fstab: static information about the filesystems." "" fstab(5)
+.xx "" "stat, lstat," "fstat: get file status." "" stat(2)
+.xx "" "stat, lstat," "fstat: get file status." "" stat(3F)
+.xx "on disk." "" "fsync: synchronize a file's in-core state with that" "" fsync(2)
+.xx "" "fseek," "ftell: reposition a file on a logical unit." "" fseek(3F)
+.xx "" "fseek," "ftell, rewind: reposition a stream." "" fseek(3S)
+.xx "" "time," "ftime: get date and time." "" time(3C)
+.xx "" "" "ftp: ARPANET file transfer program." "" ftp(1C)
+.xx "" "" "ftpd: DARPA Internet File Transfer Protocol server." "" ftpd(8C)
+.xx "" "shutdown: shut down part of a" "full-duplex connection." "" shutdown(2)
+.xx "" "tn3270:" "full-screen remote login to IBM VM/CMS." "" tn3270(1)
+.xx "" "lgamma: log gamma" "function." "" lgamma(3M)
+.xx "compiler/interpreter." "fp:" "Functional Programming language" "" fp(1)
+.xx "" "asinh, acosh, atanh: inverse hyperbolic" "functions." "" asinh(3M)
+.xx "" "bit: and, or, xor, not, rshift, lshift bitwise" "functions." "" bit(3F)
+.xx "" "erf, erfc: error" "functions." "" erf(3M)
+.xx "" "value, floor, ceiling, and round-to-nearest" "functions." "fabs, floor, ceil, rint: absolute" floor(3M)
+.xx "" "intro: introduction to C library" "functions." "" intro(3)
+.xx "" "intro: introduction to FORTRAN library" "functions." "" intro(3F)
+.xx "" "j0, j1, jn, y0, y1, yn: bessel" "functions." "" j0(3M)
+.xx "" "math: introduction to mathematical library" "functions." "" math(3M)
+.xx "" "sinh, cosh, tanh: hyperbolic" "functions." "" sinh(3M)
+.xx "" "cos, tan, asin, acos, atan, atan2: trigonometric" "functions and their inverses." "sin," sin(3M)
+.xx "" "bessel" "functions: of two kinds for integer orders." "" bessel(3F)
+.xx "" "curses: screen" "functions with ``optimal'' cursor motion." "" curses(3X)
+.xx "" "fread," "fwrite: buffered binary input/output." "" fread(3S)
+.xx "" "aardvark: yet another exploration" "game." "" aardvark(6)
+.xx "" "adventure: an exploration" "game." "" adventure(6)
+.xx "" "backgammon: the" "game." "" backgammon(6)
+.xx "" "battlestar: a tropical adventure" "game." "" battlestar(6)
+.xx "" "hunt: a multi-player multi-terminal" "game." "" hunt(6)
+.xx "" "monop: Monopoly" "game." "" monop(6)
+.xx "" "snake, snscore: display chase" "game." "" snake(6)
+.xx "" "trek: trekkie" "game." "" trek(6)
+.xx "" "worm: Play the growing worm" "game." "" worm(6)
+.xx "" "canfield, cfscores: the solitaire card" "game canfield." "" canfield(6)
+.xx "" "cribbage: the card" "game cribbage." "" cribbage(6)
+.xx "" "hangman: Computer version of the" "game hangman." "" hangman(6)
+.xx "" "boggle: play the" "game of boggle." "" boggle(6)
+.xx "" "chess: the" "game of chess." "" chess(6)
+.xx "" "zork: the" "game of dungeon." "" zork(6)
+.xx "" "wump: the" "game of hunt-the-wumpus." "" wump(6)
+.xx "" "lgamma: log" "gamma function." "" lgamma(3M)
+.xx "fmin, m_in, mout,/" "madd, msub, mult, mdiv, pow," "gcd, invert, rpow, msqrt, mcmp, move, min, omin," "" mp(3X)
+.xx "" "" "gcore: get core images of running processes." "" gcore(1)
+.xx "" "ecvt, fcvt," "gcvt: output conversion." "" ecvt(3)
+.xx "buffers." "kgmon:" "generate a dump of the operating system's profile" "" kgmon(8)
+.xx "" "abort:" "generate a fault." "" abort(3)
+.xx "" "makekey:" "generate encryption key." "" makekey(8)
+.xx "" "mkhosts:" "generate hashed host table." "" mkhosts(8)
+.xx "" "mkpasswd:" "generate hashed password table." "" mkpasswd(8)
+.xx "" "lptest:" "generate lineprinter ripple pattern." "" lptest(1)
+.xx "" "ncheck:" "generate names from i-numbers." "" ncheck(8)
+.xx "" "rand, srand: random number" "generator." "" rand(3C)
+.xx "" "random, drandm, irandm: better random number" "generator." "" random(3F)
+.xx "" "lex:" "generator of lexical analysis programs." "" lex(1)
+.xx "" "/srandom, initstate, setstate: better random number" "generator; routines for changing generators." "" random(3)
+.xx "" "random number generator; routines for changing" "generators." "/srandom, initstate, setstate: better" random(3)
+.xx "" "perror," "gerror, ierrno: get system error messages." "" perror(3F)
+.xx "" "" "getarg, iargc: return command line arguments." "" getarg(3F)
+.xx "" "" "getc, fgetc: get a character from a logical unit." "" getc(3F)
+.xx "from stream." "" "getc, getchar, fgetc, getw: get character or word" "" getc(3S)
+.xx "stream." "getc," "getchar, fgetc, getw: get character or word from" "" getc(3S)
+.xx "" "" "getcwd: get pathname of current working directory." "" getcwd(3F)
+.xx "" "" "getdiskbyname: get disk description by its name." "" getdisk(3)
+.xx "" "" "getdtablesize: get descriptor table size." "" getdtablesize(2)
+.xx "" "getgid," "getegid: get group identity." "" getgid(2)
+.xx "" "" "getenv: get value of environment variables." "" getenv(3F)
+.xx "" "" "getenv: value for environment name." "" getenv(3)
+.xx "" "getuid," "geteuid: get user identity." "" getuid(2)
+.xx "setfsent, endfsent: get file system descriptor/" "" "getfsent, getfsspec, getfsfile, getfstype," "" getfsent(3)
+.xx "system descriptor file entry." "getfsent, getfsspec," "getfsfile, getfstype, setfsent, endfsent: get file" "" getfsent(3)
+.xx "endfsent: get file system descriptor/" "getfsent," "getfsspec, getfsfile, getfstype, setfsent," "" getfsent(3)
+.xx "descriptor file/" "getfsent, getfsspec, getfsfile," "getfstype, setfsent, endfsent: get file system" "" getfsent(3)
+.xx "" "getuid," "getgid: get user or group ID of the caller." "" getuid(3F)
+.xx "" "" "getgid, getegid: get group identity." "" getgid(2)
+.xx "get group file entry." "" "getgrent, getgrgid, getgrnam, setgrent, endgrent:" "" getgrent(3)
+.xx "file entry." "getgrent," "getgrgid, getgrnam, setgrent, endgrent: get group" "" getgrent(3)
+.xx "" "getgrent, getgrgid," "getgrnam, setgrent, endgrent: get group file entry." "" getgrent(3)
+.xx "" "" "getgroups: get group access list." "" getgroups(2)
+.xx "get network host entry." "gethostbyname," "gethostbyaddr, gethostent, sethostent, endhostent:" "" gethostbyname(3N)
+.xx "sethostent, endhostent: get network host entry." "" "gethostbyname, gethostbyaddr, gethostent," "" gethostbyname(3N)
+.xx "host entry." "gethostbyname, gethostbyaddr," "gethostent, sethostent, endhostent: get network" "" gethostbyname(3N)
+.xx "current host." "" "gethostid, sethostid: get/set unique identifier of" "" gethostid(2)
+.xx "host." "" "gethostname, sethostname: get/set name of current" "" gethostname(2)
+.xx "timer." "" "getitimer, setitimer: get/set value of interval" "" getitimer(2)
+.xx "" "" "getlog: get user's login name." "" getlog(3F)
+.xx "" "" "getlogin: get login name." "" getlogin(3)
+.xx "get network entry." "getnetent," "getnetbyaddr, getnetbyname, setnetent, endnetent:" "" getnetent(3N)
+.xx "entry." "getnetent, getnetbyaddr," "getnetbyname, setnetent, endnetent: get network" "" getnetent(3N)
+.xx "endnetent: get network entry." "" "getnetent, getnetbyaddr, getnetbyname, setnetent," "" getnetent(3N)
+.xx "" "" "getopt: get option letter from argv." "" getopt(3)
+.xx "" "" "getpagesize: get system page size." "" getpagesize(2)
+.xx "" "" "getpass: read a password." "" getpass(3)
+.xx "" "" "getpeername: get name of connected peer." "" getpeername(2)
+.xx "" "" "getpgrp: get process group." "" getpgrp(2)
+.xx "" "" "getpid: get process id." "" getpid(3F)
+.xx "" "" "getpid, getppid: get process identification." "" getpid(2)
+.xx "" "getpid," "getppid: get process identification." "" getpid(2)
+.xx "scheduling priority." "" "getpriority, setpriority: get/set program" "" getpriority(2)
+.xx "protocol entry." "getprotoent, getprotobynumber," "getprotobyname, setprotoent, endprotoent: get" "" getprotoent(3N)
+.xx "endprotoent: get protocol entry." "getprotoent," "getprotobynumber, geging crib
+Wedgwood blue
+Wedgwood green
+Wedgwood ware
+weed-choked
+weed-cutting
+weed-entwined
+weeder clips
+weeder hoe
+weed-fringed
+weed-grown
+weed-hidden
+weed-hung
+weed killer
+weed-killing
+weed-spoiled
+weed tree
+weedy-bearded
+weedy-haired
+weedy-looking
+wee folk
+weekend bag
+week-long
+week-old
+week work
+weep hole
+weeping ash
+weeping beech
+weeping eczema
+weeping golden bell
+weeping honey locust
+weeping lantana
+weeping myall
+weeping pea tree
+weeping-ripe
+weeping willow
+weese-allan
+weet-weet
+weft fork
+weft-knit
+weft knitting
+weft sorter
+we-group
+weighbar shaft
+weigh beam
+weigh-out
+weight-bearing
+weight-carrying
+weight cloth
+weight-lifting
+weight-measuring
+weight playing
+weight-raising
+weight-resisting
+weight voltameter
+Weil-felix reaction
+weir basin
+weir box
+weird-fixed
+weird-looking
+weird-set
+weiss beer
+welch plug
+welding blowpipe
+welding powder
+welding rod
+welding torch
+weld metal
+welfare state
+welfare work
+welfare worker
+welkin eye
+welkin-high
+well-able
+well-abolished
+well-abounding
+well-absorbed
+well-abused
+well-accented
+well-accentuated
+well-accepted
+well-accommodated
+well-accompanied
+well-accomplished
+well-accorded
+well-according
+well-accoutered
+well-accredited
+well-accumulated
+well-accustomed
+well-achieved
+well-acknowledged
+well-acquainted
+well-acquired
+well-acted
+well-adapted
+well-addressed
+well-adjusted
+well-administered
+well-admitted
+well-adopted
+well-adorned
+well-advanced
+well-adventured
+well-advertized
+well-advised
+well-advocated
+well-affected
+well-affectioned
+well-affirmed
+well-afforded
+well-agreed
+well-agreeing
+well-aimed
+well-alleged
+well-allied
+well-allotted
+well-allowed
+well-alphabetized
+well-altered
+well-amended
+well-amused
+well-analyzed
+well-ancestored
+well-ankled
+well-annealed
+well-announced
+well-anointed
+well-answered
+well-anticipated
+well-appareled
+well-appearing
+well-applauded
+well-applied
+well-appointed
+well-appointedly
+well-appointedness
+well-appreciated
+well-approached
+well-appropriated
+well-approved
+well-arbitrated
+well-arched
+well-argued
+well-armed
+well-armored
+well-aroused
+well-arranged
+well-arrayed
+well-ascertained
+well-assembled
+well-asserted
+well-assessed
+well-assigned
+well-assimilated
+well-assisted
+well-associated
+well-assorted
+well-assumed
+well-assured
+well-attached
+well-attained
+well-attempered
+well-attempted
+well-attended
+well-attending
+well-attested
+well-attired
+well-attributed
+well-audited
+well-authenticated
+well-authorized
+well-averaged
+well-avoided
+well-awakened
+well-awarded
+well-aware
+well-backed
+well-baked
+well-balanced
+well-baled
+well-bandaged
+well-banked
+well-barbered
+well-bargained
+well-based
+well-base rim
+well-bathed
+well-batted
+well-bearing
+well-beaten
+well-becoming
+well-bedded
+well-befitting
+well-begotten
+well-begun
+well-behated
+well-behaved
+well-being
+well-beknown
+well-believed
+well-believing
+well-beloved
+well-beneficed
+well-bent
+well-beseemingly
+well-bespoken
+well-bested
+well-bestowed
+well-blacked
+well-blended
+well-blent
+well-blessed
+well-blooded
+well-blown
+well boat
+well-bodied
+well-boding
+well-boiled
+well-bonded
+well-boned
+well-booted
+well-bored
+well borer
+well-boring
+Well-born
+well-borne
+well-bottled
+well-bottomed
+well-bought
+well-bound
+well-bowled
+well-boxed
+well-braced
+well-braided
+well-branched
+well-branded
+well-brawned
+well-breasted
+well-breathed
+well-bred
+well-bredness
+well-brewed
+well-bricked
+well-bridged
+well-broken
+well-brooked
+well-browed
+well-browned
+well-brushed
+well-built
+well-buried
+well-burnished
+well-burnt
+well-bushed
+well-busied
+well-buttoned
+well-caked
+well-calculated
+well-calculating
+well-calked
+well-called
+well-calved
+well-caned
+well-canvassed
+well-carpeted
+well-carved
+well-cased
+well casing
+well-cast
+well-caught
+well-cautioned
+well-celebrated
+well-cemented
+well-censured
+well-centered
+well-certified
+well-chained
+well-changed
+well-chaperoned
+well-characterized
+well-charged
+well-charted
+well-chauffeured
+well-checked
+well-cheered
+well-cherished
+well-chested
+well-chilled
+well-choosing
+well-chosen
+well-churned
+well-circularized
+well-circulated
+well-circumstanced
+well-civilized
+well-clad
+well-classed
+well-classified
+well-cleansed
+well-cleared
+well-climaxed
+well-cloaked
+well-closed
+well-closing
+well-clothed
+well-coached
+well-coined
+well-collected
+well-colored
+well-combined
+well-commanded
+well-commenced
+well-commended
+well-compacted
+well-compared
+well-compassed
+well-compiled
+well-completed
+well-complexioned
+well-composed
+well-comprehended
+well-concealed
+well-conceived
+well-concentrated
+well-concerted
+well-concluded
+well-concocted
+well-concorded
+well-condensed
+well-conducted
+well-conferred
+well-confessed
+well-confided
+well-confirmed
+well-connected
+well-conned
+well-consenting
+well-conserved
+well-considered
+well-consoled
+well-consorted
+well-constituted
+well-constricted
+well-constructed
+well-construed
+well-content
+well-contented
+well-contested
+well-continued
+well-contracted
+well-contrasted
+well-contrived
+well-controlled
+well-conveyed
+well-convinced
+well-cooked
+well-cooled
+well-copied
+well-corked
+well-corrected
+well-corseted
+well-costumed
+well-couched
+well-counseled
+well-counted
+well-counterfeited
+well-coupled
+well-courted
+well-covered
+well-cowed
+well-crammed
+well-crated
+well-credited
+well cress
+well-crested
+well-criticized
+well-crocheted
+well-cropped
+well-crossed
+well-crushed
+well-cultivated
+well-cultured
+well-curbed
+well-cured
+well-curled
+well-curried
+well-curved
+well-cushioned
+well-cut
+well-cutting
+well-damped
+well-danced
+well-darned
+well-dealing
+well-dealt
+well-debated
+well-decided
+well-deck
+well-decked
+well decker
+well-declaimed
+well-decorated
+well-decreed
+well-deeded
+well-deemed
+well-defended
+well-deferred
+well-defined
+well-delayed
+well-deliberated
+well-delivered
+well-demeaned
+well-demonstrated
+well-denied
+well-derived
+well-descended
+well-described
+well-deserved
+well-deservedly
+well-deservingness
+well-designated
+well-designed
+well-designing
+well-desired
+well-destroyed
+well-developed
+well-devised
+well-diagnosed
+well-digested
+well-directed
+well-disbursed
+well-disciplined
+well-discounted
+well-discussed
+well-disguised
+well-dish
+well-displayed
+well-disposed
+well-dispositioned
+well-disputed
+well-dissected
+well-dissembled
+well-distanced
+well-distinguished
+well-distributed
+well-divided
+well-divined
+well-documented
+well-doer
+well-doing
+well-done
+well-dosed
+well-drafted
+well-drain
+well-drained
+well-drawn
+well-dressed
+well-dried
+well-drilled
+well driller
+well drilling
+well-driven
+well-drugged
+well-dunged
+well-dusted
+well-dying
+well-eared
+well-earned
+well-earthed
+well-eased
+well-economized
+well-edited
+well-educated
+well-effected
+well-elaborated
+well-elevated
+well-eliminated
+well-embodied
+well-emphasized
+well-employed
+well-enacted
+well-enchanting
+well-encountered
+well-encouraged
+well-ended
+well-endorsed
+well-endowed
+well-enforced
+well-engineered
+well-engraved
+well-entered
+well-entertained
+well-entitled
+well-enumerated
+well-enveloped
+well-equipped
+well-erected
+well-escorted
+well-essayed
+well-established
+well-esteemed
+well-estimated
+well-evidenced
+well-examined
+well-executed
+well-exemplified
+well-exhibited
+well-expended
+well-experienced
+well-explained
+well-exploded
+well-exposed
+well-expressed
+well-fabricated
+well-faced
+well-famed
+well-fancied
+well-farmed
+well-fashioned
+well-fastened
+well-fa

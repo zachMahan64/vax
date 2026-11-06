@@ -1,0 +1,2179 @@
+ of the RPB in bytes */
+	char cqe_prot;		/* Protocol type for I/O request */
+#endif
+	unsign16 cqe_ust0;	/* Protocol status return */
+	unsign16 cqe_ust1;	/* Protocol status return */
+	unsign16 cqe_devrsv;	/* Reserved for use by device only! */
+#ifdef mc68000
+	char cqe_char;		/* CQE characteristics */
+	char cqe_sts;		/* Status return from device to user */
+	char cqe_wind;		/* Buffer mapping window size (page units) */
+	char cqe_nbuf;		/* Number of data buffers for I/O */
+#else
+	char cqe_sts;		/* Status return from device to user */
+	char cqe_char;		/* CQE characteristics */
+	char cqe_nbuf;		/* Number of data buffers for I/O */
+	char cqe_wind;		/* Buffer mapping window size (page units) */
+#endif
+	unsign16 cqe_bcnt;	/* Total number of bytes in the data buffer */
+	unsign16 cqe_unused;	/* Unused */
+	unsign16 cqe_dma[2];	/* Address of the MULTIBUS data buffer */
+	unsign16 rpb1;		/* Word 1 of protocol parameters */
+	unsign16 rpb2;		/* Word 2 of protocol parameters */
+	unsign16 rpb3;		/* Word 3 of protocol parametersSCP_STEP4
+		for (i = 0; i < 150; i++)
+			{
+			if ((tmscpaddr->tmscpsa&STEP3MASK) != STEP3GOOD)
+				{ /* still in step 3 (wait 1/100 sec) */
+				DELAY(10000);
+#				ifdef DEBUG
+				printd("still in step 3, delaying\n");
+#				endif DEBUG
+				}
+			else
+				break;
+			}
+		if (i > 149)
+			{
+			sc->sc_state = S_IDLE;
+			printf("failed to initialize, in step3: sa 0x%x", tmscpaddr->tmscpsa);
+			wakeup((caddr_t)um);
+			return;
+			}
+		/*
+		 * Get microcode version and model number of controller;
+		 * Signal initialization complete (_GO) (to the controller);
+		 *    ask for Last Fail response if tmscperror is set;
+		 * Set state to "set controller characteristics".
+		 */
+		tmscpmicro[d] = tmscpaddr->tmscpsa;
+		tmscpaddr->tmscpsa = TMSCP_GO | (tmscperror? TMSCP_LF : 0);
+		sc->sc_state = S_SCHAR;
+#		ifdef DEBUG
+		printd("tmscpintr: completed state %d \n", sc->sc_state);
+		printd("tmscp%d Version %d model %d\n",d,tmscpmicro[d]&0xF,
+			(tmscpmicro[d]>>4) & 0xF);
+#		endif
+
+	    /*
+	     * Initialize the data structures (response and command queues).
+	     */
+	    ttm = sc->sc_tmscp;
+	    for (i = 0; i < NRSP; i++)
+		    {
+		    tm->tmscp_ca.ca_rspdsc[i] = TMSCP_OWN | TMSCP_INT | 
+			   (long)&ttm->tmscp_rsp[i].mscp_cmdref;
+		    tm->tmscp_rsp[i].mscp_dscptr = &tm->tmscp_ca.ca_rspdsc[i];
+		    tm->tmscp_rsp[i].mscp_header.tmscp_msglen = mscp_msglen;
+		    }
+	    for (i = 0; i < NCMD; i++)
+		    {
+		    tm->tmscp_ca.ca_cmddsc[i] = TMSCP_INT | 
+					(long)&ttm->tmscp_cmd[i].mscp_cmdref;
+		    tm->tmscp_cmd[i].mscp_dscptr = &tm->tmscp_ca.ca_cmddsc[i];
+		    tm->tmscp_cmd[i].mscp_header.tmscp_msglen = mscp_msglen;
+		    tm->tmscp_cmd[i].mscp_header.tmscp_vcid = 1;
+		    }
+	    bp = &tmscpwtab[d];
+	    bp->av_forw = bp->av_back = bp;
+	    sc->sc_lastcmd = 1;
+	    sc->sc_lastrsp = 0;
+	    mp = &tmscp[um->um_ctlr].tmscp_cmd[0];
+	    mp->mscp_unit = mp->mscp_modifier = 0;
+	    mp->mscp_flags = 0;
+	    mp->mscp_version = 0;
+	    mp->mscp_cntflgs = M_CF_ATTN|M_CF_MISC|M_CF_THIS;
+	    /*
+	     * A host time out value of 0 means that the controller will not
+	     * time out.  This is ok for the TK50.
+	     */
+	    mp->mscp_hsttmo = 0;
+	    mp->mscp_time.val[0] = 0;
+	    mp->mscp_time.val[1] = 0;
+	    mp->mscp_cntdep = 0;
+	    mp->mscp_opcode = M_OP_STCON;
+	    *((long *)mp->mscp_dscptr) |= TMSCP_OWN|TMSCP_INT;
+	    i = tmscpaddr->tmscpip;      /* initiate polling */
+	    return;
+
+	case S_SCHAR:
+	case S_RUN:
+		break;
+
+	default:
+	    printf("tmscp%d: interrupt in unknown state %d ignored\n",d,sc->sc_state);
+	    return;
+	}	/* end switch */
+
+	/*
+	 * The controller state is S_SCHAR or S_RUN
+	 */
+
+	/*
+	 * If the error bit is set in the SA register then print an error
+	 * message and reinitialize the controller.
+	 */
+	if (tmscpaddr->tmscpsa&TMSCP_ERR)
+		{
+		printf("tmscp%d: fatal error (%o)\n", d, tmscpaddr->tmscpsa&0xffff);
+		tmscpaddr->tmscpip = 0;
+		wakeup((caddr_t)um);
+		}
+	/*
+	 * Check for a buffer purge request. (Won't happen w/ TK50 on Q22 bus)
+	 */
+	if (tm->tmscp_ca.ca_bdp)
+		{
+		UBAPURGE(um->um_hd->uh_uba, tm->tmscp_ca.ca_bdp);
+		tm->tmscp_ca.ca_bdp = 0;
+		tmscpaddr->tmscpsa = 0;      /* signal purge complete */
+		}
+
+	/*
+	 * Check for response ring transition.
+	 */
+	if (tm->tmscp_ca.ca_rspint)
+		{
+		tm->tmscp_ca.ca_rspint = 0;
+		for (i = sc->sc_lastrsp;; i++)
+			{
+			i %= NRSP;
+			if (tm->tmscp_ca.ca_rspdsc[i]&TMSCP_OWN)
+			    break;
+			tmscprsp(um, tm, sc, i);
+			tm->tmscp_ca.ca_rspdsc[i] |= TMSCP_OWN;
+			}
+		sc->sc_lastrsp = i;
+		}
+
+	/*
+	 * Check for command ring transition.
+	 */
+	if (tm->tmscp_ca.ca_cmdint)
+		{
+#		ifdef DEBUG
+		printd("tmscpintr: command ring transition\n");
+#		endif		
+		tm->tmscp_ca.ca_cmdint = 0;
+		}
+    	if(tmscp_cp_wait)
+		wakeup((caddr_t)&tmscp_cp_wait);
+    	(void) tmscpstart(um);
+}
+
+
+/*
+ * Open a tmscp device and set the unit online.  If the controller is not 
+ * in the run state, call init to initialize the tmscp controller first.
+ */
+
+/* ARGSUSED */
+tmscpopen(dev, flag)
+	dev_t dev;
+	int flag;
+{
+	register int unit;
+	register struct uba_device *ui;
+	register struct tmscp_softc *sc;
+	register struct tms_info *tms;
+	register struct mscp *mp;
+	register struct uba_ctlr *um;
+	struct tmscpdevice *tmscpaddr;
+	int s,i;
+	
+	unit = TMSUNIT(dev);
+#	ifdef DEBUG
+	printd("tmscpopen unit %d\n",unit);
+	if(tmscpdebug)DELAY(10000);
+#	endif
+	if (unit >= NTMS || (ui = tmsdinfo[unit]) == 0 || ui->ui_alive == 0)
+		return (ENXIO);
+	tms = &tms_info[ui->ui_unit];
+	if (tms->tms_openf)
+		return (EBUSY);
+	sc = &tmscp_softc[ui->ui_ctlr];
+	tms->tms_openf = 1;
+	tms->tms_ttyp = u.u_ttyp;
+	s = spl5();
+	if (sc->sc_state != S_RUN)
+		{
+		if (sc->sc_state == S_IDLE)
+			if(!tmscpinit(ui->ui_ctlr))
+				{
+				printf("tmscp controller failed to init\n");
+				(void) splx(s);
+				return(ENXIO);
+				}
+		/* 
+		 * Wait for initialization to complete
+		 */
+		timeout(wakeup,(caddr_t)ui->ui_mi,11*hz);	/* to be sure*/
+		sleep((caddr_t)ui->ui_mi, 0);
+		if (sc->sc_state != S_RUN)
+			{
+			(void) splx(s);
+			tms->tms_openf = 0;
+			return (EIO);
+			}
+		}
+	/*
+	 * Check to see if the device is really there.
+	 * this code was taken from Fred Canters 11 driver
+	 */
+	um = ui->ui_mi;
+	tmscpaddr = (struct tmscpdevice *) um->um_addr;
+	(void) splx(s);
+	if(ui->ui_flags == 0)
+		{
+		s = spl5();
+		while(0 ==(mp = tmscpgetcp(um)))
+			{
+			tmscp_cp_wait++;
+			sleep((caddr_t)&tmscp_cp_wait,PSWP+1);
+			tmscp_cp_wait--;
+			}
+		(void) splx(s);
+		mp->mscp_opcode = M_OP_ONLIN;
+		mp->mscp_unit = ui->ui_slave;
+		mp->mscp_cmdref = (long) & tms->tms_type;
+					    /* need to sleep on something */
+#		ifdef DEBUG
+		printd("tmscpopen: bring unit %d online\n",ui->ui_unit);
+#		endif	
+		*((long *) mp->mscp_dscptr ) |= TMSCP_OWN | TMSCP_INT;
+		i = tmscpaddr->tmscpip;
+#ifdef lint
+		i = i;
+#endif
+		/* 
+		 * To make sure we wake up, timeout in 240 seconds.
+		 * Wakeup in tmscprsp routine.
+		 * 240 seconds (4 minutes) is necessary since a rewind
+		 * can take a few minutes.
+		 */
+		timeout(wakeup,(caddr_t) mp->mscp_cmdref,240 * hz);
+		sleep((caddr_t) mp->mscp_cmdref,PSWP+1);
+		}
+	if(ui->ui_flags == 0) {
+		tms->tms_openf = 0;
+		return(ENXIO);  /* Didn't go online */
+	}
+	tms->tms_lastiow = 0;
+	/*
+	 * If the high density device is not specified, set unit to low
+	 * density.  This is done as an "internal" ioctl command so
+	 * that the command setup and response handling
+	 * is done thru "regular" command routines.
+	 */
+	if ((minor(dev) & T_HIDENSITY) == 0)
+		tmscpcommand(dev, TMS_LOWDENSITY, 1);
+	else
+		tmscpcommand(dev, TMS_HIDENSITY, 1);
+	return (0);
+}
+
+
+/*
+ * Close tape device.
+ *
+ * If tape was open for writing or last operation was
+ * a write, then write two EOF's and backspace over the last one.
+ * Unless this is a non-rewinding special file, rewind the tape.
+ *
+ * NOTE:
+ *	We want to be sure that any serious exception is cleared on the
+ *	close. A Clear Serious Exception (CSE) modifier is always done on
+ *	the rewind command.  For the non-rewind case we check to see if the
+ *	"serex" field is set in the softc struct; if it is then issue a noop
+ *	command with the CSE modifier.
+ * Make the tape available to others, by clearing openf flag.
+ */
+tmscpclose(dev, flag)
+	register dev_t dev;
+	register flag;
+{
+	register struct tms_info *tms;
+	register struct uba_device *ui;
+
+	ui = tmsdinfo[TMSUNIT(dev)];
+#	ifdef DEBUG
+	printd("tmscpclose: ctlr =  %d\n",TMSCPCTLR(dev));
+	printd("tmscpclose: unit = %d\n",TMSUNIT(dev));
+	if(tmscpdebug)DELAY(10000);
+#	endif
+	tms = &tms_info[ui->ui_unit];
+	if (flag == FWRITE || (flag&FWRITE) && tms->tms_lastiow)
+		{
+		/*	   device, command, count */
+		tmscpcommand (dev, TMS_WRITM, 1);
+		tmscpcommand (dev, TMS_WRITM, 1);
+		tmscpcommand (dev, TMS_BSR, 1);
+		}
+	if ((minor(dev)&T_NOREWIND) == 0)
+		/*
+		 * Don't hang waiting for rewind complete.
+		 */
+		tmscpcommand(dev, TMS_REW, 0);
+	else
+		if (tms->tms_serex)
+			{
+#			ifdef DEBUG
+			printd("tmscpclose: clearing serex\n");
+			if(tmscpdebug)DELAY(10000);
+#			endif
+			tmscpcommand(dev, TMS_CSE, 1);
+			}
+	tms->tms_openf = 0;
+}
+
+
+/*
+ * Execute a command on the tape drive a specified number of times.
+ * This routine sets up a buffer and calls the strategy routine which
+ * links the buffer onto the drive's buffer queue.
+ * The start routine will take care of creat */
+	unsign16 rpb4;		/* Word 4 of protocol parameters */
+	unsign16 rpb5;		/* Word 5 of protocol parameters */
+	unsign16 rpb6;		/* Word 6 of protocol parameters */
+	unsign16 rpb7;		/* Word 7 of protocol parameters */
+	unsign16 rpb8;		/* Word 8 of protocol parameters */
+	unsign16 rpb9;		/* Word 9 of protocol parameters */
+	unsign16 rpb10;		/* Word 10 of protocol parameters */
+	unsign16 rpb11;		/* Word 11 of protocol parameters */
+	unsign16 rpb12;		/* Word 12 of protocol parameters */
+
+};
+
+/*
+ * NP Driver Request structure contains information about a request
+ * maintained solely by the driver. One per CQE, plus a header.
+ */
+
+struct npreq {
+
+	struct npreq *forw;	/* Forward pointer for active list */
+	struct npreq *back;	/* Backward pointer for active list */
+	struct npreq *free;	/* Next member on free list */
+	struct CQE *element;	/* CQE associated with this request */
+	int flags;		/* Always useful */
+	int reqcnt;		/* Request count for reqtab */
+	int bufoffset;		/* Offset into buffer for turns */
+	int	bytecnt;	/* Number of bytes to transfer */
+	caddr_t	virtmem;	/* Virtual address of buffer */
+	int	mapbase;	/* Address of the mapping register */
+	int 	mapsize;	/* Size of mapped area */
+	caddr_t	bufaddr;	/* Address of the user buffer */
+	struct buf buf;		/* Buf structure needed for mem. mgmt */
+	struct proc *procp;	/* Pointer to process of requestor */
+	caddr_t user;		/* Structure passed by user from itpuser.h */
+	int	(*intr)();	/* Ptr to routine to call at interrupt time */
+};
+
+/*
+ * Npmaster structure, one per device, is used for boardwise centralization
+ * of relevant information including queues, I/O addresses and request pools.
+ */
+
+struct npmaster {
+
+	struct npmaster *next; 	/* Linked list of these, NULL terminator */
+	struct npspace *shmemp;	/* Shared memory address (driver <-> device) */
+	struct uba_device *devp; /* UBA Device for this unit */
+	struct NPREG   *iobase;	/* I/O base address for this board */
+	struct npreq   *reqtab;	/* Header for pool of CQE requests */
+	int	iomapbase;	/* Base index of I/O map reg's allocated */
+	int flags;		/* State of the Board */
+	int unit;		/* Unit number of this device */
+	int vector;		/* Interrupt vector for this unit */
+};
+
+struct npconn {
+
+	struct npmaster *unit;	/* Unit number (board) of this connection */
+	unsign16 protocol;	/* Protocol used on this connection */
+	struct buf np_wbuf;	/* write buf structure for raw access */
+	struct buf np_rbuf;	/* read buf structure for raw access */
+};
+
+struct NPREG {
+	unsign16 CSR0;		/* Control Status Register 0 */
+	unsign16 CSR1;		/* Control Status Register 1 */
+	unsign16 CSR2;		/* Control Status Register 2 */
+	unsign16 CSR3;		/* Control Status Register 3 */
+
+};
+
+/*
+ * The following structures are used for communicating with the
+ * Intelligent Board and are located in Shared Memory.
+ */
+
+/*
+ * Status Block
+ */
+
+struct NpStat{
+
+	unsign16 sb_drw;	/* Device Request Word */
+	unsign16 sb_hcw;	/* Host Configuration Word */
+	unsign16 sb_dcw;	/* Device Configuration Word */
+	unsign16 sb_dpm;	/* Device Protocol Mask */
+	unsign16 sb_dcq;	/* Offset to Device CQ */
+	unsign16 sb_hcq;	/* Offset to Host CQ */
+};
+
+/*
+ * Command Queue, two per device. One is owned by the driver and the other
+ * is owned by the device.
+ */
+
+struct CmdQue {
+
+	unsign16 scanflag;	/* Scan Flag, MSB set if being scanned */
+	unsign16 chngflag;	/* Change Flag, MSB set by initiator */
+	unsign16 cq_wrap;	/* Offset to last CQE entry +2 */
+	unsign16 cq_add;	/* Offset to add a CQE to the queue */
+	unsign16 cq_rem;	/* Offset to remove a CQE from the queue */
+	unsign16 cq_cqe[NUMCQE]; /* Command Queue Element Offsets */
+};
+
+/*
+ * Structure of the shared memory area per board. Declared this way to avoid
+ * compiler word alignment vagaries when computing offsets.
+ */
+
+struct npspace {
+
+	struct NpStat statblock;	/* Status Block */
+	struct CmdQue devcq;		/* Device's Command Queue */
+	struct CmdQue hostcq;		/* Host's Command Queue */
+	struct CQE elements[NUMCQE];	/* Shared Command Queue Elements */
+	unsign16 filler[8];		/* Here for 16 byte alignment */
+};
+
+/*
+ * Structure of array of base addresses of I-Board controllers
+ * (See global data definitions in np.c)
+ */
+
+struct npbase {
+	caddr_t baseaddr;
+};
+
+/* State of the NP Driver as kept in NpState */
+
+#define ICPAVAIL	0x01 	/* ICP is waiting for a request */
+
+/* Tells ICP Process that there are no more requests for this board */
+
+#define BRDDONE 1
+
+/* Flags used by the driver (npreq structure) to monitor status of requests */
+
+#define REQDONE 0x01		/* Request completed */
+#define IOIFC   0x02		/* Internal Function Code Request */
+#define IOERR	0x04		/* Error on Request */
+#define NPPEND	0x08		/* Unused at this time */
+#define IOABORT 0x10		/* Request aborted by ICP */
+#define KERNREQ	0x20		/* Request was from the kernel */
+#define WANTREQ 0x40		/* Process is waiting for a npreq structure */
+#define NPUIO	0x80		/* Process doing physio */
+
+/* Service Request Commands from the Intelligent Board */
+
+#define NOREQ	0x00		/* No service requested */
+#define NPLOAD  0x01		/* Dump request */
+#define NPDUMP	0x02		/* Load request */
+#define NPPANIC	0x100		/* Panic request */
+
+/* Definitions of Status returned from the I-Board */
+
+#define NPDONE	0x01		/* Normal completion */
+#define NPIFC	0x00		/* Internal Function Code request */
+#define NPPERR  0x80		/* Protocol error */
+#define NPMERR	0x82		/* Memory allocation failure on I-Board */
+
+/* Definitions of IFC type requests from I-Board */
+
+#define NPLOCK	0x64		/* Lock the process's data area */
+#define NPUNLOCK 0xA4		/* Unlock the process */
+#define NPREMAP	0x124		/* Window turn */
+
+/* Definition of flags for the Npmaster structure */
+
+#define CSRPEND		0x01		/* CSR0 command pending */
+#define PANICREQ	0x02		/* Panic request */
+#define DUMPREQ		0x04		/* Dump request */
+#define LOADREQ		0x08		/* Load request */
+#define BOARDREQ	0x10		/* Any request by the board */
+#define BADBOARD	0x20		/* Board disabled */
+#define AVAILABLE	0x40		/* Board available */
+#define BRDRESET	0x80		/* Board is being reset */
+#define	PANIC1	 	0x100		/* Driver wants panic address */
+#define	PANIC2		0x200		/* Driver wants panic string */
+#define PANIC3		0x400		/* Clear first byte of panic string */
+
+/*
+ * Debugging Constants
+ */
+
+#define	DEBENTRY	0x0001		/* debug entry points */
+#define	DEBMEM		0x0002		/* debug memory */
+#define	DEBREQ		0x0004		/* debug requests */
+#define	DEBCQE		0x0008		/* debug cqe's */
+#define	DEBCQ		0x0010		/* debug cq's */
+#define	DEBMAINT	0x0020		/* debug maintainance requests */
+#define	DEBINTR		0x0040		/* debug interrupt routines */
+#define	DEBINIT		0x0080		/* debug initialization routines */
+#define	DEBIFC		0x0100		/* debug Internal function codes */
+#define	DEBIOCTL	0x0200		/* debug ioctl calls */
+#define	DEBOPEN		0x0400		/* debug open calls */
+#define	DEBIO		0x0800		/* debug read & write calls */
+#define	DEBCSR		0x1000		/* debug CSR commands */
+#define	DEBLOCK		0x2000		/* debug lock / unlock calls */
+#define NOBOARD		0x4000		/* debug user/host interface */
+                                                                                                                                                                     :     .   #(    ..  ;     Makefile ad <    	 manner.mn d >€  À tmac.n                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  ing a tmscp command packet
+ * with the command.  The start routine is called by the strategy or the
+ * interrupt routine.
+ */
+
+tmscpcommand (dev, com, count)
+	register dev_t dev;
+	int com, count;
+{
+	register struct uba_device *ui;
+	register struct buf *bp;
+	register int s;
+	int unit = TMSUNIT(dev);
+
+	ui = tmsdinfo[unit];
+	bp = &ctmscpbuf[ui->ui_ctlr];
+
+	s = spl5();
+	while (bp->b_flags&B_BUSY)
+		{
+		/*
+		 * This special check is because B_BUSY never
+		 * gets cleared in the non-waiting rewind case.
+		 */
+		if (bp->b_bcount == 0 && (bp->b_flags&B_DONE))
+			break;
+		bp->b_flags |= B_WANTED;
+		sleep((caddr_t)bp, PRIBIO);
+		}
+	bp->b_flags = B_BUSY|B_READ;
+	splx(s);
+	/*
+	 * Load the buffer.  The b_count field gets used to hold the command
+	 * count.  the b_resid field gets used to hold the command mneumonic.
+	 * These 2 fields are "known" to be "safe" to use for this purpose.
+	 * (Most other drivers also use these fields in this way.)
+	 */
+	bp->b_dev = dev;
+	bp->b_bcount = count;
+	bp->b_resid = com;
+	bp->b_blkno = 0;
+	tmscpstrategy(bp);
+	/*
+	 * In case of rewind from close, don't wait.
+	 * This is the only case where count can be 0.
+	 */
+	if (count == 0)
+		return;
+	iowait(bp);
+	if (bp->b_flags&B_WANTED)
+		wakeup((caddr_t)bp);
+	bp->b_flags &= B_ERROR;
+}
+
+/*
+ * Find an unused command packet
+ */
+struct mscp *
+tmscpgetcp(um)
+	struct uba_ctlr *um;
+{
+	register struct mscp *mp;
+	register struct tmscpca *cp;
+	register struct tmscp_softc *sc;
+	register int i;
+	int	s;
+
+	s = spl5();
+	cp = &tmscp[um->um_ctlr].tmscp_ca;
+	sc = &tmscp_softc[um->um_ctlr];
+	/*
+	 * If no credits, can't issue any commands
+	 * until some outstanding commands complete.
+	 */
+	i = sc->sc_lastcmd;
+#  	ifdef DEBUG
+	printd10("tmscpgetcp: %d credits remain\n", sc->sc_credits);
+#	endif
+	if(((cp->ca_cmddsc[i]&(TMSCP_OWN|TMSCP_INT))==TMSCP_INT) &&
+	  (sc->sc_credits >= 2))
+		{
+		sc->sc_credits--;       /* This commits to issuing a command */
+		cp->ca_cmddsc[i] &= ~TMSCP_INT;
+		mp = &tmscp[um->um_ctlr].tmscp_cmd[i];
+		mp->mscp_unit = mp->mscp_modifier = 0;
+		mp->mscp_opcode = mp->mscp_flags = 0;
+		mp->mscp_bytecnt = mp->mscp_buffer = 0;
+		sc->sc_lastcmd = (i + 1) % NCMD;
+		(void) splx(s);
+		return(mp);
+		}
+	(void) splx(s);
+	return(NULL);
+}
+
+
+/*
+ * Initialize a TMSCP device.  Set up UBA mapping registers,
+ * initialize data structures, and start hardware
+ * initialization sequence.
+ */
+tmscpinit (d)
+	int d;			/* index to the controller */
+{
+	register struct tmscp_softc *sc;
+	register struct tmscp *t;  /* communications area; cmd & resp packets */
+	struct tmscpdevice *tmscpaddr;
+	struct uba_ctlr *um;
+
+	sc = &tmscp_softc[d];
+	um = tmscpminfo[d];
+	um->um_tab.b_active++;
+	t = &tmscp[d];
+	tmscpaddr = (struct tmscpdevice *)um->um_addr;
+	if (sc->sc_mapped == 0)
+		{
+		/*
+		 * Map the communications area and command
+		 * and response packets into Unibus address
+		 * space.
+		 */
+		sc->sc_ubainfo = uballoc(um->um_ubanum, (caddr_t)t, sizeof (struct tmscp), 0);
+#		ifdef MVAX
+		if (cpu == MVAX_I)
+			sc->sc_tmscp = (struct tmscp *)(sc->sc_ubainfo & 0x3fffff);
+		else
+#		endif MVAX
+			sc->sc_tmscp = (struct tmscp *)(sc->sc_ubainfo & 0x3ffff);
+		sc->sc_mapped = 1;
+		}
+
+	/*
+	 * Start the hardware initialization sequence.
+	 */
+	tmscpaddr->tmscpip = 0;              /* start initialization */
+
+	while((tmscpaddr->tmscpsa & TMSCP_STEP1) == 0)
+		{
+#		ifdef DEBUG
+		printd("tmscpinit: tmscpsa = 0%o\n",tmscpaddr->tmscpsa);
+		DELAY(100000);
+#		endif
+		if(tmscpaddr->tmscpsa & TMSCP_ERR)
+			return(0);	/* CHECK */
+		}
+	tmscpaddr->tmscpsa=TMSCP_ERR|(NCMDL2<<11)|(NRSPL2<<8)|TMSCP_IE|(sc->sc_ivec/4);
+	/*
+	 * Initialization continues in the interrupt routine.
+	 */
+	sc->sc_state = S_STEP1;
+	sc->sc_credits = 0;
+	return(1);
+}
+
+
+/*
+ * Start I/O operation
+ * This code is convoluted.  The majority of it was copied from the uda driver.
+ */
+
+tmscpstart(um)
+	register struct uba_ctlr *um;
+{
+	register struct buf *bp, *dp;
+	register struct mscp *mp;
+	register struct tmscp_softc *sc;
+	register struct tms_info *tms;
+	register struct uba_device *ui;
+	struct   tmscpdevice *tmscpaddr;
+	struct   tmscp *tm = &tmscp[um->um_ctlr];
+	int i,tempi;
+	char ioctl;		/* flag: set true if its an IOCTL command */
+
+	sc = &tmscp_softc[um->um_ctlr];
+	
+    for(;;)
+	{
+	if ((dp = um->um_tab.b_actf) == NULL)
+		{
+		/*
+		 * Release unneeded UBA resources and return
+		 * (drive was inactive)
+		 */
+		um->um_tab.b_active = 0;
+		break;
+		}
+	if ((bp = dp->b_actf) == NULL)
+		{
+		/*
+		 * No more requests for this drive, remove
+		 * from controller queue and look at next drive.
+		 * We know we're at the head of the controller queue.
+		 */
+		dp->b_active = 0;
+		um->um_tab.b_actf = dp->b_forw;
+		continue;		/* Need to check for loop */
+		}
+	um->um_tab.b_active++;
+	tmscpaddr = (struct tmscpdevice *)um->um_addr;
+	ui = tmsdinfo[(TMSUNIT(bp->b_dev))];
+	tms = &tms_info[ui->ui_unit];
+	if ((tmscpaddr->tmscpsa&TMSCP_ERR) || sc->sc_state != S_RUN)
+		{
+		tprintf(tms->tms_ttyp,
+		    "tms%d: hard error bn%d\n",
+		    minor(bp->b_dev)&03, bp->b_blkno);
+		log(TMS_PRI, "tmscp%d: sa 0%o, state %d\n",um->um_ctlr,
+				tmscpaddr->tmscpsa&0xffff, sc->sc_state);
+		(void)tmscpinit(um->um_ctlr);
+		/* SHOULD REQUEUE OUTSTANDING REQUESTS, LIKE TMSCPRESET */
+		break;
+		}
+	/*
+	 * Default is that last command was NOT a write command;
+	 * if a write command is done it will be detected in tmscprsp.
+	 */
+	tms->tms_lastiow = 0;
+	if (ui->ui_flags == 0)
+		{        /* not online */
+		if ((mp = tmscpgetcp(um)) == NULL)
+			break;
+		mp->mscp_opcode = M_OP_ONLIN;
+		mp->mscp_unit = ui->ui_slave;
+		dp->b_active = 2;
+		um->um_tab.b_actf = dp->b_forw; /* remove from controller q */
+		*((long *)mp->mscp_dscptr) |= TMSCP_OWN|TMSCP_INT;
+		if (tmscpaddr->tmscpsa&TMSCP_ERR)
+			printf("tmscp%d fatal error (0%o)\n",um->um_ctlr,
+					tmscpaddr->tmscpsa&0xffff);
+		i = tmscpaddr->tmscpip;
+		continue;
+		}
+	switch (cpu) {
+
+	case VAX_8600:
+	case VAX_780:
+		i = UBA_NEEDBDP|UBA_CANTWAIT;
+		break;
+	case VAX_750:
+		i = um->um_ubinfo|UBA_HAVEBDP|UBA_CANTWAIT;
+		break;
+	case VAX_730:
+		i = UBA_CANTWAIT;
+		break;
+	}   /* end switch (cpu) */
+	/*
+	 * If command is an ioctl command then set the ioctl flag for later use.
+	 * If not (i.e. it is a read or write) then attempt
+	 * to set up a buffer pointer.
+	 */
+	ioctl = 0;
+	if (bp == &ctmscpbuf[um->um_ctlr])
+		ioctl = 1;
+	else
+		if ((i = ubasetup(um->um_ubanum, bp, i)) == 0)
+			{
+			if(dp->b_qsize != 0)
+				break; /* When a command completes and */
+				     /* frees a bdp tmscpstart will be called */
+			if ((mp = tmscpgetcp(um)) == NULL)
+				break;
+#			ifdef DEBUG
+			printd("tmscpstart: GTUNT %d ubasetup = %d\n",ui->ui_unit, i);
+			if(tmscpdebug)DELAY(10000);
+#			endif
+			mp->mscp_opcode = M_OP_GTUNT;
+			mp->mscp_unit = ui->ui_slave;
+			*((long *)mp->mscp_dscptr) |= TMSCP_OWN|TMSCP_INT;
+			if (tmscpaddr->tmscpsa&TMSCP_ERR)
+				printf("tmscp%d: fatal error (0%o)\n",um->um_ctlr,
+					    tmscpaddr->tmscpsa&0xffff);
+			i = tmscpaddr->tmscpip;	/* initiate polling */
+			break;
+			}
+#	if defined(VAX750)
+	if (cpu == VAX_750)
+		tempi = i & 0xfffffff;			/* mask off bdp */
+	else
+#	endif
+		tempi = i;
+	if ((mp = tmscpgetcp(um)) == NULL)
+		{
+		if (!ioctl)		/* only need to release if NOT ioctl */
+			ubarelse(um->um_ubanum,&tempi);
+		break;
+		}
+	mp->mscp_cmdref = (long)bp;		/* pointer to get back */
+	mp->mscp_unit = ui->ui_slave;
+	/*
+	 * If its an ioctl-type command then set up the appropriate
+	 * tmscp command;  by doing a switch on the "b_resid" field where
+	 * the command mneumonic is stored.
+	 */
+	if (ioctl)
+		{
+#		ifdef DEBUG
+		printd("tmscpstart: doing ioctl cmd %d\n", bp->b_resid);
+#		endif
+		/*
+		 * The reccnt and tmkcnt fields are set to zero by the getcp
+		 * routine (as bytecnt and buffer fields).  Thus reccnt and
+		 * tmkcnt are only modified here if they need to be set to
+		 * a non-zero value.
+		 */
+		switch ((int)bp->b_resid) {
+
+		case TMS_WRITM:
+			mp->mscp_opcode = M_OP_WRITM;
+			break;
+		case TMS_FSF:
+			mp->mscp_opcode = M_OP_REPOS;
+			mp->mscp_tmkcnt = bp->b_bcount;
+			break;
+		case TMS_BSF:
+			mp->mscp_opcode = M_OP_REPOS;
+			mp->mscp_modifier = M_MD_REVRS;
+			mp->mscp_tmkcnt = bp->b_bcount;
+			break;
+		case TMS_FSR:
+			mp->mscp_opcode = M_OP_REPOS;
+			mp->mscp_modifier = M_MD_OBJCT;
+		.\"	@(#)dc	6.1 (Berkeley) 5/22/86
+.\"
+.EH 'USD:5-%''DC \- An Interactive Desk Calculator'
+.OH 'DC \- An Interactive Desk Calculator''USD:5-%'
+.\".RP
+....TM 75-1271-8 39199 39199-11
+.ND
+.TL
+DC \- An Interactive Desk Calculator
+.AU "MH 2C-524" 3878
+Robert Morris
+.AU
+Lorinda Cherry
+.AI
+.MH
+.AB
+DC is an interactive desk calculator program implemented
+on the
+.UX
+time-sharing system to do arbitrary-precision
+integer arithmetic.
+It has provision for manipulating scaled fixed-point numbers and
+for input and output in bases other than decimal.
+.PP
+The size of numbers that can be manipulated is limited
+only by available core storage.
+On typical implementations of
+.UX ,
+the size of numbers that
+can be handled varies from several hundred digits on the smallest
+systems to several thousand on the largest.
+.AE
+.PP
+.SH
+.PP
+DC is an arbitrary precision arithmetic package implemented
+on the
+.UX
+time-sharing system
+in the form of an interactive desk calculator.
+It works like a stacking calculator using reverse Polish notation.
+Ordinarily DC operates on decimal integers, but one may
+specify an input base, output base, and a number of fractional
+digits to be maintained.
+.PP
+A language called BC [1] has been developed which accepts
+programs written in the familiar style of higher-level
+programming languages and compiles output which is
+interpreted by DC.
+Some of the commands described below were designed
+for the compiler interface and are not easy for a human user
+to manipulate.
+.PP
+Numbers that are typed into DC are put on a push-down
+stack.
+DC commands work by taking the top number or two
+off the stack, performing the desired operation, and pushing the result
+on the stack.
+If an argument is given,
+input is taken from that file until its end,
+then from the standard input.
+.SH
+SYNOPTIC DESCRIPTION
+.PP
+Here we describe the DC commands that are intended
+for use by people.  The additional commands that are
+intended to be invoked by compiled output are
+described in the detailed description.
+.PP
+Any number of commands are permitted on a line.
+Blanks and new-line characters are ignored except within numbers
+and in places where a register name is expected.
+.PP
+The following constructions are recognized:
+.SH
+number
+.IP
+The value of the number is pushed onto the main stack.
+A number is an unbroken string of the digits 0-9
+and the capital letters A\-F which are treated as digits
+with values 10\-15 respectively.
+The number may be preceded by an underscore \*_ to input a
+negative number.
+Numbers may contain decimal points.
+.SH
++  \-  *  %  ^
+.IP
+The
+top two values on the stack are added
+(\fB+\fP),
+subtracted
+(\fB\-\fP),
+multiplied (\fB*\fP),
+divided (\fB/\fP),
+remaindered (\fB%\fP),
+or exponentiated (^).
+The two entries are popped off the stack;
+the result is pushed on the stack in their place.
+The result of a division is an integer truncated toward zero.
+See the detailed description below for the treatment of
+numbers with decimal points.
+An exponent must not have any digits after the decimal point.
+.SH
+s\fIx\fP
+.IP
+The
+top of the main stack is popped and stored into
+a register named \fIx\fP, where \fIx\fP may be any character.
+If
+the
+.ft B
+s
+.ft
+is capitalized,
+.ft I
+x
+.ft
+is treated as a stack and the value is pushed onto it.
+Any character, even blank or new-line, is a valid register name.
+.SH
+l\fIx\fP
+.IP
+The
+value in register
+.ft I
+x
+.ft
+is pushed onto the stack.
+The register
+.ft I
+x
+.ft
+is not altered.
+If the
+.ft B
+l
+.ft
+is capitalized,
+register
+.ft I
+x
+.ft
+is treated as a stack and its top value is popped onto the main stack.
+.LP
+All registers start with empty value which is treated as a zero
+by the command \fBl\fP and is treated as an error by the command \fBL\fP.
+.SH
+.SH
+d
+.IP
+The
+top value on the stack is duplicated.
+.SH
+p
+.IP
+The top value on the stack is printed.
+The top value remains unchanged.
+.SH
+f
+.IP
+All values on the stack and in registers are printed.
+.SH
+x
+.IP
+treats the top element of the stack as a character string,
+removes it from the stack, and
+executes it as a string of DC commands.
+.SH
+[ ... ]
+.IP
+puts the bracketed character string onto the top of the stack.
+.SH
+q
+.IP
+exits the program.
+If executing a string, the recursion level is
+popped by two.
+If
+.ft B
+q
+.ft
+is capitalized,
+the top value on the stack is popped and the string execution level is popped
+by that value.
+.SH
+<\fIx\fP  >\fIx\fP  =\fIx\fP  !<\fIx\fP  !>\fIx\fP  !=\fIx\fP
+.IP
+The
+top two elements of the stack are popped and compared.
+Register
+.ft I
+x
+.ft
+is executed if they obey the stated
+relation.
+Exclamation point is negation.
+.SH
+v
+.IP
+replaces the top element on the stack by its square root.
+The square root of an integer is truncated to an integer.
+For the treatment of numbers with decimal points, see
+the detailed description below.
+.SH
+!
+.IP
+interprets the rest of the line as a
+.UX
+command.
+Control returns to DC when the
+.UX
+command terminates.
+.SH
+c
+.IP
+All values on the stack are popped; the stack becomes empty.
+.SH
+i
+.IP
+The top value on the stack is popped and used as the
+number radix for further input.
+If \fBi\fP is capitalized, the value of
+the input base is pushed onto the stack.
+No mechanism has been provided for the input of arbitrary
+numbers in bases less than 1 or greater than 16.
+.SH
+o
+.IP
+The top value on the stack is popped and used as the
+number radix for further output.
+If \fBo\fP is capitalized, the value of the output
+base is pushed onto the stack.
+.SH
+k
+.IP
+The top of the stack is popped, and that value is used as
+a scale factor
+that influences the number of decimal places
+that are maintained during multiplication, division, and exponentiation.
+The scale factor must be greater than or equal to zero and
+less than 100.
+If \fBk\fP is capitalized, the value of the scale factor
+is pushed onto the stack.
+.SH
+z
+.IP
+The value of the stack level is pushed onto the stack.
+.SH
+?
+.IP
+A line of input is taken from the input source (usually the console)
+and executed.
+.SH
+DETAILED DESCRIPTION
+.SH
+Internal Representation of Numbers
+.PP
+Numbers are stored internally using a dynamic storage allocator.
+Numbers are kept in the form of a string
+of digits to the base 100 stored one digit per byte
+(centennial digits).
+The string is stored with the low-order digit at the
+beginning of the string.
+For example, the representation of 157
+is 57,1.
+After any arithmetic operation on a number, care is taken
+that all digits are in the range 0\-99 and that
+the number has no leading zeros.
+The number zero is represented by the empty string.
+.PP
+Negative numbers are represented in the 100's complement
+notation, which is analogous to two's complement notation for binary
+numbers.
+The high order digit of a negative number is always \-1
+and all other digits are in the range 0\-99.
+The digit preceding the high order \-1 digit is never a 99.
+The representation of \-157 is 43,98,\-1.
+We shall call this the canonical form of a number.
+The advantage of this kind of representation of negative
+numbers is ease of addition.  When addition is performed digit
+by digit, the result is formally correct.  The result need only
+be modified, if necessary, to put it into canonical form.
+.PP
+Because the largest valid digit is 99 and the byte can
+hold numbers twice that large, addition can be carried out
+and the handling of carries done later when
+that is convenient, as it sometimes is.
+.PP
+An additional byte is stored with each number beyond
+the high order digit to indicate the number of
+assumed decimal digits after the decimal point.  The representation
+of .001 is 1,\fI3\fP
+where the scale has been italicized to emphasize the fact that it
+is not the high order digit.
+The value of this extra byte is called the
+.ft B
+scale factor
+.ft
+of the number.
+.SH
+The Allocator
+.PP
+DC uses a dynamic string storage allocator
+for all of its internal storage.
+All reading and writing of numbers internally is done through
+the allocator.
+Associated with each string in the allocator is a four-word header containing pointers
+to the beginning of the string, the end of the string,
+the next place to write, and the next place to read.
+Communication between the allocator and DC
+is done via pointers to these headers.
+.PP
+The allocator initially	mp->mscp_reccnt = bp->b_bcount;
+			break;
+		case TMS_BSR:
+			mp->mscp_opcode = M_OP_REPOS;
+			mp->mscp_modifier = M_MD_REVRS | M_MD_OBJCT;
+			mp->mscp_reccnt = bp->b_bcount;
+			break;
+		/*
+		 * Clear serious exception is done for Rewind & Available cmds
+		 */
+		case TMS_REW:
+			mp->mscp_opcode = M_OP_REPOS;
+			mp->mscp_modifier = M_MD_REWND | M_MD_CLSEX;
+			if (bp->b_bcount == 0)
+				mp->mscp_modifier |= M_MD_IMMED;
+			tms->tms_serex = 0;
+			break;
+		case TMS_OFFL:
+			mp->mscp_opcode = M_OP_AVAIL;
+			mp->mscp_modifier = M_MD_UNLOD | M_MD_CLSEX;
+			tms->tms_serex = 0;
+			break;
+		case TMS_SENSE:
+			mp->mscp_opcode = M_OP_GTUNT;
+			break;
+		case TMS_CACHE:
+			mp->mscp_opcode = M_OP_STUNT;
+			tms->tms_unitflgs |= M_UF_WBKNV;
+			mp->mscp_unitflgs = tms->tms_unitflgs;
+			mp->mscp_format = tms->tms_format;
+			/* default device dependant parameters */
+			mp->mscp_mediaid = 0;
+			break;
+		case TMS_NOCACHE:
+			mp->mscp_opcode = M_OP_STUNT;
+			tms->tms_unitflgs &= ~(M_UF_WBKNV);
+			mp->mscp_unitflgs = tms->tms_unitflgs;
+			mp->mscp_format = tms->tms_format;
+			/* default device dependant parameters */
+			mp->mscp_mediaid = 0;
+			break;
+		case TMS_CSE:
+			/*
+			 * This is a no-op command. It performs a 
+			 * clear serious exception only.  (Done on a
+			 * non-rewinding close after a serious exception.)
+			 */
+			mp->mscp_opcode = M_OP_REPOS;
+			mp->mscp_modifier = M_MD_CLSEX;
+			tms->tms_serex = 0;
+			tms->tms_clserex = 1;
+			break;
+		case TMS_LOWDENSITY:
+			/*
+			 * Set the unit to low density
+			 */
+			mp->mscp_opcode = M_OP_STUNT;
+			mp->mscp_unitflgs = tms->tms_unitflgs;
+			mp->mscp_mediaid = 0;	/* default device dependant parameters */
+			if ((tms->tms_fmtmenu & M_TF_800) != 0)
+				mp->mscp_format = M_TF_800;
+			else
+				mp->mscp_format = M_TF_PE & tms->tms_fmtmenu;
+			tms->tms_format = mp->mscp_format;
+			break;
+		case TMS_HIDENSITY:
+			/*
+			 * Set the unit to high density (format == 0)
+			 */
+			mp->mscp_opcode = M_OP_STUNT;
+			mp->mscp_unitflgs = tms->tms_unitflgs;
+			mp->mscp_mediaid = 0;	/* default device dependant parameters */
+			mp->mscp_format = 0;
+			tms->tms_format = 0;
+			break;
+		default:
+			printf("Bad ioctl on tms unit %d\n", ui->ui_unit);
+			/* Need a no-op. Reposition no amount */
+			mp->mscp_opcode = M_OP_REPOS;
+			break;
+		}   /* end switch (bp->b_resid) */
+		}
+	else    /* Its a read/write command (not an ioctl) */
+		{
+		mp->mscp_opcode = bp->b_flags&B_READ ? M_OP_READ : M_OP_WRITE;
+		mp->mscp_bytecnt = bp->b_bcount;
+#       	if MVAX
+		if (cpu == MVAX_I)
+			{
+			mp->mscp_buffer = (i & 0x3ffff) | TMSCP_MAP;
+			mp->mscp_mapbase = (long)&(uba_hd[um->um_ubanum].uh_physuba->uba_map[0]);
+			}
+		else
+#		endif MVAX
+			mp->mscp_buffer = (i & 0x3ffff) | (((i>>28)&0xf)<<24);
+
+		bp->b_ubinfo = tempi;			/* save mapping info */
+		}
+	if (tms->tms_serex == 2)			/* if tape mark read */
+		{
+		mp->mscp_modifier |= M_MD_CLSEX;	/*  clear serious exc */
+		tms->tms_serex = 0;
+		}
+	*((long *)mp->mscp_dscptr) |= TMSCP_OWN|TMSCP_INT;
+#	ifdef DEBUG
+	printd("tmscpstart: opcode 0%o mod %o unit %d cnt %d\n",mp->mscp_opcode,mp->mscp_modifier,mp->mscp_unit,mp->mscp_bytecnt);
+	if(tmscpdebug)DELAY(100000);
+#	endif
+	i = tmscpaddr->tmscpip;              /* initiate polling */
+	dp->b_qsize++;
+	/*
+	 * Move drive to the end of the controller queue
+	 */
+	if (dp->b_forw != NULL)
+		{
+		um->um_tab.b_actf = dp->b_forw;
+		um->um_tab.b_actl->b_forw = dp;
+		um->um_tab.b_actl = dp;
+		dp->b_forw = NULL;
+		}
+	/*
+	 * Move buffer to I/O wait queue
+	 */
+	dp->b_actf = bp->av_forw;
+	dp = &tmscpwtab[um->um_ctlr];
+	bp->av_forw = dp;
+	bp->av_back = dp->av_back;
+	dp->av_back->av_forw = bp;
+	dp->av_back = bp;
+	if (tmscpaddr->tmscpsa&TMSCP_ERR)
+		{
+		printf("tmscp%d: fatal error (0%o)\n", um->um_ctlr, tmscpaddr->tmscpsa&0xffff);
+		(void)tmscpinit(um->um_ctlr);
+		break;
+		}
+    }   /* end for */
+    /*
+     * Check for response ring transitions lost in the
+     * Race condition
+     */
+    for (i = sc->sc_lastrsp;; i++)
+	    {
+	    i %= NRSP;
+	    if (tm->tmscp_ca.ca_rspdsc[i]&TMSCP_OWN)
+		    break;
+	    tmscprsp(um, tm, sc, i);
+	    tm->tmscp_ca.ca_rspdsc[i] |= TMSCP_OWN;
+	    }
+    sc->sc_lastrsp = i;
+}
+
+
+/*
+ * Process a response packet
+ */
+tmscprsp(um, tm, sc, i)
+	register struct uba_ctlr *um;
+	register struct tmscp *tm;
+	register struct tmscp_softc *sc;
+	int i;
+{
+	register struct mscp *mp;
+	register struct tms_info *tms;
+	struct uba_device *ui;
+	struct buf *dp, *bp;
+	int st;
+
+	mp = &tm->tmscp_rsp[i];
+	mp->mscp_header.tmscp_msglen = mscp_msglen;
+	sc->sc_credits += mp->mscp_header.tmscp_credits & 0xf;  /* low 4 bits */
+	if ((mp->mscp_header.tmscp_credits & 0xf0) > 0x10)	/* Check */
+		return;
+#	ifdef DEBUG
+	printd("tmscprsp, opcode 0%o status 0%o\n",mp->mscp_opcode,mp->mscp_status&M_ST_MASK);
+#	endif	
+	/*
+	 * If it's an error log message (datagram),
+	 * pass it on for more extensive processing.
+	 */
+	if ((mp->mscp_header.tmscp_credits & 0xf0) == 0x10)
+		{	/* check */
+		tmserror(um, (struct mslg *)mp);
+		return;
+		}
+	st = mp->mscp_status&M_ST_MASK;
+	/*
+	 * The controller interrupts as drive 0.
+	 * This means that you must check for controller interrupts
+	 * before you check to see if there is a drive 0.
+	 */
+	if((M_OP_STCON|M_OP_END) == mp->mscp_opcode)
+		{
+		if (st == M_ST_SUCC)
+			{
+#		  	ifdef DEBUG
+			printd("ctlr has %d credits\n", mp->mscp_header.tmscp_credits & 0xf);
+			printd("ctlr timeout = %d\n", mp->mscp_cnttmo);
+#			endif
+			sc->sc_state = S_RUN;
+			}
+		else
+			sc->sc_state = S_IDLE;
+		um->um_tab.b_active = 0;
+		wakeup((caddr_t)um);
+		return;
+		}
+	if (mp->mscp_unit >= NTMS)
+		return;
+	if ((ui = tmscpip[um->um_ctlr][mp->mscp_unit]) == 0)
+		return;
+	tms = &tms_info[ui->ui_unit];
+	/*
+	 * Save endcode, endflags, and status for mtioctl get unit status.
+	 * NOTE: Don't do this on Clear serious exception (reposition no-op);
+	 *    which is done on close since this would
+	 *    overwrite the real status we want.
+	 */
+	if (tms->tms_clserex != 1)
+		{
+		tms->tms_endcode = mp->mscp_opcode;
+		tms->tms_flags = mp->mscp_flags;
+		tms->tms_status = st;
+		}
+	else tms->tms_clserex = 0;
+
+	switch (mp->mscp_opcode) {
+	case M_OP_ONLIN|M_OP_END:
+		tms->tms_type = mp->mscp_mediaid;
+		dp = &tmsutab[ui->ui_unit];
+		if (st == M_ST_SUCC)
+			{
+			/*
+			 * Link the drive onto the controller queue
+			 */
+			dp->b_forw = NULL;
+			if (um->um_tab.b_actf == NULL)
+				um->um_tab.b_actf = dp;
+			else
+				um->um_tab.b_actl->b_forw = dp;
+			um->um_tab.b_actl = dp;
+			ui->ui_flags = 1;       /* mark it online */
+			tms->tms_dsize=(daddr_t)mp->mscp_maxwrt;
+#			ifdef DEBUG
+			printd("tmscprsp: unit %d online\n", mp->mscp_unit);
+#			endif			
+			/* 
+			 * This define decodes the Media type identifier
+			 */
+#	        	define F_to_C(x,i)     ( ((x)->mscp_mediaid) >> (i*5+7) & 0x1f ? ( ( (((x)->mscp_mediaid) >>( i*5 + 7)) & 0x1f) + 'A' - 1): ' ')
+#			ifdef DEBUG
+			printd("tmscprsp: unit %d online %x %c%c %c%c%c%d\n"
+				,mp->mscp_unit, mp->mscp_mediaid ,F_to_C(mp,4)
+				,F_to_C(mp,3), F_to_C(mp,2)
+				,F_to_C(mp,1), F_to_C(mp,0), mp->mscp_mediaid & 0x7f);
+#			endif				
+			dp->b_active = 1;
+			}	/* end if st == M_ST_SUCC */
+		else 
+			{
+			if (bp = dp->b_actf)
+				tprintf(tms->tms_ttyp,
+				    "tms%d: hard error bn%d: OFFLINE\n",
+				    minor(bp->b_dev)&03, bp->b_blkno);
+			else
+				tprintf(tms->tms_ttyp,
+				    "tms%d: hard error: OFFLINE\n",
+				    ui->ui_unit);
+			while (bp = dp->b_actf)
+				{
+				dp->b_actf = bp->av_forw;
+				bp->b_flags |= B_ERROR;
+				iodone(bp);
+				}
+			}
+		if(mp->mscp_cmdref!=NULL)
+			/* Seems to get lost sometimes in uda */
+			wakeup((caddr_t)mp->mscp_cmdref);
+		break;
+	/*
+	 * The AVAILABLE ATTENTION message occurs when the
+	 * unit becomes available after loading,
+	 * marking the unit offline (ui_flags = 0) will force an
+	 * online command prior to using the unit.
+	 */
+	case M_OP_AVATN:
+		ui->ui_flags = 0;
+		tms->tms_type = mp->mscp_mediaid;
+		break;
+	case M_OP_END:
+		/*
+		 * An endcode without an opcode (0200) is an invalid command.
+		 * The mscp specification states that this would be a protocol
+		 * type error, such as illegal opcodes. The mscp spec. also
+		 * states that parameter error type of invalid commands should
+		 * return the normal end message for the command. This does  has one large string on a list
+of free strings.  All headers except the one pointing
+to this string are on a list of free headers.
+Requests for strings are made by size.
+The size of the string actually supplied is the next higher
+power of 2.
+When a request for a string is made, the allocator
+first checks the free list to see if there is
+a string of the desired size.
+If none is found, the allocator finds the next larger free string and splits it repeatedly until
+it has a string of the right size.
+Left-over strings are put on the free list.
+If there are no larger strings,
+the allocator tries to coalesce smaller free strings into
+larger ones.
+Since all strings are the result
+of splitting large strings,
+each string has a neighbor that is next to it in core
+and, if free, can be combined with it to make a string twice as long.
+This is an implementation of the `buddy system' of allocation
+described in [2].
+.PP
+Failing to find a string of the proper length after coalescing,
+the allocator asks the system for more space.
+The amount of space on the system is the only limitation
+on the size and number of strings in DC.
+If at any time in the process of trying to allocate a string, the allocator runs out of
+headers, it also asks the system for more space.
+.PP
+There are routines in the allocator for reading, writing, copying, rewinding,
+forward-spacing, and backspacing strings.
+All string manipulation is done using these routines.
+.PP
+The reading and writing routines
+increment the read pointer or write pointer so that
+the characters of a string are read or written in
+succession by a series of read or write calls.
+The write pointer is interpreted as the end of the
+information-containing portion of a string and a call
+to read beyond that point returns an end-of-string indication.
+An attempt to write beyond the end of a string
+causes the allocator to
+allocate a larger space and then copy
+the old string into the larger block.
+.SH
+Internal Arithmetic
+.PP
+All arithmetic operations are done on integers.
+The operands (or operand) needed for the operation are popped
+from the main stack and their scale factors stripped off.
+Zeros are added or digits removed as necessary to get
+a properly scaled result from the internal arithmetic routine.
+For example, if the scale of the operands is different and decimal
+alignment is required, as it is for
+addition, zeros are appended to the operand with the smaller
+scale.
+After performing the required arithmetic operation,
+the proper scale factor is appended to the end of the number before
+it is pushed on the stack.
+.PP
+A register called \fBscale\fP plays a part
+in the results of most arithmetic operations.
+\fBscale\fP is the bound on the number of decimal places retained in
+arithmetic computations.
+\fBscale\fP may be set to the number on the top of the stack
+truncated to an integer with the \fBk\fP command.
+\fBK\fP may be used to push the value of \fBscale\fP on the stack.
+\fBscale\fP must be greater than or equal to 0 and less than 100.
+The descriptions of the individual arithmetic operations will
+include the exact effect of \fBscale\fP on the computations.
+.SH
+Addition and Subtraction
+.PP
+The scales of the two numbers are compared and trailing
+zeros are supplied to the number with the lower scale to give both
+numbers the same scale.  The number with the smaller scale is
+multiplied by 10 if the difference of the scales is odd.
+The scale of the result is then set to the larger of the scales
+of the two operands.
+.PP
+Subtraction is performed by negating the number
+to be subtracted and proceeding as in addition.
+.PP
+Finally, the addition is performed digit by digit from the
+low order end of the number.  The carries are propagated
+in the usual way.
+The resulting number is brought into canonical form, which may
+require stripping of leading zeros, or for negative numbers
+replacing the high-order configuration 99,\-1 by the digit \-1.
+In any case, digits which are not in the range 0\-99 must
+be brought into that range, propagating any carries or borrows
+that result.
+.SH
+Multiplication
+.PP
+The scales are removed from the two operands and saved.
+The operands are both made positive.
+Then multiplication is performed in
+a digit by digit manner that exactly mimics the hand method
+of multiplying.
+The first number is multiplied by each digit of the second
+number, beginning with its low order digit.  The intermediate
+products are accumulated into a partial sum which becomes the
+final product.
+The product is put into the canonical form and its sign is
+computed from the signs of the original operands.
+.PP
+The scale of the result is set equal to the sum
+of the scales of the two operands.
+If that scale is larger than the internal register
+.ft B
+scale
+.ft
+and also larger than both of the scales of the two operands,
+then the scale of the result is set equal to the largest
+of these three last quantities.
+.SH
+Division
+.PP
+The scales are removed from the two operands.
+Zeros are appended or digits removed from the dividend to make
+the scale of the result of the integer division equal to
+the internal quantity
+\fBscale\fP.
+The signs are removed and saved.
+.PP
+Division is performed much as it would be done by hand.
+The difference of the lengths of the two numbers
+is computed.
+If the divisor is longer than the dividend,
+zero is returned.
+Otherwise the top digit of the divisor is divided into the top
+two digits of the dividend.
+The result is used as the first (high-order) digit of the
+quotient.
+It may turn out be one unit too low, but if it is, the next
+trial quotient will be larger than 99 and this will be
+adjusted at the end of the process.
+The trial digit is multiplied by the divisor and the result subtracted
+from the dividend and the process is repeated to get
+additional quotient digits until the remaining
+dividend is smaller than the divisor.
+At the end, the digits of the quotient are put into
+the canonical form, with propagation of carry as needed.
+The sign is set from the sign of the operands.
+.SH
+Remainder
+.PP
+The division routine is called and division is performed
+exactly as described.  The quantity returned is the remains of the
+dividend at the end of the divide process.
+Since division truncates toward zero, remainders have the same
+sign as the dividend.
+The scale of the remainder is set to 
+the maximum of the scale of the dividend and
+the scale of the quotient plus the scale of the divisor.
+.SH
+Square Root
+.PP
+The scale is stripped from the operand.
+Zeros are added if necessary to make the
+integer result have a scale that is the larger of
+the internal quantity
+\fBscale\fP
+and the scale of the operand.
+.PP
+The method used to compute sqrt(y) is Newton's method
+with successive approximations by the rule
+.EQ
+x sub {n+1} ~=~ half ( x sub n + y over x sub n )
+.EN
+The initial guess is found by taking the integer square root
+of the top two digits.
+.SH
+Exponentiation
+.PP
+Only exponents with zero scale factor are handled.  If the exponent is
+zero, then the result is 1.  If the exponent is negative, then
+it is made positive and the base is divided into one.  The scale
+of the base is removed.
+.PP
+The integer exponent is viewed as a binary number.
+The base is repeatedly squared and the result is
+obtained as a product of those powers of the base that
+correspond to the positions of the one-bits in the binary
+representation of the exponent.
+Enough digits of the result
+are removed to make the scale of the result the same as if the
+indicated multiplication had been performed.
+.SH
+Input Conversion and Base
+.PP
+Numbers are converted to the internal representation as they are read
+in.
+The scale stored with a number is simply the number of fractional digits input.
+Negative numbers are indicated by preceding the number with a \fB\_\fP (an 
+underscore).
+The hexadecimal digits A\-F correspond to the numbers 10\-15 regardless of input base.
+The \fBi\fP command can be used to change the base of the input numbers.
+This command pops the stack, truncates the resulting number to an integer,
+and uses it as the input base for all further input.
+The input base is initialized to 10 but may, for example be changed to
+8 or 16 to do octal or hexadecimal to decimal conversions.
+Thenot appear
+		 * to be the case. An invalid logical block number returned an endcode
+		 * of 0200 instead of the 0241 (read) that was expected.
+		 */
+			
+		printf("tmscp%d: invalid cmd, endcode = %o, status=%o\n",
+			um->um_ctlr, mp->mscp_opcode, st);
+		bp = (struct buf *)mp->mscp_cmdref;
+		/*
+		 * Unlink buffer from I/O wait queue.
+		 * And signal iodone, so the higher level command can exit!
+		 *
+		 */
+		bp->av_back->av_forw = bp->av_forw;
+		bp->av_forw->av_back = bp->av_back;
+		dp = &tmsutab[ui->ui_unit];
+		dp->b_qsize--;
+		iodone(bp);
+		break;
+	case M_OP_WRITE|M_OP_END:
+		/* mark the last io op as a write */
+		tms->tms_lastiow = 1;
+	case M_OP_READ|M_OP_END:
+	case M_OP_WRITM|M_OP_END:
+	case M_OP_REPOS|M_OP_END:
+	case M_OP_STUNT|M_OP_END:
+	/*
+	 * The AVAILABLE message occurs when the mt ioctl "rewoffl" is
+	 * issued.  For the ioctl, "rewoffl", a tmscp AVAILABLE command is
+	 * done with the UNLOAD modifier.  This performs a rewind, followed
+	 * by marking the unit offline.  So mark the unit offline
+	 * software wise as well (ui_flags = 0 and 
+	 * tms->tms_openf = 0).
+	 */
+	case M_OP_AVAIL|M_OP_END:
+#		ifdef DEBUG
+		printd("tmscprsp: position = %d\n", mp->mscp_lbn);
+#		endif
+		bp = (struct buf *)mp->mscp_cmdref;
+		/*
+		 * Only need to release buffer if the command was read or write.
+		 * No ubasetup was done in "tmscpstart" if it was an ioctl cmd.
+		 */
+		if (mp->mscp_opcode == (M_OP_READ|M_OP_END) || 
+		    mp->mscp_opcode == (M_OP_WRITE|M_OP_END))
+			ubarelse(um->um_ubanum, (int *)&bp->b_ubinfo);
+		/*
+		 * Unlink buffer from I/O wait queue.
+		 */
+		bp->av_back->av_forw = bp->av_forw;
+		bp->av_forw->av_back = bp->av_back;
+#		if defined(VAX750)
+		if (cpu == VAX_750) { 
+		    if ((tmscpwtab[um->um_ctlr].av_forw == &tmscpwtab[um->um_ctlr]) &&
+					(um->um_ubinfo != 0)) {
+			ubarelse(um->um_ubanum, &um->um_ubinfo);
+		    }
+		    else {
+			if (mp->mscp_opcode == (M_OP_READ|M_OP_END) ||
+		    	    mp->mscp_opcode == (M_OP_WRITE|M_OP_END))
+				UBAPURGE(uba_hd[um->um_ubanum].uh_uba,(um->um_ubinfo >>28) & 0x0f);
+		    }
+		}
+#		endif
+		dp = &tmsutab[ui->ui_unit];
+		dp->b_qsize--;
+		if (st == M_ST_OFFLN || st == M_ST_AVLBL)
+			{
+			ui->ui_flags = 0;       /* mark unit offline */
+			tms->tms_openf = 0;
+			tms->tms_type = mp->mscp_mediaid;
+			/*
+			 * Link the buffer onto the front of the drive queue
+			 */
+			if ((bp->av_forw = dp->b_actf) == 0)
+				dp->b_actl = bp;
+			dp->b_actf = bp;
+			/*
+			 * Link the drive onto the controller queue
+			 */
+			if (dp->b_active == 0)
+				{
+				dp->b_forw = NULL;
+				if (um->um_tab.b_actf == NULL)
+					um->um_tab.b_actf = dp;
+				else
+					um->um_tab.b_actl->b_forw = dp;
+				um->um_tab.b_actl = dp;
+				dp->b_active = 1;
+				}
+#			if defined(VAX750)
+			if (cpu == VAX_750 && um->um_ubinfo == 0)
+				um->um_ubinfo = uballoc(um->um_ubanum, (caddr_t)0, 0, UBA_NEEDBDP);
+#			endif
+			return;
+			}
+		if (st != M_ST_SUCC)
+			{
+			if (mp->mscp_flags & M_EF_SEREX)
+				tms->tms_serex = 1;
+			if (st != M_ST_TAPEM)
+				{
+				tprintf(tms->tms_ttyp,
+				    "tms%d: hard error bn%d\n",
+				    minor(bp->b_dev)&03, bp->b_blkno);
+				errinfo(st);		/* produces more info */
+#				ifdef DEBUG
+				printd("tmscprsp: error; status sub-code = 0%o, flags = 0%o\n",
+					(mp->mscp_status & 177740)>>5, mp->mscp_flags);
+#				endif
+				bp->b_flags |= B_ERROR;
+				}
+			else
+				/* Hit a tape mark - Set serex flag to
+				 * a special value so we can clear the
+				 * serious exception on the next command.
+				 */
+				tms->tms_serex = 2;
+			}
+		/*
+		 * The tmscp spec states that controllers do not have to
+		 * report the number of records or files skipped.  So on
+		 * reposition commands we go strictly by cmd status.
+		 */
+		if (mp->mscp_opcode != (M_OP_REPOS|M_OP_END))
+			bp->b_resid = bp->b_bcount - mp->mscp_bytecnt;
+		else
+			bp->b_resid = 0;
+		tms->tms_resid = bp->b_resid;
+		iodone(bp);
+		break;
+
+	case M_OP_GTUNT|M_OP_END:
+#		ifdef DEBUG
+		printd("tmscprsp: GTUNT end packet status = 0%o\n",st);
+		printd("tmscprsp: unit %d mediaid %x %c%c %c%c%c%d %x %x t=%d\n"
+		    ,mp->mscp_unit, mp->mscp_mediaid
+		    ,F_to_C(mp,4),F_to_C(mp,3),F_to_C(mp,2)
+		    ,F_to_C(mp,1),F_to_C(mp,0)
+		    ,mp->mscp_mediaid & 0x7f
+		    ,mp->mscp_unitid.val[0]
+		    ,mp->mscp_unitid.val[1]
+		    ,mp->mscp_format);
+#		endif		
+		tms->tms_type = mp->mscp_mediaid;
+		tms->tms_fmtmenu = mp->mscp_fmtmenu;
+		tms->tms_unitflgs = mp->mscp_unitflgs;
+		break;
+
+	default:
+		printf("tmscp unknown packet\n");
+		tmserror(um, (struct mslg *)mp);
+	}	/* end switch mp->mscp_opcode */
+}
+
+
+/* 
+ * Give a meaningful error when the mscp_status field returns an error code.
+ */
+
+errinfo(st)
+	int st;			/* the status code */
+{
+	switch(st) {
+	case M_ST_ICMD:
+		printf("invalid command\n");
+		break;
+	case M_ST_ABRTD:
+		printf("command aborted\n");
+		break;
+	case M_ST_OFFLN:
+		printf("unit offline\n");
+		break;
+	case M_ST_WRTPR:
+		printf("unit write protected\n");
+		break;
+	case M_ST_COMP:
+		printf("compare error\n");
+		break;
+	case M_ST_DATA:
+		printf("data error\n");
+		break;
+	case M_ST_HSTBF:
+		printf("host buffer access error\n");
+		break;
+	case M_ST_CNTLR:
+		printf("controller error\n");
+		break;
+	case M_ST_DRIVE:
+		printf("drive error\n");
+		break;
+	case M_ST_FMTER:
+		printf("formatter error\n");
+		break;
+	case M_ST_BOT:
+		printf("BOT encountered\n");
+		break;
+	case M_ST_TAPEM:
+		printf("tape mark encountered\n");
+		break;
+	case M_ST_RDTRN:
+		printf("record data truncated\n");
+		break;
+	case M_ST_PLOST:
+		printf("position lost\n");
+		break;
+	case M_ST_SEX:
+		printf("serious exception\n");
+		break;
+	case M_ST_LED:
+		printf("LEOT detected\n");
+		break;
+	}
+}
+
+
+/*
+ * Manage buffers and perform block mode read and write operations.
+ */
+
+tmscpstrategy (bp)
+	register struct buf *bp;
+{
+	register struct uba_device *ui;
+	register struct uba_ctlr *um;
+	register struct buf *dp;
+	register int unit = TMSUNIT(bp->b_dev);
+	int s;
+
+	if (unit >= NTMS)
+		{
+#		ifdef DEBUG
+		printd ("tmscpstrategy: bad unit # %d\n",unit);
+#		endif
+		bp->b_flags |= B_ERROR;
+		iodone(bp);
+		return;
+		}
+	ui = tmsdinfo[unit];
+	um = ui->ui_mi;
+	if (ui == 0 || ui->ui_alive == 0)
+		{
+		bp->b_flags |= B_ERROR;
+		iodone(bp);
+		return;
+		}
+	s = spl5();
+	/*
+	 * Link the buffer onto the drive queue
+	 */
+	dp = &tmsutab[ui->ui_unit];
+	if (dp->b_actf == 0)
+		dp->b_actf = bp;
+	else
+		dp->b_actl->av_forw = bp;
+	dp->b_actl = bp;
+	bp->av_forw = 0;
+	/*
+	 * Link the drive onto the controller queue
+	 */
+	if (dp->b_active == 0)
+		{
+		dp->b_forw = NULL;
+		if (um->um_tab.b_actf == NULL)
+			um->um_tab.b_actf = dp;
+		else
+			um->um_tab.b_actl->b_forw = dp;
+		um->um_tab.b_actl = dp;
+		dp->b_active = 1;
+		}
+	/*
+	 * If the controller is not active, start it.
+	 */
+	if (um->um_tab.b_active == 0)
+		{
+#		if defined(VAX750)
+		if (cpu == VAX_750
+				 && tmscpwtab[um->um_ctlr].av_forw == &tmscpwtab[um->um_ctlr])
+			{
+			if (um->um_ubinfo != 0)
+				log(TMS_PRI, "tmscpstrategy: ubinfo 0x%x\n",
+				    um->um_ubinfo);
+			else
+				um->um_ubinfo = uballoc(um->um_ubanum, (caddr_t)0, 0, UBA_NEEDBDP);
+			}
+#		endif
+#		ifdef DEBUG
+		printd10("tmscpstrategy: Controller not active, starting it\n");
+#		endif
+		(void) tmscpstart(um);
+		}
+	splx(s);
+	return;
+}
+
+#define DBSIZE 32
+
+#define ca_Rspdsc       ca_rspdsc[0]
+#define ca_Cmddsc       ca_rspdsc[1]
+#define tmscp_Rsp       tmscp_rsp[0]
+#define tmscp_Cmd       tmscp_cmd[0]
+
+struct  tmscp     tmscpd[NTMSCP];
+
+tmscpdump(dev)
+	dev_t dev;
+{
+	struct tmscpdevice *tmscpaddr;
+	struct tmscp *tmscp_ubaddr;
+	char *start;
+	int num, blk, unit;
+	register struct uba_regs *uba;
+	register struct uba_device *ui;
+	register struct tmscp *tmscpp;
+	register struct pte *io;
+	register int i;
+
+	unit = minor(dev) & 03;
+	if (unit >= NTMS)
+		return (ENXIO);
+#	define phys(cast, addr) ((cast)((int)addr & 0x7fffffff))
+	ui = phys(struct uba_device *, tmsdinfo[unit]);
+	if (ui->ui_alive == 0)
+		return (ENXIO);
+	uba = phys(struct uba_hd *, ui->ui_hd)->uh_physuba;
+	ubainit(uba);
+	tmscpaddr = (struct tmscpdevice *)ui->ui_physaddr;
+	DELAY(2000000);
+	tmscpp = phys(struct tmscp *, &tmscpd[ui->ui_ctlr]);
+
+	num = btoc(sizeof(struct tmscp)) + 1;
+	io = &uba->uba_map[NUBMREG-num];
+	for(i = 0; i<num; i++)
+		*(int *)io++ = UBAMR_MRV|(btop(tmscpp)+i);
+	tmscp_ubaddr = (struct tmscp * command \fBI\fP will push the value of the input base on the stack.
+.SH
+Output Commands
+.PP
+The command \fBp\fP causes the top of the stack to be printed.
+It does not remove the top of the stack.
+All of the stack and internal registers can be output
+by typing the command \fBf\fP.
+The \fBo\fP command can be used to change the output base.
+This command uses the top of the stack, truncated to an integer as
+the base for all further output.
+The output base in initialized to 10.
+It will work correctly for any base.
+The command \fBO\fP pushes the value of the output base on the stack.
+.SH
+Output Format and Base
+.PP
+The input and output bases only affect
+the interpretation of numbers on input and output; they have no
+effect on arithmetic computations.
+Large numbers are output with 70 characters per line;
+a \\ indicates a continued line.
+All choices of input and output bases work correctly, although not all are
+useful.
+A particularly useful output base is 100000, which has the effect of
+grouping digits in fives.
+Bases of 8 and 16 can be used for decimal-octal or decimal-hexadecimal
+conversions.
+.SH
+Internal Registers
+.PP
+Numbers or strings may be stored in internal registers or loaded on the stack
+from registers with the commands \fBs\fP and \fBl\fP.
+The command \fBs\fIx\fR pops the top of the stack and
+stores the result in register \fBx\fP.
+\fIx\fP can be any character.
+\fBl\fIx\fR puts the contents of register \fBx\fP on the top of the stack.
+The \fBl\fP command has no effect on the contents of register \fIx\fP.
+The \fBs\fP command, however, is destructive.
+.SH
+Stack Commands
+.PP
+The command \fBc\fP clears the stack.
+The command \fBd\fP pushes a duplicate of the number on the top of the stack
+on the stack.
+The command \fBz\fP pushes the stack size on the stack.
+The command \fBX\fP replaces the number on the top of the stack
+with its scale factor.
+The command \fBZ\fP replaces the top of the stack
+with its length.
+.SH
+Subroutine Definitions and Calls
+.PP
+Enclosing a string in \fB[ ]\fP pushes the ascii string on the stack.
+The \fBq\fP command quits or in executing a string, pops the recursion levels by two.
+.SH
+Internal Registers \- Programming DC
+.PP
+The load and store
+commands together with \fB[ ]\fP to store strings, \fBx\fP to execute
+and the testing commands `<', `>', `=', `!<', `!>', `!=' can be used to program
+DC.
+The \fBx\fP command assumes the top of the stack is an string of DC commands
+and executes it.
+The testing commands compare the top two elements on the stack and if the relation holds, execute the register
+that follows the relation.
+For example, to print the numbers 0-9,
+.DS
+[lip1+  si  li10>a]sa
+0si  lax
+.DE
+.SH
+Push-Down Registers and Arrays
+.PP
+These commands were designed for used by a compiler, not by
+people.
+They involve push-down registers and arrays.
+In addition to the stack that commands work on, DC can be thought
+of as having individual stacks for each register.
+These registers are operated on by the commands \fBS\fP and \fBL\fP.
+\fBS\fIx\fR pushes the top value of the main stack onto the stack for
+the register \fIx\fP.
+\fBL\fIx\fR pops the stack for register \fIx\fP and puts the result on the main
+stack.
+The commands \fBs\fP and \fBl\fP also work on registers but not as push-down
+stacks.
+\fBl\fP doesn't effect the top of the
+register stack, and \fBs\fP destroys what was there before.
+.PP
+The commands to work on arrays are \fB:\fP and \fB;\fP.
+\fB:\fIx\fR pops the stack and uses this value as an index into
+the array \fIx\fP.
+The next element on the stack is stored at this index in \fIx\fP.
+An index must be greater than or equal to 0 and
+less than 2048.
+\fB;\fIx\fR is the command to load the main stack from the array \fIx\fP.
+The value on the top of the stack is the index
+into the array \fIx\fP of the value to be loaded.
+.SH
+Miscellaneous Commands
+.PP
+The command \fB!\fP interprets the rest of the line as a 
+.UX 
+command and passes it to 
+.UX
+to execute.
+One other compiler command is \fBQ\fP.
+This command uses the top of the stack as the number of levels of recursion to skip.
+.SH
+DESIGN CHOICES
+.PP
+The real reason for the use of a dynamic storage allocator was
+that a general purpose program could be (and in fact has been)
+used for a variety of other tasks.
+The allocator has some value for input and for compiling (i.e.
+the bracket [...] commands) where it cannot be known in advance
+how long a string will be.
+The result was that at a modest
+cost in execution time, all considerations of string allocation
+and sizes of strings were removed from the remainder of the program
+and debugging was made easier.  The allocation method
+used wastes approximately 25% of available space.
+.PP
+The choice of 100 as a base for internal arithmetic
+seemingly has no compelling advantage.  Yet the base cannot
+exceed 127 because of hardware limitations and at the cost
+of 5% in space, debugging was made a great deal easier and
+decimal output was made much faster.
+.PP
+The reason for a stack-type arithmetic design was
+to permit all DC commands from addition to subroutine execution
+to be implemented in essentially the same way.  The result
+was a considerable degree of logical separation of the final
+program into modules with very little communication between
+modules.
+.PP
+The rationale for the lack of interaction between the scale and the bases
+was to provide an understandable means of proceeding after
+a change of base or scale when numbers had already been entered.
+An earlier implementation which had global notions of
+scale and base did not work out well.
+If the value of
+.ft B
+scale
+.ft
+were to be interpreted in the current
+input or output base,
+then a change of base or scale in the midst of a
+computation would cause great confusion in the interpretation
+of the results.
+The current scheme has the advantage that the value of
+the input and output bases
+are only used for input and output, respectively, and they
+are ignored in all other operations.
+The value of
+scale
+is not used for any essential purpose by any part of the program
+and it is used only to prevent the number of
+decimal places resulting from the arithmetic operations from
+growing beyond all bounds.
+.PP
+The design rationale for the choices for the scales of
+the results of arithmetic were that in no case should
+any significant digits be thrown away if, on appearances, the
+user actually wanted them.  Thus, if the user wants
+to add the numbers 1.5 and 3.517, it seemed reasonable to give
+him the result 5.017 without requiring him to unnecessarily
+specify his rather obvious requirements for precision.
+.PP
+On the other hand, multiplication and exponentiation produce
+results with many more digits than their operands and it
+seemed reasonable to give as a minimum the number of decimal
+places in the operands but not to give more than that
+number of digits
+unless the user asked for them by specifying a value for \fBscale\fP.
+Square root can be handled in just the same way as multiplication.
+The operation of division gives arbitrarily many decimal places
+and there is simply no way to guess how many places the user
+wants.
+In this case only, the user must
+specify a \fBscale\fP to get any decimal places
