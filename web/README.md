@@ -34,14 +34,10 @@ node web/test/browser-test.js http://127.0.0.1:8780/ /tmp/shots   # needs the se
 Run `./web/build.sh wasm`, edit `build/src/sim_*.c`, run `./web/mkpatch.sh`,
 then build again.
 
-## Host 
+## Host
+
+```sh
+./web/build.sh
+./web/deploy.sh # force-pushes web/site/ to gh-pages branch on origin
 ```
-cd web/site
-touch .nojekyll 
-git init -q -b gh-pages
-git add -A
-git commit -qm "Deploy site"
-git push -f git@github.com:zachMahan64/vax.git gh-pages
-rm -rf .git
-cd ../..
-```
+
