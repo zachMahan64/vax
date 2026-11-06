@@ -37,6 +37,12 @@ Based on the Computer History Wiki guide
 Cool things: `ls /usr/games` and try some out (some don't work due to input issues), `cc` (the
 1986 C compiler), `vi` (although I couldn't get it to work again due to input issues), `man`
 
+## In a browser
+
+`web/` builds the same machine as a static website (WebAssembly, no server),
+with the console plus two extra terminals and a disk saved in the browser. See
+[web/README.md](web/README.md).
+
 ## Layout
 
 | Thing | Purpose |

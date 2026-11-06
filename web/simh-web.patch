@@ -1,0 +1,225 @@
+--- a/sim_console.c
++++ b/sim_console.c
+@@ -3753,9 +3753,102 @@
+                 sim_console_write(&ch, 1);
+         }
+     }
++return SCPE_OK;
++}
++
++#elif defined (__EMSCRIPTEN__)
++
++/* Browser routines
++
++   The console is a character queue owned by the JavaScript host (see
++   web/src/worker.js).  Polling the keyboard is also where the simulator
++   yields to the browser event loop, so that keystrokes and screen updates
++   get delivered while the CPU is busy.
++*/
++
++#include <emscripten.h>
++
++EM_JS (int, sim_web_getchar, (void), { return Module.simHost.getchar (); });
++EM_JS (void, sim_web_putchar, (int c), { Module.simHost.putchar (c); });
++EM_ASYNC_JS (void, sim_web_yield, (void), { await Module.simHost.yield (); });
++EM_ASYNC_JS (void, sim_web_readline, (char *buf, int size), {
++    const line = await Module.simHost.readline ();
++    const n = Math.min (line.length, size - 1);
++    for (let i = 0; i < n; i++)
++        HEAPU8[buf + i] = line.charCodeAt (i) & 0xFF;
++    HEAPU8[buf + n] = 0;
++    });
++
++#define SIM_WEB_YIELD_MS 10
++
++/* sim> command lines come from the browser.  stdin there is always at EOF,
++   and SCP ignores EOF on a tty, so reading it would spin forever. */
++
++static char *sim_web_read (char *ptr, int32 size, FILE *stream)
++{
++fflush (stdout);
++sim_web_readline (ptr, size);
++return ptr;
++}
++
++static t_stat sim_os_ttinit (void)
++{
++sim_vm_read = &sim_web_read;
+ return SCPE_OK;
+ }
+ 
++static t_stat sim_os_ttrun (void)
++{
++return SCPE_OK;
++}
++
++static t_stat sim_os_ttcmd (void)
++{
++return SCPE_OK;
++}
++
++static t_stat sim_os_ttclose (void)
++{
++return SCPE_OK;
++}
++
++static t_bool sim_os_fd_isatty (int fd)
++{
++return (fd <= 2);
++}
++
++static t_stat sim_os_poll_kbd (void)
++{
++static uint32 last_yield = 0;
++uint32 now = sim_os_msec ();
++int c;
++
++if ((now - last_yield) >= SIM_WEB_YIELD_MS) {
++    last_yield = now;
++    sim_web_yield ();
++    }
++c = sim_web_getchar ();
++if (c < 0)
++    return SCPE_OK;
++if (sim_brk_char && (c == sim_brk_char))
++    return SCPE_BREAK;
++if (sim_int_char && (c == sim_int_char))
++    return SCPE_STOP;
++return (c | SCPE_KFLAG);
++}
++
++static t_bool sim_os_poll_kbd_ready (int ms_timeout)
++{
++sim_os_ms_sleep (ms_timeout);
++return FALSE;
++}
++
++static t_stat sim_os_putchar (int32 out)
++{
++sim_web_putchar (out & 0xFF);
++return SCPE_OK;
++}
++
+ #elif defined (BSDTTY)
+ 
+ #include <sgtty.h>
+--- a/sim_timer.c
++++ b/sim_timer.c
+@@ -591,7 +591,22 @@
+ }
+ #endif /* CLOCK_REALTIME */
+ #endif /* !defined(_POSIX_SOURCE) && defined(SIM_ASYNCH_IO) */
++
++#if defined (__EMSCRIPTEN__)
++#include <emscripten.h>
++
++/* Sleeping hands control back to the browser (see web/src/worker.js) */
++
++EM_ASYNC_JS (void, sim_web_sleep, (int ms), { await Module.simHost.sleep (ms); });
++
++uint32 sim_os_ms_sleep (unsigned int milliseconds)
++{
++uint32 stime = sim_os_msec ();
+ 
++sim_web_sleep ((int)milliseconds);
++return sim_os_msec () - stime;
++}
++#else
+ uint32 sim_os_ms_sleep (unsigned int milliseconds)
+ {
+ uint32 stime = sim_os_msec ();
+@@ -602,6 +617,7 @@
+ (void) nanosleep (&treq, NULL);
+ return sim_os_msec () - stime;
+ }
++#endif
+ 
+ #if defined(NEED_THREAD_PRIORITY)
+ #undef NEED_THREAD_PRIORITY
+--- a/sim_serial.c
++++ b/sim_serial.c
+@@ -916,6 +916,84 @@
+ if (port->hPort)
+     CloseHandle (port->hPort);                          /* close the port */
+ free (port);
++}
++
++
++
++#elif defined (__EMSCRIPTEN__)
++
++/* Browser routines
++
++   Ports "term0" through "term7" are extra terminal panels on the page (see
++   web/src/vaxhost.js).  They behave like hard-wired terminals: always
++   present, carrier always up.  Checked before __unix__, which Emscripten
++   also defines.
++*/
++
++#include <emscripten.h>
++
++#define SIM_WEB_TERMS 8
++
++EM_JS (int, sim_web_serial_read, (int line, char *buf, int count), {
++    return Module.simHost.serialRead (line, HEAPU8.subarray (buf, buf + count));
++    });
++EM_JS (void, sim_web_serial_write, (int line, char *buf, int count), {
++    Module.simHost.serialWrite (line, HEAPU8.slice (buf, buf + count));
++    });
++
++#define WEB_LINE(port) ((int)(intptr_t)(port) - 1)
++
++static int sim_serial_os_devices (int max, SERIAL_LIST* list)
++{
++int i;
++
++for (i = 0; (i < SIM_WEB_TERMS) && (i < max); i++) {
++    sprintf (list[i].name, "term%d", i);
++    sprintf (list[i].desc, "Browser terminal %d", i);
++    }
++return i;
++}
++
++static SERHANDLE sim_open_os_serial (char *name)
++{
++int line;
++
++if ((strncmp (name, "term", 4) != 0) || !isdigit (name[4]) || name[5])
++    return INVALID_HANDLE;
++line = name[4] - '0';
++if (line >= SIM_WEB_TERMS)
++    return INVALID_HANDLE;
++return (SERHANDLE)(intptr_t)(line + 1);
++}
++
++static t_stat sim_config_os_serial (SERHANDLE port, SERCONFIG config)
++{
++return SCPE_OK;
++}
++
++t_stat sim_control_serial (SERHANDLE port, int32 bits_to_set, int32 bits_to_clear, int32 *incoming_bits)
++{
++if (incoming_bits)
++    *incoming_bits = TMXR_MDM_DCD | TMXR_MDM_CTS | TMXR_MDM_DSR;
++return SCPE_OK;
++}
++
++int32 sim_read_serial (SERHANDLE port, char *buffer, int32 count, char *brk)
++{
++int32 n = sim_web_serial_read (WEB_LINE (port), buffer, count);
++
++memset (brk, 0, n);
++return n;
++}
++
++int32 sim_write_serial (SERHANDLE port, char *buffer, int32 count)
++{
++sim_web_serial_write (WEB_LINE (port), buffer, count);
++return count;
++}
++
++static void sim_close_os_serial (SERHANDLE port)
++{
+ }
+ 
+ 
